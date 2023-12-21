@@ -936,6 +936,14 @@ class OWLNamedIndividual(OWLIndividual, OWLEntity):
         # documented in parent
         return self._iri
 
+    @property
+    def iri(self):
+        return self._iri
+
+    @property
+    def str(self):
+        return self._iri.as_str()
+
 
 _M = TypeVar('_M', bound='OWLOntologyManager')  #:
 
