@@ -1,16 +1,13 @@
 # owlapy
-**Version: 0.1.0**
-
-Owlapy is loosely based on owlapi, successfully representing the main
-owl objects in python. 
+**Owlapy is loosely based on _owlapi_ - the java counterpart, successfully representing the main
+owl objects in python.** 
 
 Other than that, Owlapy also offers some extra functionalities:
 - `Owl2SparqlConverter` to convert owl class expressions to SPARQL syntax. 
 - `DLSyntaxObjectRenderer` to render owl objects to description logics.
 - `ManchesterOWLSyntaxParser` to parse strings of manchester syntax to owl class expression.
 
-For more, please feel free to explore the project for yourself which is made
-easier due to the well documented code.
+For more, you can check the [API documentation](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/#module-owlapy).
 
 
 ## Installation
@@ -21,32 +18,31 @@ pip install owlapy
 
 ## Usage
 
+In this example we start with a simple atomic class expression and move to some more complex 
+ones and finally render and print the last of them in description logics syntax.
+
 ```python
 from owlapy.render import DLSyntaxObjectRenderer
-from owlapy.namespaces import Namespaces
 from owlapy.model import IRI, OWLClass, OWLObjectProperty, OWLObjectSomeValuesFrom, \
                          OWLObjectIntersectionOf
 
-# defining the ontology namespace with prefix 'ex'
-NS = Namespaces("ex", "http://example.com/society#")
+# Create an IRI object using the iri as a string for 'male' class.
+male_iri = IRI.create('http://example.com/society#male')
 
-# create the iri referring to 'male' class
-male_iri = IRI.create(NS,'male')
-
-# create the male class
+# Create the male class
 male = OWLClass(male_iri)
 
-# create an object property
-hasChild = OWLObjectProperty(IRI.create(NS,'hasChild'))
+# Create an object property using the iri as a string for 'hasChild' property.
+hasChild = OWLObjectProperty(IRI.create('http://example.com/society#hasChild'))
 
-# create an existential restrictions
+# Create an existential restrictions
 males_with_children = OWLObjectSomeValuesFrom(hasChild, male)
 
-#let's make it more complex by intersecting with another class
-teacher = OWLClass(IRI.create(NS ,'teacher'))
+# Let's make it more complex by intersecting with another class
+teacher = OWLClass(IRI.create('http://example.com/society#teacher'))
 male_teachers_with_children = OWLObjectIntersectionOf([males_with_children, teacher])
 
-# This can be printed in description logics
+# You can render and print owl class expressions in description logics syntax
 print(DLSyntaxObjectRenderer().render(male_teachers_with_children))
 ```
 The following will be printed:
@@ -55,8 +51,16 @@ The following will be printed:
 (∃ hasChild.male) ⊓ teacher
 ```
 
-Like we showed in this example, you can create more complex class expressions, and there 
-are a lot of other OWL objects in owlapy model that you can use.
+Every OWL object that can be used to classify individuals, is considered a class expression and 
+inherits from [OWLClassExpression](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLClassExpression) 
+class. In the above examples we have introduced 3 types of class expressions: 
+- [OWLClass](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLClass), 
+- [OWLObjectSomeValuesFrom](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLObjectSomeValuesFrom)
+- [OWLObjectIntersectionOf](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLObjectIntersectionOf).
+
+Like we showed in this example, you can create all kinds of class expressions using the 
+OWL objects in [owlapy model](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#module-owlapy.model).
+
 
 ### Are you looking for more?
 
