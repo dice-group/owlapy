@@ -6,7 +6,7 @@ setup(
     name="owlapy",
     description="Owlapy is loosely based on owlapi - the java counterpart, "
                 "successfully representing the main owl objects in python.",
-    version="0.1.1",
+    version="0.1.2",
     packages=find_packages(),
     install_requires=[
         "pandas>=1.5.0",

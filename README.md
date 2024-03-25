@@ -1,20 +1,21 @@
-# owlapy
-**Owlapy is loosely based on _owlapi_ - the java counterpart, successfully representing the main
-owl objects in python.** 
-
-Other than that, Owlapy also offers some extra functionalities:
-- `Owl2SparqlConverter` to convert owl class expressions to SPARQL syntax. 
-- `DLSyntaxObjectRenderer` to render owl objects to description logics.
-- `ManchesterOWLSyntaxParser` to parse strings of manchester syntax to owl class expression.
-
-For more, you can check the [API documentation](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/#module-owlapy).
+# OWLpy: OWL in Python
 
 
 ## Installation
+<details><summary> Click me! </summary>
 
-```shell
-pip install owlapy
+### Installation from Source
+``` bash
+git clone https://github.com/dice-group/owlapy
+conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip3 install -e .
 ```
+or
+```bash
+pip3 install owlapy
+```
+</details>
+
+
 
 ## Usage
 
@@ -43,13 +44,13 @@ teacher = OWLClass(IRI.create('http://example.com/society#teacher'))
 male_teachers_with_children = OWLObjectIntersectionOf([males_with_children, teacher])
 
 # You can render and print owl class expressions in description logics syntax
-print(DLSyntaxObjectRenderer().render(male_teachers_with_children))
+print(DLSyntaxObjectRenderer().render(male_teachers_with_children)) 
+# (∃ hasChild.male) ⊓ teacher
+print(Owl2SparqlConverter().as_query("?x", male_teachers_with_children))
+#  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 ```
-The following will be printed:
+For more, you can check the [API documentation](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/#module-owlapy).
 
-```commandline
-(∃ hasChild.male) ⊓ teacher
-```
 
 Every OWL object that can be used to classify individuals, is considered a class expression and 
 inherits from [OWLClassExpression](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLClassExpression) 
