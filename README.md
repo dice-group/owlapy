@@ -1,5 +1,4 @@
-# OWLpy: OWL in Python
-
+# OWLAPY
 
 ## Installation
 <details><summary> Click me! </summary>
@@ -15,9 +14,8 @@ pip3 install owlapy
 ```
 </details>
 
-
-
 ## Usage
+<details><summary> Click me! </summary>
 
 In this example we start with a simple atomic class expression and move to some more complex 
 ones and finally render and print the last of them in description logics syntax.
@@ -61,14 +59,7 @@ class. In the above examples we have introduced 3 types of class expressions:
 
 Like we showed in this example, you can create all kinds of class expressions using the 
 OWL objects in [owlapy model](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#module-owlapy.model).
+</details>
 
-
-### Are you looking for more?
-
-The java _owlapi_ library also offers classes for OWL ontology, manager and reasoner. 
-We have also implemented those classes in python, but for the time being we are 
-not including them in owlapy. You can find all of those classes in
-[Ontolearn](https://github.com/dice-group/Ontolearn/tree/develop), which is a 
-python library that offers more than just that.
-
-In case you have any question or request please don't hesitate to open an issue.
+## How to cite
+Currently, we are working on our manuscript describing our framework.
