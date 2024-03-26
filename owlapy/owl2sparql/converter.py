@@ -495,7 +495,7 @@ class Owl2SparqlConverter:
                 self.append(",")
             assert isinstance(ind, OWLNamedIndividual)
             self.append(f"<{ind.to_string_id()}>")
-        self.append(f" )")
+        self.append(f" ) )")
 
     @process.register
     def _(self, ce: OWLDataSomeValuesFrom):
@@ -626,3 +626,14 @@ class Owl2SparqlConverter:
         query = "\n".join(qs)
         parseQuery(query)
         return query
+
+
+converter = Owl2SparqlConverter()
+
+
+def owl_expression_to_sparql(root_variable: str,
+                             ce: OWLClassExpression,
+                             count: bool = False,
+                             values: Optional[Iterable[OWLNamedIndividual]] = None,
+                             named_individuals: bool = False):
+    return converter.as_query(root_variable, ce, count, values, named_individuals)
