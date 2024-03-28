@@ -147,10 +147,20 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
 
     def as_str(self) -> str:
         """
+        CD: Should be deprecated.
         Returns:
             The string that specifies the IRI.
         """
         return self._namespace + self._remainder
+
+    @property
+    def str(self) -> str:
+        """
+
+        Returns:
+            The string that specifies the IRI.
+        """
+        return self.as_str()
 
     def get_short_form(self) -> str:
         """Gets the short form.
