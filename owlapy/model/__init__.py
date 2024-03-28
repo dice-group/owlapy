@@ -245,6 +245,9 @@ class OWLClass(OWLClassExpression, OWLEntity):
         # documented in parent
         return self
 
+    @property
+    def str(self):
+        return self.get_iri().as_str()
 
 class OWLPropertyExpression(OWLObject, metaclass=ABCMeta):
     """Represents a property or possibly the inverse of a property."""
@@ -407,6 +410,10 @@ class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
     def is_owl_top_object_property(self) -> bool:
         # documented in parent
         return self.get_iri() == OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.get_iri()
+
+    @property
+    def str(self)->str:
+        return self.get_iri().as_str()
 
 
 class OWLObjectInverseOf(OWLObjectPropertyExpression):
