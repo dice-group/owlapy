@@ -1,12 +1,4 @@
-"""The OWL-APy Model classes and methods.
-
-Their names should match those of OWL API [1].
-
-If OWL API has streaming and getter API, it is enough to provide the streaming API only.
-
-Many help texts copied from OWL API.
-
-[1] https://github.com/owlcs/owlapi"""
+"""@TODO: CD: This is not a python code. We should refactor this model module."""
 
 from abc import ABCMeta, abstractmethod
 from functools import total_ordering
@@ -248,6 +240,11 @@ class OWLClass(OWLClassExpression, OWLEntity):
     @property
     def str(self):
         return self.get_iri().as_str()
+
+    @property
+    def reminder(self)->str:
+        """The reminder of the IRI """
+        return self.get_iri().get_remainder()
 
 class OWLPropertyExpression(OWLObject, metaclass=ABCMeta):
     """Represents a property or possibly the inverse of a property."""
