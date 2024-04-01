@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.vocab &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">OWLAPY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.vocab</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.vocab</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Enumerations.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">EnumMeta</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">lt</span><span class="p">,</span> <span class="n">le</span><span class="p">,</span> <span class="n">gt</span><span class="p">,</span> <span class="n">ge</span>
+<span class="kn">from</span> <span class="nn">re</span> <span class="kn">import</span> <span class="n">match</span>
+
+<span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">namespaces</span>
+<span class="kn">from</span> <span class="nn">owlapy.model._iri</span> <span class="kn">import</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">IRI</span>
+<span class="kn">from</span> <span class="nn">owlapy.namespaces</span> <span class="kn">import</span> <span class="n">Namespaces</span>
+
+
+<span class="k">class</span> <span class="nc">_Vocabulary</span><span class="p">(</span><span class="n">HasIRI</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_namespace&#39;</span><span class="p">,</span> <span class="s1">&#39;_remainder&#39;</span><span class="p">,</span> <span class="s1">&#39;_iri&#39;</span>
+
+    <span class="n">_namespace</span><span class="p">:</span> <span class="n">Namespaces</span>
+    <span class="n">_remainder</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Namespaces</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">=</span> <span class="n">namespace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span> <span class="o">=</span> <span class="n">remainder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span>
+
+    <span class="k">def</span> <span class="nf">as_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span><span class="si">}</span><span class="s2">&gt;&gt;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">_meta_Enum</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="n">EnumMeta</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="OWLRDFVocabulary">
+<a class="viewcode-back" href="../../autoapi/owlapy/vocab/index.html#owlapy.model.OWLRDFVocabulary">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLRDFVocabulary</span><span class="p">(</span><span class="n">_Vocabulary</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">_meta_Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumerations for OWL/RDF vocabulary.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Namespaces</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">namespace</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">remainder</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="n">OWL_THING</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;Thing&quot;</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">OWL_NOTHING</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;Nothing&quot;</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">OWL_CLASS</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;Class&quot;</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">OWL_NAMED_INDIVIDUAL</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;NamedIndividual&quot;</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">OWL_TOP_OBJECT_PROPERTY</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;topObjectProperty&quot;</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">OWL_BOTTOM_OBJECT_PROPERTY</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;bottomObjectProperty&quot;</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">OWL_TOP_DATA_PROPERTY</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;topDataProperty&quot;</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">OWL_BOTTOM_DATA_PROPERTY</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;bottomDataProperty&quot;</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">RDFS_LITERAL</span> <span class="o">=</span> <span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">RDFS</span><span class="p">,</span> <span class="s2">&quot;Literal&quot;</span><span class="p">)</span>  <span class="c1">#:</span></div>
+
+
+
+<div class="viewcode-block" id="XSDVocabulary">
+<a class="viewcode-back" href="../../autoapi/owlapy/vocab/index.html#owlapy.model.XSDVocabulary">[docs]</a>
+<span class="k">class</span> <span class="nc">XSDVocabulary</span><span class="p">(</span><span class="n">_Vocabulary</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">_meta_Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumerations for XSD vocabulary.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">namespaces</span><span class="o">.</span><span class="n">XSD</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">remainder</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">XSD</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>
+    <span class="n">DECIMAL</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;decimal&quot;</span>  <span class="c1">#:</span>
+    <span class="n">INTEGER</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;integer&quot;</span>  <span class="c1">#:</span>
+    <span class="n">LONG</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;long&quot;</span>  <span class="c1">#:</span>
+    <span class="n">DOUBLE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;double&quot;</span>  <span class="c1">#:</span>
+    <span class="n">FLOAT</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;float&quot;</span>  <span class="c1">#:</span>
+    <span class="n">BOOLEAN</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;boolean&quot;</span>  <span class="c1">#:</span>
+    <span class="n">STRING</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>  <span class="c1">#:</span>
+    <span class="n">DATE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>  <span class="c1">#:</span>
+    <span class="n">DATE_TIME</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;dateTime&quot;</span>  <span class="c1">#:</span>
+    <span class="n">DATE_TIME_STAMP</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;dateTimeStamp&quot;</span>  <span class="c1">#:</span>
+    <span class="n">DURATION</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="s2">&quot;duration&quot;</span>  <span class="c1">#:</span></div>
+
+
+
+<span class="n">_X</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_X&#39;</span><span class="p">)</span>
+
+
+<span class="c1"># TODO: Add langRange facet</span>
+<div class="viewcode-block" id="OWLFacet">
+<a class="viewcode-back" href="../../autoapi/owlapy/vocab/index.html#owlapy.model.OWLFacet">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLFacet</span><span class="p">(</span><span class="n">_Vocabulary</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">_meta_Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumerations for OWL facets.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">namespaces</span><span class="o">.</span><span class="n">XSD</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">remainder</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">symbolic_form</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_X</span><span class="p">,</span> <span class="n">_X</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">XSD</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_symbolic_form</span> <span class="o">=</span> <span class="n">symbolic_form</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_operator</span> <span class="o">=</span> <span class="n">operator</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">symbolic_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_symbolic_form</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">operator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operator</span>
+
+<div class="viewcode-block" id="OWLFacet.from_str">
+<a class="viewcode-back" href="../../autoapi/owlapy/vocab/index.html#owlapy.model.OWLFacet.from_str">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_str</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLFacet&#39;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">facet</span> <span class="k">for</span> <span class="n">facet</span> <span class="ow">in</span> <span class="n">OWLFacet</span> <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">facet</span><span class="o">.</span><span class="n">symbolic_form</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No facet with symbolic form </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> exists.&quot;</span><span class="p">)</span></div>
+
+
+    <span class="n">MIN_INCLUSIVE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;minInclusive&quot;</span><span class="p">,</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span> <span class="n">ge</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">MIN_EXCLUSIVE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;minExclusive&quot;</span><span class="p">,</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="n">gt</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">MAX_INCLUSIVE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;maxInclusive&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">,</span> <span class="n">le</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">MAX_EXCLUSIVE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;maxExclusive&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="n">lt</span><span class="p">)</span>  <span class="c1">#:</span>
+    <span class="n">LENGTH</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;length&quot;</span><span class="p">,</span> <span class="s2">&quot;length&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">parse_integer</span><span class="p">())</span>  <span class="c1">#:</span>
+    <span class="n">MIN_LENGTH</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;minLength&quot;</span><span class="p">,</span> <span class="s2">&quot;minLength&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">b</span><span class="o">.</span><span class="n">parse_integer</span><span class="p">())</span>  <span class="c1">#:</span>
+    <span class="n">MAX_LENGTH</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;maxLength&quot;</span><span class="p">,</span> <span class="s2">&quot;maxLength&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="o">.</span><span class="n">parse_integer</span><span class="p">())</span>  <span class="c1">#:</span>
+    <span class="n">PATTERN</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;pattern&quot;</span><span class="p">,</span> <span class="s2">&quot;pattern&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">match</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">parse_string</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;$&quot;</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">get_literal</span><span class="p">())))</span>
+    <span class="n">TOTAL_DIGITS</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;totalDigits&quot;</span><span class="p">,</span> <span class="s2">&quot;totalDigits&quot;</span><span class="p">,</span>
+                           <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">get_literal</span><span class="p">()</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isdigit</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="o">.</span><span class="n">parse_integer</span><span class="p">())</span>
+    <span class="n">FRACTION_DIGITS</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;fractionDigits&quot;</span><span class="p">,</span> <span class="s2">&quot;fractionDigits&quot;</span><span class="p">,</span>
+                              <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">get_literal</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="o">.</span><span class="n">parse_integer</span><span class="p">())</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+:orphan:
+
+:py:mod:`owlapy.model._base`
+============================
+
+.. py:module:: owlapy.model._base
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.model._base.OWLObject
+   owlapy.model._base.OWLAnnotationObject
+   owlapy.model._base.OWLAnnotationSubject
+   owlapy.model._base.OWLAnnotationValue
+
+
+
+
+.. py:class:: OWLObject
+
+
+   Base interface for OWL objects
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: __eq__(other)
+      :abstractmethod:
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+      :abstractmethod:
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+      :abstractmethod:
+
+      Return repr(self).
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+
+.. py:class:: OWLAnnotationObject
+
+
+   Bases: :py:obj:`OWLObject`
+
+   A marker interface for the values (objects) of annotations.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: as_iri() -> Optional[owlapy.model._iri.IRI]
+
+      :returns: if the value is an IRI, return it. Return Mone otherwise.
+
+
+   .. py:method:: as_anonymous_individual()
+
+      :returns: if the value is an anonymous, return it. Return None otherwise.
+
+
+
+.. py:class:: OWLAnnotationSubject
+
+
+   Bases: :py:obj:`OWLAnnotationObject`
+
+   A marker interface for annotation subjects, which can either be IRIs or anonymous individuals
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLAnnotationValue
+
+
+   Bases: :py:obj:`OWLAnnotationObject`
+
+   A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: is_literal() -> bool
+
+      :returns: true if the annotation value is a literal
+
+
+   .. py:method:: as_literal() -> Optional[owlapy.model.OWLLiteral]
+
+      :returns: if the value is a literal, returns it. Return None otherwise
+
+
+

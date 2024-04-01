@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.render &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">OWLAPY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.render</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.render</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Renderers for different syntax.&quot;&quot;&quot;</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">singledispatchmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">namespaces</span>
+<span class="kn">from</span> <span class="nn">owlapy.io</span> <span class="kn">import</span> <span class="n">OWLObjectRenderer</span>
+<span class="kn">from</span> <span class="nn">owlapy.model</span> <span class="kn">import</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">,</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> \
+    <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> \
+    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLRestriction</span><span class="p">,</span> \
+    <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> \
+    <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">IRI</span><span class="p">,</span> <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> \
+    <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> \
+    <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> \
+    <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span>
+<span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span>
+
+
+<span class="n">_DL_SYNTAX</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">SimpleNamespace</span><span class="p">(</span>
+    <span class="n">SUBCLASS</span><span class="o">=</span><span class="s2">&quot;⊑&quot;</span><span class="p">,</span>
+    <span class="n">EQUIVALENT_TO</span><span class="o">=</span><span class="s2">&quot;≡&quot;</span><span class="p">,</span>
+    <span class="n">NOT</span><span class="o">=</span><span class="s2">&quot;¬&quot;</span><span class="p">,</span>
+    <span class="n">DISJOINT_WITH</span><span class="o">=</span><span class="s2">&quot;⊑&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="s2">&quot;¬&quot;</span><span class="p">,</span>
+    <span class="n">EXISTS</span><span class="o">=</span><span class="s2">&quot;∃&quot;</span><span class="p">,</span>
+    <span class="n">FORALL</span><span class="o">=</span><span class="s2">&quot;∀&quot;</span><span class="p">,</span>
+    <span class="n">IN</span><span class="o">=</span><span class="s2">&quot;∈&quot;</span><span class="p">,</span>
+    <span class="n">MIN</span><span class="o">=</span><span class="s2">&quot;≥&quot;</span><span class="p">,</span>
+    <span class="n">EQUAL</span><span class="o">=</span><span class="s2">&quot;=&quot;</span><span class="p">,</span>
+    <span class="n">NOT_EQUAL</span><span class="o">=</span><span class="s2">&quot;≠&quot;</span><span class="p">,</span>
+    <span class="n">MAX</span><span class="o">=</span><span class="s2">&quot;≤&quot;</span><span class="p">,</span>
+    <span class="n">INVERSE</span><span class="o">=</span><span class="s2">&quot;⁻&quot;</span><span class="p">,</span>
+    <span class="n">AND</span><span class="o">=</span><span class="s2">&quot;⊓&quot;</span><span class="p">,</span>
+    <span class="n">TOP</span><span class="o">=</span><span class="s2">&quot;⊤&quot;</span><span class="p">,</span>
+    <span class="n">BOTTOM</span><span class="o">=</span><span class="s2">&quot;⊥&quot;</span><span class="p">,</span>
+    <span class="n">OR</span><span class="o">=</span><span class="s2">&quot;⊔&quot;</span><span class="p">,</span>
+    <span class="n">COMP</span><span class="o">=</span><span class="s2">&quot;∘&quot;</span><span class="p">,</span>
+    <span class="n">WEDGE</span><span class="o">=</span><span class="s2">&quot;⋀&quot;</span><span class="p">,</span>
+    <span class="n">IMPLIES</span><span class="o">=</span><span class="s2">&quot;←&quot;</span><span class="p">,</span>
+    <span class="n">COMMA</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+    <span class="n">SELF</span><span class="o">=</span><span class="s2">&quot;Self&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_simple_short_form_provider</span><span class="p">(</span><span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span>
+    <span class="n">sf</span> <span class="o">=</span> <span class="n">iri</span><span class="o">.</span><span class="n">get_short_form</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ns</span> <span class="ow">in</span> <span class="p">[</span><span class="n">namespaces</span><span class="o">.</span><span class="n">XSD</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">RDFS</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">RDF</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">iri</span><span class="o">.</span><span class="n">get_namespace</span><span class="p">()</span> <span class="o">==</span> <span class="n">ns</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">sf</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sf</span>
+
+
+<div class="viewcode-block" id="DLSyntaxObjectRenderer">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.render.DLSyntaxObjectRenderer">[docs]</a>
+<span class="k">class</span> <span class="nc">DLSyntaxObjectRenderer</span><span class="p">(</span><span class="n">OWLObjectRenderer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DL Syntax renderer for OWL Objects.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_sfp&#39;</span>
+
+    <span class="n">_sfp</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">OWLEntity</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">short_form_provider</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">OWLEntity</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_simple_short_form_provider</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new DL Syntax renderer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            short_form_provider: Custom short form provider.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span> <span class="o">=</span> <span class="n">short_form_provider</span>
+
+<div class="viewcode-block" id="DLSyntaxObjectRenderer.set_short_form_provider">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.render.DLSyntaxObjectRenderer.set_short_form_provider">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_short_form_provider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">short_form_provider</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">OWLEntity</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span> <span class="o">=</span> <span class="n">short_form_provider</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxObjectRenderer.render">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.render.DLSyntaxObjectRenderer.render">[docs]</a>
+    <span class="nd">@singledispatchmethod</span>
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">OWLObject</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Tried to render non-OWLObject </span><span class="si">{</span><span class="n">o</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">is_owl_nothing</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">BOTTOM</span>
+        <span class="k">elif</span> <span class="n">o</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">TOP</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">FORALL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">OR</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_operands</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">AND</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_operands</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">NOT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">()),</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">INVERSE</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectMinCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectExactCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectHasSelf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">SELF</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectHasValue</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.{</span><span class="si">%s</span><span class="s2">}&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;{</span><span class="si">%s</span><span class="s2">}&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">OR</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">_</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">individuals</span><span class="p">())</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">FORALL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLFacetRestriction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">symbolic_form</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span><span class="o">.</span><span class="n">symbolic_form</span>
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">:</span>
+            <span class="n">symbolic_form</span> <span class="o">=</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MIN</span>
+        <span class="k">elif</span> <span class="n">r</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">:</span>
+            <span class="n">symbolic_form</span> <span class="o">=</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MAX</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">symbolic_form</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_literal</span><span class="p">())</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDatatypeRestriction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()),</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">COMMA</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataHasValue</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.{</span><span class="si">%s</span><span class="s2">}&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataMinCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataExactCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataMaxCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataOneOf</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;{</span><span class="si">%s</span><span class="s2">}&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">OR</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">_</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="c1"># TODO</span>
+    <span class="c1"># @render.register</span>
+    <span class="c1"># def _(self, r: OWLObjectPropertyChain):</span>
+    <span class="c1">#     return (&quot; %s &quot; % _DL_SYNTAX.COMP).join(self.render(_) for _ in r.property_chain())</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLDataComplementOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">NOT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_data_range</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLDataUnionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">OR</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_operands</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLDataIntersectionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">AND</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_operands</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">get_literal</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_render_operands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_render_nested</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLRestriction</span><span class="p">)</span> \
+                                                    <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
+
+
+
+<span class="n">_MAN_SYNTAX</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">SimpleNamespace</span><span class="p">(</span>
+    <span class="n">SUBCLASS</span><span class="o">=</span><span class="s2">&quot;SubClassOf&quot;</span><span class="p">,</span>
+    <span class="n">EQUIVALENT_TO</span><span class="o">=</span><span class="s2">&quot;EquivalentTo&quot;</span><span class="p">,</span>
+    <span class="n">NOT</span><span class="o">=</span><span class="s2">&quot;not&quot;</span><span class="p">,</span>
+    <span class="n">DISJOINT_WITH</span><span class="o">=</span><span class="s2">&quot;DisjointWith&quot;</span><span class="p">,</span>
+    <span class="n">EXISTS</span><span class="o">=</span><span class="s2">&quot;some&quot;</span><span class="p">,</span>
+    <span class="n">FORALL</span><span class="o">=</span><span class="s2">&quot;only&quot;</span><span class="p">,</span>
+    <span class="n">MIN</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+    <span class="n">EQUAL</span><span class="o">=</span><span class="s2">&quot;exactly&quot;</span><span class="p">,</span>
+    <span class="n">MAX</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
+    <span class="n">AND</span><span class="o">=</span><span class="s2">&quot;and&quot;</span><span class="p">,</span>
+    <span class="n">TOP</span><span class="o">=</span><span class="s2">&quot;Thing&quot;</span><span class="p">,</span>
+    <span class="n">BOTTOM</span><span class="o">=</span><span class="s2">&quot;Nothing&quot;</span><span class="p">,</span>
+    <span class="n">OR</span><span class="o">=</span><span class="s2">&quot;or&quot;</span><span class="p">,</span>
+    <span class="n">INVERSE</span><span class="o">=</span><span class="s2">&quot;inverse&quot;</span><span class="p">,</span>
+    <span class="n">COMMA</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+    <span class="n">SELF</span><span class="o">=</span><span class="s2">&quot;Self&quot;</span><span class="p">,</span>
+    <span class="n">VALUE</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxOWLObjectRenderer">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.render.ManchesterOWLSyntaxOWLObjectRenderer">[docs]</a>
+<span class="k">class</span> <span class="nc">ManchesterOWLSyntaxOWLObjectRenderer</span><span class="p">(</span><span class="n">OWLObjectRenderer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manchester Syntax renderer for OWL Objects&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_sfp&#39;</span><span class="p">,</span> <span class="s1">&#39;_no_render_thing&#39;</span>
+
+    <span class="n">_sfp</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">OWLEntity</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">short_form_provider</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">OWLEntity</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_simple_short_form_provider</span><span class="p">,</span>
+                 <span class="n">no_render_thing</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Manchester Syntax renderer</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            short_form_provider: custom short form provider</span>
+<span class="sd">            no_render_thing: disable manchester rendering for Thing and Nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span> <span class="o">=</span> <span class="n">short_form_provider</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_no_render_thing</span> <span class="o">=</span> <span class="n">no_render_thing</span>
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxOWLObjectRenderer.set_short_form_provider">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.render.ManchesterOWLSyntaxOWLObjectRenderer.set_short_form_provider">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_short_form_provider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">short_form_provider</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">OWLEntity</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span> <span class="o">=</span> <span class="n">short_form_provider</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxOWLObjectRenderer.render">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.render.ManchesterOWLSyntaxOWLObjectRenderer.render">[docs]</a>
+    <span class="nd">@singledispatchmethod</span>
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">OWLObject</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Tried to render non-OWLObject </span><span class="si">{</span><span class="n">o</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_no_render_thing</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">is_owl_nothing</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">BOTTOM</span>
+            <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">TOP</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">FORALL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">OR</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_operands</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">AND</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_operands</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">NOT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">INVERSE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectMinCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectExactCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectHasSelf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">SELF</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectHasValue</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">VALUE</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;{</span><span class="si">%s</span><span class="s2">}&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">COMMA</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">_</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">individuals</span><span class="p">())</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">FORALL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLFacetRestriction</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span><span class="o">.</span><span class="n">symbolic_form</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_literal</span><span class="p">())</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDatatypeRestriction</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()),</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">COMMA</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataHasValue</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">VALUE</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataMinCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataExactCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataMaxCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataOneOf</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;{</span><span class="si">%s</span><span class="s2">}&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">COMMA</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">_</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="c1"># TODO</span>
+    <span class="c1"># @render.register</span>
+    <span class="c1"># def _(self, r: OWLObjectPropertyChain):</span>
+    <span class="c1">#     return (&quot; %s &quot; % _MAN_SYNTAX.COMP).join(self.render(_) for _ in r.property_chain())</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLDataComplementOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">NOT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_data_range</span><span class="p">()))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLDataUnionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">OR</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_operands</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLDataIntersectionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">AND</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_operands</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">get_literal</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_render_operands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_nested</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_render_nested</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLRestriction</span><span class="p">)</span> \
+                                                    <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
+
+
+
+<span class="n">DLrenderer</span> <span class="o">=</span> <span class="n">DLSyntaxObjectRenderer</span><span class="p">()</span>
+<span class="n">ManchesterRenderer</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxOWLObjectRenderer</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="owl_expression_to_dl">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.render.owl_expression_to_dl">[docs]</a>
+<span class="k">def</span> <span class="nf">owl_expression_to_dl</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="n">OWLObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">DLrenderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">o</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="owl_expression_to_manchester">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.render.owl_expression_to_manchester">[docs]</a>
+<span class="k">def</span> <span class="nf">owl_expression_to_manchester</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="n">OWLObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">ManchesterRenderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">o</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

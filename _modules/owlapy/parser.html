@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.parser &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">OWLAPY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.parser</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.parser</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;String to OWL parsers.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MappingProxyType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">parsimonious.grammar</span> <span class="kn">import</span> <span class="n">Grammar</span>
+<span class="kn">from</span> <span class="nn">parsimonious.nodes</span> <span class="kn">import</span> <span class="n">NodeVisitor</span>
+<span class="kn">from</span> <span class="nn">parsimonious.nodes</span> <span class="kn">import</span> <span class="n">Node</span>
+<span class="kn">from</span> <span class="nn">owlapy.io</span> <span class="kn">import</span> <span class="n">OWLObjectParser</span>
+<span class="kn">from</span> <span class="nn">owlapy.model</span> <span class="kn">import</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> \
+    <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">IRI</span><span class="p">,</span> \
+    <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> \
+    <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLQuantifiedDataRestriction</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span> <span class="n">StringOWLDatatype</span><span class="p">,</span>  \
+    <span class="n">DateOWLDatatype</span><span class="p">,</span> <span class="n">DateTimeOWLDatatype</span><span class="p">,</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span> <span class="n">DurationOWLDatatype</span><span class="p">,</span> <span class="n">IntegerOWLDatatype</span><span class="p">,</span> \
+    <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">,</span> \
+    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> \
+    <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> \
+    <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">BooleanOWLDatatype</span>
+<span class="kn">from</span> <span class="nn">owlapy.namespaces</span> <span class="kn">import</span> <span class="n">Namespaces</span>
+
+<span class="kn">from</span> <span class="nn">owlapy.render</span> <span class="kn">import</span> <span class="n">_DL_SYNTAX</span><span class="p">,</span> <span class="n">_MAN_SYNTAX</span>
+<span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLRDFVocabulary</span>
+
+
+<span class="n">MANCHESTER_GRAMMAR</span> <span class="o">=</span> <span class="n">Grammar</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    union = intersection (must_ws &quot;or&quot; must_ws intersection)*</span>
+<span class="s2">    intersection = primary (must_ws &quot;and&quot; must_ws primary)*</span>
+
+<span class="s2">    # Main entry point + object properties</span>
+<span class="s2">    primary = (&quot;not&quot; must_ws)? (data_some_only_res / some_only_res / data_cardinality_res / cardinality_res</span>
+<span class="s2">                           / data_value_res / value_res / has_self / class_expression)</span>
+<span class="s2">    some_only_res = object_property must_ws (&quot;some&quot;/&quot;only&quot;) must_ws primary</span>
+<span class="s2">    cardinality_res = object_property must_ws (&quot;max&quot;/&quot;min&quot;/&quot;exactly&quot;) must_ws non_negative_integer must_ws primary</span>
+<span class="s2">    value_res = object_property must_ws &quot;value&quot; must_ws individual_iri</span>
+<span class="s2">    has_self = object_property must_ws &quot;Self&quot;</span>
+<span class="s2">    object_property = (&quot;inverse&quot; must_ws)? object_property_iri</span>
+<span class="s2">    class_expression = class_iri / individual_list / parentheses</span>
+<span class="s2">    individual_list = &quot;{&quot; maybe_ws individual_iri (maybe_ws &quot;,&quot; maybe_ws individual_iri)* maybe_ws &quot;}&quot;</span>
+
+<span class="s2">    # Back to start symbol (first production rule)</span>
+<span class="s2">    parentheses = &quot;(&quot; maybe_ws union maybe_ws &quot;)&quot;</span>
+
+<span class="s2">    # Data properties</span>
+<span class="s2">    data_some_only_res = data_property_iri must_ws (&quot;some&quot;/&quot;only&quot;) must_ws data_primary</span>
+<span class="s2">    data_cardinality_res = data_property_iri must_ws (&quot;max&quot;/&quot;min&quot;/&quot;exactly&quot;)</span>
+<span class="s2">                           must_ws non_negative_integer must_ws data_primary</span>
+<span class="s2">    data_value_res = data_property_iri must_ws &quot;value&quot; must_ws literal</span>
+<span class="s2">    data_primary = (&quot;not&quot; must_ws)? data_range</span>
+<span class="s2">    data_range = datatype_restriction / datatype_iri / literal_list / data_parentheses</span>
+<span class="s2">    literal_list = &quot;{&quot; maybe_ws literal (maybe_ws &quot;,&quot; maybe_ws literal)* maybe_ws &quot;}&quot;</span>
+<span class="s2">    data_parentheses = &quot;(&quot; maybe_ws data_union maybe_ws &quot;)&quot;</span>
+<span class="s2">    data_union = data_intersection (must_ws &quot;or&quot; must_ws data_intersection)*</span>
+<span class="s2">    data_intersection = data_primary (must_ws &quot;and&quot; must_ws data_primary)*</span>
+<span class="s2">    datatype_restriction = datatype_iri &quot;[&quot; maybe_ws facet_restrictions maybe_ws &quot;]&quot;</span>
+<span class="s2">    facet_restrictions = facet_restriction (maybe_ws &quot;,&quot; maybe_ws facet_restriction)*</span>
+<span class="s2">    facet_restriction = facet must_ws literal</span>
+<span class="s2">    facet = &quot;length&quot; / &quot;minLength&quot; / &quot;maxLength&quot; / &quot;pattern&quot; / &quot;langRange&quot;</span>
+<span class="s2">            / &quot;totalDigits&quot; / &quot;fractionDigits&quot; / &quot;&lt;=&quot; / &quot;&gt;=&quot; / &quot;&lt;&quot; / &quot;&gt;&quot;</span>
+<span class="s2">    datatype_iri = (&quot;&lt;http://www.w3.org/2001/XMLSchema#&quot; datatype &quot;&gt;&quot;) / (&quot;xsd:&quot;? datatype)</span>
+<span class="s2">    datatype = &quot;double&quot; / &quot;integer&quot; / &quot;boolean&quot; / &quot;string&quot; / &quot;dateTime&quot; / &quot;date&quot; / &quot;duration&quot;</span>
+
+<span class="s2">    # Literals</span>
+<span class="s2">    literal = typed_literal / string_literal_language / string_literal_no_language / datetime_literal /</span>
+<span class="s2">              duration_literal / date_literal / float_literal / decimal_literal / integer_literal /</span>
+<span class="s2">              boolean_literal</span>
+<span class="s2">    typed_literal = quoted_string &quot;^^&quot; datatype_iri</span>
+<span class="s2">    string_literal_language = quoted_string language_tag</span>
+<span class="s2">    string_literal_no_language = quoted_string / no_match</span>
+<span class="s2">    quoted_string = ~&quot;\&quot;([^\&quot;\\\\]|\\\\[\&quot;\\\\])*\&quot;&quot;</span>
+<span class="s2">    language_tag = &quot;@&quot; ~&quot;[a-zA-Z]+&quot; (&quot;-&quot; ~&quot;[a-zA-Z0-9]+&quot;)*</span>
+<span class="s2">    float_literal = sign (float_with_integer_part / float_no_integer_part) (&quot;f&quot;/&quot;F&quot;)</span>
+<span class="s2">    float_with_integer_part = non_negative_integer (&quot;.&quot; ~&quot;[0-9]+&quot;)? exponent?</span>
+<span class="s2">    float_no_integer_part = &quot;.&quot; ~&quot;[0-9]+&quot; exponent?</span>
+<span class="s2">    exponent = (&quot;e&quot;/&quot;E&quot;) sign ~&quot;[0-9]+&quot;</span>
+<span class="s2">    decimal_literal = sign non_negative_integer &quot;.&quot; ~&quot;[0-9]+&quot;</span>
+<span class="s2">    integer_literal = sign non_negative_integer</span>
+<span class="s2">    boolean_literal = ~&quot;[tT]rue&quot; / ~&quot;[fF]alse&quot;</span>
+<span class="s2">    date_literal = ~&quot;[0-9]</span><span class="si">{4}</span><span class="s2">-((0[1-9])|(1[0-2]))-(([0-2][0-9])|(3[01]))&quot;</span>
+<span class="s2">    datetime_literal = ~&quot;[0-9]</span><span class="si">{4}</span><span class="s2">-((0[1-9])|(1[0-2]))-(([0-2][0-9])|(3[01]))[T\u0020]&quot;</span>
+<span class="s2">                       ~&quot;(([0-1][0-9])|(2[0-3])):[0-5][0-9]:[0-5][0-9](\\.[0-9]</span><span class="si">{6}</span><span class="s2">)?&quot;</span>
+<span class="s2">                       ~&quot;(Z|([+-](([0-1][0-9])|(2[0-3])):[0-5][0-9](:[0-5][0-9](\\.[0-9]</span><span class="si">{6}</span><span class="s2">)?)?))?&quot;</span>
+<span class="s2">    duration_literal = ~&quot;P([0-9]+W)?([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]</span><span class="si">{6}</span><span class="s2">)?S)?)?&quot;</span>
+<span class="s2">    sign = (&quot;+&quot;/&quot;-&quot;)?</span>
+<span class="s2">    non_negative_integer = ~&quot;0|([1-9][0-9]*)&quot;</span>
+
+<span class="s2">    # IRIs / Characters</span>
+<span class="s2">    class_iri = iri / no_match</span>
+<span class="s2">    individual_iri = iri / no_match</span>
+<span class="s2">    object_property_iri = iri / no_match</span>
+<span class="s2">    data_property_iri = iri / no_match</span>
+<span class="s2">    iri = full_iri / abbreviated_iri / simple_iri</span>
+<span class="s2">    full_iri = iri_ref / no_match</span>
+<span class="s2">    abbreviated_iri = pname_ln / no_match</span>
+<span class="s2">    simple_iri = pn_local / no_match</span>
+
+<span class="s2">    iri_ref = &quot;&lt;&quot; ~&quot;[^&lt;&gt;\&quot;</span><span class="si">{}</span><span class="s2">|^`\\\\\u0000-\u0020]*&quot; &quot;&gt;&quot;</span>
+<span class="s2">    pname_ln = pname_ns pn_local</span>
+<span class="s2">    pname_ns = pn_prefix? &quot;:&quot;</span>
+<span class="s2">    pn_prefix = pn_chars_base (&quot;.&quot;* pn_chars)*</span>
+<span class="s2">    pn_local = (pn_chars_u / ~&quot;[0-9]&quot;) (&quot;.&quot;* pn_chars)*</span>
+<span class="s2">    pn_chars = pn_chars_u / &quot;-&quot; / ~&quot;[0-9]&quot; / ~&quot;\u00B7&quot; / ~&quot;[\u0300-\u036F]&quot; / ~&quot;[\u203F-\u2040]&quot;</span>
+<span class="s2">    pn_chars_u = pn_chars_base / &quot;_&quot;</span>
+<span class="s2">    pn_chars_base = ~&quot;[a-zA-Z]&quot; / ~&quot;[\u00C0-\u00D6]&quot; / ~&quot;[\u00D8-\u00F6]&quot; / ~&quot;[\u00F8-\u02FF]&quot; /</span>
+<span class="s2">                    ~&quot;[\u0370-\u037D]&quot; / ~&quot;[\u037F-\u1FFF]&quot; / ~&quot;[\u200C-\u200D]&quot; / ~&quot;[\u2070-\u218F]&quot; /</span>
+<span class="s2">                    ~&quot;[\u2C00-\u2FEF]&quot; / ~&quot;[\u3001-\uD7FF]&quot; / ~&quot;[\uF900-\uFDCF]&quot; / ~&quot;[\uFDF0-\uFFFD]&quot; /</span>
+<span class="s2">                    ~&quot;[\U00010000-\U000EFFFF]&quot;</span>
+
+<span class="s2">    must_ws = ~&quot;[\u0020\u000D\u0009\u000A]+&quot;</span>
+<span class="s2">    maybe_ws = ~&quot;[\u0020\u000D\u0009\u000A]*&quot;</span>
+
+<span class="s2">    # hacky workaround: can be added to a pass through production rule that is semantically important</span>
+<span class="s2">    # so nodes are not combined which makes the parsing cleaner</span>
+<span class="s2">    no_match = ~&quot;(?!a)a&quot;</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_transform_children</span><span class="p">(</span><span class="n">nary_visit_function</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">visited_children</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">visited_children</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">first_operand</span><span class="p">,</span> <span class="n">operands</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">visited_children</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">first_operand</span><span class="p">,</span> <span class="n">operands</span> <span class="o">=</span> <span class="n">visited_children</span>
+        <span class="n">children</span> <span class="o">=</span> <span class="n">first_operand</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operands</span><span class="p">,</span> <span class="n">Node</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">first_operand</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">operands</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">nary_visit_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">transform</span>
+
+
+<span class="k">def</span> <span class="nf">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+
+<span class="n">_STRING_TO_DATATYPE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">({</span>
+    <span class="s2">&quot;integer&quot;</span><span class="p">:</span> <span class="n">IntegerOWLDatatype</span><span class="p">,</span>
+    <span class="s2">&quot;double&quot;</span><span class="p">:</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span>
+    <span class="s2">&quot;boolean&quot;</span><span class="p">:</span> <span class="n">BooleanOWLDatatype</span><span class="p">,</span>
+    <span class="s2">&quot;string&quot;</span><span class="p">:</span> <span class="n">StringOWLDatatype</span><span class="p">,</span>
+    <span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="n">DateOWLDatatype</span><span class="p">,</span>
+    <span class="s2">&quot;dateTime&quot;</span><span class="p">:</span> <span class="n">DateTimeOWLDatatype</span><span class="p">,</span>
+    <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="n">DurationOWLDatatype</span><span class="p">,</span>
+<span class="p">})</span>
+
+
+<span class="n">_DATATYPE_TO_FACETS</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">({</span>
+    <span class="n">IntegerOWLDatatype</span><span class="p">:</span> <span class="p">{</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span><span class="p">,</span>
+                         <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">TOTAL_DIGITS</span><span class="p">},</span>
+    <span class="n">DoubleOWLDatatype</span><span class="p">:</span> <span class="p">{</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">},</span>
+    <span class="n">DateOWLDatatype</span><span class="p">:</span> <span class="p">{</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">},</span>
+    <span class="n">DateTimeOWLDatatype</span><span class="p">:</span> <span class="p">{</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span><span class="p">,</span>
+                          <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">},</span>
+    <span class="n">DurationOWLDatatype</span><span class="p">:</span> <span class="p">{</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span><span class="p">,</span>
+                          <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">},</span>
+    <span class="n">StringOWLDatatype</span><span class="p">:</span> <span class="p">{</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">LENGTH</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_LENGTH</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_LENGTH</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">PATTERN</span><span class="p">},</span>
+    <span class="n">BooleanOWLDatatype</span><span class="p">:</span> <span class="p">{}</span>
+<span class="p">})</span>
+
+
+<span class="n">_FACET_TO_LITERAL_DATATYPE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">({</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">,</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span> <span class="n">DateOWLDatatype</span><span class="p">,</span>
+                             <span class="n">DateTimeOWLDatatype</span><span class="p">,</span> <span class="n">DurationOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">,</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span> <span class="n">DateOWLDatatype</span><span class="p">,</span>
+                             <span class="n">DateTimeOWLDatatype</span><span class="p">,</span> <span class="n">DurationOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">,</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span> <span class="n">DateOWLDatatype</span><span class="p">,</span>
+                             <span class="n">DateTimeOWLDatatype</span><span class="p">,</span> <span class="n">DurationOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">,</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span> <span class="n">DateOWLDatatype</span><span class="p">,</span>
+                             <span class="n">DateTimeOWLDatatype</span><span class="p">,</span> <span class="n">DurationOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">PATTERN</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">,</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span> <span class="n">DateOWLDatatype</span><span class="p">,</span> <span class="n">DateTimeOWLDatatype</span><span class="p">,</span>
+                       <span class="n">DurationOWLDatatype</span><span class="p">,</span> <span class="n">StringOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">LENGTH</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_LENGTH</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_LENGTH</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">TOTAL_DIGITS</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">},</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">FRACTION_DIGITS</span><span class="p">:</span> <span class="p">{</span><span class="n">IntegerOWLDatatype</span><span class="p">}</span>
+<span class="p">})</span>
+
+
+<span class="c1"># workaround to support multiple inheritance with different metaclasses</span>
+<span class="k">class</span> <span class="nc">_ManchesterOWLSyntaxParserMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">NodeVisitor</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">OWLObjectParser</span><span class="p">)):</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser">[docs]</a>
+<span class="k">class</span> <span class="nc">ManchesterOWLSyntaxParser</span><span class="p">(</span><span class="n">NodeVisitor</span><span class="p">,</span> <span class="n">OWLObjectParser</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">_ManchesterOWLSyntaxParserMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manchester Syntax parser to parse strings to OWLClassExpressions.</span>
+<span class="sd">       Following: https://www.w3.org/TR/owl2-manchester-syntax.&quot;&quot;&quot;</span>
+
+    <span class="n">slots</span> <span class="o">=</span> <span class="s1">&#39;ns&#39;</span><span class="p">,</span> <span class="s1">&#39;grammar&#39;</span>
+
+    <span class="n">ns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grammar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Manchester Syntax parser. Names (entities) can be given as full IRIs enclosed in &lt; and &gt;</span>
+<span class="sd">           or as simple strings, in that case the namespace attribute of the parser has to be set to resolve them.</span>
+<span class="sd">           See https://www.w3.org/TR/owl2-manchester-syntax/#IRIs.2C_Integers.2C_Literals.2C_and_Entities</span>
+<span class="sd">           for more information.</span>
+<span class="sd">           Prefixes are currently not supported, except for datatypes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            namespace: Namespace to resolve names that were given without one.</span>
+<span class="sd">            grammar: Grammar (defaults to MANCHESTERGRAMMAR).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="o">=</span> <span class="n">namespace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span> <span class="o">=</span> <span class="n">grammar</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span> <span class="o">=</span> <span class="n">MANCHESTER_GRAMMAR</span>
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.parse_expression">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.parse_expression">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">expression_str</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_union">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_union">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_intersection">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_intersection">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_primary">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_primary">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_primary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="n">match_not</span><span class="p">,</span> <span class="n">expr</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">match_not</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_some_only_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_some_only_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_some_only_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">:</span>
+        <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">type_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filler</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="o">*</span><span class="n">type_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_cardinality_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_cardinality_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_cardinality_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">:</span>
+        <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">type_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filler</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="o">*</span><span class="n">type_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectExactCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_value_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_value_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_value_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectHasValue</span><span class="p">:</span>
+        <span class="n">property_</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">individual</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLObjectHasValue</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">individual</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_has_self">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_has_self">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_has_self</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectHasSelf</span><span class="p">:</span>
+        <span class="n">property_</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLObjectHasSelf</span><span class="p">(</span><span class="n">property_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_object_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_object_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">:</span>
+        <span class="n">inverse</span><span class="p">,</span> <span class="n">property_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">property_</span><span class="o">.</span><span class="n">get_inverse_property</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inverse</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">property_</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_class_expression">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_class_expression">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_class_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_individual_list">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_individual_list">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_individual_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectOneOf</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_data_primary">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_data_primary">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_primary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="n">match_not</span><span class="p">,</span> <span class="n">expr</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLDataComplementOf</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">match_not</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_data_some_only_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_data_some_only_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_some_only_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLQuantifiedDataRestriction</span><span class="p">:</span>
+        <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">type_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filler</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="o">*</span><span class="n">type_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_data_cardinality_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_data_cardinality_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_cardinality_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">:</span>
+        <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">type_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filler</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="o">*</span><span class="n">type_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_MAN_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataMaxCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataExactCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_data_value_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_data_value_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_value_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataHasValue</span><span class="p">:</span>
+        <span class="n">property_</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">literal</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLDataHasValue</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">literal</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_data_union">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_data_union">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_data_union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLDataUnionOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_data_intersection">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_data_intersection">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_data_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_literal_list">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_literal_list">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_literal_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataOneOf</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLDataOneOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_data_parentheses">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_data_parentheses">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_parentheses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">expr</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_datatype_restriction">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_datatype_restriction">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_datatype_restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
+        <span class="n">datatype</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">):</span>
+            <span class="n">facet_restrictions</span> <span class="o">=</span> <span class="n">facet_restrictions</span><span class="p">,</span>
+        <span class="n">not_valid_literals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="o">!=</span> <span class="n">StringOWLDatatype</span><span class="p">:</span>
+            <span class="n">not_valid_literals</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">facet_restrictions</span>
+                                  <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">!=</span> <span class="n">datatype</span><span class="p">]</span>
+        <span class="n">not_valid_facets</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">facet_restrictions</span>
+                            <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_DATATYPE_TO_FACETS</span><span class="p">[</span><span class="n">datatype</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="n">not_valid_literals</span> <span class="ow">or</span> <span class="n">not_valid_facets</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Literals: </span><span class="si">{</span><span class="n">not_valid_literals</span><span class="si">}</span><span class="s2"> and Facets: </span><span class="si">{</span><span class="n">not_valid_facets</span><span class="si">}</span><span class="s2">&quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot; not valid for datatype: </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_facet_restrictions">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_facet_restrictions">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_facet_restrictions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLFacetRestriction</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">children</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_facet_restriction">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_facet_restriction">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_facet_restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLFacetRestriction</span><span class="p">:</span>
+        <span class="n">facet</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">literal</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">if</span> <span class="n">literal</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_FACET_TO_LITERAL_DATATYPE</span><span class="p">[</span><span class="n">facet</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Literal: </span><span class="si">{</span><span class="n">literal</span><span class="si">}</span><span class="s2"> not valid for facet: </span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLFacetRestriction</span><span class="p">(</span><span class="n">facet</span><span class="p">,</span> <span class="n">literal</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_typed_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_typed_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_typed_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">datatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_string_literal_language">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_string_literal_language">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_string_literal_language</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Language tags and plain literals not supported in owlapy yet: </span><span class="si">{</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_string_literal_no_language">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_string_literal_no_language">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_string_literal_no_language</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">StringOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_quoted_string">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_quoted_string">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_quoted_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_float_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_float_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_float_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">DoubleOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_decimal_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_decimal_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_decimal_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="c1"># TODO: Just use float for now, decimal not supported in owlapy yet</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">DoubleOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_integer_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_integer_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_integer_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">IntegerOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_boolean_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_boolean_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_boolean_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">BooleanOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_datetime_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_datetime_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_datetime_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">DateTimeOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_duration_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_duration_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_duration_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">DurationOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_date_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_date_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_date_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">DateOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_non_negative_integer">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_non_negative_integer">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_non_negative_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_datatype_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_datatype_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_datatype_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_datatype">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_datatype">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatype</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_STRING_TO_DATATYPE</span><span class="p">[</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_facet">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_facet">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_facet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLFacet</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_class_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_class_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_class_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClass</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_individual_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_individual_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_individual_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLNamedIndividual</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_object_property_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_object_property_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_object_property_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_data_property_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_data_property_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_property_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_full_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_full_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_full_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">iri</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">iri</span><span class="si">}</span><span class="s2"> is not a valid IRI.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_abbreviated_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_abbreviated_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_abbreviated_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+        <span class="c1"># TODO: Add support for prefixes</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parsing of prefixes is not supported yet: </span><span class="si">{</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_simple_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_simple_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_simple_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="n">simple_iri</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">simple_iri</span> <span class="o">==</span> <span class="s2">&quot;Thing&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_THING</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">simple_iri</span> <span class="o">==</span> <span class="s2">&quot;Nothing&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NOTHING</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">IRI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">,</span> <span class="n">simple_iri</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;If entities are specified without a full iri (</span><span class="si">{</span><span class="n">simple_iri</span><span class="si">}</span><span class="s2">), &quot;</span>
+                             <span class="s2">&quot;the namespace attribute of the parser has to be set.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.visit_parentheses">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.visit_parentheses">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_parentheses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">expr</span></div>
+
+
+<div class="viewcode-block" id="ManchesterOWLSyntaxParser.generic_visit">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.ManchesterOWLSyntaxParser.generic_visit">[docs]</a>
+    <span class="k">def</span> <span class="nf">generic_visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="ow">or</span> <span class="n">node</span></div>
+</div>
+
+
+
+<span class="n">DL_GRAMMAR</span> <span class="o">=</span> <span class="n">Grammar</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    union = intersection (must_ws &quot;⊔&quot; must_ws intersection)*</span>
+<span class="s2">    intersection = primary (must_ws &quot;⊓&quot; must_ws primary)*</span>
+
+<span class="s2">    # Main entry point + object properties</span>
+<span class="s2">    primary = (&quot;¬&quot; maybe_ws)? (has_self / data_value_res / value_res / data_some_only_res / some_only_res /</span>
+<span class="s2">                data_cardinality_res / cardinality_res / class_expression)</span>
+<span class="s2">    some_only_res = (&quot;∃&quot;/&quot;∀&quot;) maybe_ws object_property &quot;.&quot; primary</span>
+<span class="s2">    cardinality_res = (&quot;≥&quot;/&quot;≤&quot;/&quot;=&quot;) must_ws non_negative_integer must_ws object_property &quot;.&quot; primary</span>
+<span class="s2">    value_res = &quot;∃&quot; maybe_ws object_property &quot;.&quot; &quot;{&quot; individual_iri &quot;}&quot;</span>
+<span class="s2">    has_self = &quot;∃&quot; maybe_ws object_property &quot;.&quot; &quot;Self&quot;</span>
+<span class="s2">    object_property = object_property_iri &quot;⁻&quot;?</span>
+
+<span class="s2">    class_expression = class_iri / individual_list / parentheses</span>
+<span class="s2">    individual_list = &quot;{&quot; maybe_ws individual_iri (maybe_ws &quot;⊔&quot; maybe_ws individual_iri)* maybe_ws &quot;}&quot;</span>
+
+<span class="s2">    # Back to start symbol (first production rule)</span>
+<span class="s2">    parentheses = &quot;(&quot; maybe_ws union maybe_ws &quot;)&quot;</span>
+
+<span class="s2">    # Data properties</span>
+<span class="s2">    data_some_only_res = (&quot;∃&quot;/&quot;∀&quot;) maybe_ws data_property_iri &quot;.&quot; data_primary</span>
+<span class="s2">    data_cardinality_res = (&quot;≥&quot;/&quot;≤&quot;/&quot;=&quot;) must_ws non_negative_integer must_ws data_property_iri &quot;.&quot; data_primary</span>
+<span class="s2">    data_value_res = &quot;∃&quot; maybe_ws data_property_iri &quot;.&quot; &quot;{&quot; literal &quot;}&quot;</span>
+<span class="s2">    data_primary = (&quot;¬&quot; maybe_ws)? data_range</span>
+<span class="s2">    data_range = datatype_restriction / datatype_iri / literal_list / data_parentheses</span>
+<span class="s2">    literal_list = &quot;{&quot; maybe_ws literal (maybe_ws &quot;⊔&quot; maybe_ws literal)* maybe_ws &quot;}&quot;</span>
+<span class="s2">    data_parentheses = &quot;(&quot; maybe_ws data_union maybe_ws &quot;)&quot;</span>
+<span class="s2">    data_union = data_intersection (must_ws &quot;⊔&quot; must_ws data_intersection)*</span>
+<span class="s2">    data_intersection = data_primary (must_ws &quot;⊓&quot; must_ws data_primary)*</span>
+<span class="s2">    datatype_restriction = datatype_iri &quot;[&quot; maybe_ws facet_restrictions maybe_ws &quot;]&quot;</span>
+<span class="s2">    facet_restrictions = facet_restriction (maybe_ws &quot;,&quot; maybe_ws facet_restriction)*</span>
+<span class="s2">    facet_restriction = facet must_ws literal</span>
+<span class="s2">    facet = &quot;length&quot; / &quot;minLength&quot; / &quot;maxLength&quot; / &quot;pattern&quot; / &quot;langRange&quot;</span>
+<span class="s2">            / &quot;totalDigits&quot; / &quot;fractionDigits&quot; / &quot;≥&quot; / &quot;≤&quot; / &quot;&lt;&quot; / &quot;&gt;&quot;</span>
+<span class="s2">    datatype_iri = (&quot;&lt;http://www.w3.org/2001/XMLSchema#&quot; datatype &quot;&gt;&quot;) / (&quot;xsd:&quot;? datatype)</span>
+<span class="s2">    datatype = &quot;double&quot; / &quot;integer&quot; / &quot;boolean&quot; / &quot;string&quot; / &quot;dateTime&quot; / &quot;date&quot; / &quot;duration&quot;</span>
+
+<span class="s2">    # Literals</span>
+<span class="s2">    literal = typed_literal / string_literal_language / string_literal_no_language / datetime_literal /</span>
+<span class="s2">              duration_literal / date_literal / float_literal / decimal_literal / integer_literal /</span>
+<span class="s2">              boolean_literal</span>
+<span class="s2">    typed_literal = quoted_string &quot;^^&quot; datatype_iri</span>
+<span class="s2">    string_literal_language = quoted_string language_tag</span>
+<span class="s2">    string_literal_no_language = quoted_string / no_match</span>
+<span class="s2">    quoted_string = ~&quot;\&quot;([^\&quot;\\\\]|\\\\[\&quot;\\\\])*\&quot;&quot;</span>
+<span class="s2">    language_tag = &quot;@&quot; ~&quot;[a-zA-Z]+&quot; (&quot;-&quot; ~&quot;[a-zA-Z0-9]+&quot;)*</span>
+<span class="s2">    float_literal = sign (float_with_integer_part / float_no_integer_part) (&quot;f&quot;/&quot;F&quot;)</span>
+<span class="s2">    float_with_integer_part = non_negative_integer (&quot;.&quot; ~&quot;[0-9]+&quot;)? exponent?</span>
+<span class="s2">    float_no_integer_part = &quot;.&quot; ~&quot;[0-9]+&quot; exponent?</span>
+<span class="s2">    exponent = (&quot;e&quot;/&quot;E&quot;) sign ~&quot;[0-9]+&quot;</span>
+<span class="s2">    decimal_literal = sign non_negative_integer &quot;.&quot; ~&quot;[0-9]+&quot;</span>
+<span class="s2">    integer_literal = sign non_negative_integer</span>
+<span class="s2">    boolean_literal = ~&quot;[tT]rue&quot; / ~&quot;[fF]alse&quot;</span>
+<span class="s2">    date_literal = ~&quot;[0-9]</span><span class="si">{4}</span><span class="s2">-((0[1-9])|(1[0-2]))-(([0-2][0-9])|(3[01]))&quot;</span>
+<span class="s2">    datetime_literal = ~&quot;[0-9]</span><span class="si">{4}</span><span class="s2">-((0[1-9])|(1[0-2]))-(([0-2][0-9])|(3[01]))[T\u0020]&quot;</span>
+<span class="s2">                       ~&quot;(([0-1][0-9])|(2[0-3])):[0-5][0-9]:[0-5][0-9](\\.[0-9]</span><span class="si">{6}</span><span class="s2">)?&quot;</span>
+<span class="s2">                       ~&quot;(Z|([+-](([0-1][0-9])|(2[0-3])):[0-5][0-9](:[0-5][0-9](\\.[0-9]</span><span class="si">{6}</span><span class="s2">)?)?))?&quot;</span>
+<span class="s2">    duration_literal = ~&quot;P([0-9]+W)?([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+(\\.[0-9]</span><span class="si">{6}</span><span class="s2">)?S)?)?&quot;</span>
+<span class="s2">    sign = (&quot;+&quot;/&quot;-&quot;)?</span>
+<span class="s2">    non_negative_integer = ~&quot;0|([1-9][0-9]*)&quot;</span>
+
+<span class="s2">    # IRIs / Characters</span>
+<span class="s2">    class_iri = &quot;⊤&quot; / &quot;⊥&quot; / iri</span>
+<span class="s2">    object_property_iri = iri / no_match</span>
+<span class="s2">    data_property_iri = iri / no_match</span>
+<span class="s2">    individual_iri = iri / no_match</span>
+<span class="s2">    iri = full_iri / abbreviated_iri / simple_iri</span>
+<span class="s2">    full_iri = iri_ref / no_match</span>
+<span class="s2">    abbreviated_iri = pname_ln / no_match</span>
+<span class="s2">    simple_iri = pn_local / no_match</span>
+
+<span class="s2">    # Changes to ManchesterGrammar -- Don&#39;t allow:</span>
+<span class="s2">    # . used as a separator</span>
+<span class="s2">    # ⁻ used for inverse properties (\u207B)</span>
+<span class="s2">    iri_ref = &quot;&lt;&quot; ~&quot;[^&lt;&gt;\&quot;</span><span class="si">{}</span><span class="s2">|^`\\\\\u0000-\u0020]*&quot; &quot;&gt;&quot;</span>
+<span class="s2">    pname_ln = pname_ns pn_local</span>
+<span class="s2">    pname_ns = pn_prefix? &quot;:&quot;</span>
+<span class="s2">    pn_prefix = pn_chars_base pn_chars*</span>
+<span class="s2">    pn_local = (pn_chars_u / ~&quot;[0-9]&quot;) pn_chars*</span>
+<span class="s2">    pn_chars = pn_chars_u / &quot;-&quot; / ~&quot;[0-9]&quot; / ~&quot;\u00B7&quot; / ~&quot;[\u0300-\u036F]&quot; / ~&quot;[\u203F-\u2040]&quot;</span>
+<span class="s2">    pn_chars_u = pn_chars_base / &quot;_&quot;</span>
+<span class="s2">    pn_chars_base = ~&quot;[a-zA-Z]&quot; / ~&quot;[\u00C0-\u00D6]&quot; / ~&quot;[\u00D8-\u00F6]&quot; / ~&quot;[\u00F8-\u02FF]&quot; /</span>
+<span class="s2">                    ~&quot;[\u0370-\u037D]&quot; / ~&quot;[\u037F-\u1FFF]&quot; / ~&quot;[\u200C-\u200D]&quot; / ~&quot;[\u2070-\u207A]&quot; /</span>
+<span class="s2">                    ~&quot;[\u207C-\u218F]&quot;/ ~&quot;[\u2C00-\u2FEF]&quot; / ~&quot;[\u3001-\uD7FF]&quot; / ~&quot;[\uF900-\uFDCF]&quot; /</span>
+<span class="s2">                    ~&quot;[\uFDF0-\uFFFD]&quot; / ~&quot;[\U00010000-\U000EFFFF]&quot;</span>
+
+<span class="s2">    must_ws = ~&quot;[\u0020\u000D\u0009\u000A]+&quot;</span>
+<span class="s2">    maybe_ws = ~&quot;[\u0020\u000D\u0009\u000A]*&quot;</span>
+
+<span class="s2">    # hacky workaround: can be added to a pass through production rule that is semantically important</span>
+<span class="s2">    # so nodes are not combined which makes the parsing cleaner</span>
+<span class="s2">    no_match = ~&quot;(?!a)a&quot;</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># workaround to support multiple inheritance with different metaclasses</span>
+<span class="k">class</span> <span class="nc">_DLSyntaxParserMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">NodeVisitor</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">OWLObjectParser</span><span class="p">)):</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="DLSyntaxParser">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser">[docs]</a>
+<span class="k">class</span> <span class="nc">DLSyntaxParser</span><span class="p">(</span><span class="n">NodeVisitor</span><span class="p">,</span> <span class="n">OWLObjectParser</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">_DLSyntaxParserMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Description Logic Syntax parser to parse strings to OWLClassExpressions.&quot;&quot;&quot;</span>
+
+    <span class="n">slots</span> <span class="o">=</span> <span class="s1">&#39;ns&#39;</span><span class="p">,</span> <span class="s1">&#39;grammar&#39;</span>
+
+    <span class="n">ns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grammar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Description Logic Syntax parser. Names (entities) can be given as full IRIs enclosed in &lt; and &gt;</span>
+<span class="sd">           or as simple strings, in that case the namespace attribute of the parser has to be set to resolve them.</span>
+<span class="sd">           Prefixes are currently not supported, except for datatypes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            namespace: Namespace to resolve names that were given without one.</span>
+<span class="sd">            grammar: Grammar (defaults to DL_GRAMMAR).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="o">=</span> <span class="n">namespace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span> <span class="o">=</span> <span class="n">grammar</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span> <span class="o">=</span> <span class="n">DL_GRAMMAR</span>
+
+<div class="viewcode-block" id="DLSyntaxParser.parse_expression">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.parse_expression">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grammar</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">expression_str</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_union">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_union">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_intersection">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_intersection">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_primary">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_primary">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_primary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="n">match_not</span><span class="p">,</span> <span class="n">expr</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">match_not</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_some_only_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_some_only_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_some_only_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">:</span>
+        <span class="n">type_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filler</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="o">*</span><span class="n">type_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_cardinality_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_cardinality_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_cardinality_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">:</span>
+        <span class="n">type_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filler</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="o">*</span><span class="n">type_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectExactCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_value_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_value_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_value_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectHasValue</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">individual</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLObjectHasValue</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">individual</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_has_self">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_has_self">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_has_self</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectHasSelf</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLObjectHasSelf</span><span class="p">(</span><span class="n">property_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_object_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_object_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">:</span>
+        <span class="n">property_</span><span class="p">,</span> <span class="n">inverse</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">property_</span><span class="o">.</span><span class="n">get_inverse_property</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inverse</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">property_</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_class_expression">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_class_expression">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_class_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_individual_list">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_individual_list">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_individual_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectOneOf</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_data_primary">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_data_primary">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_primary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="n">match_not</span><span class="p">,</span> <span class="n">expr</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLDataComplementOf</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">match_not</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_data_some_only_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_data_some_only_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_some_only_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLQuantifiedDataRestriction</span><span class="p">:</span>
+        <span class="n">type_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filler</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="o">*</span><span class="n">type_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">EXISTS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_data_cardinality_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_data_cardinality_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_cardinality_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">:</span>
+        <span class="n">type_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filler</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="o">*</span><span class="n">type_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataMaxCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataExactCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_data_value_res">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_data_value_res">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_value_res</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataHasValue</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">literal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLDataHasValue</span><span class="p">(</span><span class="n">property_</span><span class="p">,</span> <span class="n">literal</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_data_union">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_data_union">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_data_union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLDataUnionOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_data_intersection">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_data_intersection">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_data_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">)</span> <span class="k">else</span> <span class="n">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_literal_list">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_literal_list">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_literal_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataOneOf</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLDataOneOf</span><span class="p">(</span><span class="n">children</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_data_parentheses">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_data_parentheses">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_parentheses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">expr</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_datatype_restriction">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_datatype_restriction">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_datatype_restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
+        <span class="n">datatype</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">):</span>
+            <span class="n">facet_restrictions</span> <span class="o">=</span> <span class="n">facet_restrictions</span><span class="p">,</span>
+        <span class="n">not_valid_literals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="o">!=</span> <span class="n">StringOWLDatatype</span><span class="p">:</span>
+            <span class="n">not_valid_literals</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">facet_restrictions</span>
+                                  <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">!=</span> <span class="n">datatype</span><span class="p">]</span>
+        <span class="n">not_valid_facets</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">facet_restrictions</span>
+                            <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_DATATYPE_TO_FACETS</span><span class="p">[</span><span class="n">datatype</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="n">not_valid_literals</span> <span class="ow">or</span> <span class="n">not_valid_facets</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Literals: </span><span class="si">{</span><span class="n">not_valid_literals</span><span class="si">}</span><span class="s2"> and Facets: </span><span class="si">{</span><span class="n">not_valid_facets</span><span class="si">}</span><span class="s2">&quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot; not valid for datatype: </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_facet_restrictions">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_facet_restrictions">[docs]</a>
+    <span class="nd">@_transform_children</span>
+    <span class="k">def</span> <span class="nf">visit_facet_restrictions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLFacetRestriction</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">children</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_facet_restriction">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_facet_restriction">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_facet_restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLFacetRestriction</span><span class="p">:</span>
+        <span class="n">facet</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">literal</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">if</span> <span class="n">literal</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_FACET_TO_LITERAL_DATATYPE</span><span class="p">[</span><span class="n">facet</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Literal: </span><span class="si">{</span><span class="n">literal</span><span class="si">}</span><span class="s2"> not valid for facet: </span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLFacetRestriction</span><span class="p">(</span><span class="n">facet</span><span class="p">,</span> <span class="n">literal</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_typed_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_typed_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_typed_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">datatype</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">datatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_string_literal_language">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_string_literal_language">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_string_literal_language</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Language tags and plain literals not supported in owlapy yet: </span><span class="si">{</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_string_literal_no_language">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_string_literal_no_language">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_string_literal_no_language</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">StringOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_quoted_string">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_quoted_string">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_quoted_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_float_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_float_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_float_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">DoubleOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_decimal_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_decimal_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_decimal_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="c1"># TODO: Just use float for now, decimal not supported in owlapy yet</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">DoubleOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_integer_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_integer_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_integer_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">IntegerOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_boolean_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_boolean_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_boolean_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">BooleanOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_datetime_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_datetime_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_datetime_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">DateTimeOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_duration_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_duration_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_duration_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">DurationOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_date_literal">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_date_literal">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_date_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">DateOWLDatatype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_non_negative_integer">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_non_negative_integer">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_non_negative_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_datatype_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_datatype_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_datatype_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_datatype">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_datatype">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatype</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_STRING_TO_DATATYPE</span><span class="p">[</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_facet">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_facet">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_facet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLFacet</span><span class="p">:</span>
+        <span class="n">symbolic_form</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">symbolic_form</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MIN</span><span class="p">:</span>
+            <span class="n">symbolic_form</span> <span class="o">=</span> <span class="s1">&#39;&gt;=&#39;</span>
+        <span class="k">elif</span> <span class="n">symbolic_form</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">MAX</span><span class="p">:</span>
+            <span class="n">symbolic_form</span> <span class="o">=</span> <span class="s1">&#39;&lt;=&#39;</span>
+        <span class="k">return</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="n">symbolic_form</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_class_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_class_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_class_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClass</span><span class="p">:</span>
+        <span class="n">top_bottom</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">top_bottom</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">TOP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_THING</span><span class="o">.</span><span class="n">get_iri</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">top_bottom</span> <span class="o">==</span> <span class="n">_DL_SYNTAX</span><span class="o">.</span><span class="n">BOTTOM</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NOTHING</span><span class="o">.</span><span class="n">get_iri</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_individual_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_individual_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_individual_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLNamedIndividual</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_object_property_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_object_property_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_object_property_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_data_property_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_data_property_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_data_property_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_full_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_full_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_full_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">iri</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">iri</span><span class="si">}</span><span class="s2"> is not a valid IRI.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_abbreviated_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_abbreviated_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_abbreviated_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+        <span class="c1"># TODO: Add support for prefixes</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parsing of prefixes is not supported yet: </span><span class="si">{</span><span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_simple_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_simple_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_simple_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="n">simple_iri</span> <span class="o">=</span> <span class="n">_node_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">IRI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">,</span> <span class="n">simple_iri</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;If entities are specified without a full iri (</span><span class="si">{</span><span class="n">simple_iri</span><span class="si">}</span><span class="s2">), &quot;</span>
+                             <span class="s2">&quot;the namespace attribute of the parser has to be set.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.visit_parentheses">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.visit_parentheses">[docs]</a>
+    <span class="k">def</span> <span class="nf">visit_parentheses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="k">return</span> <span class="n">expr</span></div>
+
+
+<div class="viewcode-block" id="DLSyntaxParser.generic_visit">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.DLSyntaxParser.generic_visit">[docs]</a>
+    <span class="k">def</span> <span class="nf">generic_visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">children</span> <span class="ow">or</span> <span class="n">node</span></div>
+</div>
+
+
+
+<span class="n">DLparser</span> <span class="o">=</span> <span class="n">DLSyntaxParser</span><span class="p">()</span>
+<span class="n">ManchesterParser</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxParser</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="dl_to_owl_expression">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.dl_to_owl_expression">[docs]</a>
+<span class="k">def</span> <span class="nf">dl_to_owl_expression</span><span class="p">(</span><span class="n">dl_expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">DLparser</span><span class="o">.</span><span class="n">parse_expression</span><span class="p">(</span><span class="n">dl_expression</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="manchester_to_owl_expression">
+<a class="viewcode-back" href="../../autoapi/owlapy/parser/index.html#owlapy.parser.manchester_to_owl_expression">[docs]</a>
+<span class="k">def</span> <span class="nf">manchester_to_owl_expression</span><span class="p">(</span><span class="n">manchester_expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ManchesterParser</span><span class="o">.</span><span class="n">parse_expression</span><span class="p">(</span><span class="n">manchester_expression</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

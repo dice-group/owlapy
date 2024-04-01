@@ -1,0 +1,115 @@
+:py:mod:`owlapy.render`
+=======================
+
+.. py:module:: owlapy.render
+
+.. autoapi-nested-parse::
+
+   Renderers for different syntax.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.render.DLSyntaxObjectRenderer
+   owlapy.render.ManchesterOWLSyntaxOWLObjectRenderer
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.render.owl_expression_to_dl
+   owlapy.render.owl_expression_to_manchester
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.render.DLrenderer
+   owlapy.render.ManchesterRenderer
+
+
+.. py:class:: DLSyntaxObjectRenderer(short_form_provider: Callable[[owlapy.model.OWLEntity], str] = _simple_short_form_provider)
+
+
+   Bases: :py:obj:`owlapy.io.OWLObjectRenderer`
+
+   DL Syntax renderer for OWL Objects.
+
+   .. py:attribute:: __slots__
+      :value: '_sfp'
+
+      
+
+   .. py:method:: set_short_form_provider(short_form_provider: Callable[[owlapy.model.OWLEntity], str]) -> None
+
+      Configure a short form provider that shortens the OWL objects during rendering.
+
+      :param short_form_provider: Short form provider.
+
+
+   .. py:method:: render(o: owlapy.model.OWLObject) -> str
+
+      Render OWL Object to string.
+
+      :param o: OWL Object.
+
+      :returns: String rendition of OWL object.
+
+
+
+.. py:class:: ManchesterOWLSyntaxOWLObjectRenderer(short_form_provider: Callable[[owlapy.model.OWLEntity], str] = _simple_short_form_provider, no_render_thing=False)
+
+
+   Bases: :py:obj:`owlapy.io.OWLObjectRenderer`
+
+   Manchester Syntax renderer for OWL Objects
+
+   .. py:attribute:: __slots__
+      :value: ('_sfp', '_no_render_thing')
+
+      
+
+   .. py:method:: set_short_form_provider(short_form_provider: Callable[[owlapy.model.OWLEntity], str]) -> None
+
+      Configure a short form provider that shortens the OWL objects during rendering.
+
+      :param short_form_provider: Short form provider.
+
+
+   .. py:method:: render(o: owlapy.model.OWLObject) -> str
+
+      Render OWL Object to string.
+
+      :param o: OWL Object.
+
+      :returns: String rendition of OWL object.
+
+
+
+.. py:data:: DLrenderer
+
+   
+
+.. py:data:: ManchesterRenderer
+
+   
+
+.. py:function:: owl_expression_to_dl(o: owlapy.model.OWLObject) -> str
+
+
+.. py:function:: owl_expression_to_manchester(o: owlapy.model.OWLObject) -> str
+
+

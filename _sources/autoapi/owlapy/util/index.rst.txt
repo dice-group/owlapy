@@ -1,0 +1,190 @@
+:py:mod:`owlapy.util`
+=====================
+
+.. py:module:: owlapy.util
+
+.. autoapi-nested-parse::
+
+   Owlapy utils.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.util.OrderedOWLObject
+   owlapy.util.NNF
+   owlapy.util.TopLevelCNF
+   owlapy.util.TopLevelDNF
+   owlapy.util.LRUCache
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.util.combine_nary_expressions
+   owlapy.util.iter_count
+   owlapy.util.as_index
+
+
+
+.. py:class:: OrderedOWLObject(o: _HasIndex)
+
+
+   Holder of OWL Objects that can be used for Python sorted.
+
+   The Ordering is dependent on the type_index of the impl. classes recursively followed by all components of the
+   OWL Object.
+
+   .. attribute:: o
+
+      OWL object.
+
+   .. py:attribute:: __slots__
+      :value: ('o', '_chain')
+
+      
+
+   .. py:attribute:: o
+      :type: _HasIndex
+
+      
+
+   .. py:method:: __lt__(other)
+
+      Return self<value.
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+.. py:class:: NNF
+
+
+   This class contains functions to transform a Class Expression into Negation Normal Form.
+
+   .. py:method:: get_class_nnf(ce: owlapy.model.OWLClassExpression, negated: bool = False) -> owlapy.model.OWLClassExpression
+      :abstractmethod:
+
+      Convert a Class Expression to Negation Normal Form. Operands will be sorted.
+
+      :param ce: Class Expression.
+      :param negated: Whether the result should be negated.
+
+      :returns: Class Expression in Negation Normal Form.
+
+
+
+.. py:class:: TopLevelCNF
+
+
+   This class contains functions to transform a class expression into Top-Level Conjunctive Normal Form.
+
+   .. py:method:: get_top_level_cnf(ce: owlapy.model.OWLClassExpression) -> owlapy.model.OWLClassExpression
+
+      Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
+
+      :param ce: Class Expression.
+
+      :returns: Class Expression in Top-Level Conjunctive Normal Form.
+
+
+
+.. py:class:: TopLevelDNF
+
+
+   This class contains functions to transform a class expression into Top-Level Disjunctive Normal Form.
+
+   .. py:method:: get_top_level_dnf(ce: owlapy.model.OWLClassExpression) -> owlapy.model.OWLClassExpression
+
+      Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
+
+      :param ce: Class Expression.
+
+      :returns: Class Expression in Top-Level Disjunctive Normal Form.
+
+
+
+.. py:function:: combine_nary_expressions(ce: owlapy.model.OWLClassExpression) -> owlapy.model.OWLClassExpression
+                 combine_nary_expressions(ce: owlapy.model.OWLDataRange) -> owlapy.model.OWLDataRange
+
+   Shortens an OWLClassExpression or OWLDataRange by combining all nested nary expressions of the same type.
+   Operands will be sorted.
+
+   E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -> OWLObjectUnionOf(A, B, C).
+
+
+.. py:function:: iter_count(i: Iterable) -> int
+
+   Count the number of elements in an iterable.
+
+
+.. py:function:: as_index(o: owlapy.model.OWLObject) -> owlapy.model.HasIndex
+
+   Cast OWL Object to HasIndex.
+
+
+.. py:class:: LRUCache(maxsize: Optional[int] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_K`\ , :py:obj:`_V`\ ]
+
+   Constants shares by all lru cache instances.
+
+   Adapted from functools.lru_cache.
+
+   .. attribute:: sentinel
+
+      Unique object used to signal cache misses.
+
+   .. attribute:: PREV
+
+      Name for the link field 0.
+
+   .. attribute:: NEXT
+
+      Name for the link field 1.
+
+   .. attribute:: KEY
+
+      Name for the link field 2.
+
+   .. attribute:: RESULT
+
+      Name for the link field 3.
+
+   .. py:attribute:: sentinel
+
+      
+
+   .. py:method:: __contains__(item: _K) -> bool
+
+
+   .. py:method:: __getitem__(item: _K) -> _V
+
+
+   .. py:method:: __setitem__(key: _K, value: _V)
+
+
+   .. py:method:: cache_info()
+
+      Report cache statistics.
+
+
+   .. py:method:: cache_clear()
+
+      Clear the cache and cache statistics.
+
+
+
