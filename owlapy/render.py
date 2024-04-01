@@ -420,3 +420,15 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
             return "(%s)" % self.render(c)
         else:
             return self.render(c)
+
+
+DLrenderer = DLSyntaxObjectRenderer()
+ManchesterRenderer = ManchesterOWLSyntaxOWLObjectRenderer()
+
+
+def owl_expression_to_dl(o: OWLObject) -> str:
+    return DLrenderer.render(o)
+
+
+def owl_expression_to_manchester(o: OWLObject) -> str:
+    return ManchesterRenderer.render(o)
