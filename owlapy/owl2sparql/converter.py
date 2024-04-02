@@ -632,9 +632,9 @@ converter = Owl2SparqlConverter()
 
 
 def owl_expression_to_sparql(root_variable: str = "?x",
-                             ce: OWLClassExpression = None,
+                             expression: OWLClassExpression = None,
                              count: bool = False,
                              values: Optional[Iterable[OWLNamedIndividual]] = None,
                              named_individuals: bool = False)->str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query"""
-    return converter.as_query(root_variable, ce, count, values, named_individuals)
+    return converter.as_query(root_variable, expression, count, values, named_individuals)
