@@ -242,9 +242,10 @@ class OWLClass(OWLClassExpression, OWLEntity):
         return self.get_iri().as_str()
 
     @property
-    def reminder(self)->str:
+    def reminder(self) -> str:
         """The reminder of the IRI """
         return self.get_iri().get_remainder()
+
 
 class OWLPropertyExpression(OWLObject, metaclass=ABCMeta):
     """Represents a property or possibly the inverse of a property."""
@@ -382,35 +383,43 @@ class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
     __slots__ = '_iri'
     type_index: Final = 1002
 
-    _iri: IRI
+    _iri: Union[IRI, str]
 
     def get_named_property(self) -> 'OWLObjectProperty':
         # documented in parent
         return self
 
-    def __init__(self, iri: IRI):
+    def __init__(self, iri: Union[IRI, str]):
         """Gets an instance of OWLObjectProperty that has the specified IRI.
 
         Args:
             iri: The IRI.
         """
-        self._iri = iri
+        if isinstance(iri, IRI):
+            self._iri = iri
+        else:
+            self._iri = IRI.create(iri)
 
     def get_inverse_property(self) -> 'OWLObjectInverseOf':
         # documented in parent
         return OWLObjectInverseOf(self)
 
+    @property
+    def str(self) -> str:
+        return self._iri.as_str()
+
+    @property
+    def iri(self) -> str:
+        return self._iri
+
     def get_iri(self) -> IRI:
+        # TODO:CD: can be deprecated
         # documented in parent
         return self._iri
 
     def is_owl_top_object_property(self) -> bool:
         # documented in parent
         return self.get_iri() == OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.get_iri()
-
-    @property
-    def str(self)->str:
-        return self.get_iri().as_str()
 
 
 class OWLObjectInverseOf(OWLObjectPropertyExpression):
@@ -722,8 +731,8 @@ class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpressi
     def __eq__(self, other):
         if type(other) == type(self):
             return self._property == other._property \
-                   and self._cardinality == other._cardinality \
-                   and self._filler == other._filler
+                and self._cardinality == other._cardinality \
+                and self._filler == other._filler
         return NotImplemented
 
     def __hash__(self):
@@ -925,18 +934,22 @@ class OWLNamedIndividual(OWLIndividual, OWLEntity):
 
     _iri: IRI
 
-    def __init__(self, iri: IRI):
+    def __init__(self, iri: Union[IRI, str]):
         """Gets an instance of OWLNamedIndividual that has the specified IRI.
 
         Args:
-            iri: The IRI.
+            iri: an instance of IRI Class or a string representing the iri
 
         Returns:
             An OWLNamedIndividual that has the specified IRI.
         """
-        self._iri = iri
+        if isinstance(iri, IRI):
+            self._iri = iri
+        else:
+            self._iri = IRI.create(iri)
 
     def get_iri(self) -> IRI:
+        # TODO:CD: can be deprecated
         # documented in parent
         return self._iri
 
@@ -1077,7 +1090,7 @@ class OWLDatatypeRestriction(OWLDataRange):
     _facet_restrictions: Sequence['OWLFacetRestriction']
 
     def __init__(self, type_: OWLDatatype, facet_restrictions: Union['OWLFacetRestriction',
-                                                                     Iterable['OWLFacetRestriction']]):
+    Iterable['OWLFacetRestriction']]):
         self._type = type_
         if isinstance(facet_restrictions, OWLFacetRestriction):
             facet_restrictions = facet_restrictions,
@@ -1092,7 +1105,7 @@ class OWLDatatypeRestriction(OWLDataRange):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._type == other._type \
-                   and self._facet_restrictions == other._facet_restrictions
+                and self._facet_restrictions == other._facet_restrictions
         return NotImplemented
 
     def __hash__(self):
@@ -1656,8 +1669,8 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
     def __eq__(self, other):
         if type(other) == type(self):
             return self._property == other._property \
-                   and self._cardinality == other._cardinality \
-                   and self._filler == other._filler
+                and self._cardinality == other._cardinality \
+                and self._filler == other._filler
         return NotImplemented
 
     def __hash__(self):
@@ -2084,7 +2097,7 @@ class OWLDatatypeDefinitionAxiom(OWLLogicalAxiom):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._datatype == other._datatype and self._datarange == other._datarange \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2120,8 +2133,8 @@ class OWLHasKeyAxiom(OWLLogicalAxiom, HasOperands[OWLPropertyExpression]):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._class_expression == other._class_expression \
-                   and self._property_expressions == other._property_expressions \
-                   and self._annotations == other._annotations
+                and self._property_expressions == other._property_expressions \
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2406,7 +2419,7 @@ class OWLSubClassOfAxiom(OWLClassAxiom):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._super_class == other._super_class and self._sub_class == other._sub_class \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2445,7 +2458,7 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._cls == other._cls and self._class_expressions == other._class_expressions \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2484,7 +2497,7 @@ class OWLClassAssertionAxiom(OWLIndividualAxiom):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._class_expression == other._class_expression and self._individual == other._individual \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2647,7 +2660,7 @@ class OWLSubAnnotationPropertyOfAxiom(OWLAnnotationAxiom):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._sub_property == other._sub_property and self._super_property == other._super_property \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2680,7 +2693,7 @@ class OWLAnnotationPropertyDomainAxiom(OWLAnnotationAxiom):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._property == other._property and self._domain == other._domain \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2713,7 +2726,7 @@ class OWLAnnotationPropertyRangeAxiom(OWLAnnotationAxiom):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._property == other._property and self._range == other._range \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2749,7 +2762,7 @@ class OWLSubPropertyAxiom(Generic[_P], OWLPropertyAxiom):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._sub_property == other._sub_property and self._super_property == other._super_property \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -2815,7 +2828,7 @@ class OWLPropertyAssertionAxiom(Generic[_P, _C], OWLIndividualAxiom, metaclass=A
     def __eq__(self, other):
         if type(other) is type(self):
             return self._subject == other._subject and self._property == other._property and \
-                   self._object == other._object and self._annotations == other._annotations
+                self._object == other._object and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -3000,7 +3013,7 @@ class OWLPropertyDomainAxiom(Generic[_P], OWLUnaryPropertyAxiom[_P], metaclass=A
     def __eq__(self, other):
         if type(other) is type(self):
             return self._property == other._property and self._domain == other._domain \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
@@ -3027,7 +3040,7 @@ class OWLPropertyRangeAxiom(Generic[_P, _R], OWLUnaryPropertyAxiom[_P], metaclas
     def __eq__(self, other):
         if type(other) is type(self):
             return self._property == other._property and self._range == other._range \
-                   and self._annotations == other._annotations
+                and self._annotations == other._annotations
         return NotImplemented
 
     def __hash__(self):
