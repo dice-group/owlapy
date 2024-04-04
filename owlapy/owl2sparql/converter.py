@@ -236,21 +236,6 @@ class Owl2SparqlConverter:
         for op in ce.operands():
             self.process(op)
 
-        # the following part was commented out because it was related to the possible optimization in the complement
-        # operator that has also been commented out
-        # with self.intersection():
-        #     for op in ce.operands():
-        #         self.process(op)
-        #     props = self.properties[self.modal_depth]
-        #     vars_ = set()
-        #     if props:
-        #         for p in props:
-        #             if p in self.mapping:
-        #                 vars_.add(self.mapping[p])
-        #         if len(vars_) == 2:
-        #             v0, v1 = sorted(vars_)
-        #             self.append(f"FILTER ( {v0} != {v1} )")
-
     # an overload of process function
     # this overload is responsible for handling unions of concepts (e.g., Brother ⊔ Sister)
     # general case: C1 ⊔ ... ⊔ Cn
@@ -275,14 +260,6 @@ class Owl2SparqlConverter:
     @process.register
     def _(self, ce: OWLObjectComplementOf):
         subject = self.current_variable
-        # the conversion was trying here to optimize the query
-        # but the proposed optimization alters the semantics of some queries
-        # example: ( A ⊓ ( B ⊔ ( ¬C ) ) )
-        # with the proposed optimization, the group graph pattern for (¬C) will be { FILTER NOT EXISTS { ?x a C } }
-        # however, the expected pattern is { ?x ?p ?o . FILTER NOT EXISTS { ?x a C } }
-        # the exclusion of "?x ?p ?o" results in the group graph pattern to just return true or false (not bindings)
-        # as a result, we need to comment out the if-clause of the following line
-        # if not self.in_intersection and self.modal_depth == 1:
         self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
 
         self.append("FILTER NOT EXISTS { ")
@@ -321,19 +298,9 @@ class Owl2SparqlConverter:
         # filler holds the concept of the expression (Male in our example) and is processed recursively
         filler = ce.get_filler()
 
-        # if the current class expression is the first one we are processing (root of recursion), the following
-        # if-clause tries to restrict the entities (individuals) to consider using owl:NamedIndividual.
-        # However, it is not guaranteed that entities in every KG are instances of owl:NamedIndividual, hence, adding
-        # this triple will affect the results in such cases.
-        # if self.modal_depth == 1:
-        #     self.append_triple(self.current_variable, "a", f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
 
-        # here, the first group graph pattern starts
-        # the first group graph pattern ensures deals with the entities that appear in a triple with the property
         self.append("{")
-        # if filler.is_owl_thing():
-        #     self.append_triple(self.current_variable, self.mapping.new_property_variable(), object_variable)
-        # else:
+
         if property_expression.is_anonymous():
             # property expression is inverse of a property
             self.append_triple(object_variable, predicate, self.current_variable)
@@ -614,14 +581,6 @@ class Owl2SparqlConverter:
         qs.extend(tp)
         qs.append(f" }}")
 
-        # group_by_vars = self.grouping_vars[ce]
-        # if group_by_vars:
-        #     qs.append("GROUP BY " + " ".join(sorted(group_by_vars)))
-        # conditions = self.having_conditions[ce]
-        # if conditions:
-        #     qs.append(" HAVING ( ")
-        #     qs.append(" && ".join(sorted(conditions)))
-        #     qs.append(" )")
 
         query = "\n".join(qs)
         parseQuery(query)
