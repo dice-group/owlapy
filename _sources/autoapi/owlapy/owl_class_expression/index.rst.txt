@@ -12,37 +12,22 @@ Classes
 
 .. autoapisummary::
 
-   owlapy.owl_class_expression.OWLPropertyRange
-   owlapy.owl_class_expression.OWLDataRange
    owlapy.owl_class_expression.OWLClassExpression
    owlapy.owl_class_expression.OWLAnonymousClassExpression
    owlapy.owl_class_expression.OWLBooleanClassExpression
    owlapy.owl_class_expression.OWLObjectComplementOf
    owlapy.owl_class_expression.OWLClass
+   owlapy.owl_class_expression.OWLNaryBooleanClassExpression
+   owlapy.owl_class_expression.OWLObjectUnionOf
+   owlapy.owl_class_expression.OWLObjectIntersectionOf
 
 
-
-
-.. py:class:: OWLPropertyRange
-
-
-   Bases: :py:obj:`owlapy.owlobject.OWLObject`
-
-   OWL Objects that can be the ranges of properties.
-
-
-.. py:class:: OWLDataRange
-
-
-   Bases: :py:obj:`OWLPropertyRange`
-
-   Represents a DataRange in the OWL 2 Specification.
 
 
 .. py:class:: OWLClassExpression
 
 
-   Bases: :py:obj:`OWLPropertyRange`
+   Bases: :py:obj:`owlapy.ranges.OWLPropertyRange`
 
    An OWL 2 Class Expression.
 
@@ -243,5 +228,79 @@ Classes
 
       :returns: A expression that represents the NNF of the complement of this expression.
 
+
+
+.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[OWLClassExpression])
+
+
+   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+
+   OWLNaryBooleanClassExpression.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: operands() -> Iterable[OWLClassExpression]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLObjectUnionOf(operands: Iterable[OWLClassExpression])
+
+
+   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
+   Represents an ObjectUnionOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3002
+
+      
+
+
+.. py:class:: OWLObjectIntersectionOf(operands: Iterable[OWLClassExpression])
+
+
+   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
+   Represents an OWLObjectIntersectionOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3001
+
+      
 
 
