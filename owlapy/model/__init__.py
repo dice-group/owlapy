@@ -9,10 +9,12 @@ from datetime import datetime, date
 
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary, OWLFacet
 from owlapy._utils import MOVE
-from owlapy.owlobject import OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue
+from owlapy.owlobject import OWLObject,OWLEntity
+from owlapy.owl_annotation import OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue
 from owlapy.iri import IRI
-from owlapy.has import HasIndex, HasIRI, HasOperands
-from owlapy.owl_class_expression import OWLClassExpression, OWLObjectComplementOf, OWLAnonymousClassExpression, OWLBooleanClassExpression, OWLPropertyRange, OWLDataRange
+from owlapy.has import HasIndex, HasIRI, HasOperands, HasFiller
+from owlapy.owl_class_expression import OWLClassExpression, OWLObjectComplementOf, OWLAnonymousClassExpression, OWLBooleanClassExpression, OWLPropertyRange, OWLDataRange, OWLClass
+from owlapy.owl_property import OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression, OWLDataPropertyExpression, OWLDataProperty, OWLObjectProperty
 
 MOVE(OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue, HasIRI, IRI)
 
@@ -24,129 +26,9 @@ Literals = Union['OWLLiteral', int, float, bool, Timedelta, datetime, date, str]
 
 
 
-class OWLNamedObject(OWLObject, HasIRI, metaclass=ABCMeta):
-    """Represents a named object for example, class, property, ontology etc. - i.e. anything that has an
-     IRI as its name."""
-    __slots__ = ()
-
-    _iri: IRI
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self._iri == other._iri
-        return NotImplemented
-
-    def __lt__(self, other):
-        if type(other) is type(self):
-            return self._iri.as_str() < other._iri.as_str()
-        return NotImplemented
-
-    def __hash__(self):
-        return hash(self._iri)
-
-    def __repr__(self):
-        return f"{type(self).__name__}({repr(self._iri)})"
-
-    pass
 
 
-class OWLEntity(OWLNamedObject, metaclass=ABCMeta):
-    """Represents Entities in the OWL 2 Specification."""
-    __slots__ = ()
-
-    def to_string_id(self) -> str:
-        return self.get_iri().as_str()
-
-    def is_anonymous(self) -> bool:
-        return False
-
-    pass
-
-
-class OWLClass(OWLClassExpression, OWLEntity):
-    """An OWL 2 named Class"""
-    __slots__ = '_iri', '_is_nothing', '_is_thing'
-    type_index: Final = 1001
-
-    _iri: IRI
-    _is_nothing: bool
-    _is_thing: bool
-
-    def __init__(self, iri: IRI):
-        """Gets an instance of OWLClass that has the specified IRI.
-
-        Args:
-            iri: The IRI.
-        """
-        self._is_nothing = iri.is_nothing()
-        self._is_thing = iri.is_thing()
-        self._iri = iri
-
-    def get_iri(self) -> IRI:
-        # documented in parent
-        return self._iri
-
-    def is_owl_thing(self) -> bool:
-        # documented in parent
-        return self._is_thing
-
-    def is_owl_nothing(self) -> bool:
-        # documented in parent
-        return self._is_nothing
-
-    def get_object_complement_of(self) -> OWLObjectComplementOf:
-        # documented in parent
-        return OWLObjectComplementOf(self)
-
-    def get_nnf(self) -> 'OWLClass':
-        # documented in parent
-        return self
-
-    @property
-    def str(self):
-        return self.get_iri().as_str()
-
-    @property
-    def reminder(self) -> str:
-        """The reminder of the IRI """
-        return self.get_iri().get_remainder()
-
-
-class OWLPropertyExpression(OWLObject, metaclass=ABCMeta):
-    """Represents a property or possibly the inverse of a property."""
-    __slots__ = ()
-
-    def is_data_property_expression(self) -> bool:
-        """
-        Returns:
-            True if this is a data property.
-        """
-        return False
-
-    def is_object_property_expression(self) -> bool:
-        """
-        Returns:
-            True if this is an object property.
-        """
-        return False
-
-    def is_owl_top_object_property(self) -> bool:
-        """Determines if this is the owl:topObjectProperty.
-
-        Returns:
-            True if this property is the owl:topObjectProperty.
-        """
-        return False
-
-    def is_owl_top_data_property(self) -> bool:
-        """Determines if this is the owl:topDataProperty.
-
-        Returns:
-            True if this property is the owl:topDataProperty.
-        """
-        return False
-
-
+# @TODO:CD create owl_restriction.py
 class OWLRestriction(OWLAnonymousClassExpression):
     """Represents an Object Property Restriction or Data Property Restriction in the OWL 2 specification."""
     __slots__ = ()
@@ -174,165 +56,6 @@ class OWLRestriction(OWLAnonymousClassExpression):
             True if this is an object restriction.
         """
         return False
-
-
-class OWLObjectPropertyExpression(OWLPropertyExpression):
-    """A high level interface to describe different types of object properties."""
-    __slots__ = ()
-
-    @abstractmethod
-    def get_inverse_property(self) -> 'OWLObjectPropertyExpression':
-        """Obtains the property that corresponds to the inverse of this property.
-
-        Returns:
-            The inverse of this property. Note that this property will not necessarily be in the simplest form.
-        """
-        pass
-
-    @abstractmethod
-    def get_named_property(self) -> 'OWLObjectProperty':
-        """Get the named object property used in this property expression.
-
-        Returns:
-            P if this expression is either inv(P) or P.
-        """
-        pass
-
-    def is_object_property_expression(self) -> bool:
-        # documented in parent
-        return True
-
-
-class OWLDataPropertyExpression(OWLPropertyExpression, metaclass=ABCMeta):
-    """A high level interface to describe different types of data properties."""
-    __slots__ = ()
-
-    def is_data_property_expression(self):
-        # documented in parent
-        return True
-
-
-class OWLProperty(OWLPropertyExpression, OWLEntity, metaclass=ABCMeta):
-    """A marker interface for properties that aren't expression i.e. named properties. By definition, properties
-    are either data properties or object properties."""
-    __slots__ = ()
-    pass
-
-
-class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
-    """Represents a Data Property in the OWL 2 Specification."""
-    __slots__ = '_iri'
-    type_index: Final = 1004
-
-    _iri: IRI
-
-    def __init__(self, iri: IRI):
-        """Gets an instance of OWLDataProperty that has the specified IRI.
-
-        Args:
-            iri: The IRI.
-        """
-        self._iri = iri
-
-    def get_iri(self) -> IRI:
-        # documented in parent
-        return self._iri
-
-    def is_owl_top_data_property(self) -> bool:
-        # documented in parent
-        return self.get_iri() == OWLRDFVocabulary.OWL_TOP_DATA_PROPERTY.get_iri()
-
-
-class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
-    """Represents an Object Property in the OWL 2 Specification."""
-    __slots__ = '_iri'
-    type_index: Final = 1002
-
-    _iri: Union[IRI, str]
-
-    def get_named_property(self) -> 'OWLObjectProperty':
-        # documented in parent
-        return self
-
-    def __init__(self, iri: Union[IRI, str]):
-        """Gets an instance of OWLObjectProperty that has the specified IRI.
-
-        Args:
-            iri: The IRI.
-        """
-        if isinstance(iri, IRI):
-            self._iri = iri
-        else:
-            self._iri = IRI.create(iri)
-
-    def get_inverse_property(self) -> 'OWLObjectInverseOf':
-        # documented in parent
-        return OWLObjectInverseOf(self)
-
-    @property
-    def str(self) -> str:
-        return self._iri.as_str()
-
-    @property
-    def iri(self) -> str:
-        return self._iri
-
-    def get_iri(self) -> IRI:
-        # TODO:CD: can be deprecated
-        # documented in parent
-        return self._iri
-
-    def is_owl_top_object_property(self) -> bool:
-        # documented in parent
-        return self.get_iri() == OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.get_iri()
-
-
-class OWLObjectInverseOf(OWLObjectPropertyExpression):
-    """Represents the inverse of a property expression (ObjectInverseOf). This can be used to refer to the inverse of
-    a property, without actually naming the property. For example, consider the property hasPart, the inverse property
-    of hasPart (isPartOf) can be referred to using this interface inverseOf(hasPart), which can be used in
-    restrictions e.g. inverseOf(hasPart) some Car refers to the set of things that are part of at least one car."""
-    __slots__ = '_inverse_property'
-    type_index: Final = 1003
-
-    _inverse_property: OWLObjectProperty
-
-    def __init__(self, property: OWLObjectProperty):
-        """Gets the inverse of an object property.
-
-        Args:
-            property: The property of which the inverse will be returned.
-        """
-        self._inverse_property = property
-
-    def get_inverse(self) -> OWLObjectProperty:
-        """Gets the property expression that this is the inverse of.
-
-        Returns:
-            The object property expression such that this object property expression is an inverse of it.
-        """
-        return self._inverse_property
-
-    def get_inverse_property(self) -> OWLObjectProperty:
-        # documented in parent
-        return self.get_inverse()
-
-    def get_named_property(self) -> OWLObjectProperty:
-        # documented in parent
-        return self._inverse_property
-
-    def __repr__(self):
-        return f"OWLObjectInverseOf({repr(self._inverse_property)})"
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self._inverse_property == other._inverse_property
-        return NotImplemented
-
-    def __hash__(self):
-        return hash(self._inverse_property)
-
-
 class OWLDataRestriction(OWLRestriction, metaclass=ABCMeta):
     """Represents a Data Property Restriction in the OWL 2 specification."""
     __slots__ = ()
@@ -342,8 +65,6 @@ class OWLDataRestriction(OWLRestriction, metaclass=ABCMeta):
         return True
 
     pass
-
-
 class OWLObjectRestriction(OWLRestriction, metaclass=ABCMeta):
     """Represents a Object Property Restriction in the OWL 2 specification."""
     __slots__ = ()
@@ -356,28 +77,6 @@ class OWLObjectRestriction(OWLRestriction, metaclass=ABCMeta):
     def get_property(self) -> OWLObjectPropertyExpression:
         # documented in parent
         pass
-
-
-class HasFiller(Generic[_T], metaclass=ABCMeta):
-    """An interface to objects that have a filler.
-
-    Args:
-        _T: Filler type.
-    """
-    __slots__ = ()
-
-    @abstractmethod
-    def get_filler(self) -> _T:
-        """Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
-        the case of a data restriction this will be a constant (data value). For quantified restriction this will be
-        a class expression or a data range.
-
-        Returns:
-            the value
-        """
-        pass
-
-
 class OWLHasValueRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metaclass=ABCMeta):
     """OWLHasValueRestriction.
 
@@ -402,8 +101,6 @@ class OWLHasValueRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metacla
     def get_filler(self) -> _T:
         # documented in parent
         return self._v
-
-
 class OWLQuantifiedRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metaclass=ABCMeta):
     """Represents a quantified restriction.
 
@@ -412,8 +109,6 @@ class OWLQuantifiedRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metac
     """
     __slots__ = ()
     pass
-
-
 class OWLQuantifiedObjectRestriction(OWLQuantifiedRestriction[OWLClassExpression], OWLObjectRestriction,
                                      metaclass=ABCMeta):
     """Represents a quantified object restriction."""
@@ -427,8 +122,6 @@ class OWLQuantifiedObjectRestriction(OWLQuantifiedRestriction[OWLClassExpression
     def get_filler(self) -> OWLClassExpression:
         # documented in parent (HasFiller)
         return self._filler
-
-
 class OWLObjectSomeValuesFrom(OWLQuantifiedObjectRestriction):
     """Represents an ObjectSomeValuesFrom class expression in the OWL 2 Specification."""
     __slots__ = '_property', '_filler'
@@ -461,8 +154,6 @@ class OWLObjectSomeValuesFrom(OWLQuantifiedObjectRestriction):
     def get_property(self) -> OWLObjectPropertyExpression:
         # documented in parent
         return self._property
-
-
 class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
     """Represents an ObjectAllValuesFrom class expression in the OWL 2 Specification."""
     __slots__ = '_property', '_filler'
@@ -486,6 +177,8 @@ class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
     def get_property(self) -> OWLObjectPropertyExpression:
         # documented in parent
         return self._property
+
+
 
 
 class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLClassExpression]):
@@ -515,7 +208,6 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
 
     def __hash__(self):
         return hash(self._operands)
-
 
 class OWLObjectUnionOf(OWLNaryBooleanClassExpression):
     """Represents an ObjectUnionOf class expression in the OWL 2 Specification."""

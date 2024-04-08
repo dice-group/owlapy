@@ -2,13 +2,13 @@
 from functools import singledispatchmethod, total_ordering
 from typing import Iterable, List, Type, TypeVar, Generic, Tuple, cast, Optional, Union, overload
 from .has import HasIndex
-
+from .owl_property import OWLObjectInverseOf
 from owlapy.model import HasIRI, OWLClassExpression, OWLClass, OWLObjectCardinalityRestriction, \
     OWLObjectComplementOf, OWLNothing, OWLPropertyRange, OWLRestriction, OWLThing, OWLObjectSomeValuesFrom, \
     OWLObjectHasValue, OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectHasSelf, \
     OWLObjectOneOf, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataExactCardinality, OWLDataHasValue, \
     OWLDataAllValuesFrom, OWLDataSomeValuesFrom, OWLObjectAllValuesFrom, HasFiller, HasCardinality, HasOperands, \
-    OWLObjectInverseOf, OWLDatatypeRestriction, OWLDataComplementOf, OWLDatatype, OWLDataUnionOf, \
+    OWLDatatypeRestriction, OWLDataComplementOf, OWLDatatype, OWLDataUnionOf, \
     OWLDataIntersectionOf, OWLDataOneOf, OWLFacetRestriction, OWLLiteral, OWLObjectIntersectionOf, \
     OWLDataCardinalityRestriction, OWLNaryBooleanClassExpression, OWLNaryDataRange, OWLObjectUnionOf, \
     OWLDataRange, OWLObject

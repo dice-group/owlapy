@@ -40,3 +40,24 @@ class HasOperands(Generic[_T], metaclass=ABCMeta):
             The operands.
         """
         pass
+
+
+
+class HasFiller(Generic[_T], metaclass=ABCMeta):
+    """An interface to objects that have a filler.
+
+    Args:
+        _T: Filler type.
+    """
+    __slots__ = ()
+
+    @abstractmethod
+    def get_filler(self) -> _T:
+        """Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
+        the case of a data restriction this will be a constant (data value). For quantified restriction this will be
+        a class expression or a data range.
+
+        Returns:
+            the value
+        """
+        pass
