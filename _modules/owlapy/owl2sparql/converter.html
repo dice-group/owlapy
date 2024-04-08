@@ -352,21 +352,6 @@
         <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
 
-        <span class="c1"># the following part was commented out because it was related to the possible optimization in the complement</span>
-        <span class="c1"># operator that has also been commented out</span>
-        <span class="c1"># with self.intersection():</span>
-        <span class="c1">#     for op in ce.operands():</span>
-        <span class="c1">#         self.process(op)</span>
-        <span class="c1">#     props = self.properties[self.modal_depth]</span>
-        <span class="c1">#     vars_ = set()</span>
-        <span class="c1">#     if props:</span>
-        <span class="c1">#         for p in props:</span>
-        <span class="c1">#             if p in self.mapping:</span>
-        <span class="c1">#                 vars_.add(self.mapping[p])</span>
-        <span class="c1">#         if len(vars_) == 2:</span>
-        <span class="c1">#             v0, v1 = sorted(vars_)</span>
-        <span class="c1">#             self.append(f&quot;FILTER ( {v0} != {v1} )&quot;)</span>
-
     <span class="c1"># an overload of process function</span>
     <span class="c1"># this overload is responsible for handling unions of concepts (e.g., Brother ⊔ Sister)</span>
     <span class="c1"># general case: C1 ⊔ ... ⊔ Cn</span>
@@ -391,14 +376,6 @@
     <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
         <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
-        <span class="c1"># the conversion was trying here to optimize the query</span>
-        <span class="c1"># but the proposed optimization alters the semantics of some queries</span>
-        <span class="c1"># example: ( A ⊓ ( B ⊔ ( ¬C ) ) )</span>
-        <span class="c1"># with the proposed optimization, the group graph pattern for (¬C) will be { FILTER NOT EXISTS { ?x a C } }</span>
-        <span class="c1"># however, the expected pattern is { ?x ?p ?o . FILTER NOT EXISTS { ?x a C } }</span>
-        <span class="c1"># the exclusion of &quot;?x ?p ?o&quot; results in the group graph pattern to just return true or false (not bindings)</span>
-        <span class="c1"># as a result, we need to comment out the if-clause of the following line</span>
-        <span class="c1"># if not self.in_intersection and self.modal_depth == 1:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
@@ -437,19 +414,9 @@
         <span class="c1"># filler holds the concept of the expression (Male in our example) and is processed recursively</span>
         <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
 
-        <span class="c1"># if the current class expression is the first one we are processing (root of recursion), the following</span>
-        <span class="c1"># if-clause tries to restrict the entities (individuals) to consider using owl:NamedIndividual.</span>
-        <span class="c1"># However, it is not guaranteed that entities in every KG are instances of owl:NamedIndividual, hence, adding</span>
-        <span class="c1"># this triple will affect the results in such cases.</span>
-        <span class="c1"># if self.modal_depth == 1:</span>
-        <span class="c1">#     self.append_triple(self.current_variable, &quot;a&quot;, f&quot;&lt;{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}&gt;&quot;)</span>
 
-        <span class="c1"># here, the first group graph pattern starts</span>
-        <span class="c1"># the first group graph pattern ensures deals with the entities that appear in a triple with the property</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span>
-        <span class="c1"># if filler.is_owl_thing():</span>
-        <span class="c1">#     self.append_triple(self.current_variable, self.mapping.new_property_variable(), object_variable)</span>
-        <span class="c1"># else:</span>
+
         <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
             <span class="c1"># property expression is inverse of a property</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
@@ -744,14 +711,6 @@
         <span class="n">qs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
         <span class="n">qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="c1"># group_by_vars = self.grouping_vars[ce]</span>
-        <span class="c1"># if group_by_vars:</span>
-        <span class="c1">#     qs.append(&quot;GROUP BY &quot; + &quot; &quot;.join(sorted(group_by_vars)))</span>
-        <span class="c1"># conditions = self.having_conditions[ce]</span>
-        <span class="c1"># if conditions:</span>
-        <span class="c1">#     qs.append(&quot; HAVING ( &quot;)</span>
-        <span class="c1">#     qs.append(&quot; &amp;&amp; &quot;.join(sorted(conditions)))</span>
-        <span class="c1">#     qs.append(&quot; )&quot;)</span>
 
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
         <span class="n">parseQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
@@ -766,12 +725,12 @@
 <div class="viewcode-block" id="owl_expression_to_sparql">
 <a class="viewcode-back" href="../../../autoapi/owlapy/owl2sparql/converter/index.html#owlapy.owl2sparql.converter.owl_expression_to_sparql">[docs]</a>
 <span class="k">def</span> <span class="nf">owl_expression_to_sparql</span><span class="p">(</span><span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?x&quot;</span><span class="p">,</span>
-                             <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="n">count</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                              <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">converter</span><span class="o">.</span><span class="n">as_query</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">converter</span><span class="o">.</span><span class="n">as_query</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">)</span></div>
 
 </pre></div>
 
