@@ -1,15 +1,8 @@
 from abc import abstractmethod, ABCMeta
 from .owlobject import OWLObject, OWLEntity
 from .has import HasOperands
-from typing import Final, Iterable
-
-# @TODO: metaclass=ABCMeta inheritance may not be required since OWLObject is defined as such
-class OWLPropertyRange(OWLObject, metaclass=ABCMeta):
-    """OWL Objects that can be the ranges of properties."""
-
-
-class OWLDataRange(OWLPropertyRange, metaclass=ABCMeta):
-    """Represents a DataRange in the OWL 2 Specification."""
+from typing import Final, Iterable, Sequence
+from .ranges import OWLPropertyRange, OWLDataRange
 
 
 class OWLClassExpression(OWLPropertyRange):
@@ -163,3 +156,46 @@ class OWLClass(OWLClassExpression, OWLEntity):
     def reminder(self) -> str:
         """The reminder of the IRI """
         return self.get_iri().get_remainder()
+
+class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLClassExpression]):
+    """OWLNaryBooleanClassExpression."""
+    __slots__ = ()
+
+    _operands: Sequence[OWLClassExpression]
+
+    def __init__(self, operands: Iterable[OWLClassExpression]):
+        """
+        Args:
+            operands: Class expressions.
+        """
+        self._operands = tuple(operands)
+
+    def operands(self) -> Iterable[OWLClassExpression]:
+        # documented in parent
+        yield from self._operands
+
+    def __repr__(self):
+        return f'{type(self).__name__}({repr(self._operands)})'
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self._operands == other._operands
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(self._operands)
+
+class OWLObjectUnionOf(OWLNaryBooleanClassExpression):
+    """Represents an ObjectUnionOf class expression in the OWL 2 Specification."""
+    __slots__ = '_operands'
+    type_index: Final = 3002
+
+    _operands: Sequence[OWLClassExpression]
+
+
+class OWLObjectIntersectionOf(OWLNaryBooleanClassExpression):
+    """Represents an OWLObjectIntersectionOf class expression in the OWL 2 Specification."""
+    __slots__ = '_operands'
+    type_index: Final = 3001
+
+    _operands: Sequence[OWLClassExpression]

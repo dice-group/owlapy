@@ -1,9 +1,12 @@
 from abc import ABCMeta, abstractmethod
-from .has import HasFiller
+from .has import HasFiller, HasCardinality
 from typing import TypeVar, Generic, Final
-from .owl_class_expression import OWLAnonymousClassExpression, OWLClassExpression
+from .owl_class_expression import OWLAnonymousClassExpression, OWLClassExpression, OWLObjectIntersectionOf
 from .owl_property import OWLPropertyExpression, OWLObjectPropertyExpression
+from .ranges import OWLPropertyRange
+
 _T = TypeVar('_T')  #:
+_F = TypeVar('_F', bound=OWLPropertyRange)  #:
 class OWLRestriction(OWLAnonymousClassExpression):
     """Represents an Object Property Restriction or Data Property Restriction in the OWL 2 specification."""
     __slots__ = ()
@@ -152,3 +155,146 @@ class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
     def get_property(self) -> OWLObjectPropertyExpression:
         # documented in parent
         return self._property
+
+class OWLCardinalityRestriction(Generic[_F], OWLQuantifiedRestriction[_F], HasCardinality, metaclass=ABCMeta):
+    """Base interface for owl min and max cardinality restriction.
+
+    Args:
+        _F: Type of filler.
+    """
+    __slots__ = ()
+
+    _cardinality: int
+    _filler: _F
+
+    def __init__(self, cardinality: int, filler: _F):
+        self._cardinality = cardinality
+        self._filler = filler
+
+    def get_cardinality(self) -> int:
+        # documented in parent
+        return self._cardinality
+
+    def get_filler(self) -> _F:
+        # documented in parent
+        return self._filler
+
+
+class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpression], OWLQuantifiedObjectRestriction):
+    """Represents Object Property Cardinality Restrictions in the OWL 2 specification."""
+    __slots__ = ()
+
+    _property: OWLObjectPropertyExpression
+
+    @abstractmethod
+    def __init__(self, cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
+        super().__init__(cardinality, filler)
+        self._property = property
+
+    def get_property(self) -> OWLObjectPropertyExpression:
+        # documented in parent
+        return self._property
+
+    def __repr__(self):
+        return f"{type(self).__name__}(" \
+               f"property={repr(self.get_property())},{self.get_cardinality()},filler={repr(self.get_filler())})"
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self._property == other._property \
+                and self._cardinality == other._cardinality \
+                and self._filler == other._filler
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self._property, self._cardinality, self._filler))
+
+class OWLObjectMinCardinality(OWLObjectCardinalityRestriction):
+    """Represents a ObjectMinCardinality restriction in the OWL 2 Specification."""
+    __slots__ = '_cardinality', '_filler', '_property'
+    type_index: Final = 3008
+
+    def __init__(self, cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
+        """
+        Args:
+            cardinality: Cannot be negative.
+            property: The property that the restriction acts along.
+            filler: Class expression for restriction.
+
+        Returns:
+            An ObjectMinCardinality on the specified property.
+        """
+        super().__init__(cardinality, property, filler)
+class OWLObjectMaxCardinality(OWLObjectCardinalityRestriction):
+    """Represents a ObjectMaxCardinality restriction in the OWL 2 Specification."""
+    __slots__ = '_cardinality', '_filler', '_property'
+    type_index: Final = 3010
+
+    def __init__(self, cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
+        """
+        Args:
+            cardinality: Cannot be negative.
+            property: The property that the restriction acts along.
+            filler: Class expression for restriction.
+
+        Returns:
+            An ObjectMaxCardinality on the specified property.
+        """
+        super().__init__(cardinality, property, filler)
+class OWLObjectExactCardinality(OWLObjectCardinalityRestriction):
+    """Represents an ObjectExactCardinality  restriction in the OWL 2 Specification."""
+    __slots__ = '_cardinality', '_filler', '_property'
+    type_index: Final = 3009
+
+    def __init__(self, cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
+        """
+        Args:
+            cardinality: Cannot be negative.
+            property: The property that the restriction acts along.
+            filler: Class expression for restriction.
+
+        Returns:
+            An ObjectExactCardinality on the specified property.
+        """
+        super().__init__(cardinality, property, filler)
+
+    def as_intersection_of_min_max(self) -> OWLObjectIntersectionOf:
+        """Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
+
+        Returns:
+            The semantically equivalent but structurally simpler form (= 1 R C) = >= 1 R C and <= 1 R C.
+        """
+        args = self.get_cardinality(), self.get_property(), self.get_filler()
+        return OWLObjectIntersectionOf((OWLObjectMinCardinality(*args), OWLObjectMaxCardinality(*args)))
+class OWLObjectHasSelf(OWLObjectRestriction):
+    """Represents an ObjectHasSelf class expression in the OWL 2 Specification."""
+    __slots__ = '_property'
+    type_index: Final = 3011
+
+    _property: OWLObjectPropertyExpression
+
+    def __init__(self, property: OWLObjectPropertyExpression):
+        """Object has self restriction
+
+        Args:
+            property: The property that the restriction acts along.
+
+        Returns:
+            A ObjectHasSelf class expression on the specified property.
+        """
+        self._property = property
+
+    def get_property(self) -> OWLObjectPropertyExpression:
+        # documented in parent
+        return self._property
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self._property == other._property
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(self._property)
+
+    def __repr__(self):
+        return f'OWLObjectHasSelf({self._property})'
