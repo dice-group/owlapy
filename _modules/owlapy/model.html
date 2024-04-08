@@ -430,10 +430,9 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">reminder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">reminder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The reminder of the IRI &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">get_remainder</span><span class="p">()</span></div>
-
 
 
 <div class="viewcode-block" id="OWLPropertyExpression">
@@ -631,7 +630,7 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_iri&#39;</span>
     <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">1002</span>
 
-    <span class="n">_iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
 
 <div class="viewcode-block" id="OWLObjectProperty.get_named_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectProperty.get_named_property">[docs]</a>
@@ -640,16 +639,13 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLObjectProperty that has the specified IRI.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            iri: The IRI.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">IRI</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
 
 <div class="viewcode-block" id="OWLObjectProperty.get_inverse_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectProperty.get_inverse_property">[docs]</a>
@@ -658,18 +654,9 @@
         <span class="k">return</span> <span class="n">OWLObjectInverseOf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span>
-
 <div class="viewcode-block" id="OWLObjectProperty.get_iri">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectProperty.get_iri">[docs]</a>
     <span class="k">def</span> <span class="nf">get_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
-        <span class="c1"># TODO:CD: can be deprecated</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span></div>
 
@@ -679,7 +666,11 @@
     <span class="k">def</span> <span class="nf">is_owl_top_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span> <span class="o">==</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_TOP_OBJECT_PROPERTY</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span></div>
-</div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span></div>
 
 
 
@@ -1131,8 +1122,8 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cardinality</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_filler</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cardinality</span> \
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_filler</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -1404,24 +1395,20 @@
 
     <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLNamedIndividual that has the specified IRI.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            iri: an instance of IRI Class or a string representing the iri</span>
+<span class="sd">            iri: The IRI.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            An OWLNamedIndividual that has the specified IRI.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">IRI</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
 
 <div class="viewcode-block" id="OWLNamedIndividual.get_iri">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLNamedIndividual.get_iri">[docs]</a>
     <span class="k">def</span> <span class="nf">get_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
-        <span class="c1"># TODO:CD: can be deprecated</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span></div>
 
@@ -1608,7 +1595,7 @@
     <span class="n">_facet_restrictions</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">,</span>
-    <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]]):</span>
+                                                                     <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="n">type_</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">):</span>
             <span class="n">facet_restrictions</span> <span class="o">=</span> <span class="n">facet_restrictions</span><span class="p">,</span>
@@ -1631,7 +1618,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_type</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_facet_restrictions</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_facet_restrictions</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -2297,8 +2284,8 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cardinality</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_filler</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cardinality</span> \
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_filler</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -2896,7 +2883,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datatype</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_datatype</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datarange</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_datarange</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -2953,8 +2940,8 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expression</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expression</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property_expressions</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property_expressions</span> \
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3365,7 +3352,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_class</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_class</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_class</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_class</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3428,7 +3415,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cls</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cls</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expressions</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3485,7 +3472,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expression</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expression</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_individual</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_individual</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3717,7 +3704,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_property</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3768,7 +3755,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_domain</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3819,7 +3806,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_range</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3873,7 +3860,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_property</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3966,7 +3953,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_subject</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_object</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_object</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">_object</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_object</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -4232,7 +4219,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_domain</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -4274,7 +4261,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_range</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
