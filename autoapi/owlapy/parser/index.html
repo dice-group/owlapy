@@ -26,7 +26,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="owlapy.render" href="../render/index.html" />
-    <link rel="prev" title="owlapy.namespaces" href="../namespaces/index.html" /> 
+    <link rel="prev" title="owlapy.owlobject" href="../owlobject/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,8 +54,13 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="../io/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.io</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../has/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.has</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.iri</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.namespaces</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_annotation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_class_expression/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_class_expression</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_property</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlobject/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owlobject</span></code></a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.parser</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#classes">Classes</a></li>
@@ -167,7 +172,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.parser.ManchesterOWLSyntaxParser">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.parser.</span></span><span class="sig-name descname"><span class="pre">ManchesterOWLSyntaxParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../namespaces/index.html#owlapy.namespaces.Namespaces" title="owlapy.namespaces.Namespaces"><span class="pre">owlapy.namespaces.Namespaces</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grammar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/parser.html#ManchesterOWLSyntaxParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.parser.ManchesterOWLSyntaxParser" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">parsimonious.nodes.NodeVisitor</span></code>, <a class="reference internal" href="../io/index.html#owlapy.io.OWLObjectParser" title="owlapy.io.OWLObjectParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.io.OWLObjectParser</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">parsimonious.nodes.NodeVisitor</span></code>, <a class="reference internal" href="../owlobject/index.html#owlapy.owlobject.OWLObjectParser" title="owlapy.owlobject.OWLObjectParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owlobject.OWLObjectParser</span></code></a></p>
 <p>Manchester Syntax parser to parse strings to OWLClassExpressions.
 Following: <a class="reference external" href="https://www.w3.org/TR/owl2-manchester-syntax">https://www.w3.org/TR/owl2-manchester-syntax</a>.</p>
 <dl class="py attribute">
@@ -452,7 +457,7 @@ for now.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.parser.DLSyntaxParser">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.parser.</span></span><span class="sig-name descname"><span class="pre">DLSyntaxParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../namespaces/index.html#owlapy.namespaces.Namespaces" title="owlapy.namespaces.Namespaces"><span class="pre">owlapy.namespaces.Namespaces</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grammar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/parser.html#DLSyntaxParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.parser.DLSyntaxParser" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">parsimonious.nodes.NodeVisitor</span></code>, <a class="reference internal" href="../io/index.html#owlapy.io.OWLObjectParser" title="owlapy.io.OWLObjectParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.io.OWLObjectParser</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">parsimonious.nodes.NodeVisitor</span></code>, <a class="reference internal" href="../owlobject/index.html#owlapy.owlobject.OWLObjectParser" title="owlapy.owlobject.OWLObjectParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owlobject.OWLObjectParser</span></code></a></p>
 <p>Description Logic Syntax parser to parse strings to OWLClassExpressions.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.parser.DLSyntaxParser.slots">
@@ -756,7 +761,7 @@ for now.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../namespaces/index.html" class="btn btn-neutral float-left" title="owlapy.namespaces" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../owlobject/index.html" class="btn btn-neutral float-left" title="owlapy.owlobject" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../render/index.html" class="btn btn-neutral float-right" title="owlapy.render" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

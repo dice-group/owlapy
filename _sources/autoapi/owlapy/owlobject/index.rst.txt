@@ -1,0 +1,149 @@
+:py:mod:`owlapy.owlobject`
+==========================
+
+.. py:module:: owlapy.owlobject
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owlobject.OWLObject
+   owlapy.owlobject.OWLObjectRenderer
+   owlapy.owlobject.OWLObjectParser
+   owlapy.owlobject.OWLNamedObject
+   owlapy.owlobject.OWLEntity
+
+
+
+
+.. py:class:: OWLObject
+
+
+   Base interface for OWL objects
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: __eq__(other)
+      :abstractmethod:
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+      :abstractmethod:
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+      :abstractmethod:
+
+      Return repr(self).
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+
+.. py:class:: OWLObjectRenderer
+
+
+   Abstract class with a render method to render an OWL Object into a string.
+
+   .. py:method:: set_short_form_provider(short_form_provider) -> None
+      :abstractmethod:
+
+      Configure a short form provider that shortens the OWL objects during rendering.
+
+      :param short_form_provider: Short form provider.
+
+
+   .. py:method:: render(o: OWLObject) -> str
+      :abstractmethod:
+
+      Render OWL Object to string.
+
+      :param o: OWL Object.
+
+      :returns: String rendition of OWL object.
+
+
+
+.. py:class:: OWLObjectParser
+
+
+   Abstract class with a parse method to parse a string to an OWL Object.
+
+   .. py:method:: parse_expression(expression_str: str) -> OWLObject
+      :abstractmethod:
+
+      Parse a string to an OWL Object.
+
+      :param expression_str: Expression string.
+      :type expression_str: str
+
+      :returns: The OWL Object which is represented by the string.
+
+
+
+.. py:class:: OWLNamedObject
+
+
+   Bases: :py:obj:`OWLObject`, :py:obj:`owlapy.has.HasIRI`
+
+   Represents a named object for example, class, property, ontology etc. - i.e. anything that has an
+   IRI as its name.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __lt__(other)
+
+      Return self<value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLEntity
+
+
+   Bases: :py:obj:`OWLNamedObject`
+
+   Represents Entities in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: to_string_id() -> str
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+

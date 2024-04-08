@@ -1,9 +1,7 @@
-:orphan:
+:py:mod:`owlapy.owl_annotation`
+===============================
 
-:py:mod:`owlapy.model._base`
-============================
-
-.. py:module:: owlapy.model._base
+.. py:module:: owlapy.owl_annotation
 
 
 Module Contents
@@ -14,50 +12,17 @@ Classes
 
 .. autoapisummary::
 
-   owlapy.model._base.OWLObject
-   owlapy.model._base.OWLAnnotationObject
-   owlapy.model._base.OWLAnnotationSubject
-   owlapy.model._base.OWLAnnotationValue
+   owlapy.owl_annotation.OWLAnnotationObject
+   owlapy.owl_annotation.OWLAnnotationSubject
+   owlapy.owl_annotation.OWLAnnotationValue
 
-
-
-
-.. py:class:: OWLObject
-
-
-   Base interface for OWL objects
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-   .. py:method:: __eq__(other)
-      :abstractmethod:
-
-      Return self==value.
-
-
-   .. py:method:: __hash__()
-      :abstractmethod:
-
-      Return hash(self).
-
-
-   .. py:method:: __repr__()
-      :abstractmethod:
-
-      Return repr(self).
-
-
-   .. py:method:: is_anonymous() -> bool
 
 
 
 .. py:class:: OWLAnnotationObject
 
 
-   Bases: :py:obj:`OWLObject`
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
    A marker interface for the values (objects) of annotations.
 
@@ -66,7 +31,7 @@ Classes
 
       
 
-   .. py:method:: as_iri() -> Optional[owlapy.model._iri.IRI]
+   .. py:method:: as_iri() -> Optional[IRI]
 
       :returns: if the value is an IRI, return it. Return Mone otherwise.
 
@@ -107,7 +72,7 @@ Classes
       :returns: true if the annotation value is a literal
 
 
-   .. py:method:: as_literal() -> Optional[owlapy.model.OWLLiteral]
+   .. py:method:: as_literal() -> Optional[OWLLiteral]
 
       :returns: if the value is a literal, returns it. Return None otherwise
 

@@ -82,7 +82,12 @@
 <span class="kn">from</span> <span class="nn">parsimonious.grammar</span> <span class="kn">import</span> <span class="n">Grammar</span>
 <span class="kn">from</span> <span class="nn">parsimonious.nodes</span> <span class="kn">import</span> <span class="n">NodeVisitor</span>
 <span class="kn">from</span> <span class="nn">parsimonious.nodes</span> <span class="kn">import</span> <span class="n">Node</span>
-<span class="kn">from</span> <span class="nn">owlapy.io</span> <span class="kn">import</span> <span class="n">OWLObjectParser</span>
+<span class="kn">from</span> <span class="nn">.owlobject</span> <span class="kn">import</span> <span class="n">OWLObjectParser</span>
+<span class="kn">from</span> <span class="nn">.namespaces</span> <span class="kn">import</span> <span class="n">Namespaces</span>
+<span class="kn">from</span> <span class="nn">.render</span> <span class="kn">import</span> <span class="n">_DL_SYNTAX</span><span class="p">,</span> <span class="n">_MAN_SYNTAX</span>
+<span class="kn">from</span> <span class="nn">.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLRDFVocabulary</span>
+
+
 <span class="kn">from</span> <span class="nn">owlapy.model</span> <span class="kn">import</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> \
     <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">IRI</span><span class="p">,</span> \
     <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> \
@@ -92,10 +97,8 @@
     <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> \
     <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> \
     <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">BooleanOWLDatatype</span>
-<span class="kn">from</span> <span class="nn">owlapy.namespaces</span> <span class="kn">import</span> <span class="n">Namespaces</span>
 
-<span class="kn">from</span> <span class="nn">owlapy.render</span> <span class="kn">import</span> <span class="n">_DL_SYNTAX</span><span class="p">,</span> <span class="n">_MAN_SYNTAX</span>
-<span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLRDFVocabulary</span>
+
 
 
 <span class="n">MANCHESTER_GRAMMAR</span> <span class="o">=</span> <span class="n">Grammar</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>

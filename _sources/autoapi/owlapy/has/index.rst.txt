@@ -1,0 +1,108 @@
+:py:mod:`owlapy.has`
+====================
+
+.. py:module:: owlapy.has
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.has.HasIndex
+   owlapy.has.HasIRI
+   owlapy.has.HasOperands
+   owlapy.has.HasFiller
+
+
+
+
+.. py:class:: HasIndex
+
+
+   Bases: :py:obj:`Protocol`
+
+   Interface for types with an index; this is used to group objects by type when sorting.
+
+   .. py:attribute:: type_index
+      :type: ClassVar[int]
+
+      
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+.. py:class:: HasIRI
+
+
+   Simple class to access the IRI.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: get_iri() -> IRI
+      :abstractmethod:
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+
+.. py:class:: HasOperands
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+   An interface to objects that have a collection of operands.
+
+   :param _T: Operand type.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: operands() -> Iterable[_T]
+      :abstractmethod:
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+
+.. py:class:: HasFiller
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+   An interface to objects that have a filler.
+
+   :param _T: Filler type.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: get_filler() -> _T
+      :abstractmethod:
+
+      Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
+      the case of a data restriction this will be a constant (data value). For quantified restriction this will be
+      a class expression or a data range.
+
+      :returns: the value
+
+
+

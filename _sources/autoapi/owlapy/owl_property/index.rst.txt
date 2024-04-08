@@ -1,0 +1,278 @@
+:py:mod:`owlapy.owl_property`
+=============================
+
+.. py:module:: owlapy.owl_property
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owl_property.OWLPropertyExpression
+   owlapy.owl_property.OWLObjectPropertyExpression
+   owlapy.owl_property.OWLDataPropertyExpression
+   owlapy.owl_property.OWLProperty
+   owlapy.owl_property.OWLObjectProperty
+   owlapy.owl_property.OWLObjectInverseOf
+   owlapy.owl_property.OWLDataProperty
+
+
+
+
+.. py:class:: OWLPropertyExpression
+
+
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+
+   Represents a property or possibly the inverse of a property.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: is_data_property_expression() -> bool
+
+      :returns: True if this is a data property.
+
+
+   .. py:method:: is_object_property_expression() -> bool
+
+      :returns: True if this is an object property.
+
+
+   .. py:method:: is_owl_top_object_property() -> bool
+
+      Determines if this is the owl:topObjectProperty.
+
+      :returns: topObjectProperty.
+      :rtype: True if this property is the owl
+
+
+   .. py:method:: is_owl_top_data_property() -> bool
+
+      Determines if this is the owl:topDataProperty.
+
+      :returns: topDataProperty.
+      :rtype: True if this property is the owl
+
+
+
+.. py:class:: OWLObjectPropertyExpression
+
+
+   Bases: :py:obj:`OWLPropertyExpression`
+
+   A high level interface to describe different types of object properties.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: get_inverse_property() -> OWLObjectPropertyExpression
+      :abstractmethod:
+
+      Obtains the property that corresponds to the inverse of this property.
+
+      :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
+
+
+   .. py:method:: get_named_property() -> OWLObjectProperty
+      :abstractmethod:
+
+      Get the named object property used in this property expression.
+
+      :returns: P if this expression is either inv(P) or P.
+
+
+   .. py:method:: is_object_property_expression() -> bool
+
+      :returns: True if this is an object property.
+
+
+
+.. py:class:: OWLDataPropertyExpression
+
+
+   Bases: :py:obj:`OWLPropertyExpression`
+
+   A high level interface to describe different types of data properties.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: is_data_property_expression()
+
+      :returns: True if this is a data property.
+
+
+
+.. py:class:: OWLProperty
+
+
+   Bases: :py:obj:`OWLPropertyExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
+
+   A marker interface for properties that aren't expression i.e. named properties. By definition, properties
+   are either data properties or object properties.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLObjectProperty(iri: Union[owlapy.iri.IRI, str])
+
+
+   Bases: :py:obj:`OWLObjectPropertyExpression`, :py:obj:`OWLProperty`
+
+   Represents an Object Property in the OWL 2 Specification.
+
+   .. py:property:: str
+      :type: str
+
+
+   .. py:property:: iri
+      :type: str
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 1002
+
+      
+
+   .. py:method:: get_named_property() -> OWLObjectProperty
+
+      Get the named object property used in this property expression.
+
+      :returns: P if this expression is either inv(P) or P.
+
+
+   .. py:method:: get_inverse_property() -> OWLObjectInverseOf
+
+      Obtains the property that corresponds to the inverse of this property.
+
+      :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
+
+
+   .. py:method:: get_iri() -> owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:method:: is_owl_top_object_property() -> bool
+
+      Determines if this is the owl:topObjectProperty.
+
+      :returns: topObjectProperty.
+      :rtype: True if this property is the owl
+
+
+
+.. py:class:: OWLObjectInverseOf(property: OWLObjectProperty)
+
+
+   Bases: :py:obj:`OWLObjectPropertyExpression`
+
+   Represents the inverse of a property expression (ObjectInverseOf). This can be used to refer to the inverse of
+   a property, without actually naming the property. For example, consider the property hasPart, the inverse property
+   of hasPart (isPartOf) can be referred to using this interface inverseOf(hasPart), which can be used in
+   restrictions e.g. inverseOf(hasPart) some Car refers to the set of things that are part of at least one car.
+
+   .. py:attribute:: __slots__
+      :value: '_inverse_property'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 1003
+
+      
+
+   .. py:method:: get_inverse() -> OWLObjectProperty
+
+      Gets the property expression that this is the inverse of.
+
+      :returns: The object property expression such that this object property expression is an inverse of it.
+
+
+   .. py:method:: get_inverse_property() -> OWLObjectProperty
+
+      Obtains the property that corresponds to the inverse of this property.
+
+      :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
+
+
+   .. py:method:: get_named_property() -> OWLObjectProperty
+
+      Get the named object property used in this property expression.
+
+      :returns: P if this expression is either inv(P) or P.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLDataProperty(iri: owlapy.iri.IRI)
+
+
+   Bases: :py:obj:`OWLDataPropertyExpression`, :py:obj:`OWLProperty`
+
+   Represents a Data Property in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 1004
+
+      
+
+   .. py:method:: get_iri() -> owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:method:: is_owl_top_data_property() -> bool
+
+      Determines if this is the owl:topDataProperty.
+
+      :returns: topDataProperty.
+      :rtype: True if this property is the owl
+
+
+

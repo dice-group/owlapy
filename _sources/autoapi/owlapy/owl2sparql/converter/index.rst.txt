@@ -185,7 +185,15 @@ Attributes
    .. py:method:: triple(subject, predicate, object_)
 
 
-   .. py:method:: as_query(root_variable: str, ce: owlapy.model.OWLClassExpression, count: bool = False, values: Optional[Iterable[owlapy.model.OWLNamedIndividual]] = None, named_individuals: bool = False)
+   .. py:method:: as_query(root_variable: str, ce: owlapy.model.OWLClassExpression, count: bool = False, values: Optional[Iterable[owlapy.model.OWLNamedIndividual]] = None, named_individuals: bool = False) -> str
+
+      root variable: the variable that will be projected
+      ce: the class expression to be transformed to a SPARQL query
+      count: True, counts the results ; False, projects the individuals
+      values: positive or negative examples from a class expression problem
+      named_individuals: if set to True, the generated SPARQL query will return only entities that are instances
+      of owl:NamedIndividual
+
 
 
 
@@ -193,8 +201,14 @@ Attributes
 
    
 
-.. py:function:: owl_expression_to_sparql(root_variable: str = '?x', ce: owlapy.model.OWLClassExpression = None, count: bool = False, values: Optional[Iterable[owlapy.model.OWLNamedIndividual]] = None, named_individuals: bool = False) -> str
+.. py:function:: owl_expression_to_sparql(root_variable: str = '?x', expression: owlapy.model.OWLClassExpression = None, values: Optional[Iterable[owlapy.model.OWLNamedIndividual]] = None, named_individuals: bool = False) -> str
 
    Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
+   root variable: the variable that will be projected
+   expression: the class expression to be transformed to a SPARQL query
+
+   values: positive or negative examples from a class expression problem. Unclear
+   named_individuals: if set to True, the generated SPARQL query will return only entities
+   that are instances of owl:NamedIndividual
 
 

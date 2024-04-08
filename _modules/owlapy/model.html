@@ -87,8 +87,12 @@
 
 <span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLRDFVocabulary</span><span class="p">,</span> <span class="n">XSDVocabulary</span><span class="p">,</span> <span class="n">OWLFacet</span>
 <span class="kn">from</span> <span class="nn">owlapy._utils</span> <span class="kn">import</span> <span class="n">MOVE</span>
-<span class="kn">from</span> <span class="nn">owlapy.model._base</span> <span class="kn">import</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLAnnotationObject</span><span class="p">,</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span>
-<span class="kn">from</span> <span class="nn">owlapy.model._iri</span> <span class="kn">import</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">IRI</span>
+<span class="kn">from</span> <span class="nn">owlapy.owlobject</span> <span class="kn">import</span> <span class="n">OWLObject</span><span class="p">,</span><span class="n">OWLEntity</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_annotation</span> <span class="kn">import</span> <span class="n">OWLAnnotationObject</span><span class="p">,</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span>
+<span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span> <span class="nn">owlapy.has</span> <span class="kn">import</span> <span class="n">HasIndex</span><span class="p">,</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">,</span> <span class="n">HasFiller</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLAnonymousClassExpression</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLClass</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">,</span> <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
 
 <span class="n">MOVE</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLAnnotationObject</span><span class="p">,</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span><span class="p">,</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">IRI</span><span class="p">)</span>
 
@@ -99,392 +103,10 @@
 <span class="n">Literals</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;OWLLiteral&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Timedelta</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>  <span class="c1">#:</span>
 
 
-<div class="viewcode-block" id="HasIndex">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.HasIndex">[docs]</a>
-<span class="k">class</span> <span class="nc">HasIndex</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for types with an index; this is used to group objects by type when sorting.&quot;&quot;&quot;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>  <span class="c1">#: index for this type. This is a sorting index for the types.</span>
 
-<div class="viewcode-block" id="HasIndex.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.HasIndex.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span> <span class="o">...</span></div>
-</div>
 
 
-
-<div class="viewcode-block" id="HasOperands">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.HasOperands">[docs]</a>
-<span class="k">class</span> <span class="nc">HasOperands</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An interface to objects that have a collection of operands.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        _T: Operand type.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-<div class="viewcode-block" id="HasOperands.operands">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.HasOperands.operands">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">operands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_T</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent</span>
-<span class="sd">        classes axiom.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The operands.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLPropertyRange">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLPropertyRange">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLPropertyRange</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;OWL Objects that can be the ranges of properties.&quot;&quot;&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="OWLDataRange">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDataRange">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLDataRange</span><span class="p">(</span><span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a DataRange in the OWL 2 Specification.&quot;&quot;&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="OWLClassExpression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClassExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLClassExpression</span><span class="p">(</span><span class="n">OWLPropertyRange</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An OWL 2 Class Expression.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-<div class="viewcode-block" id="OWLClassExpression.is_owl_thing">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClassExpression.is_owl_thing">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">is_owl_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this expression is the built in class owl:Thing. This method does not determine if the class</span>
-<span class="sd">        is equivalent to owl:Thing.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            True if this expression is owl:Thing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLClassExpression.is_owl_nothing">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClassExpression.is_owl_nothing">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">is_owl_nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this expression is the built in class owl:Nothing. This method does not determine if the class</span>
-<span class="sd">        is equivalent to owl:Nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLClassExpression.get_object_complement_of">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClassExpression.get_object_complement_of">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_object_complement_of</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectComplementOf&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the object complement of this class expression.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A class expression that is the complement of this class expression.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLClassExpression.get_nnf">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClassExpression.get_nnf">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_nnf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLClassExpression&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the negation normal form of the complement of this expression.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A expression that represents the NNF of the complement of this expression.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLAnonymousClassExpression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLAnonymousClassExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLAnonymousClassExpression</span><span class="p">(</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A Class Expression which is not a named Class.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="OWLAnonymousClassExpression.is_owl_nothing">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLAnonymousClassExpression.is_owl_nothing">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
-
-
-<div class="viewcode-block" id="OWLAnonymousClassExpression.is_owl_thing">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLAnonymousClassExpression.is_owl_thing">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
-
-
-<div class="viewcode-block" id="OWLAnonymousClassExpression.get_object_complement_of">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLAnonymousClassExpression.get_object_complement_of">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_object_complement_of</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectComplementOf&#39;</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="OWLAnonymousClassExpression.get_nnf">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLAnonymousClassExpression.get_nnf">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_nnf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLClassExpression&#39;</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="kn">from</span> <span class="nn">owlapy.util</span> <span class="kn">import</span> <span class="n">NNF</span>
-        <span class="k">return</span> <span class="n">NNF</span><span class="p">()</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLBooleanClassExpression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLBooleanClassExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLBooleanClassExpression</span><span class="p">(</span><span class="n">OWLAnonymousClassExpression</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represent an anonymous boolean class expression.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-    <span class="k">pass</span></div>
-
-
-
-<div class="viewcode-block" id="OWLObjectComplementOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectComplementOf">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectComplementOf</span><span class="p">(</span><span class="n">OWLBooleanClassExpression</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an ObjectComplementOf class expression in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_operand&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">3003</span>
-
-    <span class="n">_operand</span><span class="p">:</span> <span class="n">OWLClassExpression</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
-<span class="sd">            op: Class expression to complement.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_operand</span> <span class="o">=</span> <span class="n">op</span>
-
-<div class="viewcode-block" id="OWLObjectComplementOf.get_operand">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectComplementOf.get_operand">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_operand</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            The wrapped expression.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operand</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectComplementOf.operands">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectComplementOf.operands">[docs]</a>
-    <span class="k">def</span> <span class="nf">operands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operand</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectComplementOf.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectComplementOf.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OWLObjectComplementOf(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operand</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectComplementOf.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectComplementOf.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operand</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_operand</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectComplementOf.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectComplementOf.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operand</span><span class="p">)</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLNamedObject">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLNamedObject">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLNamedObject</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a named object for example, class, property, ontology etc. - i.e. anything that has an</span>
-<span class="sd">     IRI as its name.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-    <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
-
-<div class="viewcode-block" id="OWLNamedObject.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLNamedObject.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_iri</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
-
-
-<div class="viewcode-block" id="OWLNamedObject.__lt__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLNamedObject.__lt__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
-
-
-<div class="viewcode-block" id="OWLNamedObject.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLNamedObject.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="OWLNamedObject.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLNamedObject.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
-
-
-    <span class="k">pass</span></div>
-
-
-
-<div class="viewcode-block" id="OWLEntity">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLEntity">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLEntity</span><span class="p">(</span><span class="n">OWLNamedObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents Entities in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-<div class="viewcode-block" id="OWLEntity.to_string_id">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLEntity.to_string_id">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_string_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="OWLEntity.is_anonymous">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLEntity.is_anonymous">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_anonymous</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
-
-
-    <span class="k">pass</span></div>
-
-
-
-<div class="viewcode-block" id="OWLClass">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClass">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLClass</span><span class="p">(</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLEntity</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An OWL 2 named Class&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_iri&#39;</span><span class="p">,</span> <span class="s1">&#39;_is_nothing&#39;</span><span class="p">,</span> <span class="s1">&#39;_is_thing&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">1001</span>
-
-    <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
-    <span class="n">_is_nothing</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">_is_thing</span><span class="p">:</span> <span class="nb">bool</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLClass that has the specified IRI.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            iri: The IRI.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_nothing</span> <span class="o">=</span> <span class="n">iri</span><span class="o">.</span><span class="n">is_nothing</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_thing</span> <span class="o">=</span> <span class="n">iri</span><span class="o">.</span><span class="n">is_thing</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
-
-<div class="viewcode-block" id="OWLClass.get_iri">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClass.get_iri">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span></div>
-
-
-<div class="viewcode-block" id="OWLClass.is_owl_thing">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClass.is_owl_thing">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_thing</span></div>
-
-
-<div class="viewcode-block" id="OWLClass.is_owl_nothing">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClass.is_owl_nothing">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_nothing</span></div>
-
-
-<div class="viewcode-block" id="OWLClass.get_object_complement_of">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClass.get_object_complement_of">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_object_complement_of</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectComplementOf</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="OWLClass.get_nnf">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLClass.get_nnf">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_nnf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLClass&#39;</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
-
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">reminder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The reminder of the IRI &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">get_remainder</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="OWLPropertyExpression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLPropertyExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLPropertyExpression</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a property or possibly the inverse of a property.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-<div class="viewcode-block" id="OWLPropertyExpression.is_data_property_expression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLPropertyExpression.is_data_property_expression">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_data_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            True if this is a data property.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
-
-
-<div class="viewcode-block" id="OWLPropertyExpression.is_object_property_expression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLPropertyExpression.is_object_property_expression">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_object_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            True if this is an object property.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
-
-
-<div class="viewcode-block" id="OWLPropertyExpression.is_owl_top_object_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLPropertyExpression.is_owl_top_object_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_top_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this is the owl:topObjectProperty.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            True if this property is the owl:topObjectProperty.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
-
-
-<div class="viewcode-block" id="OWLPropertyExpression.is_owl_top_data_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLPropertyExpression.is_owl_top_data_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_top_data_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this is the owl:topDataProperty.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            True if this property is the owl:topDataProperty.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
-</div>
-
-
-
+<span class="c1"># @TODO:CD create owl_restriction.py</span>
 <div class="viewcode-block" id="OWLRestriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLRestriction">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLRestriction</span><span class="p">(</span><span class="n">OWLAnonymousClassExpression</span><span class="p">):</span>
@@ -524,223 +146,6 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 </div>
 
-
-
-<div class="viewcode-block" id="OWLObjectPropertyExpression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectPropertyExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectPropertyExpression</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A high level interface to describe different types of object properties.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-<div class="viewcode-block" id="OWLObjectPropertyExpression.get_inverse_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectPropertyExpression.get_inverse_property">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectPropertyExpression&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtains the property that corresponds to the inverse of this property.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The inverse of this property. Note that this property will not necessarily be in the simplest form.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectPropertyExpression.get_named_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectPropertyExpression.get_named_property">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectProperty&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the named object property used in this property expression.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            P if this expression is either inv(P) or P.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectPropertyExpression.is_object_property_expression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectPropertyExpression.is_object_property_expression">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_object_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="kc">True</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLDataPropertyExpression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDataPropertyExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLDataPropertyExpression</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A high level interface to describe different types of data properties.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-<div class="viewcode-block" id="OWLDataPropertyExpression.is_data_property_expression">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDataPropertyExpression.is_data_property_expression">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_data_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="kc">True</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLProperty">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLProperty">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLProperty</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A marker interface for properties that aren&#39;t expression i.e. named properties. By definition, properties</span>
-<span class="sd">    are either data properties or object properties.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-    <span class="k">pass</span></div>
-
-
-
-<div class="viewcode-block" id="OWLDataProperty">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDataProperty">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLDataProperty</span><span class="p">(</span><span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a Data Property in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_iri&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">1004</span>
-
-    <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLDataProperty that has the specified IRI.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            iri: The IRI.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
-
-<div class="viewcode-block" id="OWLDataProperty.get_iri">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDataProperty.get_iri">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span></div>
-
-
-<div class="viewcode-block" id="OWLDataProperty.is_owl_top_data_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDataProperty.is_owl_top_data_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_top_data_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span> <span class="o">==</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_TOP_DATA_PROPERTY</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLObjectProperty">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectProperty">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectProperty</span><span class="p">(</span><span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an Object Property in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_iri&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">1002</span>
-
-    <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
-
-<div class="viewcode-block" id="OWLObjectProperty.get_named_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectProperty.get_named_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectProperty&#39;</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
-
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLObjectProperty that has the specified IRI.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            iri: The IRI.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
-
-<div class="viewcode-block" id="OWLObjectProperty.get_inverse_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectProperty.get_inverse_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectInverseOf&#39;</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="n">OWLObjectInverseOf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectProperty.get_iri">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectProperty.get_iri">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectProperty.is_owl_top_object_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectProperty.is_owl_top_object_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_top_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span> <span class="o">==</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_TOP_OBJECT_PROPERTY</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span></div>
-
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span></div>
-
-
-
-<div class="viewcode-block" id="OWLObjectInverseOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectInverseOf">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectInverseOf</span><span class="p">(</span><span class="n">OWLObjectPropertyExpression</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents the inverse of a property expression (ObjectInverseOf). This can be used to refer to the inverse of</span>
-<span class="sd">    a property, without actually naming the property. For example, consider the property hasPart, the inverse property</span>
-<span class="sd">    of hasPart (isPartOf) can be referred to using this interface inverseOf(hasPart), which can be used in</span>
-<span class="sd">    restrictions e.g. inverseOf(hasPart) some Car refers to the set of things that are part of at least one car.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_inverse_property&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">1003</span>
-
-    <span class="n">_inverse_property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the inverse of an object property.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            property: The property of which the inverse will be returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span> <span class="o">=</span> <span class="nb">property</span>
-
-<div class="viewcode-block" id="OWLObjectInverseOf.get_inverse">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectInverseOf.get_inverse">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the property expression that this is the inverse of.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The object property expression such that this object property expression is an inverse of it.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectInverseOf.get_inverse_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectInverseOf.get_inverse_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectInverseOf.get_named_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectInverseOf.get_named_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectInverseOf.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectInverseOf.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OWLObjectInverseOf(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectInverseOf.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectInverseOf.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_inverse_property</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectInverseOf.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectInverseOf.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span><span class="p">)</span></div>
-</div>
-
-
-
 <div class="viewcode-block" id="OWLDataRestriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDataRestriction">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLDataRestriction</span><span class="p">(</span><span class="n">OWLRestriction</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -755,8 +160,6 @@
 
 
     <span class="k">pass</span></div>
-
-
 
 <div class="viewcode-block" id="OWLObjectRestriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectRestriction">[docs]</a>
@@ -778,34 +181,6 @@
         <span class="c1"># documented in parent</span>
         <span class="k">pass</span></div>
 </div>
-
-
-
-<div class="viewcode-block" id="HasFiller">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.HasFiller">[docs]</a>
-<span class="k">class</span> <span class="nc">HasFiller</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An interface to objects that have a filler.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        _T: Filler type.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-<div class="viewcode-block" id="HasFiller.get_filler">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.HasFiller.get_filler">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_filler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_T</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the filler for this restriction. In the case of an object restriction this will be an individual, in</span>
-<span class="sd">        the case of a data restriction this will be a constant (data value). For quantified restriction this will be</span>
-<span class="sd">        a class expression or a data range.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            the value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-</div>
-
-
 
 <div class="viewcode-block" id="OWLHasValueRestriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLHasValueRestriction">[docs]</a>
@@ -843,8 +218,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v</span></div>
 </div>
 
-
-
 <div class="viewcode-block" id="OWLQuantifiedRestriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLQuantifiedRestriction">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLQuantifiedRestriction</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">],</span> <span class="n">OWLRestriction</span><span class="p">,</span> <span class="n">HasFiller</span><span class="p">[</span><span class="n">_T</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -855,8 +228,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
     <span class="k">pass</span></div>
-
-
 
 <div class="viewcode-block" id="OWLQuantifiedObjectRestriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLQuantifiedObjectRestriction">[docs]</a>
@@ -876,8 +247,6 @@
         <span class="c1"># documented in parent (HasFiller)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span></div>
 </div>
-
-
 
 <div class="viewcode-block" id="OWLObjectSomeValuesFrom">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectSomeValuesFrom">[docs]</a>
@@ -926,8 +295,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span></div>
 </div>
 
-
-
 <div class="viewcode-block" id="OWLObjectAllValuesFrom">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectAllValuesFrom">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLObjectAllValuesFrom</span><span class="p">(</span><span class="n">OWLQuantifiedObjectRestriction</span><span class="p">):</span>
@@ -965,6 +332,8 @@
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span></div>
 </div>
+
+
 
 
 
@@ -1009,7 +378,6 @@
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">)</span></div>
 </div>
-
 
 
 <div class="viewcode-block" id="OWLObjectUnionOf">
@@ -1122,8 +490,8 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cardinality</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_filler</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cardinality</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_filler</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -1395,20 +763,24 @@
 
     <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLNamedIndividual that has the specified IRI.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            iri: The IRI.</span>
+<span class="sd">            iri: an instance of IRI Class or a string representing the iri</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            An OWLNamedIndividual that has the specified IRI.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">IRI</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
 
 <div class="viewcode-block" id="OWLNamedIndividual.get_iri">
 <a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLNamedIndividual.get_iri">[docs]</a>
     <span class="k">def</span> <span class="nf">get_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="c1"># TODO:CD: can be deprecated</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span></div>
 
@@ -1595,7 +967,7 @@
     <span class="n">_facet_restrictions</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">,</span>
-                                                                     <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]]):</span>
+    <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="n">type_</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">):</span>
             <span class="n">facet_restrictions</span> <span class="o">=</span> <span class="n">facet_restrictions</span><span class="p">,</span>
@@ -1618,7 +990,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_type</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_facet_restrictions</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_facet_restrictions</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -2284,8 +1656,8 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cardinality</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_filler</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cardinality</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filler</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_filler</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -2883,7 +2255,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datatype</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_datatype</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datarange</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_datarange</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -2940,8 +2312,8 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expression</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expression</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property_expressions</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property_expressions</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3352,7 +2724,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_class</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_class</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_class</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_class</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3415,7 +2787,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cls</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cls</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expressions</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3472,7 +2844,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expression</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expression</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_individual</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_individual</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3704,7 +3076,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_property</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3755,7 +3127,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_domain</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3806,7 +3178,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_range</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3860,7 +3232,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_property</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -3953,7 +3325,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_subject</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> \
-                   <span class="bp">self</span><span class="o">.</span><span class="n">_object</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_object</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_object</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_object</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -4219,7 +3591,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_domain</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 
@@ -4261,7 +3633,7 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_range</span> \
-                   <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 

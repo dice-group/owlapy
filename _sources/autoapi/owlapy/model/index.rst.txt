@@ -30,33 +30,31 @@ Classes
    owlapy.model.XSDVocabulary
    owlapy.model.OWLFacet
    owlapy.model.OWLObject
+   owlapy.model.OWLEntity
    owlapy.model.OWLAnnotationObject
    owlapy.model.OWLAnnotationSubject
    owlapy.model.OWLAnnotationValue
-   owlapy.model.HasIRI
    owlapy.model.IRI
    owlapy.model.HasIndex
+   owlapy.model.HasIRI
    owlapy.model.HasOperands
-   owlapy.model.OWLPropertyRange
-   owlapy.model.OWLDataRange
+   owlapy.model.HasFiller
    owlapy.model.OWLClassExpression
+   owlapy.model.OWLObjectComplementOf
    owlapy.model.OWLAnonymousClassExpression
    owlapy.model.OWLBooleanClassExpression
-   owlapy.model.OWLObjectComplementOf
-   owlapy.model.OWLNamedObject
-   owlapy.model.OWLEntity
+   owlapy.model.OWLPropertyRange
+   owlapy.model.OWLDataRange
    owlapy.model.OWLClass
-   owlapy.model.OWLPropertyExpression
-   owlapy.model.OWLRestriction
    owlapy.model.OWLObjectPropertyExpression
-   owlapy.model.OWLDataPropertyExpression
    owlapy.model.OWLProperty
+   owlapy.model.OWLPropertyExpression
+   owlapy.model.OWLDataPropertyExpression
    owlapy.model.OWLDataProperty
    owlapy.model.OWLObjectProperty
-   owlapy.model.OWLObjectInverseOf
+   owlapy.model.OWLRestriction
    owlapy.model.OWLDataRestriction
    owlapy.model.OWLObjectRestriction
-   owlapy.model.HasFiller
    owlapy.model.OWLHasValueRestriction
    owlapy.model.OWLQuantifiedRestriction
    owlapy.model.OWLQuantifiedObjectRestriction
@@ -440,10 +438,29 @@ Attributes
 
 
 
+.. py:class:: OWLEntity
+
+
+   Bases: :py:obj:`OWLNamedObject`
+
+   Represents Entities in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: to_string_id() -> str
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+
 .. py:class:: OWLAnnotationObject
 
 
-   Bases: :py:obj:`OWLObject`
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
    A marker interface for the values (objects) of annotations.
 
@@ -452,7 +469,7 @@ Attributes
 
       
 
-   .. py:method:: as_iri() -> Optional[owlapy.model._iri.IRI]
+   .. py:method:: as_iri() -> Optional[IRI]
 
       :returns: if the value is an IRI, return it. Return Mone otherwise.
 
@@ -493,35 +510,16 @@ Attributes
       :returns: true if the annotation value is a literal
 
 
-   .. py:method:: as_literal() -> Optional[owlapy.model.OWLLiteral]
+   .. py:method:: as_literal() -> Optional[OWLLiteral]
 
       :returns: if the value is a literal, returns it. Return None otherwise
-
-
-
-.. py:class:: HasIRI
-
-
-   Simple class to access the IRI.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-   .. py:method:: get_iri() -> IRI
-      :abstractmethod:
-
-      Gets the IRI of this object.
-
-      :returns: The IRI of this object.
 
 
 
 .. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
 
 
-   Bases: :py:obj:`owlapy.model._base.OWLAnnotationSubject`, :py:obj:`owlapy.model._base.OWLAnnotationValue`
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
 
    An IRI, consisting of a namespace and a remainder.
 
@@ -621,10 +619,6 @@ Attributes
 
 
 
-.. py:data:: Literals
-
-   
-
 .. py:class:: HasIndex
 
 
@@ -640,6 +634,25 @@ Attributes
    .. py:method:: __eq__(other)
 
       Return self==value.
+
+
+
+.. py:class:: HasIRI
+
+
+   Simple class to access the IRI.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: get_iri() -> IRI
+      :abstractmethod:
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
 
 
 
@@ -667,20 +680,29 @@ Attributes
 
 
 
-.. py:class:: OWLPropertyRange
+.. py:class:: HasFiller
 
 
-   Bases: :py:obj:`_base.OWLObject`
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
 
-   OWL Objects that can be the ranges of properties.
+   An interface to objects that have a filler.
 
+   :param _T: Filler type.
 
-.. py:class:: OWLDataRange
+   .. py:attribute:: __slots__
+      :value: ()
 
+      
 
-   Bases: :py:obj:`OWLPropertyRange`
+   .. py:method:: get_filler() -> _T
+      :abstractmethod:
 
-   Represents a DataRange in the OWL 2 Specification.
+      Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
+      the case of a data restriction this will be a constant (data value). For quantified restriction this will be
+      a class expression or a data range.
+
+      :returns: the value
+
 
 
 .. py:class:: OWLClassExpression
@@ -726,6 +748,53 @@ Attributes
       Gets the negation normal form of the complement of this expression.
 
       :returns: A expression that represents the NNF of the complement of this expression.
+
+
+
+.. py:class:: OWLObjectComplementOf(op: OWLClassExpression)
+
+
+   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+
+   Represents an ObjectComplementOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operand'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3003
+
+      
+
+   .. py:method:: get_operand() -> OWLClassExpression
+
+      :returns: The wrapped expression.
+
+
+   .. py:method:: operands() -> Iterable[OWLClassExpression]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
 
 
 
@@ -779,110 +848,26 @@ Attributes
       
 
 
-.. py:class:: OWLObjectComplementOf(op: OWLClassExpression)
+.. py:class:: OWLPropertyRange
 
 
-   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
-   Represents an ObjectComplementOf class expression in the OWL 2 Specification.
-
-   .. py:attribute:: __slots__
-      :value: '_operand'
-
-      
-
-   .. py:attribute:: type_index
-      :type: Final
-      :value: 3003
-
-      
-
-   .. py:method:: get_operand() -> OWLClassExpression
-
-      :returns: The wrapped expression.
+   OWL Objects that can be the ranges of properties.
 
 
-   .. py:method:: operands() -> Iterable[OWLClassExpression]
-
-      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
-      classes axiom.
-
-      :returns: The operands.
+.. py:class:: OWLDataRange
 
 
-   .. py:method:: __repr__()
+   Bases: :py:obj:`OWLPropertyRange`
 
-      Return repr(self).
-
-
-   .. py:method:: __eq__(other)
-
-      Return self==value.
+   Represents a DataRange in the OWL 2 Specification.
 
 
-   .. py:method:: __hash__()
-
-      Return hash(self).
+.. py:class:: OWLClass(iri: IRI)
 
 
-
-.. py:class:: OWLNamedObject
-
-
-   Bases: :py:obj:`_base.OWLObject`, :py:obj:`_iri.HasIRI`
-
-   Represents a named object for example, class, property, ontology etc. - i.e. anything that has an
-   IRI as its name.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-   .. py:method:: __eq__(other)
-
-      Return self==value.
-
-
-   .. py:method:: __lt__(other)
-
-      Return self<value.
-
-
-   .. py:method:: __hash__()
-
-      Return hash(self).
-
-
-   .. py:method:: __repr__()
-
-      Return repr(self).
-
-
-
-.. py:class:: OWLEntity
-
-
-   Bases: :py:obj:`OWLNamedObject`
-
-   Represents Entities in the OWL 2 Specification.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-   .. py:method:: to_string_id() -> str
-
-
-   .. py:method:: is_anonymous() -> bool
-
-
-
-.. py:class:: OWLClass(iri: _iri.IRI)
-
-
-   Bases: :py:obj:`OWLClassExpression`, :py:obj:`OWLEntity`
+   Bases: :py:obj:`OWLClassExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
 
    An OWL 2 named Class
 
@@ -905,7 +890,7 @@ Attributes
 
       
 
-   .. py:method:: get_iri() -> _iri.IRI
+   .. py:method:: get_iri() -> IRI
 
       Gets the IRI of this object.
 
@@ -939,78 +924,6 @@ Attributes
       Gets the negation normal form of the complement of this expression.
 
       :returns: A expression that represents the NNF of the complement of this expression.
-
-
-
-.. py:class:: OWLPropertyExpression
-
-
-   Bases: :py:obj:`_base.OWLObject`
-
-   Represents a property or possibly the inverse of a property.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-   .. py:method:: is_data_property_expression() -> bool
-
-      :returns: True if this is a data property.
-
-
-   .. py:method:: is_object_property_expression() -> bool
-
-      :returns: True if this is an object property.
-
-
-   .. py:method:: is_owl_top_object_property() -> bool
-
-      Determines if this is the owl:topObjectProperty.
-
-      :returns: topObjectProperty.
-      :rtype: True if this property is the owl
-
-
-   .. py:method:: is_owl_top_data_property() -> bool
-
-      Determines if this is the owl:topDataProperty.
-
-      :returns: topDataProperty.
-      :rtype: True if this property is the owl
-
-
-
-.. py:class:: OWLRestriction
-
-
-   Bases: :py:obj:`OWLAnonymousClassExpression`
-
-   Represents an Object Property Restriction or Data Property Restriction in the OWL 2 specification.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-   .. py:method:: get_property() -> OWLPropertyExpression
-      :abstractmethod:
-
-      :returns: Property being restricted.
-
-
-   .. py:method:: is_data_restriction() -> bool
-
-      Determines if this is a data restriction.
-
-      :returns: True if this is a data restriction.
-
-
-   .. py:method:: is_object_restriction() -> bool
-
-      Determines if this is an object restriction.
-
-      :returns: True if this is an object restriction.
 
 
 
@@ -1048,6 +961,59 @@ Attributes
 
 
 
+.. py:class:: OWLProperty
+
+
+   Bases: :py:obj:`OWLPropertyExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
+
+   A marker interface for properties that aren't expression i.e. named properties. By definition, properties
+   are either data properties or object properties.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLPropertyExpression
+
+
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+
+   Represents a property or possibly the inverse of a property.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: is_data_property_expression() -> bool
+
+      :returns: True if this is a data property.
+
+
+   .. py:method:: is_object_property_expression() -> bool
+
+      :returns: True if this is an object property.
+
+
+   .. py:method:: is_owl_top_object_property() -> bool
+
+      Determines if this is the owl:topObjectProperty.
+
+      :returns: topObjectProperty.
+      :rtype: True if this property is the owl
+
+
+   .. py:method:: is_owl_top_data_property() -> bool
+
+      Determines if this is the owl:topDataProperty.
+
+      :returns: topDataProperty.
+      :rtype: True if this property is the owl
+
+
+
 .. py:class:: OWLDataPropertyExpression
 
 
@@ -1066,21 +1032,7 @@ Attributes
 
 
 
-.. py:class:: OWLProperty
-
-
-   Bases: :py:obj:`OWLPropertyExpression`, :py:obj:`OWLEntity`
-
-   A marker interface for properties that aren't expression i.e. named properties. By definition, properties
-   are either data properties or object properties.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-
-.. py:class:: OWLDataProperty(iri: _iri.IRI)
+.. py:class:: OWLDataProperty(iri: owlapy.iri.IRI)
 
 
    Bases: :py:obj:`OWLDataPropertyExpression`, :py:obj:`OWLProperty`
@@ -1098,7 +1050,7 @@ Attributes
 
       
 
-   .. py:method:: get_iri() -> _iri.IRI
+   .. py:method:: get_iri() -> owlapy.iri.IRI
 
       Gets the IRI of this object.
 
@@ -1114,7 +1066,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectProperty(iri: _iri.IRI)
+.. py:class:: OWLObjectProperty(iri: Union[owlapy.iri.IRI, str])
 
 
    Bases: :py:obj:`OWLObjectPropertyExpression`, :py:obj:`OWLProperty`
@@ -1122,6 +1074,10 @@ Attributes
    Represents an Object Property in the OWL 2 Specification.
 
    .. py:property:: str
+      :type: str
+
+
+   .. py:property:: iri
       :type: str
 
 
@@ -1150,7 +1106,7 @@ Attributes
       :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
 
 
-   .. py:method:: get_iri() -> _iri.IRI
+   .. py:method:: get_iri() -> owlapy.iri.IRI
 
       Gets the IRI of this object.
 
@@ -1166,61 +1122,40 @@ Attributes
 
 
 
-.. py:class:: OWLObjectInverseOf(property: OWLObjectProperty)
+.. py:data:: Literals
+
+   
+
+.. py:class:: OWLRestriction
 
 
-   Bases: :py:obj:`OWLObjectPropertyExpression`
+   Bases: :py:obj:`owlapy.owl_class_expression.OWLAnonymousClassExpression`
 
-   Represents the inverse of a property expression (ObjectInverseOf). This can be used to refer to the inverse of
-   a property, without actually naming the property. For example, consider the property hasPart, the inverse property
-   of hasPart (isPartOf) can be referred to using this interface inverseOf(hasPart), which can be used in
-   restrictions e.g. inverseOf(hasPart) some Car refers to the set of things that are part of at least one car.
+   Represents an Object Property Restriction or Data Property Restriction in the OWL 2 specification.
 
    .. py:attribute:: __slots__
-      :value: '_inverse_property'
+      :value: ()
 
       
 
-   .. py:attribute:: type_index
-      :type: Final
-      :value: 1003
+   .. py:method:: get_property() -> owlapy.owl_property.OWLPropertyExpression
+      :abstractmethod:
 
-      
-
-   .. py:method:: get_inverse() -> OWLObjectProperty
-
-      Gets the property expression that this is the inverse of.
-
-      :returns: The object property expression such that this object property expression is an inverse of it.
+      :returns: Property being restricted.
 
 
-   .. py:method:: get_inverse_property() -> OWLObjectProperty
+   .. py:method:: is_data_restriction() -> bool
 
-      Obtains the property that corresponds to the inverse of this property.
+      Determines if this is a data restriction.
 
-      :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
-
-
-   .. py:method:: get_named_property() -> OWLObjectProperty
-
-      Get the named object property used in this property expression.
-
-      :returns: P if this expression is either inv(P) or P.
+      :returns: True if this is a data restriction.
 
 
-   .. py:method:: __repr__()
+   .. py:method:: is_object_restriction() -> bool
 
-      Return repr(self).
+      Determines if this is an object restriction.
 
-
-   .. py:method:: __eq__(other)
-
-      Return self==value.
-
-
-   .. py:method:: __hash__()
-
-      Return hash(self).
+      :returns: True if this is an object restriction.
 
 
 
@@ -1263,42 +1198,17 @@ Attributes
       :returns: True if this is an object restriction.
 
 
-   .. py:method:: get_property() -> OWLObjectPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
       :abstractmethod:
 
       :returns: Property being restricted.
 
 
 
-.. py:class:: HasFiller
-
-
-   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
-
-   An interface to objects that have a filler.
-
-   :param _T: Filler type.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-   .. py:method:: get_filler() -> _T
-      :abstractmethod:
-
-      Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
-      the case of a data restriction this will be a constant (data value). For quantified restriction this will be
-      a class expression or a data range.
-
-      :returns: the value
-
-
-
 .. py:class:: OWLHasValueRestriction(value: _T)
 
 
-   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`HasFiller`\ [\ :py:obj:`_T`\ ]
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`owlapy.has.HasFiller`\ [\ :py:obj:`_T`\ ]
 
    OWLHasValueRestriction.
 
@@ -1332,7 +1242,7 @@ Attributes
 .. py:class:: OWLQuantifiedRestriction
 
 
-   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`HasFiller`\ [\ :py:obj:`_T`\ ]
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`owlapy.has.HasFiller`\ [\ :py:obj:`_T`\ ]
 
    Represents a quantified restriction.
 
@@ -1344,10 +1254,10 @@ Attributes
       
 
 
-.. py:class:: OWLQuantifiedObjectRestriction(filler: OWLClassExpression)
+.. py:class:: OWLQuantifiedObjectRestriction(filler: owlapy.owl_class_expression.OWLClassExpression)
 
 
-   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`OWLClassExpression`\ ], :py:obj:`OWLObjectRestriction`
+   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ], :py:obj:`OWLObjectRestriction`
 
    Represents a quantified object restriction.
 
@@ -1356,7 +1266,7 @@ Attributes
 
       
 
-   .. py:method:: get_filler() -> OWLClassExpression
+   .. py:method:: get_filler() -> owlapy.owl_class_expression.OWLClassExpression
 
       Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
       the case of a data restriction this will be a constant (data value). For quantified restriction this will be
@@ -1366,7 +1276,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectSomeValuesFrom(property: OWLObjectPropertyExpression, filler: OWLClassExpression)
+.. py:class:: OWLObjectSomeValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLQuantifiedObjectRestriction`
@@ -1399,13 +1309,13 @@ Attributes
       Return hash(self).
 
 
-   .. py:method:: get_property() -> OWLObjectPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
 
       :returns: Property being restricted.
 
 
 
-.. py:class:: OWLObjectAllValuesFrom(property: OWLObjectPropertyExpression, filler: OWLClassExpression)
+.. py:class:: OWLObjectAllValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLQuantifiedObjectRestriction`
@@ -1438,16 +1348,16 @@ Attributes
       Return hash(self).
 
 
-   .. py:method:: get_property() -> OWLObjectPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
 
       :returns: Property being restricted.
 
 
 
-.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[OWLClassExpression])
+.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[owlapy.owl_class_expression.OWLClassExpression])
 
 
-   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+   Bases: :py:obj:`owlapy.owl_class_expression.OWLBooleanClassExpression`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ]
 
    OWLNaryBooleanClassExpression.
 
@@ -1456,7 +1366,7 @@ Attributes
 
       
 
-   .. py:method:: operands() -> Iterable[OWLClassExpression]
+   .. py:method:: operands() -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
 
       Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
       classes axiom.
@@ -1480,7 +1390,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectUnionOf(operands: Iterable[OWLClassExpression])
+.. py:class:: OWLObjectUnionOf(operands: Iterable[owlapy.owl_class_expression.OWLClassExpression])
 
 
    Bases: :py:obj:`OWLNaryBooleanClassExpression`
@@ -1499,7 +1409,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectIntersectionOf(operands: Iterable[OWLClassExpression])
+.. py:class:: OWLObjectIntersectionOf(operands: Iterable[owlapy.owl_class_expression.OWLClassExpression])
 
 
    Bases: :py:obj:`OWLNaryBooleanClassExpression`
@@ -1568,10 +1478,10 @@ Attributes
 
 
 
-.. py:class:: OWLObjectCardinalityRestriction(cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression)
+.. py:class:: OWLObjectCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
 
 
-   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`OWLClassExpression`\ ], :py:obj:`OWLQuantifiedObjectRestriction`
+   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ], :py:obj:`OWLQuantifiedObjectRestriction`
 
    Represents Object Property Cardinality Restrictions in the OWL 2 specification.
 
@@ -1580,7 +1490,7 @@ Attributes
 
       
 
-   .. py:method:: get_property() -> OWLObjectPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
 
       :returns: Property being restricted.
 
@@ -1601,7 +1511,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectMinCardinality(cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression)
+.. py:class:: OWLObjectMinCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -1620,7 +1530,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectMaxCardinality(cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression)
+.. py:class:: OWLObjectMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -1639,7 +1549,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectExactCardinality(cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression)
+.. py:class:: OWLObjectExactCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -1665,7 +1575,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectHasSelf(property: OWLObjectPropertyExpression)
+.. py:class:: OWLObjectHasSelf(property: owlapy.owl_property.OWLObjectPropertyExpression)
 
 
    Bases: :py:obj:`OWLObjectRestriction`
@@ -1683,7 +1593,7 @@ Attributes
 
       
 
-   .. py:method:: get_property() -> OWLObjectPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
 
       :returns: Property being restricted.
 
@@ -1707,7 +1617,7 @@ Attributes
 .. py:class:: OWLIndividual
 
 
-   Bases: :py:obj:`_base.OWLObject`
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
    Represents a named or anonymous individual.
 
@@ -1717,7 +1627,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectHasValue(property: OWLObjectPropertyExpression, individual: OWLIndividual)
+.. py:class:: OWLObjectHasValue(property: owlapy.owl_property.OWLObjectPropertyExpression, individual: OWLIndividual)
 
 
    Bases: :py:obj:`OWLHasValueRestriction`\ [\ :py:obj:`OWLIndividual`\ ], :py:obj:`OWLObjectRestriction`
@@ -1735,12 +1645,12 @@ Attributes
 
       
 
-   .. py:method:: get_property() -> OWLObjectPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
 
       :returns: Property being restricted.
 
 
-   .. py:method:: as_some_values_from() -> OWLClassExpression
+   .. py:method:: as_some_values_from() -> owlapy.owl_class_expression.OWLClassExpression
 
       A convenience method that obtains this restriction as an existential restriction with a nominal filler.
 
@@ -1756,7 +1666,7 @@ Attributes
 .. py:class:: OWLObjectOneOf(values: Union[OWLIndividual, Iterable[OWLIndividual]])
 
 
-   Bases: :py:obj:`OWLAnonymousClassExpression`, :py:obj:`HasOperands`\ [\ :py:obj:`OWLIndividual`\ ]
+   Bases: :py:obj:`owlapy.owl_class_expression.OWLAnonymousClassExpression`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`OWLIndividual`\ ]
 
    Represents an ObjectOneOf class expression in the OWL 2 Specification.
 
@@ -1787,7 +1697,7 @@ Attributes
       :returns: The operands.
 
 
-   .. py:method:: as_object_union_of() -> OWLClassExpression
+   .. py:method:: as_object_union_of() -> owlapy.owl_class_expression.OWLClassExpression
 
       Simplifies this enumeration to a union of singleton nominals.
 
@@ -1811,10 +1721,10 @@ Attributes
 
 
 
-.. py:class:: OWLNamedIndividual(iri: _iri.IRI)
+.. py:class:: OWLNamedIndividual(iri: Union[owlapy.iri.IRI, str])
 
 
-   Bases: :py:obj:`OWLIndividual`, :py:obj:`OWLEntity`
+   Bases: :py:obj:`OWLIndividual`, :py:obj:`owlapy.owlobject.OWLEntity`
 
    Represents a Named Individual in the OWL 2 Specification.
 
@@ -1835,7 +1745,7 @@ Attributes
 
       
 
-   .. py:method:: get_iri() -> _iri.IRI
+   .. py:method:: get_iri() -> owlapy.iri.IRI
 
       Gets the IRI of this object.
 
@@ -1843,7 +1753,7 @@ Attributes
 
 
 
-.. py:class:: OWLOntologyID(ontology_iri: Optional[_iri.IRI] = None, version_iri: Optional[_iri.IRI] = None)
+.. py:class:: OWLOntologyID(ontology_iri: Optional[owlapy.iri.IRI] = None, version_iri: Optional[owlapy.iri.IRI] = None)
 
 
    An object that identifies an ontology. Since OWL 2, ontologies do not have to have an ontology IRI, or if they
@@ -1856,21 +1766,21 @@ Attributes
 
       
 
-   .. py:method:: get_ontology_iri() -> Optional[_iri.IRI]
+   .. py:method:: get_ontology_iri() -> Optional[owlapy.iri.IRI]
 
       Gets the ontology IRI.
 
       :returns: Ontology IRI. If the ontology is anonymous, it will return None.
 
 
-   .. py:method:: get_version_iri() -> Optional[_iri.IRI]
+   .. py:method:: get_version_iri() -> Optional[owlapy.iri.IRI]
 
       Gets the version IRI.
 
       :returns: Version IRI or None.
 
 
-   .. py:method:: get_default_document_iri() -> Optional[_iri.IRI]
+   .. py:method:: get_default_document_iri() -> Optional[owlapy.iri.IRI]
 
       Gets the IRI which is used as a default for the document that contain a representation of an ontology with
       this ID. This will be the version IRI if there is an ontology IRI and version IRI, else it will be the ontology
@@ -1897,7 +1807,7 @@ Attributes
 .. py:class:: OWLAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`_base.OWLObject`
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
    Represents Axioms in the OWL 2 Specification.
 
@@ -1922,10 +1832,10 @@ Attributes
 
 
 
-.. py:class:: OWLDatatype(iri: Union[_iri.IRI, _iri.HasIRI])
+.. py:class:: OWLDatatype(iri: Union[owlapy.iri.IRI, owlapy.has.HasIRI])
 
 
-   Bases: :py:obj:`OWLEntity`, :py:obj:`OWLDataRange`
+   Bases: :py:obj:`owlapy.owlobject.OWLEntity`, :py:obj:`owlapy.owl_class_expression.OWLDataRange`
 
    Represents a Datatype (named data range) in the OWL 2 Specification.
 
@@ -1940,7 +1850,7 @@ Attributes
 
       
 
-   .. py:method:: get_iri() -> _iri.IRI
+   .. py:method:: get_iri() -> owlapy.iri.IRI
 
       Gets the IRI of this object.
 
@@ -1951,7 +1861,7 @@ Attributes
 .. py:class:: OWLDatatypeRestriction(type_: OWLDatatype, facet_restrictions: Union[OWLFacetRestriction, Iterable[OWLFacetRestriction]])
 
 
-   Bases: :py:obj:`OWLDataRange`
+   Bases: :py:obj:`owlapy.owl_class_expression.OWLDataRange`
 
    Represents a DatatypeRestriction data range in the OWL 2 Specification.
 
@@ -1991,7 +1901,7 @@ Attributes
 .. py:class:: OWLFacetRestriction(facet: owlapy.vocab.OWLFacet, literal: Literals)
 
 
-   Bases: :py:obj:`_base.OWLObject`
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
    A facet restriction is used to restrict a particular datatype.
 
@@ -2031,7 +1941,7 @@ Attributes
 .. py:class:: OWLLiteral
 
 
-   Bases: :py:obj:`_base.OWLAnnotationValue`
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
 
    Represents a Literal in the OWL 2 Specification.
 
@@ -2166,10 +2076,10 @@ Attributes
 
 
 
-.. py:class:: OWLQuantifiedDataRestriction(filler: OWLDataRange)
+.. py:class:: OWLQuantifiedDataRestriction(filler: owlapy.owl_class_expression.OWLDataRange)
 
 
-   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`OWLDataRange`\ ], :py:obj:`OWLDataRestriction`
+   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.owl_class_expression.OWLDataRange`\ ], :py:obj:`OWLDataRestriction`
 
    Represents a quantified data restriction.
 
@@ -2178,7 +2088,7 @@ Attributes
 
       
 
-   .. py:method:: get_filler() -> OWLDataRange
+   .. py:method:: get_filler() -> owlapy.owl_class_expression.OWLDataRange
 
       Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
       the case of a data restriction this will be a constant (data value). For quantified restriction this will be
@@ -2188,10 +2098,10 @@ Attributes
 
 
 
-.. py:class:: OWLDataCardinalityRestriction(cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange)
+.. py:class:: OWLDataCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_class_expression.OWLDataRange)
 
 
-   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`OWLDataRange`\ ], :py:obj:`OWLQuantifiedDataRestriction`, :py:obj:`OWLDataRestriction`
+   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.owl_class_expression.OWLDataRange`\ ], :py:obj:`OWLQuantifiedDataRestriction`, :py:obj:`OWLDataRestriction`
 
    Represents Data Property Cardinality Restrictions in the OWL 2 specification.
 
@@ -2200,7 +2110,7 @@ Attributes
 
       
 
-   .. py:method:: get_property() -> OWLDataPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
 
       :returns: Property being restricted.
 
@@ -2221,7 +2131,7 @@ Attributes
 
 
 
-.. py:class:: OWLDataAllValuesFrom(property: OWLDataPropertyExpression, filler: OWLDataRange)
+.. py:class:: OWLDataAllValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_class_expression.OWLDataRange)
 
 
    Bases: :py:obj:`OWLQuantifiedDataRestriction`
@@ -2254,16 +2164,16 @@ Attributes
       Return hash(self).
 
 
-   .. py:method:: get_property() -> OWLDataPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
 
       :returns: Property being restricted.
 
 
 
-.. py:class:: OWLDataComplementOf(data_range: OWLDataRange)
+.. py:class:: OWLDataComplementOf(data_range: owlapy.owl_class_expression.OWLDataRange)
 
 
-   Bases: :py:obj:`OWLDataRange`
+   Bases: :py:obj:`owlapy.owl_class_expression.OWLDataRange`
 
    Represents DataComplementOf in the OWL 2 Specification.
 
@@ -2273,7 +2183,7 @@ Attributes
 
       
 
-   .. py:method:: get_data_range() -> OWLDataRange
+   .. py:method:: get_data_range() -> owlapy.owl_class_expression.OWLDataRange
 
       :returns: The wrapped data range.
 
@@ -2294,7 +2204,7 @@ Attributes
 
 
 
-.. py:class:: OWLDataExactCardinality(cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange)
+.. py:class:: OWLDataExactCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_class_expression.OWLDataRange)
 
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
@@ -2320,7 +2230,7 @@ Attributes
 
 
 
-.. py:class:: OWLDataHasValue(property: OWLDataPropertyExpression, value: OWLLiteral)
+.. py:class:: OWLDataHasValue(property: owlapy.owl_property.OWLDataPropertyExpression, value: OWLLiteral)
 
 
    Bases: :py:obj:`OWLHasValueRestriction`\ [\ :py:obj:`OWLLiteral`\ ], :py:obj:`OWLDataRestriction`
@@ -2353,20 +2263,20 @@ Attributes
       Return hash(self).
 
 
-   .. py:method:: as_some_values_from() -> OWLClassExpression
+   .. py:method:: as_some_values_from() -> owlapy.owl_class_expression.OWLClassExpression
 
       A convenience method that obtains this restriction as an existential restriction with a nominal filler.
 
       :returns: The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).
 
 
-   .. py:method:: get_property() -> OWLDataPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
 
       :returns: Property being restricted.
 
 
 
-.. py:class:: OWLDataMaxCardinality(cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange)
+.. py:class:: OWLDataMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_class_expression.OWLDataRange)
 
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
@@ -2385,7 +2295,7 @@ Attributes
       
 
 
-.. py:class:: OWLDataMinCardinality(cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange)
+.. py:class:: OWLDataMinCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_class_expression.OWLDataRange)
 
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
@@ -2407,7 +2317,7 @@ Attributes
 .. py:class:: OWLDataOneOf(values: Union[OWLLiteral, Iterable[OWLLiteral]])
 
 
-   Bases: :py:obj:`OWLDataRange`, :py:obj:`HasOperands`\ [\ :py:obj:`OWLLiteral`\ ]
+   Bases: :py:obj:`owlapy.owl_class_expression.OWLDataRange`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`OWLLiteral`\ ]
 
    Represents DataOneOf in the OWL 2 Specification.
 
@@ -2448,7 +2358,7 @@ Attributes
 
 
 
-.. py:class:: OWLDataSomeValuesFrom(property: OWLDataPropertyExpression, filler: OWLDataRange)
+.. py:class:: OWLDataSomeValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_class_expression.OWLDataRange)
 
 
    Bases: :py:obj:`OWLQuantifiedDataRestriction`
@@ -2481,16 +2391,16 @@ Attributes
       Return hash(self).
 
 
-   .. py:method:: get_property() -> OWLDataPropertyExpression
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
 
       :returns: Property being restricted.
 
 
 
-.. py:class:: OWLNaryDataRange(operands: Iterable[OWLDataRange])
+.. py:class:: OWLNaryDataRange(operands: Iterable[owlapy.owl_class_expression.OWLDataRange])
 
 
-   Bases: :py:obj:`OWLDataRange`, :py:obj:`HasOperands`\ [\ :py:obj:`OWLDataRange`\ ]
+   Bases: :py:obj:`owlapy.owl_class_expression.OWLDataRange`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`owlapy.owl_class_expression.OWLDataRange`\ ]
 
    OWLNaryDataRange.
 
@@ -2499,7 +2409,7 @@ Attributes
 
       
 
-   .. py:method:: operands() -> Iterable[OWLDataRange]
+   .. py:method:: operands() -> Iterable[owlapy.owl_class_expression.OWLDataRange]
 
       Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
       classes axiom.
@@ -2523,7 +2433,7 @@ Attributes
 
 
 
-.. py:class:: OWLDataUnionOf(operands: Iterable[OWLDataRange])
+.. py:class:: OWLDataUnionOf(operands: Iterable[owlapy.owl_class_expression.OWLDataRange])
 
 
    Bases: :py:obj:`OWLNaryDataRange`
@@ -2542,7 +2452,7 @@ Attributes
       
 
 
-.. py:class:: OWLDataIntersectionOf(operands: Iterable[OWLDataRange])
+.. py:class:: OWLDataIntersectionOf(operands: Iterable[owlapy.owl_class_expression.OWLDataRange])
 
 
    Bases: :py:obj:`OWLNaryDataRange`
@@ -2561,10 +2471,10 @@ Attributes
       
 
 
-.. py:class:: OWLImportsDeclaration(import_iri: _iri.IRI)
+.. py:class:: OWLImportsDeclaration(import_iri: owlapy.iri.IRI)
 
 
-   Bases: :py:obj:`_iri.HasIRI`
+   Bases: :py:obj:`owlapy.has.HasIRI`
 
    Represents an import statement in an ontology.
 
@@ -2573,7 +2483,7 @@ Attributes
 
       
 
-   .. py:method:: get_iri() -> _iri.IRI
+   .. py:method:: get_iri() -> owlapy.iri.IRI
 
       Gets the import IRI.
 
@@ -2665,7 +2575,7 @@ Attributes
       
 
 
-.. py:class:: OWLDeclarationAxiom(entity: OWLEntity, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDeclarationAxiom(entity: owlapy.owlobject.OWLEntity, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLAxiom`
@@ -2678,7 +2588,7 @@ Attributes
 
       
 
-   .. py:method:: get_entity() -> OWLEntity
+   .. py:method:: get_entity() -> owlapy.owlobject.OWLEntity
 
 
    .. py:method:: __eq__(other)
@@ -2697,7 +2607,7 @@ Attributes
 
 
 
-.. py:class:: OWLDatatypeDefinitionAxiom(datatype: OWLDatatype, datarange: OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDatatypeDefinitionAxiom(datatype: OWLDatatype, datarange: owlapy.owl_class_expression.OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLLogicalAxiom`
@@ -2712,7 +2622,7 @@ Attributes
    .. py:method:: get_datatype() -> OWLDatatype
 
 
-   .. py:method:: get_datarange() -> OWLDataRange
+   .. py:method:: get_datarange() -> owlapy.owl_class_expression.OWLDataRange
 
 
    .. py:method:: __eq__(other)
@@ -2731,10 +2641,10 @@ Attributes
 
 
 
-.. py:class:: OWLHasKeyAxiom(class_expression: OWLClassExpression, property_expressions: List[OWLPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLHasKeyAxiom(class_expression: owlapy.owl_class_expression.OWLClassExpression, property_expressions: List[owlapy.owl_property.OWLPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLLogicalAxiom`, :py:obj:`HasOperands`\ [\ :py:obj:`OWLPropertyExpression`\ ]
+   Bases: :py:obj:`OWLLogicalAxiom`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`owlapy.owl_property.OWLPropertyExpression`\ ]
 
    Represents a HasKey axiom in the OWL 2 Specification.
 
@@ -2743,13 +2653,13 @@ Attributes
 
       
 
-   .. py:method:: get_class_expression() -> OWLClassExpression
+   .. py:method:: get_class_expression() -> owlapy.owl_class_expression.OWLClassExpression
 
 
-   .. py:method:: get_property_expressions() -> List[OWLPropertyExpression]
+   .. py:method:: get_property_expressions() -> List[owlapy.owl_property.OWLPropertyExpression]
 
 
-   .. py:method:: operands() -> Iterable[OWLPropertyExpression]
+   .. py:method:: operands() -> Iterable[owlapy.owl_property.OWLPropertyExpression]
 
       Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
       classes axiom.
@@ -2793,10 +2703,10 @@ Attributes
 
 
 
-.. py:class:: OWLNaryClassAxiom(class_expressions: List[OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLNaryClassAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLClassAxiom`, :py:obj:`OWLNaryAxiom`\ [\ :py:obj:`OWLClassExpression`\ ]
+   Bases: :py:obj:`OWLClassAxiom`, :py:obj:`OWLNaryAxiom`\ [\ :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ]
 
    Represents an axiom that contains two or more operands that could also be represented with
    multiple pairwise axioms.
@@ -2806,7 +2716,7 @@ Attributes
 
       
 
-   .. py:method:: class_expressions() -> Iterable[OWLClassExpression]
+   .. py:method:: class_expressions() -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
 
       Gets all of the top level class expressions that appear in this axiom.
 
@@ -2837,7 +2747,7 @@ Attributes
 
 
 
-.. py:class:: OWLEquivalentClassesAxiom(class_expressions: List[OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLEquivalentClassesAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLNaryClassAxiom`
@@ -2858,11 +2768,11 @@ Attributes
    .. py:method:: contains_owl_thing() -> bool
 
 
-   .. py:method:: named_classes() -> Iterable[OWLClass]
+   .. py:method:: named_classes() -> Iterable[owlapy.owl_class_expression.OWLClass]
 
 
 
-.. py:class:: OWLDisjointClassesAxiom(class_expressions: List[OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDisjointClassesAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLNaryClassAxiom`
@@ -2979,10 +2889,10 @@ Attributes
 
 
 
-.. py:class:: OWLEquivalentObjectPropertiesAxiom(properties: List[OWLObjectPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLEquivalentObjectPropertiesAxiom(properties: List[owlapy.owl_property.OWLObjectPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
    Represents EquivalentObjectProperties axioms in the OWL 2 Specification.
 
@@ -2992,10 +2902,10 @@ Attributes
       
 
 
-.. py:class:: OWLDisjointObjectPropertiesAxiom(properties: List[OWLObjectPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDisjointObjectPropertiesAxiom(properties: List[owlapy.owl_property.OWLObjectPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
    Represents DisjointObjectProperties axioms in the OWL 2 Specification.
 
@@ -3005,10 +2915,10 @@ Attributes
       
 
 
-.. py:class:: OWLInverseObjectPropertiesAxiom(first: OWLObjectPropertyExpression, second: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLInverseObjectPropertiesAxiom(first: owlapy.owl_property.OWLObjectPropertyExpression, second: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
    Represents InverseObjectProperties axioms in the OWL 2 Specification.
 
@@ -3017,10 +2927,10 @@ Attributes
 
       
 
-   .. py:method:: get_first_property() -> OWLObjectPropertyExpression
+   .. py:method:: get_first_property() -> owlapy.owl_property.OWLObjectPropertyExpression
 
 
-   .. py:method:: get_second_property() -> OWLObjectPropertyExpression
+   .. py:method:: get_second_property() -> owlapy.owl_property.OWLObjectPropertyExpression
 
 
    .. py:method:: __repr__()
@@ -3029,10 +2939,10 @@ Attributes
 
 
 
-.. py:class:: OWLEquivalentDataPropertiesAxiom(properties: List[OWLDataPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLEquivalentDataPropertiesAxiom(properties: List[owlapy.owl_property.OWLDataPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
 
    Represents EquivalentDataProperties axioms in the OWL 2 Specification.
 
@@ -3042,10 +2952,10 @@ Attributes
       
 
 
-.. py:class:: OWLDisjointDataPropertiesAxiom(properties: List[OWLDataPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDisjointDataPropertiesAxiom(properties: List[owlapy.owl_property.OWLDataPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
 
    Represents DisjointDataProperties axioms in the OWL 2 Specification.
 
@@ -3055,7 +2965,7 @@ Attributes
       
 
 
-.. py:class:: OWLSubClassOfAxiom(sub_class: OWLClassExpression, super_class: OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLSubClassOfAxiom(sub_class: owlapy.owl_class_expression.OWLClassExpression, super_class: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLClassAxiom`
@@ -3067,10 +2977,10 @@ Attributes
 
       
 
-   .. py:method:: get_sub_class() -> OWLClassExpression
+   .. py:method:: get_sub_class() -> owlapy.owl_class_expression.OWLClassExpression
 
 
-   .. py:method:: get_super_class() -> OWLClassExpression
+   .. py:method:: get_super_class() -> owlapy.owl_class_expression.OWLClassExpression
 
 
    .. py:method:: __eq__(other)
@@ -3089,7 +2999,7 @@ Attributes
 
 
 
-.. py:class:: OWLDisjointUnionAxiom(cls_: OWLClass, class_expressions: List[OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDisjointUnionAxiom(cls_: owlapy.owl_class_expression.OWLClass, class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLClassAxiom`
@@ -3101,10 +3011,10 @@ Attributes
 
       
 
-   .. py:method:: get_owl_class() -> OWLClass
+   .. py:method:: get_owl_class() -> owlapy.owl_class_expression.OWLClass
 
 
-   .. py:method:: get_class_expressions() -> Iterable[OWLClassExpression]
+   .. py:method:: get_class_expressions() -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
 
 
    .. py:method:: get_owl_equivalent_classes_axiom() -> OWLEquivalentClassesAxiom
@@ -3129,7 +3039,7 @@ Attributes
 
 
 
-.. py:class:: OWLClassAssertionAxiom(individual: OWLIndividual, class_expression: OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLClassAssertionAxiom(individual: OWLIndividual, class_expression: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLIndividualAxiom`
@@ -3144,7 +3054,7 @@ Attributes
    .. py:method:: get_individual() -> OWLIndividual
 
 
-   .. py:method:: get_class_expression() -> OWLClassExpression
+   .. py:method:: get_class_expression() -> owlapy.owl_class_expression.OWLClassExpression
 
 
    .. py:method:: __eq__(other)
@@ -3179,10 +3089,10 @@ Attributes
 
 
 
-.. py:class:: OWLAnnotationProperty(iri: _iri.IRI)
+.. py:class:: OWLAnnotationProperty(iri: owlapy.iri.IRI)
 
 
-   Bases: :py:obj:`OWLProperty`
+   Bases: :py:obj:`owlapy.owl_property.OWLProperty`
 
    Represents an AnnotationProperty in the OWL 2 specification.
 
@@ -3191,7 +3101,7 @@ Attributes
 
       
 
-   .. py:method:: get_iri() -> _iri.IRI
+   .. py:method:: get_iri() -> owlapy.iri.IRI
 
       Gets the IRI of this object.
 
@@ -3199,10 +3109,10 @@ Attributes
 
 
 
-.. py:class:: OWLAnnotation(property: OWLAnnotationProperty, value: _base.OWLAnnotationValue)
+.. py:class:: OWLAnnotation(property: OWLAnnotationProperty, value: owlapy.owl_annotation.OWLAnnotationValue)
 
 
-   Bases: :py:obj:`_base.OWLObject`
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
    Annotations are used in the various types of annotation axioms, which bind annotations to their subjects
    (i.e. axioms or declarations).
@@ -3219,7 +3129,7 @@ Attributes
       :returns: The annotation property.
 
 
-   .. py:method:: get_value() -> _base.OWLAnnotationValue
+   .. py:method:: get_value() -> owlapy.owl_annotation.OWLAnnotationValue
 
       Gets the annotation value. The type of value will depend upon the type of the annotation e.g. whether the
       annotation is an OWLLiteral, an IRI or an OWLAnonymousIndividual.
@@ -3243,7 +3153,7 @@ Attributes
 
 
 
-.. py:class:: OWLAnnotationAssertionAxiom(subject: _base.OWLAnnotationSubject, annotation: OWLAnnotation)
+.. py:class:: OWLAnnotationAssertionAxiom(subject: owlapy.owl_annotation.OWLAnnotationSubject, annotation: OWLAnnotation)
 
 
    Bases: :py:obj:`OWLAnnotationAxiom`
@@ -3255,7 +3165,7 @@ Attributes
 
       
 
-   .. py:method:: get_subject() -> _base.OWLAnnotationSubject
+   .. py:method:: get_subject() -> owlapy.owl_annotation.OWLAnnotationSubject
 
       Gets the subject of this object.
 
@@ -3269,7 +3179,7 @@ Attributes
       :returns: The property.
 
 
-   .. py:method:: get_value() -> _base.OWLAnnotationValue
+   .. py:method:: get_value() -> owlapy.owl_annotation.OWLAnnotationValue
 
       Gets the annotation value. This is either an IRI, an OWLAnonymousIndividual or an OWLLiteral.
 
@@ -3326,7 +3236,7 @@ Attributes
 
 
 
-.. py:class:: OWLAnnotationPropertyDomainAxiom(property_: OWLAnnotationProperty, domain: _iri.IRI, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLAnnotationPropertyDomainAxiom(property_: OWLAnnotationProperty, domain: owlapy.iri.IRI, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLAnnotationAxiom`
@@ -3341,7 +3251,7 @@ Attributes
    .. py:method:: get_property() -> OWLAnnotationProperty
 
 
-   .. py:method:: get_domain() -> _iri.IRI
+   .. py:method:: get_domain() -> owlapy.iri.IRI
 
 
    .. py:method:: __eq__(other)
@@ -3360,7 +3270,7 @@ Attributes
 
 
 
-.. py:class:: OWLAnnotationPropertyRangeAxiom(property_: OWLAnnotationProperty, range_: _iri.IRI, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLAnnotationPropertyRangeAxiom(property_: OWLAnnotationProperty, range_: owlapy.iri.IRI, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLAnnotationAxiom`
@@ -3375,7 +3285,7 @@ Attributes
    .. py:method:: get_property() -> OWLAnnotationProperty
 
 
-   .. py:method:: get_range() -> _iri.IRI
+   .. py:method:: get_range() -> owlapy.iri.IRI
 
 
    .. py:method:: __eq__(other)
@@ -3428,10 +3338,10 @@ Attributes
 
 
 
-.. py:class:: OWLSubObjectPropertyOfAxiom(sub_property: OWLObjectPropertyExpression, super_property: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLSubObjectPropertyOfAxiom(sub_property: owlapy.owl_property.OWLObjectPropertyExpression, super_property: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLSubPropertyAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+   Bases: :py:obj:`OWLSubPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
    Represents a SubObjectPropertyOf axiom in the OWL 2 specification.
 
@@ -3441,10 +3351,10 @@ Attributes
       
 
 
-.. py:class:: OWLSubDataPropertyOfAxiom(sub_property: OWLDataPropertyExpression, super_property: OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLSubDataPropertyOfAxiom(sub_property: owlapy.owl_property.OWLDataPropertyExpression, super_property: owlapy.owl_property.OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLSubPropertyAxiom`\ [\ :py:obj:`OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
+   Bases: :py:obj:`OWLSubPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
 
    Represents a SubDataPropertyOf axiom in the OWL 2 specification.
 
@@ -3491,10 +3401,10 @@ Attributes
 
 
 
-.. py:class:: OWLObjectPropertyAssertionAxiom(subject: OWLIndividual, property_: OWLObjectPropertyExpression, object_: OWLIndividual, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLObjectPropertyAssertionAxiom(subject: OWLIndividual, property_: owlapy.owl_property.OWLObjectPropertyExpression, object_: OWLIndividual, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ , :py:obj:`OWLIndividual`\ ]
+   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`OWLIndividual`\ ]
 
    Represents an ObjectPropertyAssertion axiom in the OWL 2 specification.
 
@@ -3504,10 +3414,10 @@ Attributes
       
 
 
-.. py:class:: OWLNegativeObjectPropertyAssertionAxiom(subject: OWLIndividual, property_: OWLObjectPropertyExpression, object_: OWLIndividual, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLNegativeObjectPropertyAssertionAxiom(subject: OWLIndividual, property_: owlapy.owl_property.OWLObjectPropertyExpression, object_: OWLIndividual, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ , :py:obj:`OWLIndividual`\ ]
+   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`OWLIndividual`\ ]
 
    Represents a NegativeObjectPropertyAssertion axiom in the OWL 2 specification.
 
@@ -3517,10 +3427,10 @@ Attributes
       
 
 
-.. py:class:: OWLDataPropertyAssertionAxiom(subject: OWLIndividual, property_: OWLDataPropertyExpression, object_: OWLLiteral, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDataPropertyAssertionAxiom(subject: OWLIndividual, property_: owlapy.owl_property.OWLDataPropertyExpression, object_: OWLLiteral, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`OWLDataPropertyExpression`\ , :py:obj:`OWLLiteral`\ ]
+   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`OWLLiteral`\ ]
 
    Represents an DataPropertyAssertion axiom in the OWL 2 specification.
 
@@ -3530,10 +3440,10 @@ Attributes
       
 
 
-.. py:class:: OWLNegativeDataPropertyAssertionAxiom(subject: OWLIndividual, property_: OWLDataPropertyExpression, object_: OWLLiteral, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLNegativeDataPropertyAssertionAxiom(subject: OWLIndividual, property_: owlapy.owl_property.OWLDataPropertyExpression, object_: OWLLiteral, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`OWLDataPropertyExpression`\ , :py:obj:`OWLLiteral`\ ]
+   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`OWLLiteral`\ ]
 
    Represents an NegativeDataPropertyAssertion axiom in the OWL 2 specification.
 
@@ -3559,10 +3469,10 @@ Attributes
 
 
 
-.. py:class:: OWLObjectPropertyCharacteristicAxiom(property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLObjectPropertyCharacteristicAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+   Bases: :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
    Base interface for functional object property axiom.
 
@@ -3587,7 +3497,7 @@ Attributes
 
 
 
-.. py:class:: OWLFunctionalObjectPropertyAxiom(property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLFunctionalObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
@@ -3600,7 +3510,7 @@ Attributes
       
 
 
-.. py:class:: OWLAsymmetricObjectPropertyAxiom(property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLAsymmetricObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
@@ -3613,7 +3523,7 @@ Attributes
       
 
 
-.. py:class:: OWLInverseFunctionalObjectPropertyAxiom(property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLInverseFunctionalObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
@@ -3626,7 +3536,7 @@ Attributes
       
 
 
-.. py:class:: OWLIrreflexiveObjectPropertyAxiom(property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLIrreflexiveObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
@@ -3639,7 +3549,7 @@ Attributes
       
 
 
-.. py:class:: OWLReflexiveObjectPropertyAxiom(property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLReflexiveObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
@@ -3652,7 +3562,7 @@ Attributes
       
 
 
-.. py:class:: OWLSymmetricObjectPropertyAxiom(property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLSymmetricObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
@@ -3665,7 +3575,7 @@ Attributes
       
 
 
-.. py:class:: OWLTransitiveObjectPropertyAxiom(property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLTransitiveObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
@@ -3678,10 +3588,10 @@ Attributes
       
 
 
-.. py:class:: OWLDataPropertyCharacteristicAxiom(property_: OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDataPropertyCharacteristicAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
+   Bases: :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
 
    Base interface for Functional data property axiom.
 
@@ -3706,7 +3616,7 @@ Attributes
 
 
 
-.. py:class:: OWLFunctionalDataPropertyAxiom(property_: OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLFunctionalDataPropertyAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLDataPropertyCharacteristicAxiom`
@@ -3719,7 +3629,7 @@ Attributes
       
 
 
-.. py:class:: OWLPropertyDomainAxiom(property_: _P, domain: OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLPropertyDomainAxiom(property_: _P, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ ], :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`_P`\ ]
@@ -3731,7 +3641,7 @@ Attributes
 
       
 
-   .. py:method:: get_domain() -> OWLClassExpression
+   .. py:method:: get_domain() -> owlapy.owl_class_expression.OWLClassExpression
 
 
    .. py:method:: __eq__(other)
@@ -3781,10 +3691,10 @@ Attributes
 
 
 
-.. py:class:: OWLObjectPropertyDomainAxiom(property_: OWLObjectPropertyExpression, domain: OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLObjectPropertyDomainAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ ]
+   Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ]
 
    Represents a ObjectPropertyDomain axiom in the OWL 2 Specification.
 
@@ -3794,10 +3704,10 @@ Attributes
       
 
 
-.. py:class:: OWLDataPropertyDomainAxiom(property_: OWLDataPropertyExpression, domain: OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDataPropertyDomainAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`OWLDataPropertyExpression`\ ]
+   Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ]
 
    Represents a DataPropertyDomain axiom in the OWL 2 Specification.
 
@@ -3807,10 +3717,10 @@ Attributes
       
 
 
-.. py:class:: OWLObjectPropertyRangeAxiom(property_: OWLObjectPropertyExpression, range_: OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLObjectPropertyRangeAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, range_: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`OWLObjectPropertyExpression`\ , :py:obj:`OWLClassExpression`\ ]
+   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ]
 
    Represents a ObjectPropertyRange axiom in the OWL 2 Specification.
 
@@ -3820,10 +3730,10 @@ Attributes
       
 
 
-.. py:class:: OWLDataPropertyRangeAxiom(property_: OWLDataPropertyExpression, range_: OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDataPropertyRangeAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, range_: owlapy.owl_class_expression.OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`OWLDataPropertyExpression`\ , :py:obj:`OWLDataRange`\ ]
+   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`owlapy.owl_class_expression.OWLDataRange`\ ]
 
    Represents a DataPropertyRange axiom in the OWL 2 Specification.
 
@@ -3836,7 +3746,7 @@ Attributes
 .. py:class:: OWLOntology
 
 
-   Bases: :py:obj:`_base.OWLObject`
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
    Represents an OWL 2 Ontology  in the OWL 2 specification.
 
@@ -3858,7 +3768,7 @@ Attributes
 
       
 
-   .. py:method:: classes_in_signature() -> Iterable[OWLClass]
+   .. py:method:: classes_in_signature() -> Iterable[owlapy.owl_class_expression.OWLClass]
       :abstractmethod:
 
       Gets the classes in the signature of this object.
@@ -3866,7 +3776,7 @@ Attributes
       :returns: Classes in the signature of this object.
 
 
-   .. py:method:: data_properties_in_signature() -> Iterable[OWLDataProperty]
+   .. py:method:: data_properties_in_signature() -> Iterable[owlapy.owl_property.OWLDataProperty]
       :abstractmethod:
 
       Get the data properties that are in the signature of this object.
@@ -3874,7 +3784,7 @@ Attributes
       :returns: Data properties that are in the signature of this object.
 
 
-   .. py:method:: object_properties_in_signature() -> Iterable[OWLObjectProperty]
+   .. py:method:: object_properties_in_signature() -> Iterable[owlapy.owl_property.OWLObjectProperty]
       :abstractmethod:
 
       A convenience method that obtains the object properties that are in the signature of this object.
@@ -3890,7 +3800,7 @@ Attributes
       :returns: Individuals that are in the signature of this object.
 
 
-   .. py:method:: equivalent_classes_axioms(c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]
+   .. py:method:: equivalent_classes_axioms(c: owlapy.owl_class_expression.OWLClass) -> Iterable[OWLEquivalentClassesAxiom]
       :abstractmethod:
 
       Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.
@@ -3909,7 +3819,7 @@ Attributes
       :returns: General class axioms contained in this ontology.
 
 
-   .. py:method:: data_property_domain_axioms(property: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]
+   .. py:method:: data_property_domain_axioms(property: owlapy.owl_property.OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]
       :abstractmethod:
 
       Gets the OWLDataPropertyDomainAxiom objects where the property is equal to the specified property.
@@ -3919,7 +3829,7 @@ Attributes
       :returns: The axioms matching the search.
 
 
-   .. py:method:: data_property_range_axioms(property: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]
+   .. py:method:: data_property_range_axioms(property: owlapy.owl_property.OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]
       :abstractmethod:
 
       Gets the OWLDataPropertyRangeAxiom objects where the property is equal to the specified property.
@@ -3929,7 +3839,7 @@ Attributes
       :returns: The axioms matching the search.
 
 
-   .. py:method:: object_property_domain_axioms(property: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]
+   .. py:method:: object_property_domain_axioms(property: owlapy.owl_property.OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]
       :abstractmethod:
 
       Gets the OWLObjectPropertyDomainAxiom objects where the property is equal to the specified property.
@@ -3939,7 +3849,7 @@ Attributes
       :returns: The axioms matching the search.
 
 
-   .. py:method:: object_property_range_axioms(property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]
+   .. py:method:: object_property_range_axioms(property: owlapy.owl_property.OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]
       :abstractmethod:
 
       Gets the OWLObjectPropertyRangeAxiom objects where the property is equal to the specified property.
@@ -4013,7 +3923,7 @@ Attributes
    An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing
    ontologies.
 
-   .. py:method:: create_ontology(iri: _iri.IRI) -> OWLOntology
+   .. py:method:: create_ontology(iri: owlapy.iri.IRI) -> OWLOntology
       :abstractmethod:
 
       Creates a new (empty) ontology that that has the specified ontology IRI (and no version IRI).
@@ -4024,7 +3934,7 @@ Attributes
                 ontology will be returned.
 
 
-   .. py:method:: load_ontology(iri: _iri.IRI) -> OWLOntology
+   .. py:method:: load_ontology(iri: owlapy.iri.IRI) -> OWLOntology
       :abstractmethod:
 
       Loads an ontology that is assumed to have the specified ontology IRI as its IRI or version IRI. The ontology
@@ -4066,7 +3976,7 @@ Attributes
       :param axiom: The axiom to be removed.
 
 
-   .. py:method:: save_ontology(ontology: OWLOntology, document_iri: _iri.IRI)
+   .. py:method:: save_ontology(ontology: OWLOntology, document_iri: owlapy.iri.IRI)
       :abstractmethod:
 
       Saves the specified ontology, using the specified document IRI to determine where/how the ontology should be
@@ -4088,7 +3998,7 @@ Attributes
 
       
 
-   .. py:method:: data_property_domains(pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]
+   .. py:method:: data_property_domains(pe: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are the direct or indirect domains of this property with respect to the
@@ -4105,7 +4015,7 @@ Attributes
                 (Note, rdfs:Literal is the top datatype).
 
 
-   .. py:method:: object_property_domains(pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]
+   .. py:method:: object_property_domains(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are the direct or indirect domains of this property with respect to the
@@ -4121,7 +4031,7 @@ Attributes
                 super_classes(ObjectSomeValuesFrom(pe owl:Thing), false) together with N if N is non-empty.
 
 
-   .. py:method:: object_property_ranges(pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]
+   .. py:method:: object_property_ranges(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are the direct or indirect ranges of this property with respect to the
@@ -4138,7 +4048,7 @@ Attributes
                 if N is non-empty.
 
 
-   .. py:method:: equivalent_classes(ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]
+   .. py:method:: equivalent_classes(ce: owlapy.owl_class_expression.OWLClassExpression, only_named: bool = True) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are equivalent to the specified class expression with respect to the set of
@@ -4153,7 +4063,7 @@ Attributes
                 bottom node, will be returned.
 
 
-   .. py:method:: disjoint_classes(ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]
+   .. py:method:: disjoint_classes(ce: owlapy.owl_class_expression.OWLClassExpression, only_named: bool = True) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are disjoint with specified class expression with respect to the set of
@@ -4188,7 +4098,7 @@ Attributes
       :returns: All individuals x where the root ontology imports closure entails SameIndividual(ind x).
 
 
-   .. py:method:: equivalent_object_properties(op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]
+   .. py:method:: equivalent_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
       :abstractmethod:
 
       Gets the simplified object properties that are equivalent to the specified object property with respect
@@ -4201,7 +4111,7 @@ Attributes
                 then owl:bottomDataProperty will be returned.
 
 
-   .. py:method:: equivalent_data_properties(dp: OWLDataProperty) -> Iterable[OWLDataProperty]
+   .. py:method:: equivalent_data_properties(dp: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_property.OWLDataProperty]
       :abstractmethod:
 
       Gets the data properties that are equivalent to the specified data property with respect to the set of
@@ -4214,7 +4124,7 @@ Attributes
                 be returned.
 
 
-   .. py:method:: data_property_values(ind: OWLNamedIndividual, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]
+   .. py:method:: data_property_values(ind: OWLNamedIndividual, pe: owlapy.owl_property.OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]
       :abstractmethod:
 
       Gets the data property values for the specified individual and data property expression.
@@ -4228,7 +4138,7 @@ Attributes
                 axioms entails DataPropertyAssertion(pe ind l).
 
 
-   .. py:method:: object_property_values(ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = True) -> Iterable[OWLNamedIndividual]
+   .. py:method:: object_property_values(ind: OWLNamedIndividual, pe: owlapy.owl_property.OWLObjectPropertyExpression, direct: bool = True) -> Iterable[OWLNamedIndividual]
       :abstractmethod:
 
       Gets the object property values for the specified individual and object property expression.
@@ -4249,7 +4159,7 @@ Attributes
       the current root ontology specified by the changes.
 
 
-   .. py:method:: instances(ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]
+   .. py:method:: instances(ce: owlapy.owl_class_expression.OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]
       :abstractmethod:
 
       Gets the individuals which are instances of the specified class expression.
@@ -4264,7 +4174,7 @@ Attributes
                 nothing returned.
 
 
-   .. py:method:: sub_classes(ce: OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[OWLClassExpression]
+   .. py:method:: sub_classes(ce: owlapy.owl_class_expression.OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the set of named classes that are the strict (potentially direct) subclasses of the specified class
@@ -4280,7 +4190,7 @@ Attributes
                 nothing will be returned.
 
 
-   .. py:method:: disjoint_object_properties(op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]
+   .. py:method:: disjoint_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
       :abstractmethod:
 
       Gets the simplified object properties that are disjoint with the specified object property with respect
@@ -4293,7 +4203,7 @@ Attributes
                 StrictSubObjectPropertyOf(e ObjectPropertyComplementOf(op)).
 
 
-   .. py:method:: disjoint_data_properties(dp: OWLDataProperty) -> Iterable[OWLDataProperty]
+   .. py:method:: disjoint_data_properties(dp: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_property.OWLDataProperty]
       :abstractmethod:
 
       Gets the data properties that are disjoint with the specified data property with respect
@@ -4306,7 +4216,7 @@ Attributes
                 StrictSubDataPropertyOf(e DataPropertyComplementOf(dp)).
 
 
-   .. py:method:: sub_data_properties(dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]
+   .. py:method:: sub_data_properties(dp: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.owl_property.OWLDataProperty]
       :abstractmethod:
 
       Gets the set of named data properties that are the strict (potentially direct) subproperties of the
@@ -4322,7 +4232,7 @@ Attributes
                 returned.
 
 
-   .. py:method:: super_data_properties(dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]
+   .. py:method:: super_data_properties(dp: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.owl_property.OWLDataProperty]
       :abstractmethod:
 
       Gets the stream of data properties that are the strict (potentially direct) super properties of the
@@ -4337,7 +4247,7 @@ Attributes
       :returns: Iterable of super properties.
 
 
-   .. py:method:: sub_object_properties(op: OWLObjectPropertyExpression, direct: bool = False) -> Iterable[OWLObjectPropertyExpression]
+   .. py:method:: sub_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression, direct: bool = False) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
       :abstractmethod:
 
       Gets the stream of simplified object property expressions that are the strict (potentially direct)
@@ -4355,7 +4265,7 @@ Attributes
                 If pe is equivalent to owl:bottomObjectProperty then nothing will be returned.
 
 
-   .. py:method:: super_object_properties(op: OWLObjectPropertyExpression, direct: bool = False) -> Iterable[OWLObjectPropertyExpression]
+   .. py:method:: super_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression, direct: bool = False) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
       :abstractmethod:
 
       Gets the stream of object properties that are the strict (potentially direct) super properties of the
@@ -4371,7 +4281,7 @@ Attributes
       :returns: Iterable of super properties.
 
 
-   .. py:method:: types(ind: OWLNamedIndividual, direct: bool = False) -> Iterable[OWLClass]
+   .. py:method:: types(ind: OWLNamedIndividual, direct: bool = False) -> Iterable[owlapy.owl_class_expression.OWLClass]
       :abstractmethod:
 
       Gets the named classes which are (potentially direct) types of the specified named individual.
@@ -4404,7 +4314,7 @@ Attributes
       Return True if this reasoner is using a triplestore to retrieve instances.
 
 
-   .. py:method:: super_classes(ce: OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[OWLClassExpression]
+   .. py:method:: super_classes(ce: owlapy.owl_class_expression.OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the stream of named classes that are the strict (potentially direct) super classes of the specified
