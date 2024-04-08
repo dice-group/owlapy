@@ -68,6 +68,7 @@ class OWLDataPropertyExpression(OWLPropertyExpression, metaclass=ABCMeta):
     def is_data_property_expression(self):
         # documented in parent
         return True
+
 class OWLProperty(OWLPropertyExpression, OWLEntity, metaclass=ABCMeta):
     """A marker interface for properties that aren't expression i.e. named properties. By definition, properties
     are either data properties or object properties."""

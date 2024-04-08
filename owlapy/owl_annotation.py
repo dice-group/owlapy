@@ -2,6 +2,7 @@ from abc import ABCMeta
 from .owlobject import OWLObject
 from typing import Optional
 
+
 class OWLAnnotationObject(OWLObject, metaclass=ABCMeta):
     """A marker interface for the values (objects) of annotations."""
     __slots__ = ()
