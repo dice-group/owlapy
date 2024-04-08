@@ -9,7 +9,7 @@ from datetime import datetime, date
 
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary, OWLFacet
 from owlapy._utils import MOVE
-from owlapy.model._base import OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue
+from owlapy.owlobject import OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue
 from owlapy.model._iri import HasIRI, IRI
 
 MOVE(OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue, HasIRI, IRI)

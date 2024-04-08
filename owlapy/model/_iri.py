@@ -4,7 +4,8 @@ from typing import Final, Union, overload
 from weakref import WeakKeyDictionary
 
 from owlapy import namespaces
-from owlapy.model._base import OWLAnnotationSubject, OWLAnnotationValue
+#from owlapy.model._base import OWLAnnotationSubject, OWLAnnotationValue
+from owlapy.owlobject import OWLAnnotationSubject, OWLAnnotationValue
 from owlapy.namespaces import Namespaces
 
 
