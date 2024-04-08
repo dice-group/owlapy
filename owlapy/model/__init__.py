@@ -9,8 +9,9 @@ from datetime import datetime, date
 
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary, OWLFacet
 from owlapy._utils import MOVE
-from owlapy.model._base import OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue
-from owlapy.model._iri import HasIRI, IRI
+from owlapy.owlobject import OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue
+from owlapy.iri import IRI
+from owlapy.has import HasIndex, HasIRI, HasOperands
 
 MOVE(OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue, HasIRI, IRI)
 
@@ -19,32 +20,6 @@ _C = TypeVar('_C', bound='OWLObject')  #:
 _P = TypeVar('_P', bound='OWLPropertyExpression')  #:
 _R = TypeVar('_R', bound='OWLPropertyRange')  #:
 Literals = Union['OWLLiteral', int, float, bool, Timedelta, datetime, date, str]  #:
-
-
-class HasIndex(Protocol):
-    """Interface for types with an index; this is used to group objects by type when sorting."""
-    type_index: ClassVar[int]  #: index for this type. This is a sorting index for the types.
-
-    def __eq__(self, other): ...
-
-
-class HasOperands(Generic[_T], metaclass=ABCMeta):
-    """An interface to objects that have a collection of operands.
-
-    Args:
-        _T: Operand type.
-    """
-    __slots__ = ()
-
-    @abstractmethod
-    def operands(self) -> Iterable[_T]:
-        """Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
-        classes axiom.
-
-        Returns:
-            The operands.
-        """
-        pass
 
 
 class OWLPropertyRange(OWLObject, metaclass=ABCMeta):
