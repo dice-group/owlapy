@@ -38,7 +38,38 @@ Classes
    owlapy.owl_axiom.OWLSubClassOfAxiom
    owlapy.owl_axiom.OWLDisjointUnionAxiom
    owlapy.owl_axiom.OWLClassAssertionAxiom
+   owlapy.owl_axiom.OWLAnnotationProperty
+   owlapy.owl_axiom.OWLAnnotation
    owlapy.owl_axiom.OWLAnnotationAxiom
+   owlapy.owl_axiom.OWLAnnotationAssertionAxiom
+   owlapy.owl_axiom.OWLSubAnnotationPropertyOfAxiom
+   owlapy.owl_axiom.OWLAnnotationPropertyDomainAxiom
+   owlapy.owl_axiom.OWLAnnotationPropertyRangeAxiom
+   owlapy.owl_axiom.OWLSubPropertyAxiom
+   owlapy.owl_axiom.OWLSubObjectPropertyOfAxiom
+   owlapy.owl_axiom.OWLSubDataPropertyOfAxiom
+   owlapy.owl_axiom.OWLPropertyAssertionAxiom
+   owlapy.owl_axiom.OWLObjectPropertyAssertionAxiom
+   owlapy.owl_axiom.OWLNegativeObjectPropertyAssertionAxiom
+   owlapy.owl_axiom.OWLDataPropertyAssertionAxiom
+   owlapy.owl_axiom.OWLNegativeDataPropertyAssertionAxiom
+   owlapy.owl_axiom.OWLUnaryPropertyAxiom
+   owlapy.owl_axiom.OWLObjectPropertyCharacteristicAxiom
+   owlapy.owl_axiom.OWLFunctionalObjectPropertyAxiom
+   owlapy.owl_axiom.OWLAsymmetricObjectPropertyAxiom
+   owlapy.owl_axiom.OWLInverseFunctionalObjectPropertyAxiom
+   owlapy.owl_axiom.OWLIrreflexiveObjectPropertyAxiom
+   owlapy.owl_axiom.OWLReflexiveObjectPropertyAxiom
+   owlapy.owl_axiom.OWLSymmetricObjectPropertyAxiom
+   owlapy.owl_axiom.OWLTransitiveObjectPropertyAxiom
+   owlapy.owl_axiom.OWLDataPropertyCharacteristicAxiom
+   owlapy.owl_axiom.OWLFunctionalDataPropertyAxiom
+   owlapy.owl_axiom.OWLPropertyDomainAxiom
+   owlapy.owl_axiom.OWLPropertyRangeAxiom
+   owlapy.owl_axiom.OWLObjectPropertyDomainAxiom
+   owlapy.owl_axiom.OWLDataPropertyDomainAxiom
+   owlapy.owl_axiom.OWLObjectPropertyRangeAxiom
+   owlapy.owl_axiom.OWLDataPropertyRangeAxiom
 
 
 
@@ -651,6 +682,70 @@ Classes
 
 
 
+.. py:class:: OWLAnnotationProperty(iri: owlapy.iri.IRI)
+
+
+   Bases: :py:obj:`owlapy.owl_property.OWLProperty`
+
+   Represents an AnnotationProperty in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+      
+
+   .. py:method:: get_iri() -> owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+
+.. py:class:: OWLAnnotation(property: OWLAnnotationProperty, value: owlapy.owl_annotation.OWLAnnotationValue)
+
+
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+
+   Annotations are used in the various types of annotation axioms, which bind annotations to their subjects
+   (i.e. axioms or declarations).
+
+   .. py:attribute:: __slots__
+      :value: ('_property', '_value')
+
+      
+
+   .. py:method:: get_property() -> OWLAnnotationProperty
+
+      Gets the property that this annotation acts along.
+
+      :returns: The annotation property.
+
+
+   .. py:method:: get_value() -> owlapy.owl_annotation.OWLAnnotationValue
+
+      Gets the annotation value. The type of value will depend upon the type of the annotation e.g. whether the
+      annotation is an OWLLiteral, an IRI or an OWLAnonymousIndividual.
+
+      :returns: The annotation value.
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
 .. py:class:: OWLAnnotationAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
@@ -665,5 +760,595 @@ Classes
 
    .. py:method:: is_annotation_axiom() -> bool
 
+
+
+.. py:class:: OWLAnnotationAssertionAxiom(subject: owlapy.owl_annotation.OWLAnnotationSubject, annotation: OWLAnnotation)
+
+
+   Bases: :py:obj:`OWLAnnotationAxiom`
+
+   Represents AnnotationAssertion axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_subject', '_annotation')
+
+      
+
+   .. py:method:: get_subject() -> owlapy.owl_annotation.OWLAnnotationSubject
+
+      Gets the subject of this object.
+
+      :returns: The subject.
+
+
+   .. py:method:: get_property() -> OWLAnnotationProperty
+
+      Gets the property.
+
+      :returns: The property.
+
+
+   .. py:method:: get_value() -> owlapy.owl_annotation.OWLAnnotationValue
+
+      Gets the annotation value. This is either an IRI, an OWLAnonymousIndividual or an OWLLiteral.
+
+      :returns: The annotation value.
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLSubAnnotationPropertyOfAxiom(sub_property: OWLAnnotationProperty, super_property: OWLAnnotationProperty, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLAnnotationAxiom`
+
+   Represents an SubAnnotationPropertyOf axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_sub_property', '_super_property')
+
+      
+
+   .. py:method:: get_sub_property() -> OWLAnnotationProperty
+
+
+   .. py:method:: get_super_property() -> OWLAnnotationProperty
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLAnnotationPropertyDomainAxiom(property_: OWLAnnotationProperty, domain: owlapy.iri.IRI, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLAnnotationAxiom`
+
+   Represents an AnnotationPropertyDomain axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_property', '_domain')
+
+      
+
+   .. py:method:: get_property() -> OWLAnnotationProperty
+
+
+   .. py:method:: get_domain() -> owlapy.iri.IRI
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLAnnotationPropertyRangeAxiom(property_: OWLAnnotationProperty, range_: owlapy.iri.IRI, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLAnnotationAxiom`
+
+   Represents an AnnotationPropertyRange axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_property', '_range')
+
+      
+
+   .. py:method:: get_property() -> OWLAnnotationProperty
+
+
+   .. py:method:: get_range() -> owlapy.iri.IRI
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLSubPropertyAxiom(sub_property: _P, super_property: _P, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ ], :py:obj:`OWLPropertyAxiom`
+
+   Base interface for object and data sub-property axioms.
+
+   .. py:attribute:: __slots__
+      :value: ('_sub_property', '_super_property')
+
+      
+
+   .. py:method:: get_sub_property() -> _P
+
+
+   .. py:method:: get_super_property() -> _P
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLSubObjectPropertyOfAxiom(sub_property: owlapy.owl_property.OWLObjectPropertyExpression, super_property: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLSubPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+
+   Represents a SubObjectPropertyOf axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLSubDataPropertyOfAxiom(sub_property: owlapy.owl_property.OWLDataPropertyExpression, super_property: owlapy.owl_property.OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLSubPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
+
+   Represents a SubDataPropertyOf axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLPropertyAssertionAxiom(subject: owlapy.owl_individual.OWLIndividual, property_: _P, object_: _C, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ , :py:obj:`_C`\ ], :py:obj:`OWLIndividualAxiom`
+
+   Represents a PropertyAssertion axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_subject', '_property', '_object')
+
+      
+
+   .. py:method:: get_subject() -> owlapy.owl_individual.OWLIndividual
+
+
+   .. py:method:: get_property() -> _P
+
+
+   .. py:method:: get_object() -> _C
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLObjectPropertyAssertionAxiom(subject: owlapy.owl_individual.OWLIndividual, property_: owlapy.owl_property.OWLObjectPropertyExpression, object_: owlapy.owl_individual.OWLIndividual, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
+
+   Represents an ObjectPropertyAssertion axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLNegativeObjectPropertyAssertionAxiom(subject: owlapy.owl_individual.OWLIndividual, property_: owlapy.owl_property.OWLObjectPropertyExpression, object_: owlapy.owl_individual.OWLIndividual, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
+
+   Represents a NegativeObjectPropertyAssertion axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLDataPropertyAssertionAxiom(subject: owlapy.owl_individual.OWLIndividual, property_: owlapy.owl_property.OWLDataPropertyExpression, object_: owlapy.owl_literal.OWLLiteral, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
+
+   Represents an DataPropertyAssertion axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLNegativeDataPropertyAssertionAxiom(subject: owlapy.owl_individual.OWLIndividual, property_: owlapy.owl_property.OWLDataPropertyExpression, object_: owlapy.owl_literal.OWLLiteral, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
+
+   Represents an NegativeDataPropertyAssertion axiom in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLUnaryPropertyAxiom(property_: _P, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ ], :py:obj:`OWLPropertyAxiom`
+
+   Unary property axiom.
+
+   .. py:attribute:: __slots__
+      :value: '_property'
+
+      
+
+   .. py:method:: get_property() -> _P
+
+
+
+.. py:class:: OWLObjectPropertyCharacteristicAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+
+   Base interface for functional object property axiom.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLFunctionalObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
+
+   Represents FunctionalObjectProperty axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLAsymmetricObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
+
+   Represents AsymmetricObjectProperty axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLInverseFunctionalObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
+
+   Represents InverseFunctionalObjectProperty axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLIrreflexiveObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
+
+   Represents IrreflexiveObjectProperty axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLReflexiveObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
+
+   Represents ReflexiveObjectProperty axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLSymmetricObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
+
+   Represents SymmetricObjectProperty axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLTransitiveObjectPropertyAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
+
+   Represents TransitiveObjectProperty axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLDataPropertyCharacteristicAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
+
+   Base interface for Functional data property axiom.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLFunctionalDataPropertyAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLDataPropertyCharacteristicAxiom`
+
+   Represents FunctionalDataProperty axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLPropertyDomainAxiom(property_: _P, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ ], :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`_P`\ ]
+
+   Represents ObjectPropertyDomain axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: '_domain'
+
+      
+
+   .. py:method:: get_domain() -> owlapy.owl_class_expression.OWLClassExpression
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLPropertyRangeAxiom(property_: _P, range_: _R, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ , :py:obj:`_R`\ ], :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`_P`\ ]
+
+   Represents ObjectPropertyRange axioms in the OWL 2 specification.
+
+   .. py:attribute:: __slots__
+      :value: '_range'
+
+      
+
+   .. py:method:: get_range() -> _R
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLObjectPropertyDomainAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ]
+
+   Represents a ObjectPropertyDomain axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLDataPropertyDomainAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ]
+
+   Represents a DataPropertyDomain axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLObjectPropertyRangeAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, range_: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ]
+
+   Represents a ObjectPropertyRange axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLDataPropertyRangeAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, range_: owlapy.types.OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`owlapy.types.OWLDataRange`\ ]
+
+   Represents a DataPropertyRange axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
 
 

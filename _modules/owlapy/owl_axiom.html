@@ -78,18 +78,21 @@
   <h1>Source code for owlapy.owl_axiom</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Generic</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Final</span>
 <span class="kn">from</span> <span class="nn">.owl_property</span> <span class="kn">import</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span>
 <span class="kn">from</span> <span class="nn">.owlobject</span> <span class="kn">import</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span> <span class="nn">.types</span> <span class="kn">import</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">OWLDataRange</span>
 <span class="kn">from</span> <span class="nn">.has</span> <span class="kn">import</span> <span class="n">HasOperands</span>
-<span class="kn">from</span> <span class="nn">.owl_property</span> <span class="kn">import</span> <span class="n">OWLPropertyExpression</span>
+<span class="kn">from</span> <span class="nn">.owl_property</span> <span class="kn">import</span> <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span>
 <span class="kn">from</span> <span class="nn">.owl_class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLClass</span>
 <span class="kn">from</span> <span class="nn">.owl_individual</span> <span class="kn">import</span> <span class="n">OWLIndividual</span>
+<span class="kn">from</span> <span class="nn">.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_annotation</span> <span class="kn">import</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span>
+<span class="kn">from</span> <span class="nn">.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
 
 <span class="n">_C</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_C&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OWLObject&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
 <span class="n">_P</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_P&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OWLPropertyExpression&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
-
+<span class="n">_R</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_R&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OWLPropertyRange&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
 
 <div class="viewcode-block" id="OWLAxiom">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAxiom">[docs]</a>
@@ -880,7 +883,92 @@
                <span class="sa">f</span><span class="s1">&#39;annotations=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="si">}</span><span class="s1">)&#39;</span></div>
 </div>
 
+<div class="viewcode-block" id="OWLAnnotationProperty">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationProperty">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLAnnotationProperty</span><span class="p">(</span><span class="n">OWLProperty</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an AnnotationProperty in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_iri&#39;</span>
 
+    <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a new OWLAnnotationProperty object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            iri: New OWLAnnotationProperty IRI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
+
+<div class="viewcode-block" id="OWLAnnotationProperty.get_iri">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationProperty.get_iri">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="c1"># documented in parent</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span></div>
+</div>
+
+
+<div class="viewcode-block" id="OWLAnnotation">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotation">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLAnnotation</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Annotations are used in the various types of annotation axioms, which bind annotations to their subjects</span>
+<span class="sd">    (i.e. axioms or declarations).&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_property&#39;</span><span class="p">,</span> <span class="s1">&#39;_value&#39;</span>
+
+    <span class="n">_property</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span>
+    <span class="n">_value</span><span class="p">:</span> <span class="n">OWLAnnotationValue</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">OWLAnnotationValue</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an annotation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            property: the annotation property.</span>
+<span class="sd">            value: The annotation value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">=</span> <span class="nb">property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="OWLAnnotation.get_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotation.get_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationProperty</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the property that this annotation acts along.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The annotation property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotation.get_value">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotation.get_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationValue</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the annotation value. The type of value will depend upon the type of the annotation e.g. whether the</span>
+<span class="sd">        annotation is an OWLLiteral, an IRI or an OWLAnonymousIndividual.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The annotation value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotation.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotation.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotation.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotation.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotation.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotation.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLAnnotation(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+</div>
 
 <div class="viewcode-block" id="OWLAnnotationAxiom">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationAxiom">[docs]</a>
@@ -893,6 +981,713 @@
     <span class="k">def</span> <span class="nf">is_annotation_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 </div>
+
+<div class="viewcode-block" id="OWLAnnotationAssertionAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationAssertionAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLAnnotationAssertionAxiom</span><span class="p">(</span><span class="n">OWLAnnotationAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents AnnotationAssertion axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_subject&#39;</span><span class="p">,</span> <span class="s1">&#39;_annotation&#39;</span>
+
+    <span class="n">_subject</span><span class="p">:</span> <span class="n">OWLAnnotationSubject</span>
+    <span class="n">_annotation</span><span class="p">:</span> <span class="n">OWLAnnotation</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">OWLAnnotation</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get an annotation assertion axiom - with annotations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            subject: Subject.</span>
+<span class="sd">            annotation: Annotation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">OWLAnnotationSubject</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">OWLAnnotation</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span> <span class="o">=</span> <span class="n">subject</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span> <span class="o">=</span> <span class="n">annotation</span>
+
+<div class="viewcode-block" id="OWLAnnotationAssertionAxiom.get_subject">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationAssertionAxiom.get_subject">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_subject</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationSubject</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the subject of this object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The subject.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationAssertionAxiom.get_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationAssertionAxiom.get_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationProperty</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the property.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationAssertionAxiom.get_value">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationAssertionAxiom.get_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationValue</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the annotation value. This is either an IRI, an OWLAnonymousIndividual or an OWLLiteral.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The annotation value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationAssertionAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationAssertionAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_subject</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotation</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationAssertionAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationAssertionAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationAssertionAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationAssertionAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLAnnotationAssertionAxiom(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_subject</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+</div>
+
+<div class="viewcode-block" id="OWLSubAnnotationPropertyOfAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubAnnotationPropertyOfAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLSubAnnotationPropertyOfAxiom</span><span class="p">(</span><span class="n">OWLAnnotationAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an SubAnnotationPropertyOf axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_sub_property&#39;</span><span class="p">,</span> <span class="s1">&#39;_super_property&#39;</span>
+
+    <span class="n">_sub_property</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span>
+    <span class="n">_super_property</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_property</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span><span class="p">,</span> <span class="n">super_property</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span> <span class="o">=</span> <span class="n">sub_property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">=</span> <span class="n">super_property</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLSubAnnotationPropertyOfAxiom.get_sub_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubAnnotationPropertyOfAxiom.get_sub_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_sub_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span></div>
+
+
+<div class="viewcode-block" id="OWLSubAnnotationPropertyOfAxiom.get_super_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubAnnotationPropertyOfAxiom.get_super_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_super_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span></div>
+
+
+<div class="viewcode-block" id="OWLSubAnnotationPropertyOfAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubAnnotationPropertyOfAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_property</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLSubAnnotationPropertyOfAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubAnnotationPropertyOfAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLSubAnnotationPropertyOfAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubAnnotationPropertyOfAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLSubAnnotationPropertyOfAxiom(sub_property=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span><span class="si">}</span><span class="s1">,&#39;</span> \
+               <span class="sa">f</span><span class="s1">&#39;super_property=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span><span class="si">}</span><span class="s1">,annotations=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+</div>
+
+<div class="viewcode-block" id="OWLAnnotationPropertyDomainAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyDomainAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLAnnotationPropertyDomainAxiom</span><span class="p">(</span><span class="n">OWLAnnotationAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an AnnotationPropertyDomain axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_property&#39;</span><span class="p">,</span> <span class="s1">&#39;_domain&#39;</span>
+
+    <span class="n">_property</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span>
+    <span class="n">_domain</span><span class="p">:</span> <span class="n">IRI</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">=</span> <span class="n">property_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span> <span class="o">=</span> <span class="n">domain</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLAnnotationPropertyDomainAxiom.get_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyDomainAxiom.get_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationPropertyDomainAxiom.get_domain">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyDomainAxiom.get_domain">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationPropertyDomainAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyDomainAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_domain</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationPropertyDomainAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyDomainAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationPropertyDomainAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyDomainAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLAnnotationPropertyDomainAxiom(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">)</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_domain</span><span class="p">)</span><span class="si">}</span><span class="s1">,&#39;</span> \
+               <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+</div>
+
+<div class="viewcode-block" id="OWLAnnotationPropertyRangeAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyRangeAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLAnnotationPropertyRangeAxiom</span><span class="p">(</span><span class="n">OWLAnnotationAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an AnnotationPropertyRange axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_property&#39;</span><span class="p">,</span> <span class="s1">&#39;_range&#39;</span>
+
+    <span class="n">_property</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span>
+    <span class="n">_range</span><span class="p">:</span> <span class="n">IRI</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span><span class="p">,</span> <span class="n">range_</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">=</span> <span class="n">property_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_range</span> <span class="o">=</span> <span class="n">range_</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLAnnotationPropertyRangeAxiom.get_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyRangeAxiom.get_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationPropertyRangeAxiom.get_range">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyRangeAxiom.get_range">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationPropertyRangeAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyRangeAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_range</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationPropertyRangeAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyRangeAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLAnnotationPropertyRangeAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAnnotationPropertyRangeAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLAnnotationPropertyRangeAxiom(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">)</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_range</span><span class="p">)</span><span class="si">}</span><span class="s1">,&#39;</span> \
+               <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+</div>
+
+<div class="viewcode-block" id="OWLSubPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLSubPropertyAxiom</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">OWLPropertyAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base interface for object and data sub-property axioms.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_sub_property&#39;</span><span class="p">,</span> <span class="s1">&#39;_super_property&#39;</span>
+
+    <span class="n">_sub_property</span><span class="p">:</span> <span class="n">_P</span>
+    <span class="n">_super_property</span><span class="p">:</span> <span class="n">_P</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_property</span><span class="p">:</span> <span class="n">_P</span><span class="p">,</span> <span class="n">super_property</span><span class="p">:</span> <span class="n">_P</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span> <span class="o">=</span> <span class="n">sub_property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">=</span> <span class="n">super_property</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLSubPropertyAxiom.get_sub_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubPropertyAxiom.get_sub_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_sub_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_P</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span></div>
+
+
+<div class="viewcode-block" id="OWLSubPropertyAxiom.get_super_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubPropertyAxiom.get_super_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_super_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_P</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span></div>
+
+
+<div class="viewcode-block" id="OWLSubPropertyAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubPropertyAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_property</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLSubPropertyAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubPropertyAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLSubPropertyAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubPropertyAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(sub_property=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_property</span><span class="si">}</span><span class="s1">,super_property=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span><span class="si">}</span><span class="s1">,&#39;</span> \
+               <span class="sa">f</span><span class="s1">&#39;annotations=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+</div>
+
+<div class="viewcode-block" id="OWLSubObjectPropertyOfAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubObjectPropertyOfAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLSubObjectPropertyOfAxiom</span><span class="p">(</span><span class="n">OWLSubPropertyAxiom</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">],</span> <span class="n">OWLObjectPropertyAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a SubObjectPropertyOf axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_property</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">super_property</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">sub_property</span><span class="o">=</span><span class="n">sub_property</span><span class="p">,</span> <span class="n">super_property</span><span class="o">=</span><span class="n">super_property</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OWLSubDataPropertyOfAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSubDataPropertyOfAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLSubDataPropertyOfAxiom</span><span class="p">(</span><span class="n">OWLSubPropertyAxiom</span><span class="p">[</span><span class="n">OWLDataPropertyExpression</span><span class="p">],</span> <span class="n">OWLDataPropertyAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a SubDataPropertyOf axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_property</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">super_property</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">sub_property</span><span class="o">=</span><span class="n">sub_property</span><span class="p">,</span> <span class="n">super_property</span><span class="o">=</span><span class="n">super_property</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyAssertionAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyAssertionAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLPropertyAssertionAxiom</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">_C</span><span class="p">],</span> <span class="n">OWLIndividualAxiom</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a PropertyAssertion axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_subject&#39;</span><span class="p">,</span> <span class="s1">&#39;_property&#39;</span><span class="p">,</span> <span class="s1">&#39;_object&#39;</span>
+
+    <span class="n">_subject</span><span class="p">:</span> <span class="n">OWLIndividual</span>
+    <span class="n">_property</span><span class="p">:</span> <span class="n">_P</span>
+    <span class="n">_object</span><span class="p">:</span> <span class="n">_C</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLIndividual</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">_P</span><span class="p">,</span> <span class="n">object_</span><span class="p">:</span> <span class="n">_C</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a PropertyAssertion axiom for the specified subject, property, object.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            subject: The subject of the property assertion.</span>
+<span class="sd">            property_: The property of the property assertion.</span>
+<span class="sd">            object_: The object of the property assertion.</span>
+<span class="sd">            annotations: Annotations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">OWLIndividual</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span> <span class="o">=</span> <span class="n">subject</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">=</span> <span class="n">property_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object</span> <span class="o">=</span> <span class="n">object_</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLPropertyAssertionAxiom.get_subject">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyAssertionAxiom.get_subject">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_subject</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLIndividual</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyAssertionAxiom.get_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyAssertionAxiom.get_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_P</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyAssertionAxiom.get_object">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyAssertionAxiom.get_object">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_C</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyAssertionAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyAssertionAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_subject</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_object</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_object</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyAssertionAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyAssertionAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyAssertionAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyAssertionAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(subject=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_subject</span><span class="si">}</span><span class="s1">,property=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="si">}</span><span class="s1">,&#39;</span> \
+               <span class="sa">f</span><span class="s1">&#39;object=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_object</span><span class="si">}</span><span class="s1">,annotation=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+</div>
+
+<div class="viewcode-block" id="OWLObjectPropertyAssertionAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLObjectPropertyAssertionAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLObjectPropertyAssertionAxiom</span><span class="p">(</span><span class="n">OWLPropertyAssertionAxiom</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLIndividual</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an ObjectPropertyAssertion axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLIndividual</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">object_</span><span class="p">:</span> <span class="n">OWLIndividual</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">object_</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OWLNegativeObjectPropertyAssertionAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLNegativeObjectPropertyAssertionAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLNegativeObjectPropertyAssertionAxiom</span><span class="p">(</span><span class="n">OWLPropertyAssertionAxiom</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLIndividual</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a NegativeObjectPropertyAssertion axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLIndividual</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">object_</span><span class="p">:</span> <span class="n">OWLIndividual</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">object_</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OWLDataPropertyAssertionAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLDataPropertyAssertionAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLDataPropertyAssertionAxiom</span><span class="p">(</span><span class="n">OWLPropertyAssertionAxiom</span><span class="p">[</span><span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLLiteral</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an DataPropertyAssertion axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLIndividual</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">object_</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">object_</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OWLNegativeDataPropertyAssertionAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLNegativeDataPropertyAssertionAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLNegativeDataPropertyAssertionAxiom</span><span class="p">(</span><span class="n">OWLPropertyAssertionAxiom</span><span class="p">[</span><span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLLiteral</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an NegativeDataPropertyAssertion axiom in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLIndividual</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">object_</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">property_</span><span class="p">,</span> <span class="n">object_</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OWLUnaryPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLUnaryPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLUnaryPropertyAxiom</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">OWLPropertyAxiom</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unary property axiom.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_property&#39;</span>
+
+    <span class="n">_property</span><span class="p">:</span> <span class="n">_P</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">_P</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">=</span> <span class="n">property_</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLUnaryPropertyAxiom.get_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLUnaryPropertyAxiom.get_property">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_P</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="OWLObjectPropertyCharacteristicAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLObjectPropertyCharacteristicAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLObjectPropertyCharacteristicAxiom</span><span class="p">(</span><span class="n">OWLUnaryPropertyAxiom</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">],</span>
+                                           <span class="n">OWLObjectPropertyAxiom</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base interface for functional object property axiom.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLObjectPropertyCharacteristicAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLObjectPropertyCharacteristicAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLObjectPropertyCharacteristicAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLObjectPropertyCharacteristicAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLObjectPropertyCharacteristicAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLObjectPropertyCharacteristicAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="OWLFunctionalObjectPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLFunctionalObjectPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLFunctionalObjectPropertyAxiom</span><span class="p">(</span><span class="n">OWLObjectPropertyCharacteristicAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents FunctionalObjectProperty axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLAsymmetricObjectPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLAsymmetricObjectPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLAsymmetricObjectPropertyAxiom</span><span class="p">(</span><span class="n">OWLObjectPropertyCharacteristicAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents AsymmetricObjectProperty axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLInverseFunctionalObjectPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLInverseFunctionalObjectPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLInverseFunctionalObjectPropertyAxiom</span><span class="p">(</span><span class="n">OWLObjectPropertyCharacteristicAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents InverseFunctionalObjectProperty axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLIrreflexiveObjectPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLIrreflexiveObjectPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLIrreflexiveObjectPropertyAxiom</span><span class="p">(</span><span class="n">OWLObjectPropertyCharacteristicAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents IrreflexiveObjectProperty axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLReflexiveObjectPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLReflexiveObjectPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLReflexiveObjectPropertyAxiom</span><span class="p">(</span><span class="n">OWLObjectPropertyCharacteristicAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents ReflexiveObjectProperty axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLSymmetricObjectPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLSymmetricObjectPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLSymmetricObjectPropertyAxiom</span><span class="p">(</span><span class="n">OWLObjectPropertyCharacteristicAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents SymmetricObjectProperty axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLTransitiveObjectPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLTransitiveObjectPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLTransitiveObjectPropertyAxiom</span><span class="p">(</span><span class="n">OWLObjectPropertyCharacteristicAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents TransitiveObjectProperty axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLDataPropertyCharacteristicAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLDataPropertyCharacteristicAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLDataPropertyCharacteristicAxiom</span><span class="p">(</span><span class="n">OWLUnaryPropertyAxiom</span><span class="p">[</span><span class="n">OWLDataPropertyExpression</span><span class="p">],</span>
+                                         <span class="n">OWLDataPropertyAxiom</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base interface for Functional data property axiom.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLDataPropertyCharacteristicAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLDataPropertyCharacteristicAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLDataPropertyCharacteristicAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLDataPropertyCharacteristicAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLDataPropertyCharacteristicAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLDataPropertyCharacteristicAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="OWLFunctionalDataPropertyAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLFunctionalDataPropertyAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLFunctionalDataPropertyAxiom</span><span class="p">(</span><span class="n">OWLDataPropertyCharacteristicAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents FunctionalDataProperty axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLPropertyDomainAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyDomainAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLPropertyDomainAxiom</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">OWLUnaryPropertyAxiom</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents ObjectPropertyDomain axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_domain&#39;</span>
+
+    <span class="n">_domain</span><span class="p">:</span> <span class="n">OWLClassExpression</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">_P</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span> <span class="o">=</span> <span class="n">domain</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLPropertyDomainAxiom.get_domain">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyDomainAxiom.get_domain">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyDomainAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyDomainAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_domain</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyDomainAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyDomainAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyDomainAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyDomainAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_domain</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="OWLPropertyRangeAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyRangeAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLPropertyRangeAxiom</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">_R</span><span class="p">],</span> <span class="n">OWLUnaryPropertyAxiom</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents ObjectPropertyRange axioms in the OWL 2 specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_range&#39;</span>
+
+    <span class="n">_range</span><span class="p">:</span> <span class="n">_R</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">_P</span><span class="p">,</span> <span class="n">range_</span><span class="p">:</span> <span class="n">_R</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_range</span> <span class="o">=</span> <span class="n">range_</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLPropertyRangeAxiom.get_range">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyRangeAxiom.get_range">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_R</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyRangeAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyRangeAxiom.__eq__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_range</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyRangeAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyRangeAxiom.__hash__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_range</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLPropertyRangeAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLPropertyRangeAxiom.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_property</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_range</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="OWLObjectPropertyDomainAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLObjectPropertyDomainAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLObjectPropertyDomainAxiom</span><span class="p">(</span><span class="n">OWLPropertyDomainAxiom</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Represents a ObjectPropertyDomain axiom in the OWL 2 Specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLDataPropertyDomainAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLDataPropertyDomainAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLDataPropertyDomainAxiom</span><span class="p">(</span><span class="n">OWLPropertyDomainAxiom</span><span class="p">[</span><span class="n">OWLDataPropertyExpression</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Represents a DataPropertyDomain axiom in the OWL 2 Specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLObjectPropertyRangeAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLObjectPropertyRangeAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLObjectPropertyRangeAxiom</span><span class="p">(</span><span class="n">OWLPropertyRangeAxiom</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Represents a ObjectPropertyRange axiom in the OWL 2 Specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">range_</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">range_</span><span class="o">=</span><span class="n">range_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLDataPropertyRangeAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.model.OWLDataPropertyRangeAxiom">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLDataPropertyRangeAxiom</span><span class="p">(</span><span class="n">OWLPropertyRangeAxiom</span><span class="p">[</span><span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Represents a DataPropertyRange axiom in the OWL 2 Specification.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">range_</span><span class="p">:</span> <span class="n">OWLDataRange</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">range_</span><span class="o">=</span><span class="n">range_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
 
 </pre></div>
 

@@ -1,0 +1,265 @@
+:py:mod:`owlapy.owl_literal`
+============================
+
+.. py:module:: owlapy.owl_literal
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owl_literal.OWLLiteral
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owl_literal.Literals
+   owlapy.owl_literal.OWLThing
+   owlapy.owl_literal.OWLNothing
+   owlapy.owl_literal.OWLTopObjectProperty
+   owlapy.owl_literal.OWLBottomObjectProperty
+   owlapy.owl_literal.OWLTopDataProperty
+   owlapy.owl_literal.OWLBottomDataProperty
+   owlapy.owl_literal.DoubleOWLDatatype
+   owlapy.owl_literal.IntegerOWLDatatype
+   owlapy.owl_literal.BooleanOWLDatatype
+   owlapy.owl_literal.StringOWLDatatype
+   owlapy.owl_literal.DateOWLDatatype
+   owlapy.owl_literal.DateTimeOWLDatatype
+   owlapy.owl_literal.DurationOWLDatatype
+   owlapy.owl_literal.TopOWLDatatype
+   owlapy.owl_literal.NUMERIC_DATATYPES
+   owlapy.owl_literal.TIME_DATATYPES
+
+
+.. py:data:: Literals
+
+   
+
+.. py:class:: OWLLiteral
+
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+   Represents a Literal in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4008
+
+      
+
+   .. py:method:: get_literal() -> str
+
+      Gets the lexical value of this literal. Note that the language tag is not included.
+
+      :returns: The lexical value of this literal.
+
+
+   .. py:method:: is_boolean() -> bool
+
+      Whether this literal is typed as boolean.
+
+
+   .. py:method:: parse_boolean() -> bool
+
+      Parses the lexical value of this literal into a bool. The lexical value of this literal should be in the
+      lexical space of the boolean datatype ("http://www.w3.org/2001/XMLSchema#boolean").
+
+      :returns: A bool value that is represented by this literal.
+
+
+   .. py:method:: is_double() -> bool
+
+      Whether this literal is typed as double.
+
+
+   .. py:method:: parse_double() -> float
+
+      Parses the lexical value of this literal into a double. The lexical value of this literal should be in the
+      lexical space of the double datatype ("http://www.w3.org/2001/XMLSchema#double").
+
+      :returns: A double value that is represented by this literal.
+
+
+   .. py:method:: is_integer() -> bool
+
+      Whether this literal is typed as integer.
+
+
+   .. py:method:: parse_integer() -> int
+
+      Parses the lexical value of this literal into an integer. The lexical value of this literal should be in the
+      lexical space of the integer datatype ("http://www.w3.org/2001/XMLSchema#integer").
+
+      :returns: An integer value that is represented by this literal.
+
+
+   .. py:method:: is_string() -> bool
+
+      Whether this literal is typed as string.
+
+
+   .. py:method:: parse_string() -> str
+
+      Parses the lexical value of this literal into a string. The lexical value of this literal should be in the
+      lexical space of the string datatype ("http://www.w3.org/2001/XMLSchema#string").
+
+      :returns: A string value that is represented by this literal.
+
+
+   .. py:method:: is_date() -> bool
+
+      Whether this literal is typed as date.
+
+
+   .. py:method:: parse_date() -> datetime.date
+
+      Parses the lexical value of this literal into a date. The lexical value of this literal should be in the
+      lexical space of the date datatype ("http://www.w3.org/2001/XMLSchema#date").
+
+      :returns: A date value that is represented by this literal.
+
+
+   .. py:method:: is_datetime() -> bool
+
+      Whether this literal is typed as dateTime.
+
+
+   .. py:method:: parse_datetime() -> datetime.datetime
+
+      Parses the lexical value of this literal into a datetime. The lexical value of this literal should be in the
+      lexical space of the dateTime datatype ("http://www.w3.org/2001/XMLSchema#dateTime").
+
+      :returns: A datetime value that is represented by this literal.
+
+
+   .. py:method:: is_duration() -> bool
+
+      Whether this literal is typed as duration.
+
+
+   .. py:method:: parse_duration() -> pandas.Timedelta
+
+      Parses the lexical value of this literal into a Timedelta. The lexical value of this literal should be in the
+      lexical space of the duration datatype ("http://www.w3.org/2001/XMLSchema#duration").
+
+      :returns: A Timedelta value that is represented by this literal.
+
+
+   .. py:method:: is_literal() -> bool
+
+      :returns: true if the annotation value is a literal
+
+
+   .. py:method:: as_literal() -> OWLLiteral
+
+      :returns: if the value is a literal, returns it. Return None otherwise
+
+
+   .. py:method:: to_python() -> Literals
+
+
+   .. py:method:: get_datatype() -> owlapy.types.OWLDatatype
+      :abstractmethod:
+
+      Gets the OWLDatatype which types this literal.
+
+      :returns: The OWLDatatype that types this literal.
+
+
+
+.. py:data:: OWLThing
+   :type: Final
+
+   
+
+.. py:data:: OWLNothing
+   :type: Final
+
+   
+
+.. py:data:: OWLTopObjectProperty
+   :type: Final
+
+   
+
+.. py:data:: OWLBottomObjectProperty
+   :type: Final
+
+   
+
+.. py:data:: OWLTopDataProperty
+   :type: Final
+
+   
+
+.. py:data:: OWLBottomDataProperty
+   :type: Final
+
+   
+
+.. py:data:: DoubleOWLDatatype
+   :type: Final
+
+   
+
+.. py:data:: IntegerOWLDatatype
+   :type: Final
+
+   
+
+.. py:data:: BooleanOWLDatatype
+   :type: Final
+
+   
+
+.. py:data:: StringOWLDatatype
+   :type: Final
+
+   
+
+.. py:data:: DateOWLDatatype
+   :type: Final
+
+   
+
+.. py:data:: DateTimeOWLDatatype
+   :type: Final
+
+   
+
+.. py:data:: DurationOWLDatatype
+   :type: Final
+
+   
+
+.. py:data:: TopOWLDatatype
+   :type: Final
+
+   
+
+.. py:data:: NUMERIC_DATATYPES
+   :type: Final[Set[owlapy.types.OWLDatatype]]
+
+   
+
+.. py:data:: TIME_DATATYPES
+   :type: Final[Set[owlapy.types.OWLDatatype]]
+
+   
+
