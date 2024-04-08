@@ -767,3 +767,15 @@ class DLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_DLSyntaxParserMeta
 
     def generic_visit(self, node, children):
         return children or node
+
+
+DLparser = DLSyntaxParser()
+ManchesterParser = ManchesterOWLSyntaxParser()
+
+
+def dl_to_owl_expression(dl_expression: str):
+    return DLparser.parse_expression(dl_expression)
+
+
+def manchester_to_owl_expression(manchester_expression: str):
+    return ManchesterParser.parse_expression(manchester_expression)
