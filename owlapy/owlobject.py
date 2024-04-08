@@ -1,5 +1,8 @@
 from abc import abstractmethod, ABCMeta
 from typing import Optional
+from .has import HasIRI
+# from .iri import IRI
+
 class OWLObject(metaclass=ABCMeta):
     """Base interface for OWL objects"""
     __slots__ = ()
@@ -60,48 +63,41 @@ class OWLObjectParser(metaclass=ABCMeta):
         """
         pass
 
-class OWLAnnotationObject(OWLObject, metaclass=ABCMeta):
-    """A marker interface for the values (objects) of annotations."""
+
+class OWLNamedObject(OWLObject, HasIRI, metaclass=ABCMeta):
+    """Represents a named object for example, class, property, ontology etc. - i.e. anything that has an
+     IRI as its name."""
     __slots__ = ()
 
-    # noinspection PyMethodMayBeStatic
-    def as_iri(self) -> Optional['IRI']:
-        """
-        Returns:
-            if the value is an IRI, return it. Return Mone otherwise.
-        """
-        return None
+    _iri: 'IRI'
 
-    # noinspection PyMethodMayBeStatic
-    def as_anonymous_individual(self):
-        """
-        Returns:
-            if the value is an anonymous, return it. Return None otherwise.
-        """
-        return None
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._iri == other._iri
+        return NotImplemented
 
+    def __lt__(self, other):
+        if type(other) is type(self):
+            return self._iri.as_str() < other._iri.as_str()
+        return NotImplemented
 
-class OWLAnnotationSubject(OWLAnnotationObject, metaclass=ABCMeta):
-    """A marker interface for annotation subjects, which can either be IRIs or anonymous individuals"""
-    __slots__ = ()
+    def __hash__(self):
+        return hash(self._iri)
+
+    def __repr__(self):
+        return f"{type(self).__name__}({repr(self._iri)})"
+
     pass
 
 
-class OWLAnnotationValue(OWLAnnotationObject, metaclass=ABCMeta):
-    """A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual."""
+class OWLEntity(OWLNamedObject, metaclass=ABCMeta):
+    """Represents Entities in the OWL 2 Specification."""
     __slots__ = ()
 
-    def is_literal(self) -> bool:
-        """
-        Returns:
-            true if the annotation value is a literal
-        """
+    def to_string_id(self) -> str:
+        return self.get_iri().as_str()
+
+    def is_anonymous(self) -> bool:
         return False
 
-    # noinspection PyMethodMayBeStatic
-    def as_literal(self) -> Optional['OWLLiteral']:
-        """
-        Returns:
-            if the value is a literal, returns it. Return None otherwise
-        """
-        return None
+    pass
