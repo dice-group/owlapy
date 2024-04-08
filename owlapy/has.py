@@ -61,3 +61,17 @@ class HasFiller(Generic[_T], metaclass=ABCMeta):
             the value
         """
         pass
+
+
+class HasCardinality(metaclass=ABCMeta):
+    """An interface to objects that have a cardinality."""
+    __slots__ = ()
+
+    @abstractmethod
+    def get_cardinality(self) -> int:
+        """Gets the cardinality of a restriction.
+
+        Returns:
+            The cardinality. A non-negative integer.
+        """
+        pass
