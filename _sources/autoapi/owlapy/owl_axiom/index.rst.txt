@@ -1,0 +1,669 @@
+:py:mod:`owlapy.owl_axiom`
+==========================
+
+.. py:module:: owlapy.owl_axiom
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owl_axiom.OWLAxiom
+   owlapy.owl_axiom.OWLLogicalAxiom
+   owlapy.owl_axiom.OWLPropertyAxiom
+   owlapy.owl_axiom.OWLObjectPropertyAxiom
+   owlapy.owl_axiom.OWLDataPropertyAxiom
+   owlapy.owl_axiom.OWLIndividualAxiom
+   owlapy.owl_axiom.OWLClassAxiom
+   owlapy.owl_axiom.OWLDeclarationAxiom
+   owlapy.owl_axiom.OWLDatatypeDefinitionAxiom
+   owlapy.owl_axiom.OWLHasKeyAxiom
+   owlapy.owl_axiom.OWLNaryAxiom
+   owlapy.owl_axiom.OWLNaryClassAxiom
+   owlapy.owl_axiom.OWLEquivalentClassesAxiom
+   owlapy.owl_axiom.OWLDisjointClassesAxiom
+   owlapy.owl_axiom.OWLNaryIndividualAxiom
+   owlapy.owl_axiom.OWLDifferentIndividualsAxiom
+   owlapy.owl_axiom.OWLSameIndividualAxiom
+   owlapy.owl_axiom.OWLNaryPropertyAxiom
+   owlapy.owl_axiom.OWLEquivalentObjectPropertiesAxiom
+   owlapy.owl_axiom.OWLDisjointObjectPropertiesAxiom
+   owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom
+   owlapy.owl_axiom.OWLEquivalentDataPropertiesAxiom
+   owlapy.owl_axiom.OWLDisjointDataPropertiesAxiom
+   owlapy.owl_axiom.OWLSubClassOfAxiom
+   owlapy.owl_axiom.OWLDisjointUnionAxiom
+   owlapy.owl_axiom.OWLClassAssertionAxiom
+   owlapy.owl_axiom.OWLAnnotationAxiom
+
+
+
+
+.. py:class:: OWLAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+
+   Represents Axioms in the OWL 2 Specification.
+
+   An OWL ontology contains a set of axioms. These axioms can be annotation axioms, declaration axioms, imports axioms
+   or logical axioms.
+
+   .. py:attribute:: __slots__
+      :value: '_annotations'
+
+      
+
+   .. py:method:: annotations() -> Optional[List[OWLAnnotation]]
+
+
+   .. py:method:: is_annotated() -> bool
+
+
+   .. py:method:: is_logical_axiom() -> bool
+
+
+   .. py:method:: is_annotation_axiom() -> bool
+
+
+
+.. py:class:: OWLLogicalAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLAxiom`
+
+   A base interface of all axioms that affect the logical meaning of an ontology. This excludes declaration axioms
+   (including imports declarations) and annotation axioms.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: is_logical_axiom() -> bool
+
+
+
+.. py:class:: OWLPropertyAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLLogicalAxiom`
+
+   The base interface for property axioms.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLObjectPropertyAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyAxiom`
+
+   The base interface for object property axioms.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLDataPropertyAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLPropertyAxiom`
+
+   The base interface for data property axioms.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLIndividualAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLLogicalAxiom`
+
+   The base interface for individual axioms.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLClassAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLLogicalAxiom`
+
+   The base interface for class axioms.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLDeclarationAxiom(entity: owlapy.owlobject.OWLEntity, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLAxiom`
+
+   Represents a Declaration axiom in the OWL 2 Specification. A declaration axiom declares an entity in an ontology.
+   It doesn't affect the logical meaning of the ontology.
+
+   .. py:attribute:: __slots__
+      :value: '_entity'
+
+      
+
+   .. py:method:: get_entity() -> owlapy.owlobject.OWLEntity
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLDatatypeDefinitionAxiom(datatype: owlapy.types.OWLDatatype, datarange: owlapy.types.OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLLogicalAxiom`
+
+   Represents a DatatypeDefinition axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_datatype', '_datarange')
+
+      
+
+   .. py:method:: get_datatype() -> owlapy.types.OWLDatatype
+
+
+   .. py:method:: get_datarange() -> owlapy.types.OWLDataRange
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLHasKeyAxiom(class_expression: owlapy.owl_class_expression.OWLClassExpression, property_expressions: List[owlapy.owl_property.OWLPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLLogicalAxiom`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`owlapy.owl_property.OWLPropertyExpression`\ ]
+
+   Represents a HasKey axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_class_expression', '_property_expressions')
+
+      
+
+   .. py:method:: get_class_expression() -> owlapy.owl_class_expression.OWLClassExpression
+
+
+   .. py:method:: get_property_expressions() -> List[owlapy.owl_property.OWLPropertyExpression]
+
+
+   .. py:method:: operands() -> Iterable[owlapy.owl_property.OWLPropertyExpression]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLNaryAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_C`\ ], :py:obj:`OWLAxiom`
+
+   Represents an axiom that contains two or more operands that could also be represented with multiple pairwise
+   axioms.
+
+   :param _C: Class of contained objects.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: as_pairwise_axioms() -> Iterable[OWLNaryAxiom[_C]]
+      :abstractmethod:
+
+
+
+.. py:class:: OWLNaryClassAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLClassAxiom`, :py:obj:`OWLNaryAxiom`\ [\ :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ]
+
+   Represents an axiom that contains two or more operands that could also be represented with
+   multiple pairwise axioms.
+
+   .. py:attribute:: __slots__
+      :value: '_class_expressions'
+
+      
+
+   .. py:method:: class_expressions() -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+
+      Gets all of the top level class expressions that appear in this axiom.
+
+      :returns: Sorted stream of class expressions that appear in the axiom.
+
+
+   .. py:method:: as_pairwise_axioms() -> Iterable[OWLNaryClassAxiom]
+
+      Gets this axiom as a set of pairwise axioms; if the axiom contains only two operands,
+      the axiom itself is returned unchanged, including its annotations.
+
+      :returns: This axiom as a set of pairwise axioms.
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLEquivalentClassesAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryClassAxiom`
+
+   Represents an EquivalentClasses axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: contains_named_equivalent_class() -> bool
+
+
+   .. py:method:: contains_owl_nothing() -> bool
+
+
+   .. py:method:: contains_owl_thing() -> bool
+
+
+   .. py:method:: named_classes() -> Iterable[owlapy.owl_class_expression.OWLClass]
+
+
+
+.. py:class:: OWLDisjointClassesAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryClassAxiom`
+
+   Represents a DisjointClasses axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLNaryIndividualAxiom(individuals: List[owlapy.owl_individual.OWLIndividual], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLIndividualAxiom`, :py:obj:`OWLNaryAxiom`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
+
+   Represents an axiom that contains two or more operands that could also be represented with
+   multiple pairwise individual axioms.
+
+   .. py:attribute:: __slots__
+      :value: '_individuals'
+
+      
+
+   .. py:method:: individuals() -> Iterable[owlapy.owl_individual.OWLIndividual]
+
+      Get the individuals.
+
+      :returns: Generator containing the individuals.
+
+
+   .. py:method:: as_pairwise_axioms() -> Iterable[OWLNaryIndividualAxiom]
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLDifferentIndividualsAxiom(individuals: List[owlapy.owl_individual.OWLIndividual], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryIndividualAxiom`
+
+   Represents a DifferentIndividuals axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLSameIndividualAxiom(individuals: List[owlapy.owl_individual.OWLIndividual], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryIndividualAxiom`
+
+   Represents a SameIndividual axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLNaryPropertyAxiom(properties: List[_P], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ ], :py:obj:`OWLPropertyAxiom`, :py:obj:`OWLNaryAxiom`\ [\ :py:obj:`_P`\ ]
+
+   Represents an axiom that contains two or more operands that could also be represented with
+   multiple pairwise property axioms.
+
+   .. py:attribute:: __slots__
+      :value: '_properties'
+
+      
+
+   .. py:method:: properties() -> Iterable[_P]
+
+      Get all the properties that appear in the axiom.
+
+      :returns: Generator containing the properties.
+
+
+   .. py:method:: as_pairwise_axioms() -> Iterable[OWLNaryPropertyAxiom]
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLEquivalentObjectPropertiesAxiom(properties: List[owlapy.owl_property.OWLObjectPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+
+   Represents EquivalentObjectProperties axioms in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLDisjointObjectPropertiesAxiom(properties: List[owlapy.owl_property.OWLObjectPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+
+   Represents DisjointObjectProperties axioms in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLInverseObjectPropertiesAxiom(first: owlapy.owl_property.OWLObjectPropertyExpression, second: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
+
+   Represents InverseObjectProperties axioms in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_first', '_second')
+
+      
+
+   .. py:method:: get_first_property() -> owlapy.owl_property.OWLObjectPropertyExpression
+
+
+   .. py:method:: get_second_property() -> owlapy.owl_property.OWLObjectPropertyExpression
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLEquivalentDataPropertiesAxiom(properties: List[owlapy.owl_property.OWLDataPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
+
+   Represents EquivalentDataProperties axioms in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLDisjointDataPropertiesAxiom(properties: List[owlapy.owl_property.OWLDataPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
+
+   Represents DisjointDataProperties axioms in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLSubClassOfAxiom(sub_class: owlapy.owl_class_expression.OWLClassExpression, super_class: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLClassAxiom`
+
+   Represents an SubClassOf axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_sub_class', '_super_class')
+
+      
+
+   .. py:method:: get_sub_class() -> owlapy.owl_class_expression.OWLClassExpression
+
+
+   .. py:method:: get_super_class() -> owlapy.owl_class_expression.OWLClassExpression
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLDisjointUnionAxiom(cls_: owlapy.owl_class_expression.OWLClass, class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLClassAxiom`
+
+   Represents a DisjointUnion axiom in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_cls', '_class_expressions')
+
+      
+
+   .. py:method:: get_owl_class() -> owlapy.owl_class_expression.OWLClass
+
+
+   .. py:method:: get_class_expressions() -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+
+
+   .. py:method:: get_owl_equivalent_classes_axiom() -> OWLEquivalentClassesAxiom
+
+
+   .. py:method:: get_owl_disjoint_classes_axiom() -> OWLDisjointClassesAxiom
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLClassAssertionAxiom(individual: owlapy.owl_individual.OWLIndividual, class_expression: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLIndividualAxiom`
+
+   Represents ClassAssertion axioms in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_individual', '_class_expression')
+
+      
+
+   .. py:method:: get_individual() -> owlapy.owl_individual.OWLIndividual
+
+
+   .. py:method:: get_class_expression() -> owlapy.owl_class_expression.OWLClassExpression
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLAnnotationAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+
+   Bases: :py:obj:`OWLAxiom`
+
+   A super interface for annotation axioms.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: is_annotation_axiom() -> bool
+
+
+

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.owl_axiom &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="owlapy.owl_class_expression" href="../owl_class_expression/index.html" />
+    <link rel="prev" title="owlapy.owl_annotation" href="../owl_annotation/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">OWLAPY</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../has/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.has</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.iri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.namespaces</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_annotation</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_axiom</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLAxiom"><code class="docutils literal notranslate"><span class="pre">OWLAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLLogicalAxiom"><code class="docutils literal notranslate"><span class="pre">OWLLogicalAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLPropertyAxiom"><code class="docutils literal notranslate"><span class="pre">OWLPropertyAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLObjectPropertyAxiom"><code class="docutils literal notranslate"><span class="pre">OWLObjectPropertyAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDataPropertyAxiom"><code class="docutils literal notranslate"><span class="pre">OWLDataPropertyAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLIndividualAxiom"><code class="docutils literal notranslate"><span class="pre">OWLIndividualAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLClassAxiom"><code class="docutils literal notranslate"><span class="pre">OWLClassAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDeclarationAxiom"><code class="docutils literal notranslate"><span class="pre">OWLDeclarationAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeDefinitionAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLHasKeyAxiom"><code class="docutils literal notranslate"><span class="pre">OWLHasKeyAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryAxiom"><code class="docutils literal notranslate"><span class="pre">OWLNaryAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryClassAxiom"><code class="docutils literal notranslate"><span class="pre">OWLNaryClassAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom"><code class="docutils literal notranslate"><span class="pre">OWLEquivalentClassesAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointClassesAxiom"><code class="docutils literal notranslate"><span class="pre">OWLDisjointClassesAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom"><code class="docutils literal notranslate"><span class="pre">OWLNaryIndividualAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDifferentIndividualsAxiom"><code class="docutils literal notranslate"><span class="pre">OWLDifferentIndividualsAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLSameIndividualAxiom"><code class="docutils literal notranslate"><span class="pre">OWLSameIndividualAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom"><code class="docutils literal notranslate"><span class="pre">OWLNaryPropertyAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLEquivalentObjectPropertiesAxiom"><code class="docutils literal notranslate"><span class="pre">OWLEquivalentObjectPropertiesAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointObjectPropertiesAxiom"><code class="docutils literal notranslate"><span class="pre">OWLDisjointObjectPropertiesAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom"><code class="docutils literal notranslate"><span class="pre">OWLInverseObjectPropertiesAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLEquivalentDataPropertiesAxiom"><code class="docutils literal notranslate"><span class="pre">OWLEquivalentDataPropertiesAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointDataPropertiesAxiom"><code class="docutils literal notranslate"><span class="pre">OWLDisjointDataPropertiesAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLSubClassOfAxiom"><code class="docutils literal notranslate"><span class="pre">OWLSubClassOfAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom"><code class="docutils literal notranslate"><span class="pre">OWLDisjointUnionAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLClassAssertionAxiom"><code class="docutils literal notranslate"><span class="pre">OWLClassAssertionAxiom</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLAnnotationAxiom"><code class="docutils literal notranslate"><span class="pre">OWLAnnotationAxiom</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_class_expression/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_class_expression</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_individual</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_property</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_restriction/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_restriction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlobject/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owlobject</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.parser</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ranges/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.ranges</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../render/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.render</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../types/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.types</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.util</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vocab/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.vocab</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_axiom</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/owlapy/owl_axiom/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.owl_axiom">
+<span id="owlapy-owl-axiom"></span><h1><a class="reference internal" href="#module-owlapy.owl_axiom" title="owlapy.owl_axiom"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_axiom</span></code></a><a class="headerlink" href="#module-owlapy.owl_axiom" title="Link to this heading"></a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLAxiom</span></code></a></p></td>
+<td><p>Represents Axioms in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLLogicalAxiom" title="owlapy.owl_axiom.OWLLogicalAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLLogicalAxiom</span></code></a></p></td>
+<td><p>A base interface of all axioms that affect the logical meaning of an ontology. This excludes declaration axioms</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLPropertyAxiom" title="owlapy.owl_axiom.OWLPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLPropertyAxiom</span></code></a></p></td>
+<td><p>The base interface for property axioms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLObjectPropertyAxiom" title="owlapy.owl_axiom.OWLObjectPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLObjectPropertyAxiom</span></code></a></p></td>
+<td><p>The base interface for object property axioms.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDataPropertyAxiom" title="owlapy.owl_axiom.OWLDataPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDataPropertyAxiom</span></code></a></p></td>
+<td><p>The base interface for data property axioms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLIndividualAxiom" title="owlapy.owl_axiom.OWLIndividualAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLIndividualAxiom</span></code></a></p></td>
+<td><p>The base interface for individual axioms.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLClassAxiom" title="owlapy.owl_axiom.OWLClassAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLClassAxiom</span></code></a></p></td>
+<td><p>The base interface for class axioms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDeclarationAxiom" title="owlapy.owl_axiom.OWLDeclarationAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDeclarationAxiom</span></code></a></p></td>
+<td><p>Represents a Declaration axiom in the OWL 2 Specification. A declaration axiom declares an entity in an ontology.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom" title="owlapy.owl_axiom.OWLDatatypeDefinitionAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDatatypeDefinitionAxiom</span></code></a></p></td>
+<td><p>Represents a DatatypeDefinition axiom in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLHasKeyAxiom" title="owlapy.owl_axiom.OWLHasKeyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLHasKeyAxiom</span></code></a></p></td>
+<td><p>Represents a HasKey axiom in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryAxiom" title="owlapy.owl_axiom.OWLNaryAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryAxiom</span></code></a></p></td>
+<td><p>Represents an axiom that contains two or more operands that could also be represented with multiple pairwise</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryClassAxiom" title="owlapy.owl_axiom.OWLNaryClassAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryClassAxiom</span></code></a></p></td>
+<td><p>Represents an axiom that contains two or more operands that could also be represented with</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom" title="owlapy.owl_axiom.OWLEquivalentClassesAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLEquivalentClassesAxiom</span></code></a></p></td>
+<td><p>Represents an EquivalentClasses axiom in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointClassesAxiom" title="owlapy.owl_axiom.OWLDisjointClassesAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDisjointClassesAxiom</span></code></a></p></td>
+<td><p>Represents a DisjointClasses axiom in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom" title="owlapy.owl_axiom.OWLNaryIndividualAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryIndividualAxiom</span></code></a></p></td>
+<td><p>Represents an axiom that contains two or more operands that could also be represented with</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDifferentIndividualsAxiom" title="owlapy.owl_axiom.OWLDifferentIndividualsAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDifferentIndividualsAxiom</span></code></a></p></td>
+<td><p>Represents a DifferentIndividuals axiom in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLSameIndividualAxiom" title="owlapy.owl_axiom.OWLSameIndividualAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLSameIndividualAxiom</span></code></a></p></td>
+<td><p>Represents a SameIndividual axiom in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom" title="owlapy.owl_axiom.OWLNaryPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryPropertyAxiom</span></code></a></p></td>
+<td><p>Represents an axiom that contains two or more operands that could also be represented with</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLEquivalentObjectPropertiesAxiom" title="owlapy.owl_axiom.OWLEquivalentObjectPropertiesAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLEquivalentObjectPropertiesAxiom</span></code></a></p></td>
+<td><p>Represents EquivalentObjectProperties axioms in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointObjectPropertiesAxiom" title="owlapy.owl_axiom.OWLDisjointObjectPropertiesAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDisjointObjectPropertiesAxiom</span></code></a></p></td>
+<td><p>Represents DisjointObjectProperties axioms in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom" title="owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLInverseObjectPropertiesAxiom</span></code></a></p></td>
+<td><p>Represents InverseObjectProperties axioms in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLEquivalentDataPropertiesAxiom" title="owlapy.owl_axiom.OWLEquivalentDataPropertiesAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLEquivalentDataPropertiesAxiom</span></code></a></p></td>
+<td><p>Represents EquivalentDataProperties axioms in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointDataPropertiesAxiom" title="owlapy.owl_axiom.OWLDisjointDataPropertiesAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDisjointDataPropertiesAxiom</span></code></a></p></td>
+<td><p>Represents DisjointDataProperties axioms in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLSubClassOfAxiom" title="owlapy.owl_axiom.OWLSubClassOfAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLSubClassOfAxiom</span></code></a></p></td>
+<td><p>Represents an SubClassOf axiom in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom" title="owlapy.owl_axiom.OWLDisjointUnionAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDisjointUnionAxiom</span></code></a></p></td>
+<td><p>Represents a DisjointUnion axiom in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLClassAssertionAxiom" title="owlapy.owl_axiom.OWLClassAssertionAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLClassAssertionAxiom</span></code></a></p></td>
+<td><p>Represents ClassAssertion axioms in the OWL 2 Specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLAnnotationAxiom" title="owlapy.owl_axiom.OWLAnnotationAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLAnnotationAxiom</span></code></a></p></td>
+<td><p>A super interface for annotation axioms.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../owlobject/index.html#owlapy.owlobject.OWLObject" title="owlapy.owlobject.OWLObject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owlobject.OWLObject</span></code></a></p>
+<p>Represents Axioms in the OWL 2 Specification.</p>
+<p>An OWL ontology contains a set of axioms. These axioms can be annotation axioms, declaration axioms, imports axioms
+or logical axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_annotations'</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAxiom.annotations">
+<span class="sig-name descname"><span class="pre">annotations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLAxiom.annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLAxiom.annotations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAxiom.is_annotated">
+<span class="sig-name descname"><span class="pre">is_annotated</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLAxiom.is_annotated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLAxiom.is_annotated" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAxiom.is_logical_axiom">
+<span class="sig-name descname"><span class="pre">is_logical_axiom</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLAxiom.is_logical_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLAxiom.is_logical_axiom" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAxiom.is_annotation_axiom">
+<span class="sig-name descname"><span class="pre">is_annotation_axiom</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLAxiom.is_annotation_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLAxiom.is_annotation_axiom" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLLogicalAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLLogicalAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLLogicalAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLLogicalAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLAxiom</span></code></a></p>
+<p>A base interface of all axioms that affect the logical meaning of an ontology. This excludes declaration axioms
+(including imports declarations) and annotation axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLLogicalAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLLogicalAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLLogicalAxiom.is_logical_axiom">
+<span class="sig-name descname"><span class="pre">is_logical_axiom</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLLogicalAxiom.is_logical_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLLogicalAxiom.is_logical_axiom" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLPropertyAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLPropertyAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLPropertyAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLPropertyAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLLogicalAxiom" title="owlapy.owl_axiom.OWLLogicalAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLLogicalAxiom</span></code></a></p>
+<p>The base interface for property axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLPropertyAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLPropertyAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLObjectPropertyAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLObjectPropertyAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLObjectPropertyAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLObjectPropertyAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLPropertyAxiom" title="owlapy.owl_axiom.OWLPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLPropertyAxiom</span></code></a></p>
+<p>The base interface for object property axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLObjectPropertyAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLObjectPropertyAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDataPropertyAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLDataPropertyAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDataPropertyAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDataPropertyAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLPropertyAxiom" title="owlapy.owl_axiom.OWLPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLPropertyAxiom</span></code></a></p>
+<p>The base interface for data property axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDataPropertyAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLDataPropertyAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLIndividualAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLIndividualAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLIndividualAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLIndividualAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLLogicalAxiom" title="owlapy.owl_axiom.OWLLogicalAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLLogicalAxiom</span></code></a></p>
+<p>The base interface for individual axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLIndividualAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLIndividualAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLClassAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLClassAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLLogicalAxiom" title="owlapy.owl_axiom.OWLLogicalAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLLogicalAxiom</span></code></a></p>
+<p>The base interface for class axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDeclarationAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLDeclarationAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owlobject/index.html#owlapy.owlobject.OWLEntity" title="owlapy.owlobject.OWLEntity"><span class="pre">owlapy.owlobject.OWLEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDeclarationAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDeclarationAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLAxiom</span></code></a></p>
+<p>Represents a Declaration axiom in the OWL 2 Specification. A declaration axiom declares an entity in an ontology.
+It doesn’t affect the logical meaning of the ontology.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDeclarationAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_entity'</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLDeclarationAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDeclarationAxiom.get_entity">
+<span class="sig-name descname"><span class="pre">get_entity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owlobject/index.html#owlapy.owlobject.OWLEntity" title="owlapy.owlobject.OWLEntity"><span class="pre">owlapy.owlobject.OWLEntity</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDeclarationAxiom.get_entity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDeclarationAxiom.get_entity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDeclarationAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDeclarationAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDeclarationAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDeclarationAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDeclarationAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDeclarationAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDeclarationAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDeclarationAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDeclarationAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDatatypeDefinitionAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLDatatypeDefinitionAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#owlapy.types.OWLDatatype" title="owlapy.types.OWLDatatype"><span class="pre">owlapy.types.OWLDatatype</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">datarange</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">owlapy.types.OWLDataRange</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDatatypeDefinitionAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLLogicalAxiom" title="owlapy.owl_axiom.OWLLogicalAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLLogicalAxiom</span></code></a></p>
+<p>Represents a DatatypeDefinition axiom in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_datatype',</span> <span class="pre">'_datarange')</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.get_datatype">
+<span class="sig-name descname"><span class="pre">get_datatype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../types/index.html#owlapy.types.OWLDatatype" title="owlapy.types.OWLDatatype"><span class="pre">owlapy.types.OWLDatatype</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDatatypeDefinitionAxiom.get_datatype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.get_datatype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.get_datarange">
+<span class="sig-name descname"><span class="pre">get_datarange</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">owlapy.types.OWLDataRange</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDatatypeDefinitionAxiom.get_datarange"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.get_datarange" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDatatypeDefinitionAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDatatypeDefinitionAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDatatypeDefinitionAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDatatypeDefinitionAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLHasKeyAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLHasKeyAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_expressions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLPropertyExpression" title="owlapy.owl_property.OWLPropertyExpression"><span class="pre">owlapy.owl_property.OWLPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLHasKeyAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLHasKeyAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLLogicalAxiom" title="owlapy.owl_axiom.OWLLogicalAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLLogicalAxiom</span></code></a>, <a class="reference internal" href="../has/index.html#owlapy.has.HasOperands" title="owlapy.has.HasOperands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.has.HasOperands</span></code></a>[<a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLPropertyExpression" title="owlapy.owl_property.OWLPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_property.OWLPropertyExpression</span></code></a>]</p>
+<p>Represents a HasKey axiom in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLHasKeyAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_class_expression',</span> <span class="pre">'_property_expressions')</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLHasKeyAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLHasKeyAxiom.get_class_expression">
+<span class="sig-name descname"><span class="pre">get_class_expression</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLHasKeyAxiom.get_class_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLHasKeyAxiom.get_class_expression" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLHasKeyAxiom.get_property_expressions">
+<span class="sig-name descname"><span class="pre">get_property_expressions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLPropertyExpression" title="owlapy.owl_property.OWLPropertyExpression"><span class="pre">owlapy.owl_property.OWLPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLHasKeyAxiom.get_property_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLHasKeyAxiom.get_property_expressions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLHasKeyAxiom.operands">
+<span class="sig-name descname"><span class="pre">operands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLPropertyExpression" title="owlapy.owl_property.OWLPropertyExpression"><span class="pre">owlapy.owl_property.OWLPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLHasKeyAxiom.operands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLHasKeyAxiom.operands" title="Link to this definition"></a></dt>
+<dd><p>Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+classes axiom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The operands.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLHasKeyAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLHasKeyAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLHasKeyAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLHasKeyAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLHasKeyAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLHasKeyAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLHasKeyAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLHasKeyAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLHasKeyAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLNaryAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_C</span></code>], <a class="reference internal" href="#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLAxiom</span></code></a></p>
+<p>Represents an axiom that contains two or more operands that could also be represented with multiple pairwise
+axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_C</strong> – Class of contained objects.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryAxiom.as_pairwise_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">as_pairwise_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryAxiom" title="owlapy.owl_axiom.OWLNaryAxiom"><span class="pre">OWLNaryAxiom</span></a><span class="p"><span class="pre">[</span></span><span class="pre">_C</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryAxiom.as_pairwise_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryAxiom.as_pairwise_axioms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryClassAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLNaryClassAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_expressions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryClassAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryClassAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLClassAxiom" title="owlapy.owl_axiom.OWLClassAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLClassAxiom</span></code></a>, <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryAxiom" title="owlapy.owl_axiom.OWLNaryAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryAxiom</span></code></a>[<a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></code></a>]</p>
+<p>Represents an axiom that contains two or more operands that could also be represented with
+multiple pairwise axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryClassAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_class_expressions'</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryClassAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryClassAxiom.class_expressions">
+<span class="sig-name descname"><span class="pre">class_expressions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryClassAxiom.class_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryClassAxiom.class_expressions" title="Link to this definition"></a></dt>
+<dd><p>Gets all of the top level class expressions that appear in this axiom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Sorted stream of class expressions that appear in the axiom.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryClassAxiom.as_pairwise_axioms">
+<span class="sig-name descname"><span class="pre">as_pairwise_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryClassAxiom" title="owlapy.owl_axiom.OWLNaryClassAxiom"><span class="pre">OWLNaryClassAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryClassAxiom.as_pairwise_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryClassAxiom.as_pairwise_axioms" title="Link to this definition"></a></dt>
+<dd><p>Gets this axiom as a set of pairwise axioms; if the axiom contains only two operands,
+the axiom itself is returned unchanged, including its annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>This axiom as a set of pairwise axioms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryClassAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryClassAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryClassAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryClassAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryClassAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryClassAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryClassAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryClassAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryClassAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentClassesAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLEquivalentClassesAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_expressions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLEquivalentClassesAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryClassAxiom" title="owlapy.owl_axiom.OWLNaryClassAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryClassAxiom</span></code></a></p>
+<p>Represents an EquivalentClasses axiom in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentClassesAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentClassesAxiom.contains_named_equivalent_class">
+<span class="sig-name descname"><span class="pre">contains_named_equivalent_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLEquivalentClassesAxiom.contains_named_equivalent_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom.contains_named_equivalent_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentClassesAxiom.contains_owl_nothing">
+<span class="sig-name descname"><span class="pre">contains_owl_nothing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLEquivalentClassesAxiom.contains_owl_nothing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom.contains_owl_nothing" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentClassesAxiom.contains_owl_thing">
+<span class="sig-name descname"><span class="pre">contains_owl_thing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLEquivalentClassesAxiom.contains_owl_thing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom.contains_owl_thing" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentClassesAxiom.named_classes">
+<span class="sig-name descname"><span class="pre">named_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClass" title="owlapy.owl_class_expression.OWLClass"><span class="pre">owlapy.owl_class_expression.OWLClass</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLEquivalentClassesAxiom.named_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom.named_classes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointClassesAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLDisjointClassesAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_expressions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointClassesAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointClassesAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryClassAxiom" title="owlapy.owl_axiom.OWLNaryClassAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryClassAxiom</span></code></a></p>
+<p>Represents a DisjointClasses axiom in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointClassesAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointClassesAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryIndividualAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLNaryIndividualAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><span class="pre">owlapy.owl_individual.OWLIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryIndividualAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLIndividualAxiom" title="owlapy.owl_axiom.OWLIndividualAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLIndividualAxiom</span></code></a>, <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryAxiom" title="owlapy.owl_axiom.OWLNaryAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryAxiom</span></code></a>[<a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_individual.OWLIndividual</span></code></a>]</p>
+<p>Represents an axiom that contains two or more operands that could also be represented with
+multiple pairwise individual axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryIndividualAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_individuals'</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryIndividualAxiom.individuals">
+<span class="sig-name descname"><span class="pre">individuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><span class="pre">owlapy.owl_individual.OWLIndividual</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryIndividualAxiom.individuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom.individuals" title="Link to this definition"></a></dt>
+<dd><p>Get the individuals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Generator containing the individuals.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryIndividualAxiom.as_pairwise_axioms">
+<span class="sig-name descname"><span class="pre">as_pairwise_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom" title="owlapy.owl_axiom.OWLNaryIndividualAxiom"><span class="pre">OWLNaryIndividualAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryIndividualAxiom.as_pairwise_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom.as_pairwise_axioms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryIndividualAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryIndividualAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryIndividualAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryIndividualAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryIndividualAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryIndividualAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDifferentIndividualsAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLDifferentIndividualsAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><span class="pre">owlapy.owl_individual.OWLIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDifferentIndividualsAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDifferentIndividualsAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom" title="owlapy.owl_axiom.OWLNaryIndividualAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryIndividualAxiom</span></code></a></p>
+<p>Represents a DifferentIndividuals axiom in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDifferentIndividualsAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLDifferentIndividualsAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSameIndividualAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLSameIndividualAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><span class="pre">owlapy.owl_individual.OWLIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSameIndividualAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSameIndividualAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryIndividualAxiom" title="owlapy.owl_axiom.OWLNaryIndividualAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryIndividualAxiom</span></code></a></p>
+<p>Represents a SameIndividual axiom in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSameIndividualAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLSameIndividualAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryPropertyAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLNaryPropertyAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">_P</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryPropertyAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_P</span></code>], <a class="reference internal" href="#owlapy.owl_axiom.OWLPropertyAxiom" title="owlapy.owl_axiom.OWLPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLPropertyAxiom</span></code></a>, <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryAxiom" title="owlapy.owl_axiom.OWLNaryAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryAxiom</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_P</span></code>]</p>
+<p>Represents an axiom that contains two or more operands that could also be represented with
+multiple pairwise property axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryPropertyAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_properties'</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryPropertyAxiom.properties">
+<span class="sig-name descname"><span class="pre">properties</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">_P</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryPropertyAxiom.properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom.properties" title="Link to this definition"></a></dt>
+<dd><p>Get all the properties that appear in the axiom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Generator containing the properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryPropertyAxiom.as_pairwise_axioms">
+<span class="sig-name descname"><span class="pre">as_pairwise_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom" title="owlapy.owl_axiom.OWLNaryPropertyAxiom"><span class="pre">OWLNaryPropertyAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryPropertyAxiom.as_pairwise_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom.as_pairwise_axioms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryPropertyAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryPropertyAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryPropertyAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryPropertyAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLNaryPropertyAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLNaryPropertyAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentObjectPropertiesAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLEquivalentObjectPropertiesAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLEquivalentObjectPropertiesAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentObjectPropertiesAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom" title="owlapy.owl_axiom.OWLNaryPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryPropertyAxiom</span></code></a>[<a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></code></a>], <a class="reference internal" href="#owlapy.owl_axiom.OWLObjectPropertyAxiom" title="owlapy.owl_axiom.OWLObjectPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLObjectPropertyAxiom</span></code></a></p>
+<p>Represents EquivalentObjectProperties axioms in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentObjectPropertiesAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentObjectPropertiesAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointObjectPropertiesAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLDisjointObjectPropertiesAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointObjectPropertiesAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointObjectPropertiesAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom" title="owlapy.owl_axiom.OWLNaryPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryPropertyAxiom</span></code></a>[<a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></code></a>], <a class="reference internal" href="#owlapy.owl_axiom.OWLObjectPropertyAxiom" title="owlapy.owl_axiom.OWLObjectPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLObjectPropertyAxiom</span></code></a></p>
+<p>Represents DisjointObjectProperties axioms in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointObjectPropertiesAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointObjectPropertiesAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLInverseObjectPropertiesAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">second</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLInverseObjectPropertiesAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom" title="owlapy.owl_axiom.OWLNaryPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryPropertyAxiom</span></code></a>[<a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></code></a>], <a class="reference internal" href="#owlapy.owl_axiom.OWLObjectPropertyAxiom" title="owlapy.owl_axiom.OWLObjectPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLObjectPropertyAxiom</span></code></a></p>
+<p>Represents InverseObjectProperties axioms in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_first',</span> <span class="pre">'_second')</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom.get_first_property">
+<span class="sig-name descname"><span class="pre">get_first_property</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLInverseObjectPropertiesAxiom.get_first_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom.get_first_property" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom.get_second_property">
+<span class="sig-name descname"><span class="pre">get_second_property</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLInverseObjectPropertiesAxiom.get_second_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom.get_second_property" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLInverseObjectPropertiesAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLInverseObjectPropertiesAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentDataPropertiesAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLEquivalentDataPropertiesAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataPropertyExpression" title="owlapy.owl_property.OWLDataPropertyExpression"><span class="pre">owlapy.owl_property.OWLDataPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLEquivalentDataPropertiesAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentDataPropertiesAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom" title="owlapy.owl_axiom.OWLNaryPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryPropertyAxiom</span></code></a>[<a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataPropertyExpression" title="owlapy.owl_property.OWLDataPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_property.OWLDataPropertyExpression</span></code></a>], <a class="reference internal" href="#owlapy.owl_axiom.OWLDataPropertyAxiom" title="owlapy.owl_axiom.OWLDataPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDataPropertyAxiom</span></code></a></p>
+<p>Represents EquivalentDataProperties axioms in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLEquivalentDataPropertiesAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLEquivalentDataPropertiesAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointDataPropertiesAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLDisjointDataPropertiesAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataPropertyExpression" title="owlapy.owl_property.OWLDataPropertyExpression"><span class="pre">owlapy.owl_property.OWLDataPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointDataPropertiesAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointDataPropertiesAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLNaryPropertyAxiom" title="owlapy.owl_axiom.OWLNaryPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNaryPropertyAxiom</span></code></a>[<a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataPropertyExpression" title="owlapy.owl_property.OWLDataPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_property.OWLDataPropertyExpression</span></code></a>], <a class="reference internal" href="#owlapy.owl_axiom.OWLDataPropertyAxiom" title="owlapy.owl_axiom.OWLDataPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDataPropertyAxiom</span></code></a></p>
+<p>Represents DisjointDataProperties axioms in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointDataPropertiesAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointDataPropertiesAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubClassOfAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLSubClassOfAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">super_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubClassOfAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubClassOfAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLClassAxiom" title="owlapy.owl_axiom.OWLClassAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLClassAxiom</span></code></a></p>
+<p>Represents an SubClassOf axiom in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubClassOfAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_sub_class',</span> <span class="pre">'_super_class')</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLSubClassOfAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubClassOfAxiom.get_sub_class">
+<span class="sig-name descname"><span class="pre">get_sub_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubClassOfAxiom.get_sub_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubClassOfAxiom.get_sub_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubClassOfAxiom.get_super_class">
+<span class="sig-name descname"><span class="pre">get_super_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubClassOfAxiom.get_super_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubClassOfAxiom.get_super_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubClassOfAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubClassOfAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubClassOfAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubClassOfAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubClassOfAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubClassOfAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubClassOfAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubClassOfAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubClassOfAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLDisjointUnionAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClass" title="owlapy.owl_class_expression.OWLClass"><span class="pre">owlapy.owl_class_expression.OWLClass</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_expressions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointUnionAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLClassAxiom" title="owlapy.owl_axiom.OWLClassAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLClassAxiom</span></code></a></p>
+<p>Represents a DisjointUnion axiom in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_cls',</span> <span class="pre">'_class_expressions')</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom.get_owl_class">
+<span class="sig-name descname"><span class="pre">get_owl_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClass" title="owlapy.owl_class_expression.OWLClass"><span class="pre">owlapy.owl_class_expression.OWLClass</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointUnionAxiom.get_owl_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom.get_owl_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom.get_class_expressions">
+<span class="sig-name descname"><span class="pre">get_class_expressions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointUnionAxiom.get_class_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom.get_class_expressions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom.get_owl_equivalent_classes_axiom">
+<span class="sig-name descname"><span class="pre">get_owl_equivalent_classes_axiom</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#owlapy.owl_axiom.OWLEquivalentClassesAxiom" title="owlapy.owl_axiom.OWLEquivalentClassesAxiom"><span class="pre">OWLEquivalentClassesAxiom</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointUnionAxiom.get_owl_equivalent_classes_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom.get_owl_equivalent_classes_axiom" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom.get_owl_disjoint_classes_axiom">
+<span class="sig-name descname"><span class="pre">get_owl_disjoint_classes_axiom</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#owlapy.owl_axiom.OWLDisjointClassesAxiom" title="owlapy.owl_axiom.OWLDisjointClassesAxiom"><span class="pre">OWLDisjointClassesAxiom</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointUnionAxiom.get_owl_disjoint_classes_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom.get_owl_disjoint_classes_axiom" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointUnionAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointUnionAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDisjointUnionAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLDisjointUnionAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLDisjointUnionAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAssertionAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLClassAssertionAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><span class="pre">owlapy.owl_individual.OWLIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLClassAssertionAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAssertionAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLIndividualAxiom" title="owlapy.owl_axiom.OWLIndividualAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLIndividualAxiom</span></code></a></p>
+<p>Represents ClassAssertion axioms in the OWL 2 Specification.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAssertionAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_individual',</span> <span class="pre">'_class_expression')</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAssertionAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAssertionAxiom.get_individual">
+<span class="sig-name descname"><span class="pre">get_individual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><span class="pre">owlapy.owl_individual.OWLIndividual</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLClassAssertionAxiom.get_individual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAssertionAxiom.get_individual" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAssertionAxiom.get_class_expression">
+<span class="sig-name descname"><span class="pre">get_class_expression</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_class_expression/index.html#owlapy.owl_class_expression.OWLClassExpression" title="owlapy.owl_class_expression.OWLClassExpression"><span class="pre">owlapy.owl_class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLClassAssertionAxiom.get_class_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAssertionAxiom.get_class_expression" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAssertionAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLClassAssertionAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAssertionAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAssertionAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLClassAssertionAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAssertionAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLClassAssertionAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLClassAssertionAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLClassAssertionAxiom.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAnnotationAxiom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLAnnotationAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../model/index.html#owlapy.model.OWLAnnotation" title="owlapy.model.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLAnnotationAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLAnnotationAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLAxiom</span></code></a></p>
+<p>A super interface for annotation axioms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAnnotationAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_axiom.OWLAnnotationAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLAnnotationAxiom.is_annotation_axiom">
+<span class="sig-name descname"><span class="pre">is_annotation_axiom</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLAnnotationAxiom.is_annotation_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLAnnotationAxiom.is_annotation_axiom" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../owl_annotation/index.html" class="btn btn-neutral float-left" title="owlapy.owl_annotation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../owl_class_expression/index.html" class="btn btn-neutral float-right" title="owlapy.owl_class_expression" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
