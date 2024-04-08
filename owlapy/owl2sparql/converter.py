@@ -81,6 +81,7 @@ class Owl2SparqlConverter:
     """Convert owl (owlapy model class expressions) to SPARQL."""
     __slots__ = 'ce', 'sparql', 'variables', 'parent', 'parent_var', 'properties', 'variable_entities', 'cnt', \
                 'mapping', 'grouping_vars', 'having_conditions', '_intersection'
+    # @TODO:CD: We need to document this class. The computation behind the mapping is not clear.
 
     ce: OWLClassExpression
     sparql: List[str]
@@ -130,10 +131,6 @@ class Owl2SparqlConverter:
     def modal_depth(self):
         return len(self.variables)
 
-    # @property
-    # def in_intersection(self):
-    #     return self._intersection[self.modal_depth]
-
     @singledispatchmethod
     def render(self, e):
         raise NotImplementedError(e)
@@ -174,13 +171,6 @@ class Owl2SparqlConverter:
         else:
             return self.render(o)
 
-    # @contextmanager
-    # def intersection(self):
-    #     self._intersection[self.modal_depth] = True
-    #     try:
-    #         yield
-    #     finally:
-    #         del self._intersection[self.modal_depth]
 
     @contextmanager
     def stack_variable(self, var):
@@ -236,21 +226,6 @@ class Owl2SparqlConverter:
         for op in ce.operands():
             self.process(op)
 
-        # the following part was commented out because it was related to the possible optimization in the complement
-        # operator that has also been commented out
-        # with self.intersection():
-        #     for op in ce.operands():
-        #         self.process(op)
-        #     props = self.properties[self.modal_depth]
-        #     vars_ = set()
-        #     if props:
-        #         for p in props:
-        #             if p in self.mapping:
-        #                 vars_.add(self.mapping[p])
-        #         if len(vars_) == 2:
-        #             v0, v1 = sorted(vars_)
-        #             self.append(f"FILTER ( {v0} != {v1} )")
-
     # an overload of process function
     # this overload is responsible for handling unions of concepts (e.g., Brother ⊔ Sister)
     # general case: C1 ⊔ ... ⊔ Cn
@@ -275,14 +250,6 @@ class Owl2SparqlConverter:
     @process.register
     def _(self, ce: OWLObjectComplementOf):
         subject = self.current_variable
-        # the conversion was trying here to optimize the query
-        # but the proposed optimization alters the semantics of some queries
-        # example: ( A ⊓ ( B ⊔ ( ¬C ) ) )
-        # with the proposed optimization, the group graph pattern for (¬C) will be { FILTER NOT EXISTS { ?x a C } }
-        # however, the expected pattern is { ?x ?p ?o . FILTER NOT EXISTS { ?x a C } }
-        # the exclusion of "?x ?p ?o" results in the group graph pattern to just return true or false (not bindings)
-        # as a result, we need to comment out the if-clause of the following line
-        # if not self.in_intersection and self.modal_depth == 1:
         self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
 
         self.append("FILTER NOT EXISTS { ")
@@ -321,19 +288,9 @@ class Owl2SparqlConverter:
         # filler holds the concept of the expression (Male in our example) and is processed recursively
         filler = ce.get_filler()
 
-        # if the current class expression is the first one we are processing (root of recursion), the following
-        # if-clause tries to restrict the entities (individuals) to consider using owl:NamedIndividual.
-        # However, it is not guaranteed that entities in every KG are instances of owl:NamedIndividual, hence, adding
-        # this triple will affect the results in such cases.
-        # if self.modal_depth == 1:
-        #     self.append_triple(self.current_variable, "a", f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
 
-        # here, the first group graph pattern starts
-        # the first group graph pattern ensures deals with the entities that appear in a triple with the property
         self.append("{")
-        # if filler.is_owl_thing():
-        #     self.append_triple(self.current_variable, self.mapping.new_property_variable(), object_variable)
-        # else:
+
         if property_expression.is_anonymous():
             # property expression is inverse of a property
             self.append_triple(object_variable, predicate, self.current_variable)
@@ -592,13 +549,17 @@ class Owl2SparqlConverter:
                  ce: OWLClassExpression,
                  count: bool = False,
                  values: Optional[Iterable[OWLNamedIndividual]] = None,
-                 named_individuals: bool = False):
-        # root variable: the variable that will be projected
-        # ce: the class expression to be transformed to a SPARQL query
-        # count: True, counts the results ; False, projects the individuals
-        # values: positive or negative examples from a class expression problem
-        # named_individuals: if set to True, the generated SPARQL query will return only entities that are instances
-        #                    of owl:NamedIndividual
+                 named_individuals: bool = False)->str:
+        """
+        root variable: the variable that will be projected
+        ce: the class expression to be transformed to a SPARQL query
+        count: True, counts the results ; False, projects the individuals
+        values: positive or negative examples from a class expression problem
+        named_individuals: if set to True, the generated SPARQL query will return only entities that are instances
+        of owl:NamedIndividual
+
+        """
+
         qs = ["SELECT"]
         tp = self.convert(root_variable, ce, named_individuals)
         if count:
@@ -614,14 +575,6 @@ class Owl2SparqlConverter:
         qs.extend(tp)
         qs.append(f" }}")
 
-        # group_by_vars = self.grouping_vars[ce]
-        # if group_by_vars:
-        #     qs.append("GROUP BY " + " ".join(sorted(group_by_vars)))
-        # conditions = self.having_conditions[ce]
-        # if conditions:
-        #     qs.append(" HAVING ( ")
-        #     qs.append(" && ".join(sorted(conditions)))
-        #     qs.append(" )")
 
         query = "\n".join(qs)
         parseQuery(query)
@@ -632,9 +585,16 @@ converter = Owl2SparqlConverter()
 
 
 def owl_expression_to_sparql(root_variable: str = "?x",
-                             ce: OWLClassExpression = None,
-                             count: bool = False,
+                             expression: OWLClassExpression = None,
                              values: Optional[Iterable[OWLNamedIndividual]] = None,
                              named_individuals: bool = False)->str:
-    """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query"""
-    return converter.as_query(root_variable, ce, count, values, named_individuals)
+    """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
+     root variable: the variable that will be projected
+     expression: the class expression to be transformed to a SPARQL query
+
+     values: positive or negative examples from a class expression problem. Unclear
+     named_individuals: if set to True, the generated SPARQL query will return only entities
+     that are instances of owl:NamedIndividual
+    """
+    assert expression is not None, "expression cannot be None"
+    return converter.as_query(root_variable, expression, False, values, named_individuals)

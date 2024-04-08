@@ -6,10 +6,14 @@ from functools import singledispatchmethod
 from typing import List, Callable
 
 from owlapy import namespaces
-from owlapy.io import OWLObjectRenderer
+from .owlobject import OWLObjectRenderer
+from .owl_property import OWLObjectInverseOf
+from .owl_class_expression import OWLClassExpression
+
+# from owlapy.io import OWLObjectRenderer
 from owlapy.model import OWLLiteral, OWLNaryDataRange, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLBooleanClassExpression, OWLNaryBooleanClassExpression, \
-    OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectInverseOf, OWLClassExpression, OWLRestriction, \
+    OWLObjectIntersectionOf, OWLObjectComplementOf, OWLRestriction, \
     OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLObjectHasValue, \
     OWLObjectOneOf, OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \
     OWLFacetRestriction, OWLDatatypeRestriction, OWLDatatype, OWLDataAllValuesFrom, OWLDataComplementOf, \
@@ -142,7 +146,7 @@ class DLSyntaxObjectRenderer(OWLObjectRenderer):
 
     @render.register
     def _(self, r: OWLObjectOneOf):
-        return "{%s}" % (" %s " % _DL_SYNTAX.OR).join(
+        return "{%s}" % (" %s " % _DL_SYNTAX.COMMA).join(
             "%s" % (self.render(_)) for _ in r.individuals())
 
     @render.register
