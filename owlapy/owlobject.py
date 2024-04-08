@@ -1,7 +1,24 @@
-"""Abstract renderer and parser classes."""
 from abc import abstractmethod, ABCMeta
+class OWLObject(metaclass=ABCMeta):
+    """Base interface for OWL objects"""
+    __slots__ = ()
 
-from owlapy.model import OWLObject
+    @abstractmethod
+    def __eq__(self, other):
+        pass
+
+    @abstractmethod
+    def __hash__(self):
+        pass
+
+    @abstractmethod
+    def __repr__(self):
+        pass
+
+    # default
+    def is_anonymous(self) -> bool:
+        return True
+
 
 
 class OWLObjectRenderer(metaclass=ABCMeta):

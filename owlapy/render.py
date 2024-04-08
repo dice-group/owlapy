@@ -6,7 +6,8 @@ from functools import singledispatchmethod
 from typing import List, Callable
 
 from owlapy import namespaces
-from owlapy.io import OWLObjectRenderer
+from .owlobject import OWLObjectRenderer
+# from owlapy.io import OWLObjectRenderer
 from owlapy.model import OWLLiteral, OWLNaryDataRange, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLBooleanClassExpression, OWLNaryBooleanClassExpression, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectInverseOf, OWLClassExpression, OWLRestriction, \
