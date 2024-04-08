@@ -43,7 +43,7 @@ class Owlapy_DLRenderer_Test(unittest.TestCase):
         oneof = OWLObjectOneOf((i1, i2))
         r = renderer.render(oneof)
         print(r)
-        self.assertEqual(r, "{heinz , marie}")  # Old: "{heinz ⊔ marie}"
+        self.assertEqual(r, "{heinz ⊔ marie}")
 
         hasvalue = OWLObjectHasValue(property=has_child, individual=i1)
         r = renderer.render(hasvalue)
