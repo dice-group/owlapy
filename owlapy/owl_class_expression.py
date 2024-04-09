@@ -6,7 +6,7 @@ from .ranges import OWLPropertyRange, OWLDataRange
 from .owl_literal import OWLLiteral
 from typing import Final, Sequence, Union, Iterable
 from .owl_property import OWLDataPropertyExpression, OWLObjectProperty, OWLDataProperty
-
+from .iri import IRI
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary
 
 
@@ -123,15 +123,19 @@ class OWLClass(OWLClassExpression, OWLEntity):
     _is_nothing: bool
     _is_thing: bool
 
-    def __init__(self, iri: 'IRI'):
+    def __init__(self, iri: Union[IRI,str]):
         """Gets an instance of OWLClass that has the specified IRI.
 
         Args:
-            iri: The IRI.
+            iri:
         """
-        self._is_nothing = iri.is_nothing()
-        self._is_thing = iri.is_thing()
-        self._iri = iri
+        if isinstance(iri, IRI):
+            self._iri = iri
+        else:
+            self._iri = IRI.create(iri)
+
+        self._is_nothing = self._iri.is_nothing()
+        self._is_thing = self._iri.is_thing()
 
     def get_iri(self) -> 'IRI':
         # documented in parent
