@@ -8,11 +8,12 @@ from typing import Set, List, Dict, Optional, Iterable
 from rdflib.plugins.sparql.parser import parseQuery
 
 from owlapy.model import OWLClassExpression, OWLClass, OWLEntity, OWLObjectProperty, \
-    OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectHasValue, \
+    OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, \
     OWLNamedIndividual, OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectExactCardinality, \
-    OWLObjectMaxCardinality, OWLDataCardinalityRestriction, OWLDataProperty, OWLObjectHasSelf, OWLObjectOneOf, \
-    OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, OWLDatatype, TopOWLDatatype, OWLDataOneOf, \
-    OWLLiteral, OWLDatatypeRestriction, OWLObjectIntersectionOf
+    OWLObjectMaxCardinality, OWLDataCardinalityRestriction, OWLDataProperty, OWLObjectHasSelf, \
+    OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, OWLDatatype, TopOWLDatatype, OWLDataOneOf, OWLObjectIntersectionOf
+from owlapy.owl_restriction import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction
+from owlapy.owl_literal import OWLLiteral
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 
 _Variable_facet_comp = MappingProxyType({
