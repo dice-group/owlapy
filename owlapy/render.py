@@ -19,7 +19,8 @@ from owlapy.model import (OWLLiteral, OWLObject, OWLClass, OWLObjectSomeValuesFr
     OWLDataHasValue, OWLDataOneOf, OWLDataMaxCardinality, \
     OWLDataMinCardinality, OWLDataExactCardinality)
 from owlapy.vocab import OWLFacet
-from .owl_class_expression import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
+
+from .data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from .owl_restriction import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 
 _DL_SYNTAX = types.SimpleNamespace(

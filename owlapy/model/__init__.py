@@ -13,7 +13,7 @@ from owlapy.class_expression import OWLClassExpression, OWLNaryBooleanClassExpre
     OWLObjectUnionOf, OWLObjectComplementOf
 from owlapy.class_expression import OWLThing, OWLNothing, OWLClass
 
-from owlapy.owl_class_expression import OWLPropertyRange, OWLDataRange
+from owlapy.data_ranges import OWLPropertyRange, OWLDataRange
 
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression, \
     OWLDataPropertyExpression, OWLDataProperty, OWLObjectProperty

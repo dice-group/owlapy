@@ -19,7 +19,7 @@ from owlapy.model import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMin
     OWLLiteral, OWLDataRange, OWLDataOneOf, OWLDatatype, OWLObjectCardinalityRestriction, \
     OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom, BooleanOWLDatatype
 
-from owlapy.owl_class_expression import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf
+from owlapy.data_ranges import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf
 from owlapy.owl_restriction import OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
 
 

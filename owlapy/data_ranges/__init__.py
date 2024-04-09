@@ -1,11 +1,12 @@
 from abc import abstractmethod, ABCMeta
-from .owlobject import OWLObject, OWLEntity
-from .meta_classes import HasOperands
+from ..owlobject import OWLObject, OWLEntity
+from ..meta_classes import HasOperands
 from typing import Final, Iterable, Sequence
-from .ranges import OWLPropertyRange, OWLDataRange
-from .owl_literal import OWLLiteral
+from ..ranges import OWLPropertyRange, OWLDataRange
+from ..owl_literal import OWLLiteral
 from typing import Final, Sequence, Union, Iterable
-from .iri import IRI
+from ..iri import IRI
+
 class OWLDataComplementOf(OWLDataRange):
     """Represents DataComplementOf in the OWL 2 Specification."""
     type_index: Final = 4002
