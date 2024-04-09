@@ -8,11 +8,10 @@ from typing import List, Callable
 from owlapy import namespaces
 from .owlobject import OWLObjectRenderer
 from .owl_property import OWLObjectInverseOf
-from .owl_class_expression import OWLClassExpression
+from .class_expression import OWLClassExpression, OWLBooleanClassExpression
 
-# from owlapy.io import OWLObjectRenderer
 from owlapy.model import (OWLLiteral, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
-    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLBooleanClassExpression, OWLNaryBooleanClassExpression, \
+    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLNaryBooleanClassExpression, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLRestriction, \
     OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf,
                           OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \

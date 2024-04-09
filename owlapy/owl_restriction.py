@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from .meta_classes import HasFiller, HasCardinality, HasOperands
 from typing import TypeVar, Generic, Final, Sequence, Union, Iterable
-from .owl_class_expression import OWLAnonymousClassExpression, OWLClassExpression, OWLObjectIntersectionOf
+from .class_expression import OWLAnonymousClassExpression, OWLClassExpression, OWLObjectIntersectionOf
 from .owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, OWLDataPropertyExpression
 from .ranges import OWLPropertyRange, OWLDataRange
 from .owl_literal import OWLLiteral
