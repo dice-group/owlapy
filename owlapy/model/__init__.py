@@ -9,17 +9,23 @@ from owlapy.owl_annotation import OWLAnnotationObject, OWLAnnotationSubject, OWL
 from owlapy.iri import IRI
 from owlapy.has import HasIndex
 from owlapy.meta_classes import HasIRI, HasOperands, HasFiller, HasCardinality
-from owlapy.owl_class_expression import OWLNaryBooleanClassExpression, OWLClassExpression, OWLObjectComplementOf, \
-    OWLAnonymousClassExpression, OWLBooleanClassExpression, OWLPropertyRange, OWLDataRange, OWLClass, OWLObjectUnionOf, \
-    OWLObjectIntersectionOf, OWLThing, OWLNothing
+from owlapy.class_expression import OWLClassExpression, OWLNaryBooleanClassExpression, OWLObjectIntersectionOf, \
+    OWLObjectUnionOf, OWLObjectComplementOf
+from owlapy.class_expression import OWLThing, OWLNothing, OWLClass
+
+from owlapy.data_ranges import OWLPropertyRange, OWLDataRange
+
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression, \
     OWLDataPropertyExpression, OWLDataProperty, OWLObjectProperty
 from owlapy.owl_restriction import (OWLRestriction, OWLObjectAllValuesFrom, OWLObjectSomeValuesFrom,
                                     OWLQuantifiedRestriction, OWLQuantifiedObjectRestriction,
                                     OWLObjectRestriction, OWLHasValueRestriction, OWLDataRestriction,
-                                    OWLCardinalityRestriction, OWLObjectMinCardinality, OWLObjectCardinalityRestriction,OWLDataAllValuesFrom,
-                                    OWLObjectHasSelf, OWLObjectMaxCardinality, OWLObjectExactCardinality,OWLDataExactCardinality,OWLDataMinCardinality,
-                                    OWLDataMaxCardinality,OWLDataSomeValuesFrom,OWLDataHasValue,OWLDataOneOf,OWLQuantifiedDataRestriction,OWLDataCardinalityRestriction)
+                                    OWLCardinalityRestriction, OWLObjectMinCardinality, OWLObjectCardinalityRestriction,
+                                    OWLDataAllValuesFrom,
+                                    OWLObjectHasSelf, OWLObjectMaxCardinality, OWLObjectExactCardinality,
+                                    OWLDataExactCardinality, OWLDataMinCardinality,
+                                    OWLDataMaxCardinality, OWLDataSomeValuesFrom, OWLDataHasValue, OWLDataOneOf,
+                                    OWLQuantifiedDataRestriction, OWLDataCardinalityRestriction)
 
 from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
 from owlapy.owl_axiom import (OWLEquivalentClassesAxiom, OWLClassAxiom,
@@ -27,7 +33,6 @@ from owlapy.owl_axiom import (OWLEquivalentClassesAxiom, OWLClassAxiom,
                               OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom)
 from owlapy.types import OWLDatatype
 from owlapy.owl_literal import OWLLiteral
-
 
 MOVE(OWLObject, OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue, HasIRI, IRI)
 
@@ -37,8 +42,6 @@ _P = TypeVar('_P', bound='OWLPropertyExpression')  #:
 _R = TypeVar('_R', bound='OWLPropertyRange')  #:
 Literals = Union['OWLLiteral', int, float, bool, Timedelta, datetime, date, str]  #:
 _M = TypeVar('_M', bound='OWLOntologyManager')  #:
-
-
 
 
 class OWLOntologyID:
@@ -102,7 +105,6 @@ class OWLOntologyID:
         if type(other) is type(self):
             return self._ontology_iri == other._ontology_iri and self._version_iri == other._version_iri
         return NotImplemented
-
 
 
 class OWLImportsDeclaration(HasIRI):

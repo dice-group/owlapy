@@ -6,7 +6,7 @@ from .owlobject import OWLObject, OWLEntity
 from .types import OWLDatatype, OWLDataRange
 from .meta_classes import HasOperands
 from .owl_property import OWLPropertyExpression, OWLProperty
-from .owl_class_expression import OWLClassExpression, OWLClass
+from .class_expression import OWLClassExpression, OWLClass
 from .owl_individual import OWLIndividual
 from .iri import IRI
 from owlapy.owl_annotation import OWLAnnotationSubject, OWLAnnotationValue

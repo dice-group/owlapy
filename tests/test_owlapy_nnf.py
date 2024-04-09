@@ -32,7 +32,7 @@ from owlapy.model import OWLObjectProperty, OWLNamedIndividual, OWLObjectComplem
 from owlapy.model.providers import OWLDatatypeMinMaxExclusiveRestriction
 from owlapy.util import NNF
 
-from owlapy.owl_class_expression import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
+from owlapy.data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.owl_restriction import OWLObjectHasValue, OWLObjectOneOf
 
 def iri(suffix):

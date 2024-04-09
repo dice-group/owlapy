@@ -10,7 +10,7 @@ from owlapy.model import OWLObjectUnionOf, DoubleOWLDatatype, IntegerOWLDatatype
     OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMaxCardinality, OWLObjectProperty, OWLDataExactCardinality, OWLDataMaxCardinality, \
     OWLDataMinCardinality, OWLDataHasValue, OWLThing, OWLNothing
 
-from owlapy.owl_class_expression import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf
+from owlapy.data_ranges import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf
 from owlapy.model.providers import OWLDatatypeMinExclusiveRestriction,\
     OWLDatatypeMinMaxExclusiveRestriction, OWLDatatypeMaxExclusiveRestriction
 from owlapy.owl_restriction import OWLDataSomeValuesFrom, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectSomeValuesFrom, OWLObjectMinCardinality, OWLObjectHasValue,OWLObjectOneOf
