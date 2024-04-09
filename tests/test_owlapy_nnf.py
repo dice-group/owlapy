@@ -27,13 +27,12 @@ import unittest
 from owlapy.model import OWLObjectProperty, OWLNamedIndividual, OWLObjectComplementOf, \
     OWLObjectAllValuesFrom, OWLObjectSomeValuesFrom, OWLObjectIntersectionOf, OWLObjectUnionOf, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectHasValue, OWLObjectOneOf, OWLClassExpression, IRI, \
-    BooleanOWLDatatype, DoubleOWLDatatype, IntegerOWLDatatype, OWLClass, OWLDataAllValuesFrom, OWLDataComplementOf, \
-    OWLDataIntersectionOf, OWLDataProperty, OWLDataSomeValuesFrom, OWLDataUnionOf, \
-    OWLDataHasValue, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataOneOf, OWLLiteral
+    BooleanOWLDatatype, DoubleOWLDatatype, IntegerOWLDatatype, OWLClass, OWLDataAllValuesFrom, \
+    OWLDataProperty, OWLDataSomeValuesFrom,OWLDataHasValue, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataOneOf, OWLLiteral
 from owlapy.model.providers import OWLDatatypeMinMaxExclusiveRestriction
 from owlapy.util import NNF
 
-
+from owlapy.owl_class_expression import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 def iri(suffix):
     NS = "http://example.org/"
     return IRI.create(NS, suffix)

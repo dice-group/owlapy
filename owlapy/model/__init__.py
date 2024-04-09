@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-from itertools import combinations
 from typing import Generic, Iterable, Sequence, Set, TypeVar, Union, Final, Optional, Protocol, ClassVar, List
 from datetime import datetime, date
 from pandas import Timedelta
@@ -8,7 +7,8 @@ from owlapy._utils import MOVE
 from owlapy.owlobject import OWLObject, OWLEntity
 from owlapy.owl_annotation import OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue
 from owlapy.iri import IRI
-from owlapy.has import HasIndex, HasIRI, HasOperands, HasFiller, HasCardinality
+from owlapy.has import HasIndex
+from owlapy.meta_classes import HasIRI, HasOperands, HasFiller, HasCardinality
 from owlapy.owl_class_expression import OWLNaryBooleanClassExpression, OWLClassExpression, OWLObjectComplementOf, \
     OWLAnonymousClassExpression, OWLBooleanClassExpression, OWLPropertyRange, OWLDataRange, OWLClass, OWLObjectUnionOf, \
     OWLObjectIntersectionOf
@@ -18,15 +18,16 @@ from owlapy.owl_restriction import (OWLRestriction, OWLObjectAllValuesFrom, OWLO
                                     OWLQuantifiedRestriction, OWLQuantifiedObjectRestriction,
                                     OWLObjectRestriction, OWLHasValueRestriction, OWLDataRestriction,
                                     OWLCardinalityRestriction, OWLObjectMinCardinality, OWLObjectCardinalityRestriction,OWLDataAllValuesFrom,
-                                    OWLObjectHasSelf, OWLObjectMaxCardinality, OWLObjectExactCardinality,OWLDataExactCardinality)
+                                    OWLObjectHasSelf, OWLObjectMaxCardinality, OWLObjectExactCardinality,OWLDataExactCardinality,OWLDataMinCardinality,
+                                    OWLDataMaxCardinality,OWLDataSomeValuesFrom,OWLDataHasValue,OWLDataOneOf,OWLQuantifiedDataRestriction,OWLDataCardinalityRestriction)
 
 from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
 from owlapy.owl_axiom import (OWLEquivalentClassesAxiom, OWLClassAxiom,
                               OWLDataPropertyDomainAxiom, OWLAxiom, OWLDataPropertyRangeAxiom,
                               OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom)
 from owlapy.types import OWLDatatype
-from owlapy.owl_data import OWLDataMinCardinality, OWLDataMaxCardinality,OWLDataComplementOf, OWLDataIntersectionOf, OWLDataHasValue, OWLDataOneOf, OWLDataSomeValuesFrom,OWLDataUnionOf
-from owlapy.owl_data import OWLNaryDataRange, OWLQuantifiedDataRestriction, OWLDataCardinalityRestriction
+# Data and object should be merged
+# from owlapy.owl_data import OWLDataComplementOf, OWLDataIntersectionOf,OWLDataUnionOf, OWLNaryDataRange
 from owlapy.owl_literal import OWLLiteral
 
 

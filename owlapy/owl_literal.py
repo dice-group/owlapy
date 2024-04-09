@@ -5,7 +5,6 @@ from typing import Final, Optional, Union, TypeVar, Set
 from .types import OWLDatatype
 from datetime import datetime, date
 from pandas import Timedelta
-from .owl_class_expression import OWLClass
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary
 from .owl_property import OWLObjectProperty, OWLDataProperty
 
@@ -481,8 +480,6 @@ class _OWLLiteralImpl(OWLLiteral):
     def __repr__(self):
         return f'OWLLiteral({repr(self._v)}, {self._datatype})'
 
-OWLThing: Final = OWLClass(OWLRDFVocabulary.OWL_THING.get_iri())  #: : :The OWL Class corresponding to owl:Thing
-OWLNothing: Final = OWLClass(OWLRDFVocabulary.OWL_NOTHING.get_iri())  #: : :The OWL Class corresponding to owl:Nothing
 #: the built in top object property
 OWLTopObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.get_iri())
 #: the built in bottom object property

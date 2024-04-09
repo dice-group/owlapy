@@ -6,12 +6,13 @@ from owlapy.owl_property import OWLObjectInverseOf
 
 from owlapy.model import OWLObjectMinCardinality, OWLObjectSomeValuesFrom, \
     OWLObjectUnionOf, DoubleOWLDatatype, IntegerOWLDatatype, OWLClass, IRI, OWLDataAllValuesFrom, \
-    OWLDataIntersectionOf, OWLDataOneOf, OWLDataProperty, OWLDataSomeValuesFrom, OWLDatatypeRestriction,  \
+    OWLDataOneOf, OWLDataProperty, OWLDataSomeValuesFrom, OWLDatatypeRestriction,  \
     OWLLiteral, OWLNamedIndividual, OWLObjectAllValuesFrom, OWLObjectComplementOf, OWLObjectExactCardinality, \
     OWLObjectHasSelf, OWLObjectHasValue, OWLObjectIntersectionOf, OWLObjectMaxCardinality, OWLObjectOneOf, \
-    OWLObjectProperty, OWLDataComplementOf, OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataUnionOf, \
+    OWLObjectProperty, OWLDataExactCardinality, OWLDataMaxCardinality, \
     OWLDataMinCardinality, OWLDataHasValue, OWLThing, OWLNothing, OWLFacetRestriction
 
+from owlapy.owl_class_expression import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf
 from owlapy.model.providers import OWLDatatypeMinExclusiveRestriction,\
     OWLDatatypeMinMaxExclusiveRestriction, OWLDatatypeMaxExclusiveRestriction
 from owlapy.parser import DLSyntaxParser, ManchesterOWLSyntaxParser

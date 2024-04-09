@@ -16,10 +16,11 @@ from owlapy.model import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMin
     OWLObjectHasValue, OWLQuantifiedDataRestriction, OWLQuantifiedObjectRestriction, StringOWLDatatype,  \
     DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, \
     OWLDataSomeValuesFrom, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataExactCardinality, \
-    OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataIntersectionOf, OWLDataMinCardinality, OWLDataHasValue, \
-    OWLLiteral, OWLDataRange, OWLDataUnionOf, OWLDataOneOf, OWLDatatype, OWLObjectCardinalityRestriction, \
-    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom, OWLDataComplementOf, BooleanOWLDatatype
+    OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, \
+    OWLLiteral, OWLDataRange, OWLDataOneOf, OWLDatatype, OWLObjectCardinalityRestriction, \
+    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom, BooleanOWLDatatype
 
+from owlapy.owl_class_expression import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf
 
 
 
