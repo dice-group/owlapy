@@ -661,7 +661,7 @@ Attributes
 .. py:class:: OWLClassExpression
 
 
-   Bases: :py:obj:`owlapy.ranges.OWLPropertyRange`
+   Bases: :py:obj:`owlapy.data_ranges.OWLPropertyRange`
 
    An OWL 2 Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
 
@@ -1420,7 +1420,7 @@ Attributes
 
 
 
-.. py:class:: OWLDataAllValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+.. py:class:: OWLDataAllValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.data_ranges.OWLDataRange)
 
 
    Bases: :py:obj:`OWLQuantifiedDataRestriction`
@@ -1543,7 +1543,7 @@ Attributes
 
 
 
-.. py:class:: OWLDataExactCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+.. py:class:: OWLDataExactCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.data_ranges.OWLDataRange)
 
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
@@ -1569,7 +1569,7 @@ Attributes
 
 
 
-.. py:class:: OWLDataMinCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+.. py:class:: OWLDataMinCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.data_ranges.OWLDataRange)
 
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
@@ -1588,7 +1588,7 @@ Attributes
       
 
 
-.. py:class:: OWLDataMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+.. py:class:: OWLDataMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.data_ranges.OWLDataRange)
 
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
@@ -1607,7 +1607,7 @@ Attributes
       
 
 
-.. py:class:: OWLDataSomeValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+.. py:class:: OWLDataSomeValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.data_ranges.OWLDataRange)
 
 
    Bases: :py:obj:`OWLQuantifiedDataRestriction`
@@ -1695,7 +1695,7 @@ Attributes
 .. py:class:: OWLDataOneOf(values: Union[owlapy.owl_literal.OWLLiteral, Iterable[owlapy.owl_literal.OWLLiteral]])
 
 
-   Bases: :py:obj:`owlapy.ranges.OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
+   Bases: :py:obj:`owlapy.data_ranges.OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
 
    Represents DataOneOf in the OWL 2 Specification.
 
@@ -1736,10 +1736,10 @@ Attributes
 
 
 
-.. py:class:: OWLQuantifiedDataRestriction(filler: owlapy.ranges.OWLDataRange)
+.. py:class:: OWLQuantifiedDataRestriction(filler: owlapy.data_ranges.OWLDataRange)
 
 
-   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.ranges.OWLDataRange`\ ], :py:obj:`OWLDataRestriction`
+   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.data_ranges.OWLDataRange`\ ], :py:obj:`OWLDataRestriction`
 
    Represents a quantified data restriction.
 
@@ -1748,7 +1748,7 @@ Attributes
 
       
 
-   .. py:method:: get_filler() -> owlapy.ranges.OWLDataRange
+   .. py:method:: get_filler() -> owlapy.data_ranges.OWLDataRange
 
       Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
       the case of a data restriction this will be a constant (data value). For quantified restriction this will be
@@ -1758,10 +1758,10 @@ Attributes
 
 
 
-.. py:class:: OWLDataCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+.. py:class:: OWLDataCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.data_ranges.OWLDataRange)
 
 
-   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.ranges.OWLDataRange`\ ], :py:obj:`OWLQuantifiedDataRestriction`, :py:obj:`OWLDataRestriction`
+   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.data_ranges.OWLDataRange`\ ], :py:obj:`OWLQuantifiedDataRestriction`, :py:obj:`OWLDataRestriction`
 
    Represents Data Property Cardinality Restrictions in the OWL 2 specification.
 
@@ -1957,7 +1957,7 @@ Attributes
 .. py:class:: OWLDatatype(iri: Union[owlapy.iri.IRI, owlapy.meta_classes.HasIRI])
 
 
-   Bases: :py:obj:`owlapy.owlobject.OWLEntity`, :py:obj:`owlapy.ranges.OWLDataRange`
+   Bases: :py:obj:`owlapy.owlobject.OWLEntity`, :py:obj:`owlapy.data_ranges.OWLDataRange`
 
    Represents a Datatype (named data range) in the OWL 2 Specification.
 

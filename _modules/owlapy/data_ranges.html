@@ -76,14 +76,33 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.data_ranges</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABCMeta</span>
+<span></span><span class="sd">&quot;&quot;&quot;https://www.w3.org/TR/owl2-syntax/#Data_Ranges</span>
+
+<span class="sd">DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABCMeta</span>
 <span class="kn">from</span> <span class="nn">..owlobject</span> <span class="kn">import</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span> <span class="nn">..meta_classes</span> <span class="kn">import</span> <span class="n">HasOperands</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Sequence</span>
-<span class="kn">from</span> <span class="nn">..ranges</span> <span class="kn">import</span> <span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">OWLDataRange</span>
-<span class="kn">from</span> <span class="nn">..owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="c1"># from ..owl_literal import OWLLiteral</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">from</span> <span class="nn">..iri</span> <span class="kn">import</span> <span class="n">IRI</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
+
+<div class="viewcode-block" id="OWLPropertyRange">
+<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.data_ranges.OWLPropertyRange">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLPropertyRange</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;OWL Objects that can be the ranges of properties.&quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="OWLDataRange">
+<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.data_ranges.OWLDataRange">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLDataRange</span><span class="p">(</span><span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a DataRange in the OWL 2 Specification.&quot;&quot;&quot;</span></div>
+
+
 
 <div class="viewcode-block" id="OWLDataComplementOf">
 <a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataComplementOf">[docs]</a>
