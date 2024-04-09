@@ -660,10 +660,10 @@ Attributes
 
 
 
-.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[OWLClassExpression])
+.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[owlapy.class_expression.OWLClassExpression])
 
 
-   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+   Bases: :py:obj:`owlapy.class_expression.OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.class_expression.OWLClassExpression`\ ]
 
    OWLNaryBooleanClassExpression.
 
@@ -672,7 +672,7 @@ Attributes
 
       
 
-   .. py:method:: operands() -> Iterable[OWLClassExpression]
+   .. py:method:: operands() -> Iterable[owlapy.class_expression.OWLClassExpression]
 
       Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
       classes axiom.
@@ -701,7 +701,7 @@ Attributes
 
    Bases: :py:obj:`owlapy.ranges.OWLPropertyRange`
 
-   An OWL 2 Class Expression.
+   An OWL 2 Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -858,7 +858,7 @@ Attributes
 .. py:class:: OWLClass(iri: Union[owlapy.iri.IRI, str])
 
 
-   Bases: :py:obj:`OWLClassExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
 
    An OWL 2 named Class
 
@@ -903,7 +903,7 @@ Attributes
       is equivalent to owl:Nothing.
 
 
-   .. py:method:: get_object_complement_of() -> OWLObjectComplementOf
+   .. py:method:: get_object_complement_of() -> owlapy.class_expression.class_expression.OWLObjectComplementOf
 
       Gets the object complement of this class expression.
 
@@ -918,7 +918,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectUnionOf(operands: Iterable[OWLClassExpression])
+.. py:class:: OWLObjectUnionOf(operands: Iterable[owlapy.class_expression.OWLClassExpression])
 
 
    Bases: :py:obj:`OWLNaryBooleanClassExpression`
@@ -937,7 +937,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectIntersectionOf(operands: Iterable[OWLClassExpression])
+.. py:class:: OWLObjectIntersectionOf(operands: Iterable[owlapy.class_expression.OWLClassExpression])
 
 
    Bases: :py:obj:`OWLNaryBooleanClassExpression`

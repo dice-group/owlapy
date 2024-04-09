@@ -1,0 +1,82 @@
+:py:mod:`owlapy.class_expression.owl_class`
+===========================================
+
+.. py:module:: owlapy.class_expression.owl_class
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.class_expression.owl_class.OWLClass
+
+
+
+
+.. py:class:: OWLClass(iri: Union[owlapy.iri.IRI, str])
+
+
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
+
+   An OWL 2 named Class
+
+   .. py:property:: str
+
+
+   .. py:property:: reminder
+      :type: str
+
+      The reminder of the IRI
+
+   .. py:attribute:: __slots__
+      :value: ('_iri', '_is_nothing', '_is_thing')
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 1001
+
+      
+
+   .. py:method:: get_iri() -> owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:method:: is_owl_thing() -> bool
+
+      Determines if this expression is the built in class owl:Thing. This method does not determine if the class
+      is equivalent to owl:Thing.
+
+      :returns: Thing.
+      :rtype: True if this expression is owl
+
+
+   .. py:method:: is_owl_nothing() -> bool
+
+      Determines if this expression is the built in class owl:Nothing. This method does not determine if the class
+      is equivalent to owl:Nothing.
+
+
+   .. py:method:: get_object_complement_of() -> owlapy.class_expression.class_expression.OWLObjectComplementOf
+
+      Gets the object complement of this class expression.
+
+      :returns: A class expression that is the complement of this class expression.
+
+
+   .. py:method:: get_nnf() -> OWLClass
+
+      Gets the negation normal form of the complement of this expression.
+
+      :returns: A expression that represents the NNF of the complement of this expression.
+
+
+

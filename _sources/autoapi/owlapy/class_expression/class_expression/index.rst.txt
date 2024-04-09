@@ -1,0 +1,165 @@
+:py:mod:`owlapy.class_expression.class_expression`
+==================================================
+
+.. py:module:: owlapy.class_expression.class_expression
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.class_expression.class_expression.OWLClassExpression
+   owlapy.class_expression.class_expression.OWLAnonymousClassExpression
+   owlapy.class_expression.class_expression.OWLBooleanClassExpression
+   owlapy.class_expression.class_expression.OWLObjectComplementOf
+
+
+
+
+.. py:class:: OWLClassExpression
+
+
+   Bases: :py:obj:`owlapy.ranges.OWLPropertyRange`
+
+   An OWL 2 Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: is_owl_thing() -> bool
+      :abstractmethod:
+
+      Determines if this expression is the built in class owl:Thing. This method does not determine if the class
+      is equivalent to owl:Thing.
+
+      :returns: Thing.
+      :rtype: True if this expression is owl
+
+
+   .. py:method:: is_owl_nothing() -> bool
+      :abstractmethod:
+
+      Determines if this expression is the built in class owl:Nothing. This method does not determine if the class
+      is equivalent to owl:Nothing.
+
+
+   .. py:method:: get_object_complement_of() -> OWLObjectComplementOf
+      :abstractmethod:
+
+      Gets the object complement of this class expression.
+
+      :returns: A class expression that is the complement of this class expression.
+
+
+   .. py:method:: get_nnf() -> OWLClassExpression
+      :abstractmethod:
+
+      Gets the negation normal form of the complement of this expression.
+
+      :returns: A expression that represents the NNF of the complement of this expression.
+
+
+
+.. py:class:: OWLAnonymousClassExpression
+
+
+   Bases: :py:obj:`OWLClassExpression`
+
+   A Class Expression which is not a named Class.
+
+   .. py:method:: is_owl_nothing() -> bool
+
+      Determines if this expression is the built in class owl:Nothing. This method does not determine if the class
+      is equivalent to owl:Nothing.
+
+
+   .. py:method:: is_owl_thing() -> bool
+
+      Determines if this expression is the built in class owl:Thing. This method does not determine if the class
+      is equivalent to owl:Thing.
+
+      :returns: Thing.
+      :rtype: True if this expression is owl
+
+
+   .. py:method:: get_object_complement_of() -> OWLObjectComplementOf
+
+      Gets the object complement of this class expression.
+
+      :returns: A class expression that is the complement of this class expression.
+
+
+   .. py:method:: get_nnf() -> OWLClassExpression
+
+      Gets the negation normal form of the complement of this expression.
+
+      :returns: A expression that represents the NNF of the complement of this expression.
+
+
+
+.. py:class:: OWLBooleanClassExpression
+
+
+   Bases: :py:obj:`OWLAnonymousClassExpression`
+
+   Represent an anonymous boolean class expression.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+
+.. py:class:: OWLObjectComplementOf(op: OWLClassExpression)
+
+
+   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+
+   Represents an ObjectComplementOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operand'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3003
+
+      
+
+   .. py:method:: get_operand() -> OWLClassExpression
+
+      :returns: The wrapped expression.
+
+
+   .. py:method:: operands() -> Iterable[OWLClassExpression]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
