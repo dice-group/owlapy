@@ -1,0 +1,2 @@
+from .class_expression import OWLClassExpression, OWLAnonymousClassExpression, OWLBooleanClassExpression, OWLObjectComplementOf
+from .owl_class import OWLClass
