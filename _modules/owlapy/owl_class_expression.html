@@ -84,7 +84,7 @@
 <span class="kn">from</span> <span class="nn">.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">from</span> <span class="nn">.owl_property</span> <span class="kn">import</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
-
+<span class="kn">from</span> <span class="nn">.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
 <span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLRDFVocabulary</span><span class="p">,</span> <span class="n">XSDVocabulary</span>
 
 
@@ -254,15 +254,19 @@
     <span class="n">_is_nothing</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">_is_thing</span><span class="p">:</span> <span class="nb">bool</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="s1">&#39;IRI&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span><span class="nb">str</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLClass that has the specified IRI.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            iri: The IRI.</span>
+<span class="sd">            iri:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_nothing</span> <span class="o">=</span> <span class="n">iri</span><span class="o">.</span><span class="n">is_nothing</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_is_thing</span> <span class="o">=</span> <span class="n">iri</span><span class="o">.</span><span class="n">is_thing</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">IRI</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">iri</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_nothing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">is_nothing</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_thing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">is_thing</span><span class="p">()</span>
 
 <div class="viewcode-block" id="OWLClass.get_iri">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLClass.get_iri">[docs]</a>
