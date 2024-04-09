@@ -30,9 +30,30 @@ Classes
    owlapy.owl_restriction.OWLDataAllValuesFrom
    owlapy.owl_restriction.OWLDataCardinalityRestriction
    owlapy.owl_restriction.OWLDataExactCardinality
+   owlapy.owl_restriction.OWLDataMaxCardinality
+   owlapy.owl_restriction.OWLDataMinCardinality
+   owlapy.owl_restriction.OWLDataSomeValuesFrom
+   owlapy.owl_restriction.OWLDataHasValue
+   owlapy.owl_restriction.OWLObjectOneOf
+   owlapy.owl_restriction.OWLDataOneOf
+   owlapy.owl_restriction.OWLObjectHasValue
+   owlapy.owl_restriction.OWLDatatypeRestriction
+   owlapy.owl_restriction.OWLFacetRestriction
 
 
 
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owl_restriction.Literals
+
+
+.. py:data:: Literals
+
+   
 
 .. py:class:: OWLRestriction
 
@@ -116,7 +137,7 @@ Classes
 .. py:class:: OWLHasValueRestriction(value: _T)
 
 
-   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`owlapy.has.HasFiller`\ [\ :py:obj:`_T`\ ]
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`owlapy.meta_classes.HasFiller`\ [\ :py:obj:`_T`\ ]
 
    OWLHasValueRestriction.
 
@@ -150,7 +171,7 @@ Classes
 .. py:class:: OWLQuantifiedRestriction
 
 
-   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`owlapy.has.HasFiller`\ [\ :py:obj:`_T`\ ]
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`owlapy.meta_classes.HasFiller`\ [\ :py:obj:`_T`\ ]
 
    Represents a quantified restriction.
 
@@ -265,7 +286,7 @@ Classes
 .. py:class:: OWLCardinalityRestriction(cardinality: int, filler: _F)
 
 
-   Bases: :py:obj:`Generic`\ [\ :py:obj:`_F`\ ], :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`_F`\ ], :py:obj:`owlapy.has.HasCardinality`
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_F`\ ], :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`_F`\ ], :py:obj:`owlapy.meta_classes.HasCardinality`
 
    Base interface for owl min and max cardinality restriction.
 
@@ -546,6 +567,347 @@ Classes
       Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
 
       :returns: The semantically equivalent but structurally simpler form (= 1 R D) = >= 1 R D and <= 1 R D.
+
+
+
+.. py:class:: OWLDataMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+
+
+   Bases: :py:obj:`OWLDataCardinalityRestriction`
+
+   Represents DataMaxCardinality restrictions in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_cardinality', '_filler', '_property')
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3017
+
+      
+
+
+.. py:class:: OWLDataMinCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+
+
+   Bases: :py:obj:`OWLDataCardinalityRestriction`
+
+   Represents DataMinCardinality restrictions in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_cardinality', '_filler', '_property')
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3015
+
+      
+
+
+.. py:class:: OWLDataSomeValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.ranges.OWLDataRange)
+
+
+   Bases: :py:obj:`OWLQuantifiedDataRestriction`
+
+   Represents a DataSomeValuesFrom restriction in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_property'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3012
+
+      
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+.. py:class:: OWLDataHasValue(property: owlapy.owl_property.OWLDataPropertyExpression, value: owlapy.owl_literal.OWLLiteral)
+
+
+   Bases: :py:obj:`OWLHasValueRestriction`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ], :py:obj:`OWLDataRestriction`
+
+   Represents DataHasValue restrictions in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_property'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3014
+
+      
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: as_some_values_from() -> owlapy.owl_class_expression.OWLClassExpression
+
+      A convenience method that obtains this restriction as an existential restriction with a nominal filler.
+
+      :returns: The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+.. py:class:: OWLObjectOneOf(values: Union[owlapy.owl_individual.OWLIndividual, Iterable[owlapy.owl_individual.OWLIndividual]])
+
+
+   Bases: :py:obj:`owlapy.owl_class_expression.OWLAnonymousClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
+
+   Represents an ObjectOneOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_values'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3004
+
+      
+
+   .. py:method:: individuals() -> Iterable[owlapy.owl_individual.OWLIndividual]
+
+      Gets the individuals that are in the oneOf. These individuals represent the exact instances (extension)
+      of this class expression.
+
+      :returns: The individuals that are the values of this {@code ObjectOneOf} class expression.
+
+
+   .. py:method:: operands() -> Iterable[owlapy.owl_individual.OWLIndividual]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: as_object_union_of() -> owlapy.owl_class_expression.OWLClassExpression
+
+      Simplifies this enumeration to a union of singleton nominals.
+
+      :returns: This enumeration in a more standard DL form.
+                simp({a}) = {a} simp({a0, ... , {an}) = unionOf({a0}, ... , {an})
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLDataOneOf(values: Union[owlapy.owl_literal.OWLLiteral, Iterable[owlapy.owl_literal.OWLLiteral]])
+
+
+   Bases: :py:obj:`owlapy.ranges.OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
+
+   Represents DataOneOf in the OWL 2 Specification.
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4003
+
+      
+
+   .. py:method:: values() -> Iterable[owlapy.owl_literal.OWLLiteral]
+
+      Gets the values that are in the oneOf.
+
+      :returns: The values of this {@code DataOneOf} class expression.
+
+
+   .. py:method:: operands() -> Iterable[owlapy.owl_literal.OWLLiteral]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLObjectHasValue(property: owlapy.owl_property.OWLObjectPropertyExpression, individual: owlapy.owl_individual.OWLIndividual)
+
+
+   Bases: :py:obj:`OWLHasValueRestriction`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ], :py:obj:`OWLObjectRestriction`
+
+   Represents an ObjectHasValue class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_property', '_v')
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3007
+
+      
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
+
+      :returns: Property being restricted.
+
+
+   .. py:method:: as_some_values_from() -> owlapy.owl_class_expression.OWLClassExpression
+
+      A convenience method that obtains this restriction as an existential restriction with a nominal filler.
+
+      :returns: The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLDatatypeRestriction(type_: owlapy.types.OWLDatatype, facet_restrictions: Union[OWLFacetRestriction, Iterable[OWLFacetRestriction]])
+
+
+   Bases: :py:obj:`owlapy.ranges.OWLDataRange`
+
+   Represents a DatatypeRestriction data range in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ('_type', '_facet_restrictions')
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4006
+
+      
+
+   .. py:method:: get_datatype() -> owlapy.types.OWLDatatype
+
+
+   .. py:method:: get_facet_restrictions() -> Sequence[OWLFacetRestriction]
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLFacetRestriction(facet: owlapy.vocab.OWLFacet, literal: Literals)
+
+
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+
+   A facet restriction is used to restrict a particular datatype.
+
+   .. py:attribute:: __slots__
+      :value: ('_facet', '_literal')
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4007
+
+      
+
+   .. py:method:: get_facet() -> owlapy.vocab.OWLFacet
+
+
+   .. py:method:: get_facet_value() -> owlapy.owl_literal.OWLLiteral
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
 
 
 

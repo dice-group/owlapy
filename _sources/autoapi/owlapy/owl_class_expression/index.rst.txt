@@ -20,8 +20,21 @@ Classes
    owlapy.owl_class_expression.OWLNaryBooleanClassExpression
    owlapy.owl_class_expression.OWLObjectUnionOf
    owlapy.owl_class_expression.OWLObjectIntersectionOf
+   owlapy.owl_class_expression.OWLDataComplementOf
+   owlapy.owl_class_expression.OWLNaryDataRange
+   owlapy.owl_class_expression.OWLDataUnionOf
+   owlapy.owl_class_expression.OWLDataIntersectionOf
 
 
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owl_class_expression.OWLThing
+   owlapy.owl_class_expression.OWLNothing
 
 
 .. py:class:: OWLClassExpression
@@ -123,7 +136,7 @@ Classes
 .. py:class:: OWLObjectComplementOf(op: OWLClassExpression)
 
 
-   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
 
    Represents an ObjectComplementOf class expression in the OWL 2 Specification.
 
@@ -233,7 +246,7 @@ Classes
 .. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[OWLClassExpression])
 
 
-   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.has.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
 
    OWLNaryBooleanClassExpression.
 
@@ -303,4 +316,122 @@ Classes
 
       
 
+
+.. py:class:: OWLDataComplementOf(data_range: owlapy.ranges.OWLDataRange)
+
+
+   Bases: :py:obj:`owlapy.ranges.OWLDataRange`
+
+   Represents DataComplementOf in the OWL 2 Specification.
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4002
+
+      
+
+   .. py:method:: get_data_range() -> owlapy.ranges.OWLDataRange
+
+      :returns: The wrapped data range.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLNaryDataRange(operands: Iterable[owlapy.ranges.OWLDataRange])
+
+
+   Bases: :py:obj:`owlapy.ranges.OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.ranges.OWLDataRange`\ ]
+
+   OWLNaryDataRange.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: operands() -> Iterable[owlapy.ranges.OWLDataRange]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLDataUnionOf(operands: Iterable[owlapy.ranges.OWLDataRange])
+
+
+   Bases: :py:obj:`OWLNaryDataRange`
+
+   Represents a DataUnionOf data range in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4005
+
+      
+
+
+.. py:class:: OWLDataIntersectionOf(operands: Iterable[owlapy.ranges.OWLDataRange])
+
+
+   Bases: :py:obj:`OWLNaryDataRange`
+
+   Represents DataIntersectionOf  in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4004
+
+      
+
+
+.. py:data:: OWLThing
+   :type: Final
+
+   
+
+.. py:data:: OWLNothing
+   :type: Final
+
+   
 

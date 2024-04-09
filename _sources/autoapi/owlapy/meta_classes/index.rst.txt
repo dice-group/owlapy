@@ -1,0 +1,109 @@
+:py:mod:`owlapy.meta_classes`
+=============================
+
+.. py:module:: owlapy.meta_classes
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.meta_classes.HasIRI
+   owlapy.meta_classes.HasOperands
+   owlapy.meta_classes.HasFiller
+   owlapy.meta_classes.HasCardinality
+
+
+
+
+.. py:class:: HasIRI
+
+
+   Simple class to access the IRI.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: get_iri() -> IRI
+      :abstractmethod:
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+
+.. py:class:: HasOperands
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+   An interface to objects that have a collection of operands.
+
+   :param _T: Operand type.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: operands() -> Iterable[_T]
+      :abstractmethod:
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+
+.. py:class:: HasFiller
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+   An interface to objects that have a filler.
+
+   :param _T: Filler type.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: get_filler() -> _T
+      :abstractmethod:
+
+      Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
+      the case of a data restriction this will be a constant (data value). For quantified restriction this will be
+      a class expression or a data range.
+
+      :returns: the value
+
+
+
+.. py:class:: HasCardinality
+
+
+   An interface to objects that have a cardinality.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: get_cardinality() -> int
+      :abstractmethod:
+
+      Gets the cardinality of a restriction.
+
+      :returns: The cardinality. A non-negative integer.
+
+
+

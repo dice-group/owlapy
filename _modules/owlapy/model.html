@@ -77,7 +77,6 @@
              
   <h1>Source code for owlapy.model</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">Timedelta</span>
@@ -86,25 +85,25 @@
 <span class="kn">from</span> <span class="nn">owlapy.owlobject</span> <span class="kn">import</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_annotation</span> <span class="kn">import</span> <span class="n">OWLAnnotationObject</span><span class="p">,</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span>
 <span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span> <span class="nn">owlapy.has</span> <span class="kn">import</span> <span class="n">HasIndex</span><span class="p">,</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">,</span> <span class="n">HasFiller</span><span class="p">,</span> <span class="n">HasCardinality</span>
+<span class="kn">from</span> <span class="nn">owlapy.has</span> <span class="kn">import</span> <span class="n">HasIndex</span>
+<span class="kn">from</span> <span class="nn">owlapy.meta_classes</span> <span class="kn">import</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">,</span> <span class="n">HasFiller</span><span class="p">,</span> <span class="n">HasCardinality</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_class_expression</span> <span class="kn">import</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> \
     <span class="n">OWLAnonymousClassExpression</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> \
-    <span class="n">OWLObjectIntersectionOf</span>
+    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLThing</span><span class="p">,</span> <span class="n">OWLNothing</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">,</span> <span class="n">OWLPropertyExpression</span><span class="p">,</span> \
     <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_restriction</span> <span class="kn">import</span> <span class="p">(</span><span class="n">OWLRestriction</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span>
                                     <span class="n">OWLQuantifiedRestriction</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span>
                                     <span class="n">OWLObjectRestriction</span><span class="p">,</span> <span class="n">OWLHasValueRestriction</span><span class="p">,</span> <span class="n">OWLDataRestriction</span><span class="p">,</span>
                                     <span class="n">OWLCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span><span class="n">OWLDataAllValuesFrom</span><span class="p">,</span>
-                                    <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span><span class="n">OWLDataExactCardinality</span><span class="p">)</span>
+                                    <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span><span class="n">OWLDataExactCardinality</span><span class="p">,</span><span class="n">OWLDataMinCardinality</span><span class="p">,</span>
+                                    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span><span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span><span class="n">OWLDataHasValue</span><span class="p">,</span><span class="n">OWLDataOneOf</span><span class="p">,</span><span class="n">OWLQuantifiedDataRestriction</span><span class="p">,</span><span class="n">OWLDataCardinalityRestriction</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">OWLIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="p">(</span><span class="n">OWLEquivalentClassesAxiom</span><span class="p">,</span> <span class="n">OWLClassAxiom</span><span class="p">,</span>
                               <span class="n">OWLDataPropertyDomainAxiom</span><span class="p">,</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyRangeAxiom</span><span class="p">,</span>
                               <span class="n">OWLObjectPropertyDomainAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyRangeAxiom</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">owlapy.types</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_data</span> <span class="kn">import</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">,</span><span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span><span class="n">OWLDataUnionOf</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_data</span> <span class="kn">import</span> <span class="n">OWLNaryDataRange</span><span class="p">,</span> <span class="n">OWLQuantifiedDataRestriction</span><span class="p">,</span> <span class="n">OWLDataCardinalityRestriction</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
 
 
@@ -117,122 +116,6 @@
 <span class="n">Literals</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;OWLLiteral&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Timedelta</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>  <span class="c1">#:</span>
 <span class="n">_M</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_M&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OWLOntologyManager&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
 
-
-<div class="viewcode-block" id="OWLObjectHasValue">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectHasValue">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectHasValue</span><span class="p">(</span><span class="n">OWLHasValueRestriction</span><span class="p">[</span><span class="n">OWLIndividual</span><span class="p">],</span> <span class="n">OWLObjectRestriction</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an ObjectHasValue class expression in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_property&#39;</span><span class="p">,</span> <span class="s1">&#39;_v&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">3007</span>
-
-    <span class="n">_property</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span>
-    <span class="n">_v</span><span class="p">:</span> <span class="n">OWLIndividual</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">individual</span><span class="p">:</span> <span class="n">OWLIndividual</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
-<span class="sd">            property: The property that the restriction acts along.</span>
-<span class="sd">            individual: Individual for restriction.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A HasValue restriction with specified property and value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">individual</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_property</span> <span class="o">=</span> <span class="nb">property</span>
-
-<div class="viewcode-block" id="OWLObjectHasValue.get_property">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectHasValue.get_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectHasValue.as_some_values_from">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectHasValue.as_some_values_from">[docs]</a>
-    <span class="k">def</span> <span class="nf">as_some_values_from</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that obtains this restriction as an existential restriction with a nominal filler.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectHasValue.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectHasValue.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLObjectHasValue(property=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span><span class="si">}</span><span class="s1">, individual=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_v</span><span class="si">}</span><span class="s1">)&#39;</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLObjectOneOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectOneOf">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectOneOf</span><span class="p">(</span><span class="n">OWLAnonymousClassExpression</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">[</span><span class="n">OWLIndividual</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an ObjectOneOf class expression in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_values&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">3004</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLIndividual</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLIndividual</span><span class="p">]]):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">OWLIndividual</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span><span class="p">,</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">OWLIndividual</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-
-<div class="viewcode-block" id="OWLObjectOneOf.individuals">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectOneOf.individuals">[docs]</a>
-    <span class="k">def</span> <span class="nf">individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the individuals that are in the oneOf. These individuals represent the exact instances (extension)</span>
-<span class="sd">         of this class expression.</span>
-
-<span class="sd">         Returns:</span>
-<span class="sd">             The individuals that are the values of this {@code ObjectOneOf} class expression.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectOneOf.operands">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectOneOf.operands">[docs]</a>
-    <span class="k">def</span> <span class="nf">operands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLIndividual</span><span class="p">]:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectOneOf.as_object_union_of">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectOneOf.as_object_union_of">[docs]</a>
-    <span class="k">def</span> <span class="nf">as_object_union_of</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simplifies this enumeration to a union of singleton nominals.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            This enumeration in a more standard DL form.</span>
-<span class="sd">            simp({a}) = {a} simp({a0, ... , {an}) = unionOf({a0}, ... , {an})</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span>
-        <span class="k">return</span> <span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">_</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span><span class="p">()))</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectOneOf.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectOneOf.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectOneOf.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectOneOf.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_values</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
-
-
-<div class="viewcode-block" id="OWLObjectOneOf.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLObjectOneOf.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLObjectOneOf(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="si">}</span><span class="s1">)&#39;</span></div>
-</div>
 
 
 
@@ -318,111 +201,6 @@
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 </div>
 
-
-
-<div class="viewcode-block" id="OWLDatatypeRestriction">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDatatypeRestriction">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">OWLDataRange</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a DatatypeRestriction data range in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_type&#39;</span><span class="p">,</span> <span class="s1">&#39;_facet_restrictions&#39;</span>
-
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">4006</span>
-
-    <span class="n">_type</span><span class="p">:</span> <span class="n">OWLDatatype</span>
-    <span class="n">_facet_restrictions</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">,</span>
-    <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]]):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="n">type_</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">):</span>
-            <span class="n">facet_restrictions</span> <span class="o">=</span> <span class="n">facet_restrictions</span><span class="p">,</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">facet_restrictions</span><span class="p">)</span>
-
-<div class="viewcode-block" id="OWLDatatypeRestriction.get_datatype">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDatatypeRestriction.get_datatype">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatype</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span></div>
-
-
-<div class="viewcode-block" id="OWLDatatypeRestriction.get_facet_restrictions">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDatatypeRestriction.get_facet_restrictions">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_facet_restrictions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="s1">&#39;OWLFacetRestriction&#39;</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span></div>
-
-
-<div class="viewcode-block" id="OWLDatatypeRestriction.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDatatypeRestriction.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_type</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_facet_restrictions</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
-
-
-<div class="viewcode-block" id="OWLDatatypeRestriction.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDatatypeRestriction.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="OWLDatatypeRestriction.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLDatatypeRestriction.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLDatatypeRestriction(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="p">)</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_facet_restrictions</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLFacetRestriction">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLFacetRestriction">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLFacetRestriction</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A facet restriction is used to restrict a particular datatype.&quot;&quot;&quot;</span>
-
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_facet&#39;</span><span class="p">,</span> <span class="s1">&#39;_literal&#39;</span>
-
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">4007</span>
-
-    <span class="n">_facet</span><span class="p">:</span> <span class="n">OWLFacet</span>
-    <span class="n">_literal</span><span class="p">:</span> <span class="s1">&#39;OWLLiteral&#39;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">facet</span><span class="p">:</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">literal</span><span class="p">:</span> <span class="n">Literals</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_facet</span> <span class="o">=</span> <span class="n">facet</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">literal</span><span class="p">,</span> <span class="n">OWLLiteral</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_literal</span> <span class="o">=</span> <span class="n">literal</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_literal</span> <span class="o">=</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">literal</span><span class="p">)</span>
-
-<div class="viewcode-block" id="OWLFacetRestriction.get_facet">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLFacetRestriction.get_facet">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_facet</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLFacet</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet</span></div>
-
-
-<div class="viewcode-block" id="OWLFacetRestriction.get_facet_value">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLFacetRestriction.get_facet_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_facet_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLLiteral&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_literal</span></div>
-
-
-<div class="viewcode-block" id="OWLFacetRestriction.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLFacetRestriction.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facet</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_facet</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_literal</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_literal</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
-
-
-<div class="viewcode-block" id="OWLFacetRestriction.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLFacetRestriction.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_facet</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_literal</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="OWLFacetRestriction.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/model/index.html#owlapy.model.OWLFacetRestriction.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLFacetRestriction(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_facet</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_literal</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span></div>
-</div>
 
 
 
@@ -1252,8 +1030,7 @@
 
 <span class="sd">&quot;&quot;&quot;Important constant objects section&quot;&quot;&quot;</span>
 <span class="c1"># @TODO: Some of them must be removed from here as they are defined under owl literal</span>
-<span class="n">OWLThing</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_THING</span><span class="o">.</span><span class="n">get_iri</span><span class="p">())</span>  <span class="c1">#: : :The OWL Class corresponding to owl:Thing</span>
-<span class="n">OWLNothing</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NOTHING</span><span class="o">.</span><span class="n">get_iri</span><span class="p">())</span>  <span class="c1">#: : :The OWL Class corresponding to owl:Nothing</span>
+
 <span class="c1">#: the built in top object property</span>
 <span class="n">OWLTopObjectProperty</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_TOP_OBJECT_PROPERTY</span><span class="o">.</span><span class="n">get_iri</span><span class="p">())</span>
 <span class="c1">#: the built in bottom object property</span>
