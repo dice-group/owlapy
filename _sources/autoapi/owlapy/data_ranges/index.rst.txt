@@ -1,0 +1,469 @@
+:py:mod:`owlapy.data_ranges`
+============================
+
+.. py:module:: owlapy.data_ranges
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.data_ranges.OWLObject
+   owlapy.data_ranges.OWLEntity
+   owlapy.data_ranges.HasOperands
+   owlapy.data_ranges.OWLPropertyRange
+   owlapy.data_ranges.OWLDataRange
+   owlapy.data_ranges.OWLLiteral
+   owlapy.data_ranges.IRI
+   owlapy.data_ranges.OWLDataComplementOf
+   owlapy.data_ranges.OWLNaryDataRange
+   owlapy.data_ranges.OWLDataUnionOf
+   owlapy.data_ranges.OWLDataIntersectionOf
+
+
+
+
+.. py:class:: OWLObject
+
+
+   Base interface for OWL objects
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: __eq__(other)
+      :abstractmethod:
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+      :abstractmethod:
+
+      Return hash(self).
+
+
+   .. py:method:: __repr__()
+      :abstractmethod:
+
+      Return repr(self).
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+
+.. py:class:: OWLEntity
+
+
+   Bases: :py:obj:`OWLNamedObject`
+
+   Represents Entities in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: to_string_id() -> str
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+
+.. py:class:: HasOperands
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+   An interface to objects that have a collection of operands.
+
+   :param _T: Operand type.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: operands() -> Iterable[_T]
+      :abstractmethod:
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+
+.. py:class:: OWLPropertyRange
+
+
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+
+   OWL Objects that can be the ranges of properties.
+
+
+.. py:class:: OWLDataRange
+
+
+   Bases: :py:obj:`OWLPropertyRange`
+
+   Represents a DataRange in the OWL 2 Specification.
+
+
+.. py:class:: OWLLiteral
+
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+   Represents a Literal in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4008
+
+      
+
+   .. py:method:: get_literal() -> str
+
+      Gets the lexical value of this literal. Note that the language tag is not included.
+
+      :returns: The lexical value of this literal.
+
+
+   .. py:method:: is_boolean() -> bool
+
+      Whether this literal is typed as boolean.
+
+
+   .. py:method:: parse_boolean() -> bool
+
+      Parses the lexical value of this literal into a bool. The lexical value of this literal should be in the
+      lexical space of the boolean datatype ("http://www.w3.org/2001/XMLSchema#boolean").
+
+      :returns: A bool value that is represented by this literal.
+
+
+   .. py:method:: is_double() -> bool
+
+      Whether this literal is typed as double.
+
+
+   .. py:method:: parse_double() -> float
+
+      Parses the lexical value of this literal into a double. The lexical value of this literal should be in the
+      lexical space of the double datatype ("http://www.w3.org/2001/XMLSchema#double").
+
+      :returns: A double value that is represented by this literal.
+
+
+   .. py:method:: is_integer() -> bool
+
+      Whether this literal is typed as integer.
+
+
+   .. py:method:: parse_integer() -> int
+
+      Parses the lexical value of this literal into an integer. The lexical value of this literal should be in the
+      lexical space of the integer datatype ("http://www.w3.org/2001/XMLSchema#integer").
+
+      :returns: An integer value that is represented by this literal.
+
+
+   .. py:method:: is_string() -> bool
+
+      Whether this literal is typed as string.
+
+
+   .. py:method:: parse_string() -> str
+
+      Parses the lexical value of this literal into a string. The lexical value of this literal should be in the
+      lexical space of the string datatype ("http://www.w3.org/2001/XMLSchema#string").
+
+      :returns: A string value that is represented by this literal.
+
+
+   .. py:method:: is_date() -> bool
+
+      Whether this literal is typed as date.
+
+
+   .. py:method:: parse_date() -> datetime.date
+
+      Parses the lexical value of this literal into a date. The lexical value of this literal should be in the
+      lexical space of the date datatype ("http://www.w3.org/2001/XMLSchema#date").
+
+      :returns: A date value that is represented by this literal.
+
+
+   .. py:method:: is_datetime() -> bool
+
+      Whether this literal is typed as dateTime.
+
+
+   .. py:method:: parse_datetime() -> datetime.datetime
+
+      Parses the lexical value of this literal into a datetime. The lexical value of this literal should be in the
+      lexical space of the dateTime datatype ("http://www.w3.org/2001/XMLSchema#dateTime").
+
+      :returns: A datetime value that is represented by this literal.
+
+
+   .. py:method:: is_duration() -> bool
+
+      Whether this literal is typed as duration.
+
+
+   .. py:method:: parse_duration() -> pandas.Timedelta
+
+      Parses the lexical value of this literal into a Timedelta. The lexical value of this literal should be in the
+      lexical space of the duration datatype ("http://www.w3.org/2001/XMLSchema#duration").
+
+      :returns: A Timedelta value that is represented by this literal.
+
+
+   .. py:method:: is_literal() -> bool
+
+      :returns: true if the annotation value is a literal
+
+
+   .. py:method:: as_literal() -> OWLLiteral
+
+      :returns: if the value is a literal, returns it. Return None otherwise
+
+
+   .. py:method:: to_python() -> Literals
+
+
+   .. py:method:: get_datatype() -> owlapy.types.OWLDatatype
+      :abstractmethod:
+
+      Gets the OWLDatatype which types this literal.
+
+      :returns: The OWLDatatype that types this literal.
+
+
+
+.. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
+
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+   An IRI, consisting of a namespace and a remainder.
+
+   .. py:property:: str
+      :type: str
+
+      Returns:
+      The string that specifies the IRI.
+
+   .. py:property:: reminder
+      :type: str
+
+      Returns:
+      The string corresponding to the reminder of the IRI.
+
+   .. py:attribute:: __slots__
+      :value: ('_namespace', '_remainder', '__weakref__')
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 0
+
+      
+
+   .. py:method:: create(namespace: owlapy.namespaces.Namespaces, remainder: str) -> IRI
+                  create(namespace: str, remainder: str) -> IRI
+                  create(string: str) -> IRI
+      :staticmethod:
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+   .. py:method:: is_nothing()
+
+      Determines if this IRI is equal to the IRI that owl:Nothing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
+
+
+   .. py:method:: is_thing()
+
+      Determines if this IRI is equal to the IRI that owl:Thing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
+
+
+   .. py:method:: is_reserved_vocabulary() -> bool
+
+      Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with
+      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> or <http://www.w3.org/2000/01/rdf-schema#> or
+      <http://www.w3.org/2001/XMLSchema#> or <http://www.w3.org/2002/07/owl#>.
+
+      :returns: True if the IRI is in the reserved vocabulary, otherwise False.
+
+
+   .. py:method:: as_iri() -> IRI
+
+      :returns: if the value is an IRI, return it. Return Mone otherwise.
+
+
+   .. py:method:: as_str() -> str
+
+      CD: Should be deprecated.
+      :returns: The string that specifies the IRI.
+
+
+   .. py:method:: get_short_form() -> str
+
+      Gets the short form.
+
+      :returns: A string that represents the short form.
+
+
+   .. py:method:: get_namespace() -> str
+
+      :returns: The namespace as string.
+
+
+   .. py:method:: get_remainder() -> str
+
+      :returns: The remainder (coincident with NCName usually) for this IRI.
+
+
+
+.. py:class:: OWLDataComplementOf(data_range: owlapy.ranges.OWLDataRange)
+
+
+   Bases: :py:obj:`owlapy.ranges.OWLDataRange`
+
+   Represents DataComplementOf in the OWL 2 Specification.
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4002
+
+      
+
+   .. py:method:: get_data_range() -> owlapy.ranges.OWLDataRange
+
+      :returns: The wrapped data range.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLNaryDataRange(operands: Iterable[owlapy.ranges.OWLDataRange])
+
+
+   Bases: :py:obj:`owlapy.ranges.OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.ranges.OWLDataRange`\ ]
+
+   OWLNaryDataRange.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: operands() -> Iterable[owlapy.ranges.OWLDataRange]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLDataUnionOf(operands: Iterable[owlapy.ranges.OWLDataRange])
+
+
+   Bases: :py:obj:`OWLNaryDataRange`
+
+   Represents a DataUnionOf data range in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4005
+
+      
+
+
+.. py:class:: OWLDataIntersectionOf(operands: Iterable[owlapy.ranges.OWLDataRange])
+
+
+   Bases: :py:obj:`OWLNaryDataRange`
+
+   Represents DataIntersectionOf  in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 4004
+
+      
+
+
