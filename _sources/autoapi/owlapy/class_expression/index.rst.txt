@@ -11,6 +11,7 @@ Submodules
    :maxdepth: 1
 
    class_expression/index.rst
+   nary_boolean_expression/index.rst
    owl_class/index.rst
 
 
@@ -27,8 +28,21 @@ Classes
    owlapy.class_expression.OWLBooleanClassExpression
    owlapy.class_expression.OWLObjectComplementOf
    owlapy.class_expression.OWLClass
+   owlapy.class_expression.OWLNaryBooleanClassExpression
+   owlapy.class_expression.OWLObjectUnionOf
+   owlapy.class_expression.OWLObjectIntersectionOf
+   owlapy.class_expression.OWLRDFVocabulary
 
 
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.class_expression.OWLThing
+   owlapy.class_expression.OWLNothing
 
 
 .. py:class:: OWLClassExpression
@@ -236,4 +250,141 @@ Classes
       :returns: A expression that represents the NNF of the complement of this expression.
 
 
+
+.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`\ ]
+
+   OWLNaryBooleanClassExpression.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: operands() -> Iterable[owlapy.class_expression.class_expression.OWLClassExpression]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLObjectUnionOf(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+
+   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
+   Represents an ObjectUnionOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3002
+
+      
+
+
+.. py:class:: OWLObjectIntersectionOf(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+
+   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
+   Represents an OWLObjectIntersectionOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3001
+
+      
+
+
+.. py:class:: OWLRDFVocabulary(namespace: owlapy.namespaces.Namespaces, remainder: str)
+
+
+   Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
+
+   Enumerations for OWL/RDF vocabulary.
+
+   .. py:attribute:: OWL_THING
+      :value: ()
+
+      
+
+   .. py:attribute:: OWL_NOTHING
+      :value: ()
+
+      
+
+   .. py:attribute:: OWL_CLASS
+      :value: ()
+
+      
+
+   .. py:attribute:: OWL_NAMED_INDIVIDUAL
+      :value: ()
+
+      
+
+   .. py:attribute:: OWL_TOP_OBJECT_PROPERTY
+      :value: ()
+
+      
+
+   .. py:attribute:: OWL_BOTTOM_OBJECT_PROPERTY
+      :value: ()
+
+      
+
+   .. py:attribute:: OWL_TOP_DATA_PROPERTY
+      :value: ()
+
+      
+
+   .. py:attribute:: OWL_BOTTOM_DATA_PROPERTY
+      :value: ()
+
+      
+
+   .. py:attribute:: RDFS_LITERAL
+      :value: ()
+
+      
+
+
+.. py:data:: OWLThing
+   :type: Final
+
+   
+
+.. py:data:: OWLNothing
+   :type: Final
+
+   
 

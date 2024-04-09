@@ -87,17 +87,23 @@
 <span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
 <span class="kn">from</span> <span class="nn">owlapy.has</span> <span class="kn">import</span> <span class="n">HasIndex</span>
 <span class="kn">from</span> <span class="nn">owlapy.meta_classes</span> <span class="kn">import</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">,</span> <span class="n">HasFiller</span><span class="p">,</span> <span class="n">HasCardinality</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_class_expression</span> <span class="kn">import</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> \
-    <span class="n">OWLAnonymousClassExpression</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> \
-    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLThing</span><span class="p">,</span> <span class="n">OWLNothing</span>
+<span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> \
+    <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span>
+<span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLThing</span><span class="p">,</span> <span class="n">OWLNothing</span><span class="p">,</span> <span class="n">OWLClass</span>
+
+<span class="kn">from</span> <span class="nn">owlapy.owl_class_expression</span> <span class="kn">import</span> <span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">OWLDataRange</span>
+
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">,</span> <span class="n">OWLPropertyExpression</span><span class="p">,</span> \
     <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_restriction</span> <span class="kn">import</span> <span class="p">(</span><span class="n">OWLRestriction</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span>
                                     <span class="n">OWLQuantifiedRestriction</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span>
                                     <span class="n">OWLObjectRestriction</span><span class="p">,</span> <span class="n">OWLHasValueRestriction</span><span class="p">,</span> <span class="n">OWLDataRestriction</span><span class="p">,</span>
-                                    <span class="n">OWLCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span><span class="n">OWLDataAllValuesFrom</span><span class="p">,</span>
-                                    <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span><span class="n">OWLDataExactCardinality</span><span class="p">,</span><span class="n">OWLDataMinCardinality</span><span class="p">,</span>
-                                    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span><span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span><span class="n">OWLDataHasValue</span><span class="p">,</span><span class="n">OWLDataOneOf</span><span class="p">,</span><span class="n">OWLQuantifiedDataRestriction</span><span class="p">,</span><span class="n">OWLDataCardinalityRestriction</span><span class="p">)</span>
+                                    <span class="n">OWLCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span>
+                                    <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span>
+                                    <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span>
+                                    <span class="n">OWLDataExactCardinality</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span>
+                                    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span>
+                                    <span class="n">OWLQuantifiedDataRestriction</span><span class="p">,</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">OWLIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="p">(</span><span class="n">OWLEquivalentClassesAxiom</span><span class="p">,</span> <span class="n">OWLClassAxiom</span><span class="p">,</span>
@@ -105,7 +111,6 @@
                               <span class="n">OWLObjectPropertyDomainAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyRangeAxiom</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">owlapy.types</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
-
 
 <span class="n">MOVE</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLAnnotationObject</span><span class="p">,</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span><span class="p">,</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">IRI</span><span class="p">)</span>
 
@@ -115,8 +120,6 @@
 <span class="n">_R</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_R&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OWLPropertyRange&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
 <span class="n">Literals</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;OWLLiteral&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Timedelta</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>  <span class="c1">#:</span>
 <span class="n">_M</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_M&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OWLOntologyManager&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
-
-
 
 
 <div class="viewcode-block" id="OWLOntologyID">
@@ -200,7 +203,6 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology_iri</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_ontology_iri</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version_iri</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_version_iri</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 </div>
-
 
 
 

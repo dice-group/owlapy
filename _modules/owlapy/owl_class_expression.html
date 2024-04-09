@@ -83,81 +83,9 @@
 <span class="kn">from</span> <span class="nn">.ranges</span> <span class="kn">import</span> <span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">OWLDataRange</span>
 <span class="kn">from</span> <span class="nn">.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">.owl_property</span> <span class="kn">import</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
 <span class="kn">from</span> <span class="nn">.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLRDFVocabulary</span><span class="p">,</span> <span class="n">XSDVocabulary</span>
-
-<span class="kn">from</span> <span class="nn">.class_expression</span> <span class="kn">import</span> <span class="p">(</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLAnonymousClassExpression</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">,</span>
-                               <span class="n">OWLObjectComplementOf</span><span class="p">,</span><span class="n">OWLClass</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="OWLNaryBooleanClassExpression">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryBooleanClassExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLNaryBooleanClassExpression</span><span class="p">(</span><span class="n">OWLBooleanClassExpression</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;OWLNaryBooleanClassExpression.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-    <span class="n">_operands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operands</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
-<span class="sd">            operands: Class expressions.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">operands</span><span class="p">)</span>
-
-<div class="viewcode-block" id="OWLNaryBooleanClassExpression.operands">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryBooleanClassExpression.operands">[docs]</a>
-    <span class="k">def</span> <span class="nf">operands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-        <span class="c1"># documented in parent</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span></div>
-
-
-<div class="viewcode-block" id="OWLNaryBooleanClassExpression.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryBooleanClassExpression.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span></div>
-
-
-<div class="viewcode-block" id="OWLNaryBooleanClassExpression.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryBooleanClassExpression.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_operands</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
-
-
-<div class="viewcode-block" id="OWLNaryBooleanClassExpression.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryBooleanClassExpression.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">)</span></div>
-</div>
-
-
-<div class="viewcode-block" id="OWLObjectUnionOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLObjectUnionOf">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectUnionOf</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an ObjectUnionOf class expression in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_operands&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">3002</span>
-
-    <span class="n">_operands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="OWLObjectIntersectionOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLObjectIntersectionOf">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an OWLObjectIntersectionOf class expression in the OWL 2 Specification.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_operands&#39;</span>
-    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">3001</span>
-
-    <span class="n">_operands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span></div>
-
-
-
 <div class="viewcode-block" id="OWLDataComplementOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLDataComplementOf">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLDataComplementOf">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLDataComplementOf</span><span class="p">(</span><span class="n">OWLDataRange</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents DataComplementOf in the OWL 2 Specification.&quot;&quot;&quot;</span>
     <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">4002</span>
@@ -172,7 +100,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_range</span> <span class="o">=</span> <span class="n">data_range</span>
 
 <div class="viewcode-block" id="OWLDataComplementOf.get_data_range">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLDataComplementOf.get_data_range">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLDataComplementOf.get_data_range">[docs]</a>
     <span class="k">def</span> <span class="nf">get_data_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
@@ -182,13 +110,13 @@
 
 
 <div class="viewcode-block" id="OWLDataComplementOf.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLDataComplementOf.__repr__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLDataComplementOf.__repr__">[docs]</a>
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OWLDataComplementOf(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_range</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 
 <div class="viewcode-block" id="OWLDataComplementOf.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLDataComplementOf.__eq__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLDataComplementOf.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_range</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_data_range</span>
@@ -196,14 +124,14 @@
 
 
 <div class="viewcode-block" id="OWLDataComplementOf.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLDataComplementOf.__hash__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLDataComplementOf.__hash__">[docs]</a>
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_range</span><span class="p">)</span></div>
 </div>
 
 
 <div class="viewcode-block" id="OWLNaryDataRange">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryDataRange">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLNaryDataRange">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLNaryDataRange</span><span class="p">(</span><span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OWLNaryDataRange.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
@@ -218,20 +146,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">operands</span><span class="p">)</span>
 
 <div class="viewcode-block" id="OWLNaryDataRange.operands">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryDataRange.operands">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLNaryDataRange.operands">[docs]</a>
     <span class="k">def</span> <span class="nf">operands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span></div>
 
 
 <div class="viewcode-block" id="OWLNaryDataRange.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryDataRange.__repr__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLNaryDataRange.__repr__">[docs]</a>
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span></div>
 
 
 <div class="viewcode-block" id="OWLNaryDataRange.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryDataRange.__eq__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLNaryDataRange.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_operands</span>
@@ -239,13 +167,14 @@
 
 
 <div class="viewcode-block" id="OWLNaryDataRange.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLNaryDataRange.__hash__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLNaryDataRange.__hash__">[docs]</a>
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">)</span></div>
 </div>
 
+
 <div class="viewcode-block" id="OWLDataUnionOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLDataUnionOf">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLDataUnionOf">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLDataUnionOf</span><span class="p">(</span><span class="n">OWLNaryDataRange</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a DataUnionOf data range in the OWL 2 Specification.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_operands&#39;</span>
@@ -253,8 +182,9 @@
 
     <span class="n">_operands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]</span></div>
 
+
 <div class="viewcode-block" id="OWLDataIntersectionOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.model.OWLDataIntersectionOf">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_class_expression/index.html#owlapy.owl_class_expression.OWLDataIntersectionOf">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">OWLNaryDataRange</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents DataIntersectionOf  in the OWL 2 Specification.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_operands&#39;</span>
@@ -263,9 +193,6 @@
     <span class="n">_operands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]</span></div>
 
 
-
-<span class="n">OWLThing</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_THING</span><span class="o">.</span><span class="n">get_iri</span><span class="p">())</span>  <span class="c1">#: : :The OWL Class corresponding to owl:Thing</span>
-<span class="n">OWLNothing</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NOTHING</span><span class="o">.</span><span class="n">get_iri</span><span class="p">())</span>  <span class="c1">#: : :The OWL Class corresponding to owl:Nothing</span>
 </pre></div>
 
            </div>

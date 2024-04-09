@@ -250,7 +250,7 @@ Classes
 
 
 
-.. py:class:: OWLHasKeyAxiom(class_expression: owlapy.owl_class_expression.OWLClassExpression, property_expressions: List[owlapy.owl_property.OWLPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLHasKeyAxiom(class_expression: owlapy.class_expression.OWLClassExpression, property_expressions: List[owlapy.owl_property.OWLPropertyExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLLogicalAxiom`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_property.OWLPropertyExpression`\ ]
@@ -262,7 +262,7 @@ Classes
 
       
 
-   .. py:method:: get_class_expression() -> owlapy.owl_class_expression.OWLClassExpression
+   .. py:method:: get_class_expression() -> owlapy.class_expression.OWLClassExpression
 
 
    .. py:method:: get_property_expressions() -> List[owlapy.owl_property.OWLPropertyExpression]
@@ -312,10 +312,10 @@ Classes
 
 
 
-.. py:class:: OWLNaryClassAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLNaryClassAxiom(class_expressions: List[owlapy.class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLClassAxiom`, :py:obj:`OWLNaryAxiom`\ [\ :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ]
+   Bases: :py:obj:`OWLClassAxiom`, :py:obj:`OWLNaryAxiom`\ [\ :py:obj:`owlapy.class_expression.OWLClassExpression`\ ]
 
    Represents an axiom that contains two or more operands that could also be represented with
    multiple pairwise axioms.
@@ -325,7 +325,7 @@ Classes
 
       
 
-   .. py:method:: class_expressions() -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: class_expressions() -> Iterable[owlapy.class_expression.OWLClassExpression]
 
       Gets all of the top level class expressions that appear in this axiom.
 
@@ -356,7 +356,7 @@ Classes
 
 
 
-.. py:class:: OWLEquivalentClassesAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLEquivalentClassesAxiom(class_expressions: List[owlapy.class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLNaryClassAxiom`
@@ -377,11 +377,11 @@ Classes
    .. py:method:: contains_owl_thing() -> bool
 
 
-   .. py:method:: named_classes() -> Iterable[owlapy.owl_class_expression.OWLClass]
+   .. py:method:: named_classes() -> Iterable[owlapy.class_expression.OWLClass]
 
 
 
-.. py:class:: OWLDisjointClassesAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDisjointClassesAxiom(class_expressions: List[owlapy.class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLNaryClassAxiom`
@@ -574,7 +574,7 @@ Classes
       
 
 
-.. py:class:: OWLSubClassOfAxiom(sub_class: owlapy.owl_class_expression.OWLClassExpression, super_class: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLSubClassOfAxiom(sub_class: owlapy.class_expression.OWLClassExpression, super_class: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLClassAxiom`
@@ -586,10 +586,10 @@ Classes
 
       
 
-   .. py:method:: get_sub_class() -> owlapy.owl_class_expression.OWLClassExpression
+   .. py:method:: get_sub_class() -> owlapy.class_expression.OWLClassExpression
 
 
-   .. py:method:: get_super_class() -> owlapy.owl_class_expression.OWLClassExpression
+   .. py:method:: get_super_class() -> owlapy.class_expression.OWLClassExpression
 
 
    .. py:method:: __eq__(other)
@@ -608,7 +608,7 @@ Classes
 
 
 
-.. py:class:: OWLDisjointUnionAxiom(cls_: owlapy.owl_class_expression.OWLClass, class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDisjointUnionAxiom(cls_: owlapy.class_expression.OWLClass, class_expressions: List[owlapy.class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLClassAxiom`
@@ -620,10 +620,10 @@ Classes
 
       
 
-   .. py:method:: get_owl_class() -> owlapy.owl_class_expression.OWLClass
+   .. py:method:: get_owl_class() -> owlapy.class_expression.OWLClass
 
 
-   .. py:method:: get_class_expressions() -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: get_class_expressions() -> Iterable[owlapy.class_expression.OWLClassExpression]
 
 
    .. py:method:: get_owl_equivalent_classes_axiom() -> OWLEquivalentClassesAxiom
@@ -648,7 +648,7 @@ Classes
 
 
 
-.. py:class:: OWLClassAssertionAxiom(individual: owlapy.owl_individual.OWLIndividual, class_expression: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLClassAssertionAxiom(individual: owlapy.owl_individual.OWLIndividual, class_expression: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLIndividualAxiom`
@@ -663,7 +663,7 @@ Classes
    .. py:method:: get_individual() -> owlapy.owl_individual.OWLIndividual
 
 
-   .. py:method:: get_class_expression() -> owlapy.owl_class_expression.OWLClassExpression
+   .. py:method:: get_class_expression() -> owlapy.class_expression.OWLClassExpression
 
 
    .. py:method:: __eq__(other)
@@ -1238,7 +1238,7 @@ Classes
       
 
 
-.. py:class:: OWLPropertyDomainAxiom(property_: _P, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLPropertyDomainAxiom(property_: _P, domain: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ ], :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`_P`\ ]
@@ -1250,7 +1250,7 @@ Classes
 
       
 
-   .. py:method:: get_domain() -> owlapy.owl_class_expression.OWLClassExpression
+   .. py:method:: get_domain() -> owlapy.class_expression.OWLClassExpression
 
 
    .. py:method:: __eq__(other)
@@ -1300,7 +1300,7 @@ Classes
 
 
 
-.. py:class:: OWLObjectPropertyDomainAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLObjectPropertyDomainAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, domain: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ]
@@ -1313,7 +1313,7 @@ Classes
       
 
 
-.. py:class:: OWLDataPropertyDomainAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDataPropertyDomainAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, domain: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ]
@@ -1326,10 +1326,10 @@ Classes
       
 
 
-.. py:class:: OWLObjectPropertyRangeAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, range_: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLObjectPropertyRangeAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, range_: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ]
+   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.class_expression.OWLClassExpression`\ ]
 
    Represents a ObjectPropertyRange axiom in the OWL 2 Specification.
 

@@ -35,16 +35,14 @@ Classes
    owlapy.model.HasOperands
    owlapy.model.HasFiller
    owlapy.model.HasCardinality
-   owlapy.model.OWLNaryBooleanClassExpression
    owlapy.model.OWLClassExpression
+   owlapy.model.OWLNaryBooleanClassExpression
+   owlapy.model.OWLObjectIntersectionOf
+   owlapy.model.OWLObjectUnionOf
    owlapy.model.OWLObjectComplementOf
-   owlapy.model.OWLAnonymousClassExpression
-   owlapy.model.OWLBooleanClassExpression
+   owlapy.model.OWLClass
    owlapy.model.OWLPropertyRange
    owlapy.model.OWLDataRange
-   owlapy.model.OWLClass
-   owlapy.model.OWLObjectUnionOf
-   owlapy.model.OWLObjectIntersectionOf
    owlapy.model.OWLObjectPropertyExpression
    owlapy.model.OWLProperty
    owlapy.model.OWLPropertyExpression
@@ -660,42 +658,6 @@ Attributes
 
 
 
-.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[owlapy.class_expression.OWLClassExpression])
-
-
-   Bases: :py:obj:`owlapy.class_expression.OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.class_expression.OWLClassExpression`\ ]
-
-   OWLNaryBooleanClassExpression.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-   .. py:method:: operands() -> Iterable[owlapy.class_expression.OWLClassExpression]
-
-      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
-      classes axiom.
-
-      :returns: The operands.
-
-
-   .. py:method:: __repr__()
-
-      Return repr(self).
-
-
-   .. py:method:: __eq__(other)
-
-      Return self==value.
-
-
-   .. py:method:: __hash__()
-
-      Return hash(self).
-
-
-
 .. py:class:: OWLClassExpression
 
 
@@ -740,6 +702,80 @@ Attributes
 
       :returns: A expression that represents the NNF of the complement of this expression.
 
+
+
+.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`\ ]
+
+   OWLNaryBooleanClassExpression.
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+      
+
+   .. py:method:: operands() -> Iterable[owlapy.class_expression.class_expression.OWLClassExpression]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLObjectIntersectionOf(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+
+   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
+   Represents an OWLObjectIntersectionOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3001
+
+      
+
+
+.. py:class:: OWLObjectUnionOf(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+
+   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
+   Represents an ObjectUnionOf class expression in the OWL 2 Specification.
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+      
+
+   .. py:attribute:: type_index
+      :type: Final
+      :value: 3002
+
+      
 
 
 .. py:class:: OWLObjectComplementOf(op: OWLClassExpression)
@@ -789,71 +825,15 @@ Attributes
 
 
 
-.. py:class:: OWLAnonymousClassExpression
+.. py:data:: OWLThing
+   :type: Final
 
+   
 
-   Bases: :py:obj:`OWLClassExpression`
+.. py:data:: OWLNothing
+   :type: Final
 
-   A Class Expression which is not a named Class.
-
-   .. py:method:: is_owl_nothing() -> bool
-
-      Determines if this expression is the built in class owl:Nothing. This method does not determine if the class
-      is equivalent to owl:Nothing.
-
-
-   .. py:method:: is_owl_thing() -> bool
-
-      Determines if this expression is the built in class owl:Thing. This method does not determine if the class
-      is equivalent to owl:Thing.
-
-      :returns: Thing.
-      :rtype: True if this expression is owl
-
-
-   .. py:method:: get_object_complement_of() -> OWLObjectComplementOf
-
-      Gets the object complement of this class expression.
-
-      :returns: A class expression that is the complement of this class expression.
-
-
-   .. py:method:: get_nnf() -> OWLClassExpression
-
-      Gets the negation normal form of the complement of this expression.
-
-      :returns: A expression that represents the NNF of the complement of this expression.
-
-
-
-.. py:class:: OWLBooleanClassExpression
-
-
-   Bases: :py:obj:`OWLAnonymousClassExpression`
-
-   Represent an anonymous boolean class expression.
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
-
-.. py:class:: OWLPropertyRange
-
-
-   Bases: :py:obj:`owlapy.owlobject.OWLObject`
-
-   OWL Objects that can be the ranges of properties.
-
-
-.. py:class:: OWLDataRange
-
-
-   Bases: :py:obj:`OWLPropertyRange`
-
-   Represents a DataRange in the OWL 2 Specification.
-
+   
 
 .. py:class:: OWLClass(iri: Union[owlapy.iri.IRI, str])
 
@@ -918,53 +898,21 @@ Attributes
 
 
 
-.. py:class:: OWLObjectUnionOf(operands: Iterable[owlapy.class_expression.OWLClassExpression])
+.. py:class:: OWLPropertyRange
 
 
-   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+   Bases: :py:obj:`owlapy.owlobject.OWLObject`
 
-   Represents an ObjectUnionOf class expression in the OWL 2 Specification.
-
-   .. py:attribute:: __slots__
-      :value: '_operands'
-
-      
-
-   .. py:attribute:: type_index
-      :type: Final
-      :value: 3002
-
-      
+   OWL Objects that can be the ranges of properties.
 
 
-.. py:class:: OWLObjectIntersectionOf(operands: Iterable[owlapy.class_expression.OWLClassExpression])
+.. py:class:: OWLDataRange
 
 
-   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+   Bases: :py:obj:`OWLPropertyRange`
 
-   Represents an OWLObjectIntersectionOf class expression in the OWL 2 Specification.
+   Represents a DataRange in the OWL 2 Specification.
 
-   .. py:attribute:: __slots__
-      :value: '_operands'
-
-      
-
-   .. py:attribute:: type_index
-      :type: Final
-      :value: 3001
-
-      
-
-
-.. py:data:: OWLThing
-   :type: Final
-
-   
-
-.. py:data:: OWLNothing
-   :type: Final
-
-   
 
 .. py:class:: OWLObjectPropertyExpression
 
@@ -1164,7 +1112,7 @@ Attributes
 .. py:class:: OWLRestriction
 
 
-   Bases: :py:obj:`owlapy.owl_class_expression.OWLAnonymousClassExpression`
+   Bases: :py:obj:`owlapy.class_expression.OWLAnonymousClassExpression`
 
    Represents an Object Property Restriction or Data Property Restriction in the OWL 2 specification.
 
@@ -1194,7 +1142,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectAllValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
+.. py:class:: OWLObjectAllValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLQuantifiedObjectRestriction`
@@ -1233,7 +1181,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectSomeValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
+.. py:class:: OWLObjectSomeValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLQuantifiedObjectRestriction`
@@ -1287,10 +1235,10 @@ Attributes
       
 
 
-.. py:class:: OWLQuantifiedObjectRestriction(filler: owlapy.owl_class_expression.OWLClassExpression)
+.. py:class:: OWLQuantifiedObjectRestriction(filler: owlapy.class_expression.OWLClassExpression)
 
 
-   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ], :py:obj:`OWLObjectRestriction`
+   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.class_expression.OWLClassExpression`\ ], :py:obj:`OWLObjectRestriction`
 
    Represents a quantified object restriction.
 
@@ -1299,7 +1247,7 @@ Attributes
 
       
 
-   .. py:method:: get_filler() -> owlapy.owl_class_expression.OWLClassExpression
+   .. py:method:: get_filler() -> owlapy.class_expression.OWLClassExpression
 
       Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
       the case of a data restriction this will be a constant (data value). For quantified restriction this will be
@@ -1420,7 +1368,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectMinCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
+.. py:class:: OWLObjectMinCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -1439,10 +1387,10 @@ Attributes
       
 
 
-.. py:class:: OWLObjectCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
+.. py:class:: OWLObjectCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
 
 
-   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ], :py:obj:`OWLQuantifiedObjectRestriction`
+   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.class_expression.OWLClassExpression`\ ], :py:obj:`OWLQuantifiedObjectRestriction`
 
    Represents Object Property Cardinality Restrictions in the OWL 2 specification.
 
@@ -1550,7 +1498,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
+.. py:class:: OWLObjectMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -1569,7 +1517,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectExactCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.owl_class_expression.OWLClassExpression)
+.. py:class:: OWLObjectExactCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -1587,7 +1535,7 @@ Attributes
 
       
 
-   .. py:method:: as_intersection_of_min_max() -> owlapy.owl_class_expression.OWLObjectIntersectionOf
+   .. py:method:: as_intersection_of_min_max() -> owlapy.class_expression.OWLObjectIntersectionOf
 
       Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
 
@@ -1613,7 +1561,7 @@ Attributes
 
       
 
-   .. py:method:: as_intersection_of_min_max() -> owlapy.owl_class_expression.OWLObjectIntersectionOf
+   .. py:method:: as_intersection_of_min_max() -> owlapy.class_expression.OWLObjectIntersectionOf
 
       Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
 
@@ -1731,7 +1679,7 @@ Attributes
       Return hash(self).
 
 
-   .. py:method:: as_some_values_from() -> owlapy.owl_class_expression.OWLClassExpression
+   .. py:method:: as_some_values_from() -> owlapy.class_expression.OWLClassExpression
 
       A convenience method that obtains this restriction as an existential restriction with a nominal filler.
 
@@ -1888,7 +1836,7 @@ Attributes
       
 
 
-.. py:class:: OWLEquivalentClassesAxiom(class_expressions: List[owlapy.owl_class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLEquivalentClassesAxiom(class_expressions: List[owlapy.class_expression.OWLClassExpression], annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLNaryClassAxiom`
@@ -1909,7 +1857,7 @@ Attributes
    .. py:method:: contains_owl_thing() -> bool
 
 
-   .. py:method:: named_classes() -> Iterable[owlapy.owl_class_expression.OWLClass]
+   .. py:method:: named_classes() -> Iterable[owlapy.class_expression.OWLClass]
 
 
 
@@ -1926,7 +1874,7 @@ Attributes
       
 
 
-.. py:class:: OWLDataPropertyDomainAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDataPropertyDomainAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, domain: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ]
@@ -1980,7 +1928,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectPropertyDomainAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, domain: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLObjectPropertyDomainAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, domain: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ]
@@ -1993,10 +1941,10 @@ Attributes
       
 
 
-.. py:class:: OWLObjectPropertyRangeAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, range_: owlapy.owl_class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLObjectPropertyRangeAxiom(property_: owlapy.owl_property.OWLObjectPropertyExpression, range_: owlapy.class_expression.OWLClassExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.owl_class_expression.OWLClassExpression`\ ]
+   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.class_expression.OWLClassExpression`\ ]
 
    Represents a ObjectPropertyRange axiom in the OWL 2 Specification.
 
@@ -2272,7 +2220,7 @@ Attributes
 
       
 
-   .. py:method:: classes_in_signature() -> Iterable[owlapy.owl_class_expression.OWLClass]
+   .. py:method:: classes_in_signature() -> Iterable[owlapy.class_expression.OWLClass]
       :abstractmethod:
 
       Gets the classes in the signature of this object.
@@ -2304,7 +2252,7 @@ Attributes
       :returns: Individuals that are in the signature of this object.
 
 
-   .. py:method:: equivalent_classes_axioms(c: owlapy.owl_class_expression.OWLClass) -> Iterable[owlapy.owl_axiom.OWLEquivalentClassesAxiom]
+   .. py:method:: equivalent_classes_axioms(c: owlapy.class_expression.OWLClass) -> Iterable[owlapy.owl_axiom.OWLEquivalentClassesAxiom]
       :abstractmethod:
 
       Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.
@@ -2502,7 +2450,7 @@ Attributes
 
       
 
-   .. py:method:: data_property_domains(pe: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: data_property_domains(pe: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are the direct or indirect domains of this property with respect to the
@@ -2519,7 +2467,7 @@ Attributes
                 (Note, rdfs:Literal is the top datatype).
 
 
-   .. py:method:: object_property_domains(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: object_property_domains(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are the direct or indirect domains of this property with respect to the
@@ -2535,7 +2483,7 @@ Attributes
                 super_classes(ObjectSomeValuesFrom(pe owl:Thing), false) together with N if N is non-empty.
 
 
-   .. py:method:: object_property_ranges(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: object_property_ranges(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are the direct or indirect ranges of this property with respect to the
@@ -2552,7 +2500,7 @@ Attributes
                 if N is non-empty.
 
 
-   .. py:method:: equivalent_classes(ce: owlapy.owl_class_expression.OWLClassExpression, only_named: bool = True) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: equivalent_classes(ce: owlapy.class_expression.OWLClassExpression, only_named: bool = True) -> Iterable[owlapy.class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are equivalent to the specified class expression with respect to the set of
@@ -2567,7 +2515,7 @@ Attributes
                 bottom node, will be returned.
 
 
-   .. py:method:: disjoint_classes(ce: owlapy.owl_class_expression.OWLClassExpression, only_named: bool = True) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: disjoint_classes(ce: owlapy.class_expression.OWLClassExpression, only_named: bool = True) -> Iterable[owlapy.class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the class expressions that are disjoint with specified class expression with respect to the set of
@@ -2663,7 +2611,7 @@ Attributes
       the current root ontology specified by the changes.
 
 
-   .. py:method:: instances(ce: owlapy.owl_class_expression.OWLClassExpression, direct: bool = False) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
       :abstractmethod:
 
       Gets the individuals which are instances of the specified class expression.
@@ -2678,7 +2626,7 @@ Attributes
                 nothing returned.
 
 
-   .. py:method:: sub_classes(ce: owlapy.owl_class_expression.OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: sub_classes(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[owlapy.class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the set of named classes that are the strict (potentially direct) subclasses of the specified class
@@ -2785,7 +2733,7 @@ Attributes
       :returns: Iterable of super properties.
 
 
-   .. py:method:: types(ind: owlapy.owl_individual.OWLNamedIndividual, direct: bool = False) -> Iterable[owlapy.owl_class_expression.OWLClass]
+   .. py:method:: types(ind: owlapy.owl_individual.OWLNamedIndividual, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClass]
       :abstractmethod:
 
       Gets the named classes which are (potentially direct) types of the specified named individual.
@@ -2818,7 +2766,7 @@ Attributes
       Return True if this reasoner is using a triplestore to retrieve instances.
 
 
-   .. py:method:: super_classes(ce: owlapy.owl_class_expression.OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[owlapy.owl_class_expression.OWLClassExpression]
+   .. py:method:: super_classes(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[owlapy.class_expression.OWLClassExpression]
       :abstractmethod:
 
       Gets the stream of named classes that are the strict (potentially direct) super classes of the specified
