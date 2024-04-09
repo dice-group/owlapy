@@ -1,7 +1,7 @@
 from .owlobject import OWLObject, OWLEntity
 from .ranges import OWLDataRange
 from .iri import IRI
-from .has import HasIRI
+from .meta_classes import HasIRI
 from typing import Final, Union
 
 class OWLDatatype(OWLEntity, OWLDataRange):

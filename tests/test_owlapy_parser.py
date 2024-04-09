@@ -4,16 +4,17 @@ from datetime import date, datetime, timedelta, timezone
 from pandas import Timedelta
 from owlapy.owl_property import OWLObjectInverseOf
 
-from owlapy.model import OWLObjectMinCardinality, OWLObjectSomeValuesFrom, \
-    OWLObjectUnionOf, DoubleOWLDatatype, IntegerOWLDatatype, OWLClass, IRI, OWLDataAllValuesFrom, \
-    OWLDataIntersectionOf, OWLDataOneOf, OWLDataProperty, OWLDataSomeValuesFrom, OWLDatatypeRestriction,  \
+from owlapy.model import OWLObjectUnionOf, DoubleOWLDatatype, IntegerOWLDatatype, OWLClass, IRI, OWLDataAllValuesFrom, \
+    OWLDataOneOf, OWLDataProperty, \
     OWLLiteral, OWLNamedIndividual, OWLObjectAllValuesFrom, OWLObjectComplementOf, OWLObjectExactCardinality, \
-    OWLObjectHasSelf, OWLObjectHasValue, OWLObjectIntersectionOf, OWLObjectMaxCardinality, OWLObjectOneOf, \
-    OWLObjectProperty, OWLDataComplementOf, OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataUnionOf, \
-    OWLDataMinCardinality, OWLDataHasValue, OWLThing, OWLNothing, OWLFacetRestriction
+    OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMaxCardinality, OWLObjectProperty, OWLDataExactCardinality, OWLDataMaxCardinality, \
+    OWLDataMinCardinality, OWLDataHasValue, OWLThing, OWLNothing
 
+from owlapy.owl_class_expression import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf
 from owlapy.model.providers import OWLDatatypeMinExclusiveRestriction,\
     OWLDatatypeMinMaxExclusiveRestriction, OWLDatatypeMaxExclusiveRestriction
+from owlapy.owl_restriction import OWLDataSomeValuesFrom, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectSomeValuesFrom, OWLObjectMinCardinality, OWLObjectHasValue,OWLObjectOneOf
+
 from owlapy.parser import DLSyntaxParser, ManchesterOWLSyntaxParser
 from owlapy.vocab import OWLFacet
 

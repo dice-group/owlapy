@@ -1,7 +1,6 @@
 from abc import abstractmethod, ABCMeta
 from typing import Optional
-from .has import HasIRI
-# from .iri import IRI
+from .meta_classes import HasIRI
 
 class OWLObject(metaclass=ABCMeta):
     """Base interface for OWL objects"""

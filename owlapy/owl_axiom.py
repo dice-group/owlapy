@@ -4,7 +4,7 @@ from typing import TypeVar, List, Optional, Iterable, Generic, Final
 from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
 from .owlobject import OWLObject, OWLEntity
 from .types import OWLDatatype, OWLDataRange
-from .has import HasOperands
+from .meta_classes import HasOperands
 from .owl_property import OWLPropertyExpression, OWLProperty
 from .owl_class_expression import OWLClassExpression, OWLClass
 from .owl_individual import OWLIndividual

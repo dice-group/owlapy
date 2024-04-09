@@ -10,17 +10,17 @@ from .render import _DL_SYNTAX, _MAN_SYNTAX
 from .vocab import OWLFacet, OWLRDFVocabulary
 
 
-from owlapy.model import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMinCardinality, OWLObjectOneOf, \
-    OWLObjectProperty, OWLObjectPropertyExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, OWLClass, IRI, \
+from owlapy.model import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMinCardinality, OWLObjectProperty, OWLObjectPropertyExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, OWLClass, IRI, \
     OWLClassExpression, OWLDataProperty, OWLNamedIndividual, OWLObjectComplementOf, OWLObjectExactCardinality, \
-    OWLObjectHasValue, OWLQuantifiedDataRestriction, OWLQuantifiedObjectRestriction, StringOWLDatatype,  \
+    OWLQuantifiedDataRestriction, OWLQuantifiedObjectRestriction, StringOWLDatatype,  \
     DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, \
-    OWLDataSomeValuesFrom, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataExactCardinality, \
-    OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataIntersectionOf, OWLDataMinCardinality, OWLDataHasValue, \
-    OWLLiteral, OWLDataRange, OWLDataUnionOf, OWLDataOneOf, OWLDatatype, OWLObjectCardinalityRestriction, \
-    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom, OWLDataComplementOf, BooleanOWLDatatype
+    OWLDataSomeValuesFrom, OWLDataExactCardinality, \
+    OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, \
+    OWLLiteral, OWLDataRange, OWLDataOneOf, OWLDatatype, OWLObjectCardinalityRestriction, \
+    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom, BooleanOWLDatatype
 
-
+from owlapy.owl_class_expression import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf
+from owlapy.owl_restriction import OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
 
 
 MANCHESTER_GRAMMAR = Grammar(r"""

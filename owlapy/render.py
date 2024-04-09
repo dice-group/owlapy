@@ -11,16 +11,17 @@ from .owl_property import OWLObjectInverseOf
 from .owl_class_expression import OWLClassExpression
 
 # from owlapy.io import OWLObjectRenderer
-from owlapy.model import OWLLiteral, OWLNaryDataRange, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
+from owlapy.model import (OWLLiteral, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLBooleanClassExpression, OWLNaryBooleanClassExpression, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLRestriction, \
-    OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLObjectHasValue, \
-    OWLObjectOneOf, OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \
-    OWLFacetRestriction, OWLDatatypeRestriction, OWLDatatype, OWLDataAllValuesFrom, OWLDataComplementOf, \
-    OWLDataUnionOf, OWLDataIntersectionOf, OWLDataHasValue, OWLDataOneOf, OWLDataMaxCardinality, \
-    OWLDataMinCardinality, OWLDataExactCardinality
+    OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf,
+                          OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \
+    OWLDatatype, OWLDataAllValuesFrom, \
+    OWLDataHasValue, OWLDataOneOf, OWLDataMaxCardinality, \
+    OWLDataMinCardinality, OWLDataExactCardinality)
 from owlapy.vocab import OWLFacet
-
+from .owl_class_expression import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
+from .owl_restriction import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
