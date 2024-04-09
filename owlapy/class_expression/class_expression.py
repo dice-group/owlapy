@@ -1,5 +1,5 @@
-from ..ranges import OWLPropertyRange, OWLDataRange
 from abc import abstractmethod, ABCMeta
+from ..data_ranges import OWLPropertyRange, OWLDataRange
 from ..meta_classes import HasOperands
 
 from typing import Final, Iterable

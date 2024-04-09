@@ -1,5 +1,5 @@
 from .owlobject import OWLObject, OWLEntity
-from .ranges import OWLDataRange
+from .data_ranges import OWLPropertyRange, OWLDataRange
 from .iri import IRI
 from .meta_classes import HasIRI
 from typing import Final, Union

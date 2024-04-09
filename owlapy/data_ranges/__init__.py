@@ -1,11 +1,24 @@
+"""https://www.w3.org/TR/owl2-syntax/#Data_Ranges
+
+DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction
+"""
 from abc import abstractmethod, ABCMeta
 from ..owlobject import OWLObject, OWLEntity
 from ..meta_classes import HasOperands
 from typing import Final, Iterable, Sequence
-from ..ranges import OWLPropertyRange, OWLDataRange
-from ..owl_literal import OWLLiteral
+# from ..owl_literal import OWLLiteral
 from typing import Final, Sequence, Union, Iterable
 from ..iri import IRI
+
+from abc import ABCMeta
+
+class OWLPropertyRange(OWLObject, metaclass=ABCMeta):
+    """OWL Objects that can be the ranges of properties."""
+
+
+class OWLDataRange(OWLPropertyRange, metaclass=ABCMeta):
+    """Represents a DataRange in the OWL 2 Specification."""
+
 
 class OWLDataComplementOf(OWLDataRange):
     """Represents DataComplementOf in the OWL 2 Specification."""
