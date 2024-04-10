@@ -20,7 +20,7 @@ from owlapy.model import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMin
     OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom, BooleanOWLDatatype
 
 from owlapy.data_ranges import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf
-from owlapy.owl_restriction import OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
+from owlapy.class_expression import OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
 
 
 MANCHESTER_GRAMMAR = Grammar(r"""

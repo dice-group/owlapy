@@ -21,7 +21,7 @@ from owlapy.model import (OWLLiteral, OWLObject, OWLClass, OWLObjectSomeValuesFr
 from owlapy.vocab import OWLFacet
 
 from .data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
-from .owl_restriction import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
+from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",

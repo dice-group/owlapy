@@ -12,7 +12,7 @@ from owlapy.model import OWLClassExpression, OWLClass, OWLEntity, OWLObjectPrope
     OWLNamedIndividual, OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectExactCardinality, \
     OWLObjectMaxCardinality, OWLDataCardinalityRestriction, OWLDataProperty, OWLObjectHasSelf, \
     OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, OWLDatatype, TopOWLDatatype, OWLDataOneOf, OWLObjectIntersectionOf
-from owlapy.owl_restriction import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction
+from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction
 from owlapy.owl_literal import OWLLiteral
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 

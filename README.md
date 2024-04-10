@@ -22,14 +22,10 @@ ones and finally render and print the last of them in description logics syntax.
 
 ```python
 from owlapy.iri import IRI
-from owlapy.owl_class_expression import OWLClass, OWLObjectIntersectionOf
+from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
 from owlapy.owl_property import OWLObjectProperty
-from owlapy.owl_restriction import OWLObjectSomeValuesFrom
-
 from owlapy.owl2sparql.converter import owl_expression_to_sparql
 from owlapy.render import owl_expression_to_dl
-
-
 # Create the male class
 male = OWLClass("http://example.com/society#male")
 

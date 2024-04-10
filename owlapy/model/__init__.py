@@ -17,7 +17,7 @@ from owlapy.data_ranges import OWLPropertyRange, OWLDataRange
 
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression, \
     OWLDataPropertyExpression, OWLDataProperty, OWLObjectProperty
-from owlapy.owl_restriction import (OWLRestriction, OWLObjectAllValuesFrom, OWLObjectSomeValuesFrom,
+from owlapy.class_expression import (OWLRestriction, OWLObjectAllValuesFrom, OWLObjectSomeValuesFrom,
                                     OWLQuantifiedRestriction, OWLQuantifiedObjectRestriction,
                                     OWLObjectRestriction, OWLHasValueRestriction, OWLDataRestriction,
                                     OWLCardinalityRestriction, OWLObjectMinCardinality, OWLObjectCardinalityRestriction,

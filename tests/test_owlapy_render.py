@@ -9,7 +9,7 @@ from owlapy.model import OWLDataMinCardinality, OWLObjectIntersectionOf, OWLObje
 from owlapy.data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.model.providers import OWLDatatypeMinMaxInclusiveRestriction
 from owlapy.render import DLSyntaxObjectRenderer, ManchesterOWLSyntaxOWLObjectRenderer
-from owlapy.owl_restriction import OWLObjectHasValue, OWLObjectOneOf
+from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf
 
 class Owlapy_DLRenderer_Test(unittest.TestCase):
     def test_ce_render(self):
