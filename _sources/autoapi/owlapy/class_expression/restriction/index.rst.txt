@@ -1,7 +1,7 @@
-:py:mod:`owlapy.owl_restriction`
-================================
+:py:mod:`owlapy.class_expression.restriction`
+=============================================
 
-.. py:module:: owlapy.owl_restriction
+.. py:module:: owlapy.class_expression.restriction
 
 
 Module Contents
@@ -12,33 +12,33 @@ Classes
 
 .. autoapisummary::
 
-   owlapy.owl_restriction.OWLRestriction
-   owlapy.owl_restriction.OWLDataRestriction
-   owlapy.owl_restriction.OWLObjectRestriction
-   owlapy.owl_restriction.OWLHasValueRestriction
-   owlapy.owl_restriction.OWLQuantifiedRestriction
-   owlapy.owl_restriction.OWLQuantifiedObjectRestriction
-   owlapy.owl_restriction.OWLObjectSomeValuesFrom
-   owlapy.owl_restriction.OWLObjectAllValuesFrom
-   owlapy.owl_restriction.OWLCardinalityRestriction
-   owlapy.owl_restriction.OWLObjectCardinalityRestriction
-   owlapy.owl_restriction.OWLObjectMinCardinality
-   owlapy.owl_restriction.OWLObjectMaxCardinality
-   owlapy.owl_restriction.OWLObjectExactCardinality
-   owlapy.owl_restriction.OWLObjectHasSelf
-   owlapy.owl_restriction.OWLQuantifiedDataRestriction
-   owlapy.owl_restriction.OWLDataAllValuesFrom
-   owlapy.owl_restriction.OWLDataCardinalityRestriction
-   owlapy.owl_restriction.OWLDataExactCardinality
-   owlapy.owl_restriction.OWLDataMaxCardinality
-   owlapy.owl_restriction.OWLDataMinCardinality
-   owlapy.owl_restriction.OWLDataSomeValuesFrom
-   owlapy.owl_restriction.OWLDataHasValue
-   owlapy.owl_restriction.OWLObjectOneOf
-   owlapy.owl_restriction.OWLDataOneOf
-   owlapy.owl_restriction.OWLObjectHasValue
-   owlapy.owl_restriction.OWLDatatypeRestriction
-   owlapy.owl_restriction.OWLFacetRestriction
+   owlapy.class_expression.restriction.OWLRestriction
+   owlapy.class_expression.restriction.OWLDataRestriction
+   owlapy.class_expression.restriction.OWLObjectRestriction
+   owlapy.class_expression.restriction.OWLHasValueRestriction
+   owlapy.class_expression.restriction.OWLQuantifiedRestriction
+   owlapy.class_expression.restriction.OWLQuantifiedObjectRestriction
+   owlapy.class_expression.restriction.OWLObjectSomeValuesFrom
+   owlapy.class_expression.restriction.OWLObjectAllValuesFrom
+   owlapy.class_expression.restriction.OWLCardinalityRestriction
+   owlapy.class_expression.restriction.OWLObjectCardinalityRestriction
+   owlapy.class_expression.restriction.OWLObjectMinCardinality
+   owlapy.class_expression.restriction.OWLObjectMaxCardinality
+   owlapy.class_expression.restriction.OWLObjectExactCardinality
+   owlapy.class_expression.restriction.OWLObjectHasSelf
+   owlapy.class_expression.restriction.OWLQuantifiedDataRestriction
+   owlapy.class_expression.restriction.OWLDataAllValuesFrom
+   owlapy.class_expression.restriction.OWLDataCardinalityRestriction
+   owlapy.class_expression.restriction.OWLDataExactCardinality
+   owlapy.class_expression.restriction.OWLDataMaxCardinality
+   owlapy.class_expression.restriction.OWLDataMinCardinality
+   owlapy.class_expression.restriction.OWLDataSomeValuesFrom
+   owlapy.class_expression.restriction.OWLDataHasValue
+   owlapy.class_expression.restriction.OWLObjectOneOf
+   owlapy.class_expression.restriction.OWLDataOneOf
+   owlapy.class_expression.restriction.OWLObjectHasValue
+   owlapy.class_expression.restriction.OWLDatatypeRestriction
+   owlapy.class_expression.restriction.OWLFacetRestriction
 
 
 
@@ -48,7 +48,7 @@ Attributes
 
 .. autoapisummary::
 
-   owlapy.owl_restriction.Literals
+   owlapy.class_expression.restriction.Literals
 
 
 .. py:data:: Literals
@@ -58,7 +58,7 @@ Attributes
 .. py:class:: OWLRestriction
 
 
-   Bases: :py:obj:`owlapy.class_expression.OWLAnonymousClassExpression`
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLAnonymousClassExpression`
 
    Represents an Object Property Restriction or Data Property Restriction in the OWL 2 specification.
 
@@ -183,10 +183,10 @@ Attributes
       
 
 
-.. py:class:: OWLQuantifiedObjectRestriction(filler: owlapy.class_expression.OWLClassExpression)
+.. py:class:: OWLQuantifiedObjectRestriction(filler: owlapy.class_expression.class_expression.OWLClassExpression)
 
 
-   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.class_expression.OWLClassExpression`\ ], :py:obj:`OWLObjectRestriction`
+   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`\ ], :py:obj:`OWLObjectRestriction`
 
    Represents a quantified object restriction.
 
@@ -195,7 +195,7 @@ Attributes
 
       
 
-   .. py:method:: get_filler() -> owlapy.class_expression.OWLClassExpression
+   .. py:method:: get_filler() -> owlapy.class_expression.class_expression.OWLClassExpression
 
       Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
       the case of a data restriction this will be a constant (data value). For quantified restriction this will be
@@ -205,7 +205,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectSomeValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
+.. py:class:: OWLObjectSomeValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLQuantifiedObjectRestriction`
@@ -244,7 +244,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectAllValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
+.. py:class:: OWLObjectAllValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLQuantifiedObjectRestriction`
@@ -314,10 +314,10 @@ Attributes
 
 
 
-.. py:class:: OWLObjectCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
+.. py:class:: OWLObjectCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
 
 
-   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.class_expression.OWLClassExpression`\ ], :py:obj:`OWLQuantifiedObjectRestriction`
+   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`\ ], :py:obj:`OWLQuantifiedObjectRestriction`
 
    Represents Object Property Cardinality Restrictions in the OWL 2 specification.
 
@@ -347,7 +347,7 @@ Attributes
 
 
 
-.. py:class:: OWLObjectMinCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
+.. py:class:: OWLObjectMinCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -366,7 +366,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
+.. py:class:: OWLObjectMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -385,7 +385,7 @@ Attributes
       
 
 
-.. py:class:: OWLObjectExactCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.OWLClassExpression)
+.. py:class:: OWLObjectExactCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
 
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
@@ -403,7 +403,7 @@ Attributes
 
       
 
-   .. py:method:: as_intersection_of_min_max() -> owlapy.class_expression.OWLObjectIntersectionOf
+   .. py:method:: as_intersection_of_min_max() -> owlapy.class_expression.nary_boolean_expression.OWLObjectIntersectionOf
 
       Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
 
@@ -562,7 +562,7 @@ Attributes
 
       
 
-   .. py:method:: as_intersection_of_min_max() -> owlapy.class_expression.OWLObjectIntersectionOf
+   .. py:method:: as_intersection_of_min_max() -> owlapy.class_expression.nary_boolean_expression.OWLObjectIntersectionOf
 
       Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
 
@@ -680,7 +680,7 @@ Attributes
       Return hash(self).
 
 
-   .. py:method:: as_some_values_from() -> owlapy.class_expression.OWLClassExpression
+   .. py:method:: as_some_values_from() -> owlapy.class_expression.class_expression.OWLClassExpression
 
       A convenience method that obtains this restriction as an existential restriction with a nominal filler.
 
@@ -696,7 +696,7 @@ Attributes
 .. py:class:: OWLObjectOneOf(values: Union[owlapy.owl_individual.OWLIndividual, Iterable[owlapy.owl_individual.OWLIndividual]])
 
 
-   Bases: :py:obj:`owlapy.class_expression.OWLAnonymousClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLAnonymousClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
 
    Represents an ObjectOneOf class expression in the OWL 2 Specification.
 
@@ -727,7 +727,7 @@ Attributes
       :returns: The operands.
 
 
-   .. py:method:: as_object_union_of() -> owlapy.class_expression.OWLClassExpression
+   .. py:method:: as_object_union_of() -> owlapy.class_expression.class_expression.OWLClassExpression
 
       Simplifies this enumeration to a union of singleton nominals.
 
@@ -818,7 +818,7 @@ Attributes
       :returns: Property being restricted.
 
 
-   .. py:method:: as_some_values_from() -> owlapy.class_expression.OWLClassExpression
+   .. py:method:: as_some_values_from() -> owlapy.class_expression.class_expression.OWLClassExpression
 
       A convenience method that obtains this restriction as an existential restriction with a nominal filler.
 
