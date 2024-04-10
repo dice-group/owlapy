@@ -1,7 +1,8 @@
 """OWL Datatype restriction constructors."""
 from typing import Union
 from datetime import datetime, date
-from owlapy.model import OWLDatatypeRestriction, OWLFacet, OWLFacetRestriction, OWLLiteral
+from owlapy.owl_literal import OWLLiteral
+from owlapy.class_expression import OWLDatatypeRestriction, OWLFacet, OWLFacetRestriction
 from pandas import Timedelta
 
 Restriction_Literals = Union[OWLLiteral, int, float, Timedelta, datetime, date]

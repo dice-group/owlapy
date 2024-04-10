@@ -6,7 +6,8 @@ from operator import lt, le, gt, ge
 from re import match
 
 from owlapy import namespaces
-from owlapy.model._iri import HasIRI, IRI
+from .meta_classes import HasIRI
+from .iri import IRI
 from owlapy.namespaces import Namespaces
 
 

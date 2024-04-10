@@ -2,10 +2,10 @@ import unittest
 
 from owlapy.model import OWLObjectProperty, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
     OWLClass, IRI, OWLDataProperty, OWLDataSomeValuesFrom, OWLNamedIndividual, OWLObjectComplementOf, \
-    OWLObjectIntersectionOf, OWLObjectMinCardinality, OWLObjectOneOf
+    OWLObjectIntersectionOf, OWLObjectMinCardinality
 from owlapy.model.providers import OWLDatatypeMinExclusiveRestriction
 from owlapy.util import TopLevelCNF, TopLevelDNF
-
+from owlapy.class_expression import OWLObjectOneOf
 
 class TopLevelNFTest(unittest.TestCase):
 

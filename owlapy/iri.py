@@ -4,22 +4,8 @@ from typing import Final, Union, overload
 from weakref import WeakKeyDictionary
 
 from owlapy import namespaces
-from owlapy.model._base import OWLAnnotationSubject, OWLAnnotationValue
+from .owl_annotation import OWLAnnotationSubject, OWLAnnotationValue
 from owlapy.namespaces import Namespaces
-
-
-class HasIRI(metaclass=ABCMeta):
-    """Simple class to access the IRI."""
-    __slots__ = ()
-
-    @abstractmethod
-    def get_iri(self) -> 'IRI':
-        """Gets the IRI of this object.
-
-        Returns:
-            The IRI of this object.
-        """
-        pass
 
 
 class _WeakCached(type):

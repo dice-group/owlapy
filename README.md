@@ -21,29 +21,26 @@ In this example we start with a simple atomic class expression and move to some 
 ones and finally render and print the last of them in description logics syntax.
 
 ```python
-from owlapy.render import DLSyntaxObjectRenderer
-from owlapy.model import IRI, OWLClass, OWLObjectProperty, OWLObjectSomeValuesFrom, \
-                         OWLObjectIntersectionOf
+from owlapy.iri import IRI
+from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
+from owlapy.owl_property import OWLObjectProperty
 from owlapy.owl2sparql.converter import owl_expression_to_sparql
-
-# Create an IRI object using the iri as a string for 'male' class.
-male_iri = IRI.create('http://example.com/society#male')
-
+from owlapy.render import owl_expression_to_dl
 # Create the male class
-male = OWLClass(male_iri)
+male = OWLClass("http://example.com/society#male")
 
 # Create an object property using the iri as a string for 'hasChild' property.
-hasChild = OWLObjectProperty(IRI.create('http://example.com/society#hasChild'))
+hasChild = OWLObjectProperty("http://example.com/society#hasChild")
 
 # Create an existential restrictions
 males_with_children = OWLObjectSomeValuesFrom(hasChild, male)
 
 # Let's make it more complex by intersecting with another class
-teacher = OWLClass(IRI.create('http://example.com/society#teacher'))
+teacher = OWLClass("http://example.com/society#teacher")
 male_teachers_with_children = OWLObjectIntersectionOf([males_with_children, teacher])
 
-# You can render and print owl class expressions in description logics syntax
-print(DLSyntaxObjectRenderer().render(male_teachers_with_children)) 
+# You can render and print owl class expressions in description logics syntax (and vice-versa)
+print(owl_expression_to_dl(male_teachers_with_children))
 # (∃ hasChild.male) ⊓ teacher
 print(owl_expression_to_sparql("?x", male_teachers_with_children))
 #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }

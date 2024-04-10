@@ -1,30 +1,6 @@
-from abc import ABCMeta, abstractmethod
-from typing import Optional, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from owlapy.model._iri import IRI
-    from owlapy.model import OWLLiteral
-
-
-class OWLObject(metaclass=ABCMeta):
-    """Base interface for OWL objects"""
-    __slots__ = ()
-
-    @abstractmethod
-    def __eq__(self, other):
-        pass
-
-    @abstractmethod
-    def __hash__(self):
-        pass
-
-    @abstractmethod
-    def __repr__(self):
-        pass
-
-    # default
-    def is_anonymous(self) -> bool:
-        return True
+from abc import ABCMeta
+from .owlobject import OWLObject
+from typing import Optional
 
 
 class OWLAnnotationObject(OWLObject, metaclass=ABCMeta):
@@ -47,12 +23,10 @@ class OWLAnnotationObject(OWLObject, metaclass=ABCMeta):
         """
         return None
 
-
 class OWLAnnotationSubject(OWLAnnotationObject, metaclass=ABCMeta):
     """A marker interface for annotation subjects, which can either be IRIs or anonymous individuals"""
     __slots__ = ()
     pass
-
 
 class OWLAnnotationValue(OWLAnnotationObject, metaclass=ABCMeta):
     """A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual."""

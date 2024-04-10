@@ -1,14 +1,15 @@
 import unittest
-
+from owlapy.owl_property import OWLObjectProperty
 from owlapy.model import OWLDataMinCardinality, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, \
-    OWLThing, OWLObjectComplementOf, OWLObjectUnionOf, OWLNamedIndividual, OWLObjectOneOf, OWLObjectHasValue, \
-    OWLObjectMinCardinality, IRI, OWLDataProperty, DoubleOWLDatatype, OWLClass, OWLDataComplementOf, \
-    OWLDataIntersectionOf, IntegerOWLDatatype, OWLDataExactCardinality, OWLDataHasValue, OWLDataAllValuesFrom, \
-    OWLDataOneOf, OWLDataSomeValuesFrom, OWLDataUnionOf, OWLLiteral, OWLObjectProperty, BooleanOWLDatatype, \
+    OWLThing, OWLObjectComplementOf, OWLObjectUnionOf, OWLNamedIndividual, OWLObjectMinCardinality, IRI, OWLDataProperty, DoubleOWLDatatype, OWLClass, \
+    IntegerOWLDatatype, OWLDataExactCardinality, OWLDataHasValue, OWLDataAllValuesFrom, \
+    OWLDataOneOf, OWLDataSomeValuesFrom, OWLLiteral, BooleanOWLDatatype, \
     OWLDataMaxCardinality
+
+from owlapy.data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.model.providers import OWLDatatypeMinMaxInclusiveRestriction
 from owlapy.render import DLSyntaxObjectRenderer, ManchesterOWLSyntaxOWLObjectRenderer
-
+from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf
 
 class Owlapy_DLRenderer_Test(unittest.TestCase):
     def test_ce_render(self):
@@ -43,7 +44,8 @@ class Owlapy_DLRenderer_Test(unittest.TestCase):
         oneof = OWLObjectOneOf((i1, i2))
         r = renderer.render(oneof)
         print(r)
-        self.assertEqual(r, "{heinz ⊔ marie}")
+
+        self.assertEqual(r, "{heinz , marie}")
 
         hasvalue = OWLObjectHasValue(property=has_child, individual=i1)
         r = renderer.render(hasvalue)

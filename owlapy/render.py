@@ -6,17 +6,22 @@ from functools import singledispatchmethod
 from typing import List, Callable
 
 from owlapy import namespaces
-from owlapy.io import OWLObjectRenderer
-from owlapy.model import OWLLiteral, OWLNaryDataRange, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
-    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLBooleanClassExpression, OWLNaryBooleanClassExpression, \
-    OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectInverseOf, OWLClassExpression, OWLRestriction, \
-    OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLObjectHasValue, \
-    OWLObjectOneOf, OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \
-    OWLFacetRestriction, OWLDatatypeRestriction, OWLDatatype, OWLDataAllValuesFrom, OWLDataComplementOf, \
-    OWLDataUnionOf, OWLDataIntersectionOf, OWLDataHasValue, OWLDataOneOf, OWLDataMaxCardinality, \
-    OWLDataMinCardinality, OWLDataExactCardinality
+from .owlobject import OWLObjectRenderer
+from .owl_property import OWLObjectInverseOf
+from .class_expression import OWLClassExpression, OWLBooleanClassExpression
+
+from owlapy.model import (OWLLiteral, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
+    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLNaryBooleanClassExpression, \
+    OWLObjectIntersectionOf, OWLObjectComplementOf, OWLRestriction, \
+    OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf,
+                          OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \
+    OWLDatatype, OWLDataAllValuesFrom, \
+    OWLDataHasValue, OWLDataOneOf, OWLDataMaxCardinality, \
+    OWLDataMinCardinality, OWLDataExactCardinality)
 from owlapy.vocab import OWLFacet
 
+from .data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
+from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
@@ -142,7 +147,7 @@ class DLSyntaxObjectRenderer(OWLObjectRenderer):
 
     @render.register
     def _(self, r: OWLObjectOneOf):
-        return "{%s}" % (" %s " % _DL_SYNTAX.OR).join(
+        return "{%s}" % (" %s " % _DL_SYNTAX.COMMA).join(
             "%s" % (self.render(_)) for _ in r.individuals())
 
     @render.register
@@ -420,3 +425,15 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
             return "(%s)" % self.render(c)
         else:
             return self.render(c)
+
+
+DLrenderer = DLSyntaxObjectRenderer()
+ManchesterRenderer = ManchesterOWLSyntaxOWLObjectRenderer()
+
+
+def owl_expression_to_dl(o: OWLObject) -> str:
+    return DLrenderer.render(o)
+
+
+def owl_expression_to_manchester(o: OWLObject) -> str:
+    return ManchesterRenderer.render(o)
