@@ -1,13 +1,14 @@
 from abc import ABCMeta, abstractmethod
-from .meta_classes import HasFiller, HasCardinality, HasOperands
+from ..meta_classes import HasFiller, HasCardinality, HasOperands
 from typing import TypeVar, Generic, Final, Sequence, Union, Iterable
-from .class_expression import OWLAnonymousClassExpression, OWLClassExpression, OWLObjectIntersectionOf
-from .owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, OWLDataPropertyExpression
-from .data_ranges import OWLPropertyRange, OWLDataRange
-from .owl_literal import OWLLiteral
-from .owl_individual import OWLIndividual
-from .types import OWLDatatype
-from .owlobject import OWLObject
+from .nary_boolean_expression import OWLObjectIntersectionOf
+from .class_expression import OWLAnonymousClassExpression, OWLClassExpression
+from ..owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, OWLDataPropertyExpression
+from ..data_ranges import OWLPropertyRange, OWLDataRange
+from ..owl_literal import OWLLiteral
+from ..owl_individual import OWLIndividual
+from ..types import OWLDatatype
+from ..owlobject import OWLObject
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary, OWLFacet
 from datetime import datetime, date
 from pandas import Timedelta

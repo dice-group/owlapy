@@ -5,7 +5,7 @@ from owlapy.model import OWLObjectProperty, OWLObjectSomeValuesFrom, OWLObjectUn
     OWLObjectIntersectionOf, OWLObjectMinCardinality
 from owlapy.model.providers import OWLDatatypeMinExclusiveRestriction
 from owlapy.util import TopLevelCNF, TopLevelDNF
-from owlapy.owl_restriction import OWLObjectOneOf
+from owlapy.class_expression import OWLObjectOneOf
 
 class TopLevelNFTest(unittest.TestCase):
 

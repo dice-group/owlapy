@@ -3,7 +3,7 @@ from owlapy.iri import IRI
 from owlapy.class_expression import OWLClass, OWLObjectComplementOf, OWLObjectUnionOf
 from owlapy.class_expression import OWLBooleanClassExpression, OWLObjectIntersectionOf, OWLClassExpression
 from owlapy.owl_property import OWLObjectProperty
-from owlapy.owl_restriction import OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom
+from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom
 
 from owlapy.owl2sparql.converter import owl_expression_to_sparql
 from owlapy.render import owl_expression_to_dl

@@ -2,7 +2,7 @@
 from typing import Union
 from datetime import datetime, date
 from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_restriction import OWLDatatypeRestriction, OWLFacet, OWLFacetRestriction
+from owlapy.class_expression import OWLDatatypeRestriction, OWLFacet, OWLFacetRestriction
 from pandas import Timedelta
 
 Restriction_Literals = Union[OWLLiteral, int, float, Timedelta, datetime, date]

@@ -33,7 +33,7 @@ from owlapy.model.providers import OWLDatatypeMinMaxExclusiveRestriction
 from owlapy.util import NNF
 
 from owlapy.data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
-from owlapy.owl_restriction import OWLObjectHasValue, OWLObjectOneOf
+from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf
 
 def iri(suffix):
     NS = "http://example.org/"

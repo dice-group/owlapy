@@ -13,7 +13,7 @@ from owlapy.model import OWLObjectUnionOf, DoubleOWLDatatype, IntegerOWLDatatype
 from owlapy.data_ranges import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf
 from owlapy.model.providers import OWLDatatypeMinExclusiveRestriction,\
     OWLDatatypeMinMaxExclusiveRestriction, OWLDatatypeMaxExclusiveRestriction
-from owlapy.owl_restriction import OWLDataSomeValuesFrom, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectSomeValuesFrom, OWLObjectMinCardinality, OWLObjectHasValue,OWLObjectOneOf
+from owlapy.class_expression import OWLDataSomeValuesFrom, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectSomeValuesFrom, OWLObjectMinCardinality, OWLObjectHasValue,OWLObjectOneOf
 
 from owlapy.parser import DLSyntaxParser, ManchesterOWLSyntaxParser
 from owlapy.vocab import OWLFacet
