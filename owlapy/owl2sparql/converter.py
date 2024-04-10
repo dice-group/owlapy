@@ -12,7 +12,8 @@ from owlapy.model import OWLClassExpression, OWLClass, OWLEntity, OWLObjectPrope
     OWLNamedIndividual, OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectExactCardinality, \
     OWLObjectMaxCardinality, OWLDataCardinalityRestriction, OWLDataProperty, OWLObjectHasSelf, \
     OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, OWLDatatype, TopOWLDatatype, OWLDataOneOf, OWLObjectIntersectionOf
-from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction
+from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction, OWLDataMinCardinality, \
+    OWLDataMaxCardinality, OWLDataExactCardinality
 from owlapy.owl_literal import OWLLiteral
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 
@@ -406,12 +407,11 @@ class Owl2SparqlConverter:
         property_expression = ce.get_property()
         assert isinstance(property_expression, OWLDataProperty)
         cardinality = ce.get_cardinality()
-
-        if isinstance(ce, OWLObjectMinCardinality):
+        if isinstance(ce, OWLDataMinCardinality):
             comparator = ">="
-        elif isinstance(ce, OWLObjectMaxCardinality):
+        elif isinstance(ce, OWLDataMaxCardinality):
             comparator = "<="
-        elif isinstance(ce, OWLObjectExactCardinality):
+        elif isinstance(ce, OWLDataExactCardinality):
             comparator = "="
         else:
             raise ValueError(ce)
