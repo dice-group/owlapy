@@ -23,10 +23,12 @@ class OWLAnnotationObject(OWLObject, metaclass=ABCMeta):
         """
         return None
 
+
 class OWLAnnotationSubject(OWLAnnotationObject, metaclass=ABCMeta):
     """A marker interface for annotation subjects, which can either be IRIs or anonymous individuals"""
     __slots__ = ()
     pass
+
 
 class OWLAnnotationValue(OWLAnnotationObject, metaclass=ABCMeta):
     """A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual."""

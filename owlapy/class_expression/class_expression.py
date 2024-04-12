@@ -1,10 +1,16 @@
 from abc import abstractmethod, ABCMeta
-from ..data_ranges import OWLPropertyRange, OWLDataRange
+from ..data_ranges import OWLPropertyRange
 from ..meta_classes import HasOperands
 
 from typing import Final, Iterable
+
+
 class OWLClassExpression(OWLPropertyRange):
-    """An OWL 2 Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) """
+    """OWL Class expressions represent sets of individuals by formally specifying conditions on the individuals' properties;
+     individuals satisfying these conditions are said to be instances of the respective class expressions.
+     In the structural specification of OWL 2, class expressions are represented by ClassExpression.
+     (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
+     """
     __slots__ = ()
 
     @abstractmethod

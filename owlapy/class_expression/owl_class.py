@@ -1,11 +1,12 @@
 from .class_expression import OWLClassExpression, OWLObjectComplementOf
-from ..owlobject import OWLObject, OWLEntity
+from ..owlobject import OWLEntity
 from typing import Final, Union
 from ..iri import IRI
 
 
 class OWLClass(OWLClassExpression, OWLEntity):
-    """An OWL 2 named Class"""
+    """An OWL 2 named Class. Classes can be understood as sets of individuals.
+    (https://www.w3.org/TR/owl2-syntax/#Classes)"""
     __slots__ = '_iri', '_is_nothing', '_is_thing'
     type_index: Final = 1001
 
