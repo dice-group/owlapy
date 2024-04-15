@@ -1,11 +1,14 @@
 import unittest
 
-from owlapy.model import OWLObjectProperty, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
-    OWLClass, IRI, OWLDataProperty, OWLDataSomeValuesFrom, OWLNamedIndividual, OWLObjectComplementOf, \
-    OWLObjectIntersectionOf, OWLObjectMinCardinality
-from owlapy.model.providers import OWLDatatypeMinExclusiveRestriction
+from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
+    OWLClass, OWLDataSomeValuesFrom, OWLObjectComplementOf, \
+    OWLObjectIntersectionOf, OWLObjectMinCardinality, OWLObjectOneOf
+from owlapy.iri import IRI
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
+from owlapy.providers import owl_datatype_min_exclusive_restriction
 from owlapy.util import TopLevelCNF, TopLevelDNF
-from owlapy.class_expression import OWLObjectOneOf
+
 
 class TopLevelNFTest(unittest.TestCase):
 
@@ -31,7 +34,7 @@ class TopLevelNFTest(unittest.TestCase):
         # Complex Expressions
         self.c1 = OWLObjectSomeValuesFrom(self.op1,
                                           OWLObjectUnionOf([self.a, OWLObjectIntersectionOf([self.a, self.b])]))
-        self.c2 = OWLDataSomeValuesFrom(self.dp1, OWLDatatypeMinExclusiveRestriction(5))
+        self.c2 = OWLDataSomeValuesFrom(self.dp1, owl_datatype_min_exclusive_restriction(5))
         self.c3 = OWLObjectSomeValuesFrom(self.op1, OWLObjectOneOf(OWLNamedIndividual(IRI(namespace, 'AB'))))
 
     def test_cnf(self):

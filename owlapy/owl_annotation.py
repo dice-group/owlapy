@@ -1,3 +1,4 @@
+"""OWL Annotations"""
 from abc import ABCMeta
 from .owlobject import OWLObject
 from typing import Optional

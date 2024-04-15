@@ -1,6 +1,7 @@
+"""OWL Base classes"""
 from abc import abstractmethod, ABCMeta
-from typing import Optional
 from .meta_classes import HasIRI
+
 
 class OWLObject(metaclass=ABCMeta):
     """Base interface for OWL objects"""
@@ -21,7 +22,6 @@ class OWLObject(metaclass=ABCMeta):
     # default
     def is_anonymous(self) -> bool:
         return True
-
 
 
 class OWLObjectRenderer(metaclass=ABCMeta):

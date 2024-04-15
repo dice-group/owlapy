@@ -1,3 +1,4 @@
+"""OWL Restrictions"""
 from abc import ABCMeta, abstractmethod
 from ..meta_classes import HasFiller, HasCardinality, HasOperands
 from typing import TypeVar, Generic, Final, Sequence, Union, Iterable

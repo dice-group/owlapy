@@ -1,3 +1,4 @@
+"""OWL Axioms"""
 from abc import ABCMeta, abstractmethod
 
 from typing import TypeVar, List, Optional, Iterable, Generic, Final

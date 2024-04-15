@@ -1,4 +1,5 @@
-"""https://www.w3.org/TR/owl2-syntax/#Class_Expressions
+""" OWL Class Expressions
+https://www.w3.org/TR/owl2-syntax/#Class_Expressions
 ClassExpression :=
     owl_class.py:
     Class

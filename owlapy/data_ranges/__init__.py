@@ -1,4 +1,6 @@
-"""https://www.w3.org/TR/owl2-syntax/#Data_Ranges
+"""OWL data ranges
+
+https://www.w3.org/TR/owl2-syntax/#Data_Ranges
 
 DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction
 """
@@ -51,6 +53,7 @@ class OWLDataIntersectionOf(OWLNaryDataRange):
     """An intersection data range DataIntersectionOf( DR1 ... DRn ) contains all tuples of literals that are contained
     in each data range DRi for 1 ≤ i ≤ n. All data ranges DRi must be of the same arity, and the resulting data range
     is of that arity as well.
+
     (https://www.w3.org/TR/owl2-syntax/#Intersection_of_Data_Ranges)
     """
     __slots__ = '_operands'
@@ -62,7 +65,9 @@ class OWLDataIntersectionOf(OWLNaryDataRange):
 class OWLDataUnionOf(OWLNaryDataRange):
     """A union data range DataUnionOf( DR1 ... DRn ) contains all tuples of literals that are contained in the at least
      one data range DRi for 1 ≤ i ≤ n. All data ranges DRi must be of the same arity, and the resulting data range is of
-     that arity as well. (https://www.w3.org/TR/owl2-syntax/#Union_of_Data_Ranges)"""
+     that arity as well.
+
+     (https://www.w3.org/TR/owl2-syntax/#Union_of_Data_Ranges)"""
     __slots__ = '_operands'
     type_index: Final = 4005
 
@@ -72,6 +77,7 @@ class OWLDataUnionOf(OWLNaryDataRange):
 class OWLDataComplementOf(OWLDataRange):
     """A complement data range DataComplementOf( DR ) contains all tuples of literals that are not contained in the
     data range DR. The resulting data range has the arity equal to the arity of DR.
+
     (https://www.w3.org/TR/owl2-syntax/#Complement_of_Data_Ranges)
     """
     type_index: Final = 4002

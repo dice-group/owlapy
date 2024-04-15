@@ -2,17 +2,21 @@
 from functools import singledispatchmethod, total_ordering
 from typing import Iterable, List, Type, TypeVar, Generic, Tuple, cast, Optional, Union, overload
 from .has import HasIndex
+from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
+from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf
-from owlapy.model import HasIRI, OWLClassExpression, OWLClass, OWLObjectCardinalityRestriction, \
-    OWLObjectComplementOf, OWLNothing, OWLPropertyRange, OWLRestriction, OWLThing, OWLObjectSomeValuesFrom, \
+from owlapy.class_expression import OWLClassExpression, OWLClass, OWLObjectCardinalityRestriction, \
+    OWLObjectComplementOf, OWLNothing, OWLRestriction, OWLThing, OWLObjectSomeValuesFrom, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectHasSelf, \
     OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataExactCardinality, OWLDataHasValue, \
-    OWLDataAllValuesFrom, OWLDataSomeValuesFrom, OWLObjectAllValuesFrom, HasFiller, HasCardinality, HasOperands, \
-    OWLDatatype,OWLDataOneOf, OWLLiteral, OWLObjectIntersectionOf, \
+    OWLDataAllValuesFrom, OWLDataSomeValuesFrom, OWLObjectAllValuesFrom, \
+    OWLDataOneOf, OWLObjectIntersectionOf, \
     OWLDataCardinalityRestriction, OWLNaryBooleanClassExpression, OWLObjectUnionOf, \
-    OWLDataRange, OWLObject
-from .data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange
-from .class_expression import OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
+    OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
+from .data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange, OWLDataRange, \
+    OWLPropertyRange
+from .owlobject import OWLObject
+from .types import OWLDatatype
 
 _HasIRI = TypeVar('_HasIRI', bound=HasIRI)  #:
 _HasIndex = TypeVar('_HasIndex', bound=HasIndex)  #:
@@ -406,7 +410,7 @@ def combine_nary_expressions(ce: OWLPropertyRange) -> OWLPropertyRange:
     elif isinstance(ce, OWLPropertyRange):
         return ce
     else:
-        raise ValueError(f'({expr}) is not an OWLObject.')
+        raise ValueError(f'({ce}) is not an OWLObject.')
 
 
 def iter_count(i: Iterable) -> int:

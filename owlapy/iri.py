@@ -1,5 +1,6 @@
+"""OWL IRI"""
 import weakref
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from typing import Final, Union, overload
 from weakref import WeakKeyDictionary
 

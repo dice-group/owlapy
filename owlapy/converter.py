@@ -7,14 +7,22 @@ from typing import Set, List, Dict, Optional, Iterable
 
 from rdflib.plugins.sparql.parser import parseQuery
 
-from owlapy.model import OWLClassExpression, OWLClass, OWLEntity, OWLObjectProperty, \
-    OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, \
-    OWLNamedIndividual, OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectExactCardinality, \
-    OWLObjectMaxCardinality, OWLDataCardinalityRestriction, OWLDataProperty, OWLObjectHasSelf, \
-    OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, OWLDatatype, TopOWLDatatype, OWLDataOneOf, OWLObjectIntersectionOf
+# from owlapy.model import OWLClassExpression, OWLClass, OWLEntity, OWLObjectProperty, \
+#     OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, \
+#     OWLNamedIndividual, OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectExactCardinality, \
+#     OWLObjectMaxCardinality, OWLDataCardinalityRestriction, OWLDataProperty, OWLObjectHasSelf, \
+#     OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, OWLDatatype, TopOWLDatatype, OWLDataOneOf, OWLObjectIntersectionOf
 from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction, OWLDataMinCardinality, \
-    OWLDataMaxCardinality, OWLDataExactCardinality
-from owlapy.owl_literal import OWLLiteral
+    OWLDataMaxCardinality, OWLDataExactCardinality, OWLClass, OWLClassExpression, OWLObjectIntersectionOf, \
+    OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, \
+    OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, \
+    OWLDataCardinalityRestriction, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, \
+    OWLDataOneOf
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLLiteral, TopOWLDatatype
+from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
+from owlapy.owlobject import OWLEntity
+from owlapy.types import OWLDatatype
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 
 _Variable_facet_comp = MappingProxyType({
@@ -289,7 +297,6 @@ class Owl2SparqlConverter:
         predicate = property_expression.get_named_property()
         # filler holds the concept of the expression (Male in our example) and is processed recursively
         filler = ce.get_filler()
-
 
         self.append("{")
 

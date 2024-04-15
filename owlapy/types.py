@@ -1,11 +1,20 @@
-from .owlobject import OWLObject, OWLEntity
-from .data_ranges import OWLPropertyRange, OWLDataRange
+"""OWL Datatype"""
+from .owlobject import OWLEntity
+from .data_ranges import OWLDataRange
 from .iri import IRI
 from .meta_classes import HasIRI
 from typing import Final, Union
 
+
 class OWLDatatype(OWLEntity, OWLDataRange):
-    """Represents a Datatype (named data range) in the OWL 2 Specification."""
+    """Datatypes are entities that refer to sets of data values. Thus, datatypes are analogous to classes,
+    the main difference being that the former contain data values such as strings and numbers, rather than individuals.
+    Datatypes are a kind of data range, which allows them to be used in restrictions. Each data range is associated
+    with an arity; for datatypes, the arity is always one. The built-in datatype rdfs:Literal denotes any set of data
+    values that contains the union of the value spaces of all datatypes.
+
+    (https://www.w3.org/TR/owl2-syntax/#Datatypes)
+    """
     __slots__ = '_iri'
 
     type_index: Final = 4001
