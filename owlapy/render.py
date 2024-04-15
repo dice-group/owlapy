@@ -21,15 +21,6 @@ from .data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, 
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .types import OWLDatatype
 
-# from owlapy.model import (OWLLiteral, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
-#     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLNaryBooleanClassExpression, \
-#     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLRestriction, \
-#     OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf,
-#                           OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \
-#     OWLDatatype, OWLDataAllValuesFrom, \
-#     OWLDataHasValue, OWLDataOneOf, OWLDataMaxCardinality, \
-#     OWLDataMinCardinality, OWLDataExactCardinality)
-
 
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
