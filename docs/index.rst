@@ -11,4 +11,5 @@ Welcome to OWLAPY!
    :caption: Contents:
 
    usage/main
+   usage/examples
    autoapi/owlapy/index

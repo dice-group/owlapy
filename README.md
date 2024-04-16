@@ -21,7 +21,6 @@ In this example we start with a simple atomic class expression and move to some 
 ones and finally render and print the last of them in description logics syntax.
 
 ```python
-from owlapy.iri import IRI
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
 from owlapy.owl_property import OWLObjectProperty
 from owlapy import owl_expression_to_sparql, owl_expression_to_dl
@@ -33,16 +32,16 @@ male = OWLClass("http://example.com/society#male")
 hasChild = OWLObjectProperty("http://example.com/society#hasChild")
 
 # Create an existential restrictions
-males_with_children = OWLObjectSomeValuesFrom(hasChild, male)
+hasChild_male = OWLObjectSomeValuesFrom(hasChild, male)
 
 # Let's make it more complex by intersecting with another class
 teacher = OWLClass("http://example.com/society#teacher")
-male_teachers_with_children = OWLObjectIntersectionOf([males_with_children, teacher])
+teacher_that_hasChild_male = OWLObjectIntersectionOf([hasChild_male, teacher])
 
 # You can render and print owl class expressions in description logics syntax (and vice-versa)
-print(owl_expression_to_dl(male_teachers_with_children))
+print(owl_expression_to_dl(teacher_that_hasChild_male))
 # (∃ hasChild.male) ⊓ teacher
-print(owl_expression_to_sparql("?x", male_teachers_with_children))
+print(owl_expression_to_sparql("?x", teacher_that_hasChild_male))
 #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 ```
 For more, you can check the [API documentation](https://dice-group.github.io/owlapy/autoapi/owlapy/index.html).

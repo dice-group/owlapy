@@ -775,9 +775,11 @@ DLparser = DLSyntaxParser()
 ManchesterParser = ManchesterOWLSyntaxParser()
 
 
-def dl_to_owl_expression(dl_expression: str):
+def dl_to_owl_expression(dl_expression: str, namespace: str):
+    DLparser.ns = namespace
     return DLparser.parse_expression(dl_expression)
 
 
-def manchester_to_owl_expression(manchester_expression: str):
+def manchester_to_owl_expression(manchester_expression: str, namespace: str):
+    ManchesterParser.ns = namespace
     return ManchesterParser.parse_expression(manchester_expression)
