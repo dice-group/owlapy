@@ -17,7 +17,7 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, TopOWLDatatype
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.owl_object import OWLEntity
-from owlapy.types import OWLDatatype
+from owlapy.owl_datatype import OWLDatatype
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 
 _Variable_facet_comp = MappingProxyType({

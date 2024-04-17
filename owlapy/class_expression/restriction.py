@@ -8,7 +8,7 @@ from ..owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, O
 from ..data_ranges import OWLPropertyRange, OWLDataRange
 from ..owl_literal import OWLLiteral
 from ..owl_individual import OWLIndividual
-from ..types import OWLDatatype
+from ..owl_datatype import OWLDatatype
 from ..owl_object import OWLObject
 from owlapy.vocab import OWLFacet
 from datetime import datetime, date

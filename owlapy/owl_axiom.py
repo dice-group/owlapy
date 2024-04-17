@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import TypeVar, List, Optional, Iterable, Generic, Final
 from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
 from .owl_object import OWLObject, OWLEntity
-from .types import OWLDatatype, OWLDataRange
+from .owl_datatype import OWLDatatype, OWLDataRange
 from .meta_classes import HasOperands
 from .owl_property import OWLPropertyExpression, OWLProperty
 from .class_expression import OWLClassExpression, OWLClass

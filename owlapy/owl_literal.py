@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from functools import total_ordering
 from .owl_annotation import OWLAnnotationValue
 from typing import Final, Optional, Union, Set
-from .types import OWLDatatype
+from .owl_datatype import OWLDatatype
 from datetime import datetime, date
 from pandas import Timedelta
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary

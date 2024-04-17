@@ -12,7 +12,7 @@ from .owl_property import OWLObjectPropertyExpression, OWLObjectProperty, OWLDat
 from .owl_object import OWLObjectParser
 from .namespaces import Namespaces
 from .render import _DL_SYNTAX, _MAN_SYNTAX
-from .types import OWLDatatype
+from .owl_datatype import OWLDatatype
 from .vocab import OWLFacet, OWLRDFVocabulary
 from owlapy.class_expression import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMinCardinality, \
     OWLObjectSomeValuesFrom, OWLObjectUnionOf, OWLClass, OWLObjectOneOf, \

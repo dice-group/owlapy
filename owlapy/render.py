@@ -19,7 +19,7 @@ from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWL
 from owlapy.vocab import OWLFacet
 from .data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
-from .types import OWLDatatype
+from .owl_datatype import OWLDatatype
 
 
 _DL_SYNTAX = types.SimpleNamespace(
