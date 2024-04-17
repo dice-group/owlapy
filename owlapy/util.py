@@ -1,7 +1,6 @@
 """Owlapy utils."""
 from functools import singledispatchmethod, total_ordering
-from typing import Iterable, List, Type, TypeVar, Generic, Tuple, cast, Optional, Union, overload
-from .has import HasIndex
+from typing import Iterable, List, Type, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, ClassVar
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
 from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf
@@ -18,6 +17,14 @@ from .data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectio
 from .owl_object import OWLObject
 from .owl_datatype import OWLDatatype
 
+
+class HasIndex(Protocol):
+    """Interface for types with an index; this is used to group objects by type when sorting."""
+    type_index: ClassVar[int]  #: index for this type. This is a sorting index for the types.
+
+    def __eq__(self, other): ...
+
+
 _HasIRI = TypeVar('_HasIRI', bound=HasIRI)  #:
 _HasIndex = TypeVar('_HasIndex', bound=HasIndex)  #:
 _O = TypeVar('_O')  #:
@@ -25,6 +32,8 @@ _Enc = TypeVar('_Enc')
 _Con = TypeVar('_Con')
 _K = TypeVar('_K')
 _V = TypeVar('_V')
+
+
 
 
 @total_ordering
