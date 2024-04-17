@@ -120,14 +120,9 @@ class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
     def iri(self) -> str:
         return self._iri
 
-    def get_iri(self) -> 'IRI':
-        # TODO:CD: can be deprecated
-        # documented in parent
-        return self._iri
-
     def is_owl_top_object_property(self) -> bool:
         # documented in parent
-        return self.get_iri() == OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.get_iri()
+        return self.str == "http://www.w3.org/2002/07/owl#topObjectProperty"
 
 
 class OWLObjectInverseOf(OWLObjectPropertyExpression):
@@ -200,10 +195,14 @@ class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
         """
         self._iri = iri
 
-    def get_iri(self) -> 'IRI':
-        # documented in parent
+    @property
+    def iri(self) -> IRI:
         return self._iri
+
+    @property
+    def str(self) -> str:
+        return self._iri.as_str()
 
     def is_owl_top_data_property(self) -> bool:
         # documented in parent
-        return self.get_iri() == OWLRDFVocabulary.OWL_TOP_DATA_PROPERTY.get_iri()
+        return self.str == "http://www.w3.org/2002/07/owl#topDataProperty"

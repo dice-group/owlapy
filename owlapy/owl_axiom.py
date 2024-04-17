@@ -1,7 +1,7 @@
 """OWL Axioms"""
 from abc import ABCMeta, abstractmethod
 
-from typing import TypeVar, List, Optional, Iterable, Generic, Final
+from typing import TypeVar, List, Optional, Iterable, Generic, Final, Union
 from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
 from .owl_object import OWLObject, OWLEntity
 from .owl_datatype import OWLDatatype, OWLDataRange
@@ -635,17 +635,24 @@ class OWLAnnotationProperty(OWLProperty):
 
     _iri: IRI
 
-    def __init__(self, iri: IRI):
+    def __init__(self, iri: Union[IRI, str]):
         """Get a new OWLAnnotationProperty object.
 
         Args:
             iri: New OWLAnnotationProperty IRI.
         """
-        self._iri = iri
+        if isinstance(iri, IRI):
+            self._iri = iri
+        else:
+            self._iri = IRI.create(iri)
 
-    def get_iri(self) -> IRI:
-        # documented in parent
+    @property
+    def iri(self) -> IRI:
         return self._iri
+
+    @property
+    def str(self) -> str:
+        return self._iri.as_str()
 
 
 class OWLAnnotation(OWLObject):

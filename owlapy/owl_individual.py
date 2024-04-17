@@ -36,13 +36,8 @@ class OWLNamedIndividual(OWLIndividual, OWLEntity):
         else:
             self._iri = IRI.create(iri)
 
-    def get_iri(self) -> IRI:
-        # TODO:CD: can be deprecated
-        # documented in parent
-        return self._iri
-
     @property
-    def iri(self):
+    def iri(self) -> IRI:
         return self._iri
 
     @property

@@ -29,9 +29,19 @@ class OWLClass(OWLClassExpression, OWLEntity):
         self._is_nothing = self._iri.is_nothing()
         self._is_thing = self._iri.is_thing()
 
-    def get_iri(self) -> 'IRI':
+    @property
+    def iri(self) -> 'IRI':
         # documented in parent
         return self._iri
+
+    @property
+    def str(self):
+        return self._iri.as_str()
+
+    @property
+    def reminder(self) -> str:
+        """The reminder of the IRI """
+        return self._iri.get_remainder()
 
     def is_owl_thing(self) -> bool:
         # documented in parent
@@ -49,11 +59,4 @@ class OWLClass(OWLClassExpression, OWLEntity):
         # documented in parent
         return self
 
-    @property
-    def str(self):
-        return self.get_iri().as_str()
 
-    @property
-    def reminder(self) -> str:
-        """The reminder of the IRI """
-        return self.get_iri().get_remainder()

@@ -23,8 +23,13 @@ class _Vocabulary(HasIRI):
         self._remainder = remainder
         self._iri = IRI(namespace, remainder)
 
-    def get_iri(self) -> IRI:
+    @property
+    def iri(self) -> IRI:
         return self._iri
+
+    @property
+    def str(self) -> str:
+        return self._iri.as_str()
 
     def as_str(self) -> str:
         return self._iri.as_str()

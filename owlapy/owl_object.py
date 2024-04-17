@@ -94,7 +94,7 @@ class OWLEntity(OWLNamedObject, metaclass=ABCMeta):
     __slots__ = ()
 
     def to_string_id(self) -> str:
-        return self.get_iri().as_str()
+        return self.str
 
     def is_anonymous(self) -> bool:
         return False

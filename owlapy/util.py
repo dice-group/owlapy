@@ -59,7 +59,7 @@ class OrderedOWLObject:
             if isinstance(self.o, OWLRestriction):
                 c.append(OrderedOWLObject(as_index(self.o.get_property())))
             if isinstance(self.o, OWLObjectInverseOf):
-                c.append(self.o.get_named_property().get_iri().as_str())
+                c.append(self.o.get_named_property().str)
             if isinstance(self.o, HasFiller):
                 c.append(OrderedOWLObject(self.o.get_filler()))
             if isinstance(self.o, HasCardinality):
@@ -67,14 +67,14 @@ class OrderedOWLObject:
             if isinstance(self.o, HasOperands):
                 c.append(tuple(map(OrderedOWLObject, self.o.operands())))
             if isinstance(self.o, HasIRI):
-                c.append(self.o.get_iri().as_str())
+                c.append(self.o.str)
             if isinstance(self.o, OWLDataComplementOf):
                 c.append(OrderedOWLObject(self.o.get_data_range()))
             if isinstance(self.o, OWLDatatypeRestriction):
                 c.append((OrderedOWLObject(self.o.get_datatype()),
                           tuple(map(OrderedOWLObject, self.o.get_facet_restrictions()))))
             if isinstance(self.o, OWLFacetRestriction):
-                c.append((self.o.get_facet().get_iri().as_str(), self.o.get_facet_value().get_literal()))
+                c.append((self.o.get_facet().str, self.o.get_facet_value().get_literal()))
             if isinstance(self.o, OWLLiteral):
                 c.append(self.o.get_literal())
             if len(c) == 1:

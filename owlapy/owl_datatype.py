@@ -28,11 +28,15 @@ class OWLDatatype(OWLEntity, OWLDataRange):
             iri: The IRI.
         """
         if isinstance(iri, HasIRI):
-            self._iri = iri.get_iri()
+            self._iri = iri.iri
         else:
             assert isinstance(iri, IRI)
             self._iri = iri
 
-    def get_iri(self) -> IRI:
-        # documented in parent
+    @property
+    def iri(self) -> IRI:
         return self._iri
+
+    @property
+    def str(self) -> str:
+        return self._iri.as_str()

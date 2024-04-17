@@ -120,7 +120,8 @@ class OWLImportsDeclaration(HasIRI):
         """
         self._iri = import_iri
 
-    def get_iri(self) -> IRI:
+    @property
+    def iri(self) -> IRI:
         """Gets the import IRI.
 
         Returns:
@@ -129,6 +130,10 @@ class OWLImportsDeclaration(HasIRI):
             can be deployed at a resolvable URL.
         """
         return self._iri
+
+    @property
+    def str(self) -> str:
+        return self._iri.as_str()
 
 
 class AddImport(OWLOntologyChange):

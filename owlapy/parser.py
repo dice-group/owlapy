@@ -407,9 +407,9 @@ class ManchesterOWLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_Manches
     def visit_simple_iri(self, node, children) -> IRI:
         simple_iri = _node_text(node)
         if simple_iri == "Thing":
-            return OWLRDFVocabulary.OWL_THING.get_iri()
+            return OWLRDFVocabulary.OWL_THING.iri
         elif simple_iri == "Nothing":
-            return OWLRDFVocabulary.OWL_NOTHING.get_iri()
+            return OWLRDFVocabulary.OWL_NOTHING.iri
         elif self.ns is not None:
             return IRI(self.ns, simple_iri)
         else:
@@ -726,9 +726,9 @@ class DLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_DLSyntaxParserMeta
     def visit_class_iri(self, node, children) -> OWLClass:
         top_bottom = _node_text(node)
         if top_bottom == _DL_SYNTAX.TOP:
-            return OWLClass(OWLRDFVocabulary.OWL_THING.get_iri())
+            return OWLClass(OWLRDFVocabulary.OWL_THING.iri)
         elif top_bottom == _DL_SYNTAX.BOTTOM:
-            return OWLClass(OWLRDFVocabulary.OWL_NOTHING.get_iri())
+            return OWLClass(OWLRDFVocabulary.OWL_NOTHING.iri)
         else:
             return OWLClass(children[0])
 
@@ -749,7 +749,7 @@ class DLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_DLSyntaxParserMeta
             iri = _node_text(node)[1:-1]
             return IRI.create(iri)
         except IndexError:
-            raise ValueError(f"{iri} is not a valid IRI.")
+            raise ValueError(f"{_node_text(node)[1:-1]} is not a valid IRI.")
 
     def visit_abbreviated_iri(self, node, children):
         # TODO: Add support for prefixes
