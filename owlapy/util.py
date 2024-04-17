@@ -34,8 +34,6 @@ _K = TypeVar('_K')
 _V = TypeVar('_V')
 
 
-
-
 @total_ordering
 class OrderedOWLObject:
     """Holder of OWL Objects that can be used for Python sorted.
@@ -539,3 +537,19 @@ class LRUCache(Generic[_K, _V]):
             self.root[:] = [self.root, self.root, None, None]
             self.hits = self.misses = 0
             self.full = False
+
+
+def move(*args):
+    """"Move" an imported class to the current module by setting the classes __module__ attribute.
+
+    This is useful for documentation purposes to hide internal packages in sphinx.
+
+    Args:
+        args: List of classes to move.
+    """
+    from inspect import currentframe
+    f = currentframe()
+    f = f.f_back
+    mod = f.f_globals['__name__']
+    for cls in args:
+        cls.__module__ = mod
