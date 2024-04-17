@@ -17,7 +17,7 @@ from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWL
     OWLDataHasValue, OWLDataMinCardinality, OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataOneOf, \
     OWLNaryBooleanClassExpression, OWLRestriction
 from owlapy.vocab import OWLFacet
-from .data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
+from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .owl_datatype import OWLDatatype
 

@@ -22,7 +22,7 @@ from owlapy.class_expression import OWLObjectHasSelf, OWLObjectIntersectionOf, O
     OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, \
     OWLDataOneOf, OWLObjectCardinalityRestriction, OWLDatatypeRestriction, \
     OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom
-from owlapy.data_ranges import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf, OWLDataRange
+from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf, OWLDataRange
 
 
 MANCHESTER_GRAMMAR = Grammar(r"""

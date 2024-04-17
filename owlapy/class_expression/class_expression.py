@@ -1,6 +1,6 @@
 """OWL Base Classes Expressions"""
 from abc import abstractmethod, ABCMeta
-from ..data_ranges import OWLPropertyRange
+from ..owl_data_ranges import OWLPropertyRange
 from ..meta_classes import HasOperands
 
 from typing import Final, Iterable

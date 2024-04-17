@@ -15,7 +15,7 @@ from owlapy.class_expression import OWLObjectUnionOf, OWLClass, \
     OWLObjectHasValue, OWLObjectOneOf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataMaxCardinality, \
     OWLDatatypeRestriction, OWLFacetRestriction
 
-from owlapy.data_ranges import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf
+from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf
 from owlapy.providers import owl_datatype_min_exclusive_restriction,\
     owl_datatype_min_max_exclusive_restriction, owl_datatype_max_exclusive_restriction
 

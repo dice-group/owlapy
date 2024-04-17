@@ -10,7 +10,7 @@ from owlapy.class_expression import OWLDataMinCardinality, OWLObjectIntersection
     OWLDataOneOf, OWLDataSomeValuesFrom, \
     OWLDataMaxCardinality, OWLObjectHasValue, OWLObjectOneOf
 
-from owlapy.data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.providers import owl_datatype_min_max_inclusive_restriction
 from owlapy.render import DLSyntaxObjectRenderer, ManchesterOWLSyntaxOWLObjectRenderer
 

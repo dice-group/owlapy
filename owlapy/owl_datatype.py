@@ -1,6 +1,6 @@
 """OWL Datatype"""
 from .owl_object import OWLEntity
-from .data_ranges import OWLDataRange
+from .owl_data_ranges import OWLDataRange
 from .iri import IRI
 from .meta_classes import HasIRI
 from typing import Final, Union

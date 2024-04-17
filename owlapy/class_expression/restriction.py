@@ -5,7 +5,7 @@ from typing import TypeVar, Generic, Final, Sequence, Union, Iterable
 from .nary_boolean_expression import OWLObjectIntersectionOf
 from .class_expression import OWLAnonymousClassExpression, OWLClassExpression
 from ..owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, OWLDataPropertyExpression
-from ..data_ranges import OWLPropertyRange, OWLDataRange
+from ..owl_data_ranges import OWLPropertyRange, OWLDataRange
 from ..owl_literal import OWLLiteral
 from ..owl_individual import OWLIndividual
 from ..owl_datatype import OWLDatatype

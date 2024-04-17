@@ -12,7 +12,7 @@ from owlapy.class_expression import OWLClassExpression, OWLClass, OWLObjectCardi
     OWLDataOneOf, OWLObjectIntersectionOf, \
     OWLDataCardinalityRestriction, OWLNaryBooleanClassExpression, OWLObjectUnionOf, \
     OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
-from .data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange, OWLDataRange, \
+from .owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange, OWLDataRange, \
     OWLPropertyRange
 from .owl_object import OWLObject
 from .owl_datatype import OWLDatatype
