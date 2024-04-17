@@ -46,6 +46,51 @@ Submodules
 Package Contents
 ----------------
 
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owl_expression_to_dl
+   owlapy.owl_expression_to_manchester
+   owlapy.dl_to_owl_expression
+   owlapy.manchester_to_owl_expression
+   owlapy.owl_expression_to_sparql
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.__version__
+
+
+.. py:function:: owl_expression_to_dl(o: owlapy.owl_object.OWLObject) -> str
+
+
+.. py:function:: owl_expression_to_manchester(o: owlapy.owl_object.OWLObject) -> str
+
+
+.. py:function:: dl_to_owl_expression(dl_expression: str, namespace: str)
+
+
+.. py:function:: manchester_to_owl_expression(manchester_expression: str, namespace: str)
+
+
+.. py:function:: owl_expression_to_sparql(root_variable: str = '?x', expression: owlapy.class_expression.OWLClassExpression = None, values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, named_individuals: bool = False) -> str
+
+   Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
+   root variable: the variable that will be projected
+   expression: the class expression to be transformed to a SPARQL query
+
+   values: positive or negative examples from a class expression problem. Unclear
+   named_individuals: if set to True, the generated SPARQL query will return only entities
+   that are instances of owl:NamedIndividual
+
+
 .. py:data:: __version__
    :value: '0.1.3'
 

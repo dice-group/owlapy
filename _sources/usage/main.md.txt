@@ -1,6 +1,6 @@
-# OWLAPY
+# About owlapy
 
-**Version:** ontolearn 1.0.0
+**Version:** owlapy 1.0.0
 
 **GitHub repository:** [https://github.com/dice-group/owlapy](https://github.com/dice-group/owlapy)
 
@@ -26,7 +26,7 @@ focus on knowledge graphs and class expression learnings.
 
 ---------------------------------------
 
-## What does owlapy offer?:
+## What does owlapy have to offer?
 
 - Represent every notation in 
 [OWL 2 Structural Specification and Functional-Style Syntax](https://www.w3.org/TR/owl2-syntax/)
@@ -44,7 +44,7 @@ including:
 - Parse Description Logics or Manchester expression to owl expression.
 
 
-## Installation
+## How to install?
 
 Installation from source:
 ``` bash
