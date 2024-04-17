@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.data_ranges &mdash; OWLAPY 0.1.2 documentation</title>
+  <title>owlapy.owl_data_ranges &mdash; OWLAPY 0.1.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -67,7 +67,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">owlapy.data_ranges</li>
+      <li class="breadcrumb-item active">owlapy.owl_data_ranges</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -76,37 +76,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for owlapy.data_ranges</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;OWL data ranges</span>
+  <h1>Source code for owlapy.owl_data_ranges</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;OWL Data Ranges</span>
 
 <span class="sd">https://www.w3.org/TR/owl2-syntax/#Data_Ranges</span>
 
 <span class="sd">DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">..owl_object</span> <span class="kn">import</span> <span class="n">OWLObject</span>
-<span class="kn">from</span> <span class="nn">..meta_classes</span> <span class="kn">import</span> <span class="n">HasOperands</span>
+<span class="kn">from</span> <span class="nn">.owl_object</span> <span class="kn">import</span> <span class="n">OWLObject</span>
+<span class="kn">from</span> <span class="nn">.meta_classes</span> <span class="kn">import</span> <span class="n">HasOperands</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Iterable</span>
 
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
 
 
 <div class="viewcode-block" id="OWLPropertyRange">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLPropertyRange">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLPropertyRange">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLPropertyRange</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OWL Objects that can be the ranges of properties.&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="OWLDataRange">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataRange">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataRange">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLDataRange</span><span class="p">(</span><span class="n">OWLPropertyRange</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a DataRange in the OWL 2 Specification.&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="OWLNaryDataRange">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLNaryDataRange">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLNaryDataRange">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLNaryDataRange</span><span class="p">(</span><span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">HasOperands</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OWLNaryDataRange.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
@@ -121,20 +121,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">operands</span><span class="p">)</span>
 
 <div class="viewcode-block" id="OWLNaryDataRange.operands">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLNaryDataRange.operands">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLNaryDataRange.operands">[docs]</a>
     <span class="k">def</span> <span class="nf">operands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span></div>
 
 
 <div class="viewcode-block" id="OWLNaryDataRange.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLNaryDataRange.__repr__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLNaryDataRange.__repr__">[docs]</a>
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span></div>
 
 
 <div class="viewcode-block" id="OWLNaryDataRange.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLNaryDataRange.__eq__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLNaryDataRange.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_operands</span>
@@ -142,7 +142,7 @@
 
 
 <div class="viewcode-block" id="OWLNaryDataRange.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLNaryDataRange.__hash__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLNaryDataRange.__hash__">[docs]</a>
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">)</span></div>
 </div>
@@ -150,7 +150,7 @@
 
 
 <div class="viewcode-block" id="OWLDataIntersectionOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataIntersectionOf">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataIntersectionOf">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">OWLNaryDataRange</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An intersection data range DataIntersectionOf( DR1 ... DRn ) contains all tuples of literals that are contained</span>
 <span class="sd">    in each data range DRi for 1 ≤ i ≤ n. All data ranges DRi must be of the same arity, and the resulting data range</span>
@@ -166,7 +166,7 @@
 
 
 <div class="viewcode-block" id="OWLDataUnionOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataUnionOf">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataUnionOf">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLDataUnionOf</span><span class="p">(</span><span class="n">OWLNaryDataRange</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A union data range DataUnionOf( DR1 ... DRn ) contains all tuples of literals that are contained in the at least</span>
 <span class="sd">     one data range DRi for 1 ≤ i ≤ n. All data ranges DRi must be of the same arity, and the resulting data range is of</span>
@@ -181,7 +181,7 @@
 
 
 <div class="viewcode-block" id="OWLDataComplementOf">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataComplementOf">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataComplementOf">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLDataComplementOf</span><span class="p">(</span><span class="n">OWLDataRange</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A complement data range DataComplementOf( DR ) contains all tuples of literals that are not contained in the</span>
 <span class="sd">    data range DR. The resulting data range has the arity equal to the arity of DR.</span>
@@ -200,7 +200,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_range</span> <span class="o">=</span> <span class="n">data_range</span>
 
 <div class="viewcode-block" id="OWLDataComplementOf.get_data_range">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataComplementOf.get_data_range">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataComplementOf.get_data_range">[docs]</a>
     <span class="k">def</span> <span class="nf">get_data_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
@@ -210,13 +210,13 @@
 
 
 <div class="viewcode-block" id="OWLDataComplementOf.__repr__">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataComplementOf.__repr__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataComplementOf.__repr__">[docs]</a>
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OWLDataComplementOf(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_range</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 
 <div class="viewcode-block" id="OWLDataComplementOf.__eq__">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataComplementOf.__eq__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataComplementOf.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_range</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_data_range</span>
@@ -224,7 +224,7 @@
 
 
 <div class="viewcode-block" id="OWLDataComplementOf.__hash__">
-<a class="viewcode-back" href="../../autoapi/owlapy/data_ranges/index.html#owlapy.data_ranges.OWLDataComplementOf.__hash__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataComplementOf.__hash__">[docs]</a>
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_range</span><span class="p">)</span></div>
 </div>
