@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="main.html">OWLAPY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/owlapy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/usage/usage_examples.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h1>
+<p>The main usage for owlapy is to use it for class expression construction. Class
+expression learning algorithms require such basic structure to work upon. Let’s walk
+through an example of constructing some class expressions.</p>
+<p>In this example we will be using the <em>family</em> ontology,
+a simple ontology with namespace: <code class="docutils literal notranslate"><span class="pre">http://example.com/family#</span></code>.
+Here is a hierarchical diagram that shows the classes and their relationship:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>         Thing
+           |
+        person
+       /   |   
+   male  female
+</pre></div>
+</div>
+<p>It contains only one object property which is <code class="docutils literal notranslate"><span class="pre">hasChild</span></code> and in total there
+are six persons (individuals), of which four are males and two are females.</p>
+<section id="atomic-classes">
+<h2>Atomic Classes<a class="headerlink" href="#atomic-classes" title="Link to this heading"></a></h2>
+<p>To represent the classes <code class="docutils literal notranslate"><span class="pre">male</span></code>, <code class="docutils literal notranslate"><span class="pre">female</span></code>, and <code class="docutils literal notranslate"><span class="pre">person</span></code> we can simply use the
+class <a class="reference external" href="https://dice-group.github.io/owlapy/autoapi/owlapy/class_expression/owl_class/index.html#owlapy.class_expression.owl_class.OWLClass">OWLClass</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClass</span>
+<span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
+
+<span class="n">namespace</span> <span class="o">=</span> <span class="s2">&quot;http://example.com/family#&quot;</span>
+
+<span class="n">male</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="s2">&quot;male&quot;</span><span class="p">))</span>
+<span class="n">female</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="s2">&quot;female&quot;</span><span class="p">))</span>
+<span class="n">person</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="s2">&quot;person&quot;</span><span class="p">))</span>
+
+</pre></div>
+</div>
+<p>Notice that we created an <code class="docutils literal notranslate"><span class="pre">IRI</span></code> object for every class. <a class="reference external" href="https://dice-group.github.io/owlapy/autoapi/owlapy/iri/index.html#owlapy.iri.IRI">IRI</a>
+is used to represent an <em>IRI</em>. Every named entity requires an IRI, whereas Anonymous entities does not.
+However, in owlapy you can create an <em>OWLClass</em> by passing the <em>IRI</em> directly as a string, like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">male</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="s2">&quot;http://example.com/family#male&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="object-property">
+<h2>Object Property<a class="headerlink" href="#object-property" title="Link to this heading"></a></h2>
+<p>To represent the object property <code class="docutils literal notranslate"><span class="pre">hasChild</span></code> we can use the class
+<a class="reference external" href="https://dice-group.github.io/owlapy/autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectProperty">OWLObjectProperty</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectProperty</span>
+
+<span class="n">hasChild</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="s2">&quot;http://example.com/family#hasChild&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p><strong>Tip:</strong> In owlapy the naming of the classes is made in accordance with the notations from
+OWL 2 specification but with the word <em>“OWL”</em> in the beginning. Example: <em>“OWLObjectProperty”</em>
+represents the notation <em>“ObjectProperty”</em>.</p>
+</div></blockquote>
+</section>
+<section id="complex-class-expressions">
+<h2>Complex class expressions<a class="headerlink" href="#complex-class-expressions" title="Link to this heading"></a></h2>
+<p>Now that we have these atomic entities, we can construct more complex class
+expressions. Let’s say we want to represent all individuals which are <code class="docutils literal notranslate"><span class="pre">male</span></code>
+and have at least 1 child.</p>
+<p>We already have the concept of <code class="docutils literal notranslate"><span class="pre">male</span></code>. We need to find the appropriate class
+for the second part: <em>“have at least 1 child”</em>. In OWL 2 specification that would be
+<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Minimum_Cardinality">ObjectMinCardinality</a>. In owlapy,
+as we said, we simply add the word <em>“OWL”</em> upfront to find the correct class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLObjectMinCardinality</span>
+
+<span class="n">has_at_least_one_child</span> <span class="o">=</span> <span class="n">OWLObjectMinCardinality</span><span class="p">(</span>
+    <span class="n">cardinality</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> 
+    <span class="nb">property</span> <span class="o">=</span> <span class="n">hasChild</span><span class="p">,</span>
+    <span class="n">filler</span> <span class="o">=</span> <span class="n">person</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>As you can see, to create an object of class <a class="reference external" href="https://dice-group.github.io/owlapy/autoapi/owlapy/class_expression/restriction/index.html#owlapy.class_expression.restriction.OWLObjectMinCardinality">OWLObjectMinCardinality</a>
+is as easy as that. You specify the cardinality which in this case is <code class="docutils literal notranslate"><span class="pre">1</span></code>, the object property where we apply this
+cardinality restriction and the filler class in case you want to restrict the domain of the class expression. In this
+case we used <code class="docutils literal notranslate"><span class="pre">person</span></code>.</p>
+<p>Now let’s merge both class expressions together using <a class="reference external" href="https://dice-group.github.io/owlapy/autoapi/owlapy/class_expression/nary_boolean_expression/index.html#owlapy.class_expression.nary_boolean_expression.OWLObjectIntersectionOf">OWLObjectIntersectionOf</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLObjectIntersectionOf</span>
+
+<span class="n">ce</span> <span class="o">=</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">([</span><span class="n">male</span><span class="p">,</span> <span class="n">has_at_least_one_child</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="convert-to-sparql-dl-or-manchester-syntax">
+<h2>Convert to SPARQL, DL or Manchester syntax<a class="headerlink" href="#convert-to-sparql-dl-or-manchester-syntax" title="Link to this heading"></a></h2>
+<p>Owlapy is not just a library to represent OWL entities, you can also
+use it to convert owl expressions into other formats:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">owl_expression_to_sparql</span><span class="p">,</span> <span class="n">owl_expression_to_dl</span><span class="p">,</span> <span class="n">owl_expression_to_manchester</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">owl_expression_to_dl</span><span class="p">(</span><span class="n">ce</span><span class="p">))</span>
+<span class="c1"># Result: male ⊓ (≥ 1 hasChild.person)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">owl_expression_to_sparql</span><span class="p">(</span><span class="n">expression</span><span class="o">=</span><span class="n">ce</span><span class="p">))</span>
+<span class="c1"># Result: SELECT DISTINCT ?x WHERE { ?x a &lt;http://example.com/family#male&gt; . { SELECT ?x WHERE { ?x &lt;http://example.com/family#hasChild&gt; ?s_1 . ?s_1 a &lt;http://example.com/family#person&gt; .  } GROUP BY ?x HAVING ( COUNT ( ?s_1 ) &gt;= 1 ) } }</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">owl_expression_to_manchester</span><span class="p">(</span><span class="n">ce</span><span class="p">))</span>
+<span class="c1"># Result: male and (hasChild min 1 person)</span>
+</pre></div>
+</div>
+<p>To parse a DL or Manchester expression to owl expression you can use the
+following convenient methods:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">dl_to_owl_expression</span><span class="p">,</span> <span class="n">manchester_to_owl_expression</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">dl_to_owl_expression</span><span class="p">(</span><span class="s2">&quot;∃ hasChild.male&quot;</span><span class="p">,</span> <span class="n">namespace</span><span class="p">))</span>
+<span class="c1"># Result: OWLObjectSomeValuesFrom(property=OWLObjectProperty(IRI(&#39;http://example.com/family#&#39;,&#39;hasChild&#39;)),filler=OWLClass(IRI(&#39;http://example.com/family#&#39;,&#39;male&#39;)))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">manchester_to_owl_expression</span><span class="p">(</span><span class="s2">&quot;female and (hasChild max 2 person)&quot;</span><span class="p">,</span> <span class="n">namespace</span><span class="p">))</span>
+<span class="c1"># Result: OWLObjectIntersectionOf((OWLClass(IRI(&#39;http://example.com/family#&#39;,&#39;female&#39;)), OWLObjectMaxCardinality(property=OWLObjectProperty(IRI(&#39;http://example.com/family#&#39;,&#39;hasChild&#39;)),2,filler=OWLClass(IRI(&#39;http://example.com/family#&#39;,&#39;person&#39;)))))</span>
+
+</pre></div>
+</div>
+<p>In these examples we showed a fraction of <strong>owlapy</strong>. You can explore the
+<a class="reference internal" href="../autoapi/owlapy/index.html#module-owlapy" title="owlapy"><span class="xref myst py py-mod">api documentation</span></a> to learn more about all classes in owlapy.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

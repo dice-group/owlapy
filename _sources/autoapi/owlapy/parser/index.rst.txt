@@ -50,7 +50,7 @@ Attributes
 .. py:class:: ManchesterOWLSyntaxParser(namespace: Optional[Union[str, owlapy.namespaces.Namespaces]] = None, grammar=None)
 
 
-   Bases: :py:obj:`parsimonious.nodes.NodeVisitor`, :py:obj:`owlapy.owlobject.OWLObjectParser`
+   Bases: :py:obj:`parsimonious.nodes.NodeVisitor`, :py:obj:`owlapy.owl_object.OWLObjectParser`
 
    Manchester Syntax parser to parse strings to OWLClassExpressions.
    Following: https://www.w3.org/TR/owl2-manchester-syntax.
@@ -65,7 +65,7 @@ Attributes
 
       
 
-   .. py:method:: parse_expression(expression_str: str) -> owlapy.model.OWLClassExpression
+   .. py:method:: parse_expression(expression_str: str) -> owlapy.class_expression.OWLClassExpression
 
       Parse a string to an OWL Object.
 
@@ -75,58 +75,58 @@ Attributes
       :returns: The OWL Object which is represented by the string.
 
 
-   .. py:method:: visit_union(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_union(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
-   .. py:method:: visit_intersection(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_intersection(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
-   .. py:method:: visit_primary(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_primary(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
-   .. py:method:: visit_some_only_res(node, children) -> owlapy.model.OWLQuantifiedObjectRestriction
+   .. py:method:: visit_some_only_res(node, children) -> owlapy.class_expression.OWLQuantifiedObjectRestriction
 
 
-   .. py:method:: visit_cardinality_res(node, children) -> owlapy.model.OWLObjectCardinalityRestriction
+   .. py:method:: visit_cardinality_res(node, children) -> owlapy.class_expression.OWLObjectCardinalityRestriction
 
 
    .. py:method:: visit_value_res(node, children) -> owlapy.class_expression.OWLObjectHasValue
 
 
-   .. py:method:: visit_has_self(node, children) -> owlapy.model.OWLObjectHasSelf
+   .. py:method:: visit_has_self(node, children) -> owlapy.class_expression.OWLObjectHasSelf
 
 
-   .. py:method:: visit_object_property(node, children) -> owlapy.model.OWLObjectPropertyExpression
+   .. py:method:: visit_object_property(node, children) -> owlapy.owl_property.OWLObjectPropertyExpression
 
 
-   .. py:method:: visit_class_expression(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_class_expression(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
    .. py:method:: visit_individual_list(node, children) -> owlapy.class_expression.OWLObjectOneOf
 
 
-   .. py:method:: visit_data_primary(node, children) -> owlapy.model.OWLDataRange
+   .. py:method:: visit_data_primary(node, children) -> owlapy.data_ranges.OWLDataRange
 
 
-   .. py:method:: visit_data_some_only_res(node, children) -> owlapy.model.OWLQuantifiedDataRestriction
+   .. py:method:: visit_data_some_only_res(node, children) -> owlapy.class_expression.OWLQuantifiedDataRestriction
 
 
-   .. py:method:: visit_data_cardinality_res(node, children) -> owlapy.model.OWLDataCardinalityRestriction
+   .. py:method:: visit_data_cardinality_res(node, children) -> owlapy.class_expression.OWLDataCardinalityRestriction
 
 
-   .. py:method:: visit_data_value_res(node, children) -> owlapy.model.OWLDataHasValue
+   .. py:method:: visit_data_value_res(node, children) -> owlapy.class_expression.OWLDataHasValue
 
 
-   .. py:method:: visit_data_union(node, children) -> owlapy.model.OWLDataRange
+   .. py:method:: visit_data_union(node, children) -> owlapy.data_ranges.OWLDataRange
 
 
-   .. py:method:: visit_data_intersection(node, children) -> owlapy.model.OWLDataRange
+   .. py:method:: visit_data_intersection(node, children) -> owlapy.data_ranges.OWLDataRange
 
 
-   .. py:method:: visit_literal_list(node, children) -> owlapy.model.OWLDataOneOf
+   .. py:method:: visit_literal_list(node, children) -> owlapy.class_expression.OWLDataOneOf
 
 
-   .. py:method:: visit_data_parentheses(node, children) -> owlapy.model.OWLDataRange
+   .. py:method:: visit_data_parentheses(node, children) -> owlapy.data_ranges.OWLDataRange
 
 
    .. py:method:: visit_datatype_restriction(node, children) -> owlapy.class_expression.OWLDatatypeRestriction
@@ -138,41 +138,41 @@ Attributes
    .. py:method:: visit_facet_restriction(node, children) -> owlapy.class_expression.OWLFacetRestriction
 
 
-   .. py:method:: visit_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_typed_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_typed_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
    .. py:method:: visit_string_literal_language(node, children)
       :abstractmethod:
 
 
-   .. py:method:: visit_string_literal_no_language(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_string_literal_no_language(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
    .. py:method:: visit_quoted_string(node, children) -> str
 
 
-   .. py:method:: visit_float_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_float_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_decimal_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_decimal_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_integer_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_integer_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_boolean_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_boolean_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_datetime_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_datetime_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_duration_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_duration_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_date_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_date_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
    .. py:method:: visit_non_negative_integer(node, children) -> int
@@ -181,38 +181,38 @@ Attributes
    .. py:method:: visit_datatype_iri(node, children) -> str
 
 
-   .. py:method:: visit_datatype(node, children) -> owlapy.model.OWLDatatype
+   .. py:method:: visit_datatype(node, children) -> owlapy.owl_datatype.OWLDatatype
 
 
    .. py:method:: visit_facet(node, children) -> owlapy.vocab.OWLFacet
 
 
-   .. py:method:: visit_class_iri(node, children) -> owlapy.model.OWLClass
+   .. py:method:: visit_class_iri(node, children) -> owlapy.class_expression.OWLClass
 
 
-   .. py:method:: visit_individual_iri(node, children) -> owlapy.model.OWLNamedIndividual
+   .. py:method:: visit_individual_iri(node, children) -> owlapy.owl_individual.OWLNamedIndividual
 
 
-   .. py:method:: visit_object_property_iri(node, children) -> owlapy.model.OWLObjectProperty
+   .. py:method:: visit_object_property_iri(node, children) -> owlapy.owl_property.OWLObjectProperty
 
 
-   .. py:method:: visit_data_property_iri(node, children) -> owlapy.model.OWLDataProperty
+   .. py:method:: visit_data_property_iri(node, children) -> owlapy.owl_property.OWLDataProperty
 
 
-   .. py:method:: visit_iri(node, children) -> owlapy.model.IRI
+   .. py:method:: visit_iri(node, children) -> owlapy.iri.IRI
 
 
-   .. py:method:: visit_full_iri(node, children) -> owlapy.model.IRI
+   .. py:method:: visit_full_iri(node, children) -> owlapy.iri.IRI
 
 
    .. py:method:: visit_abbreviated_iri(node, children)
       :abstractmethod:
 
 
-   .. py:method:: visit_simple_iri(node, children) -> owlapy.model.IRI
+   .. py:method:: visit_simple_iri(node, children) -> owlapy.iri.IRI
 
 
-   .. py:method:: visit_parentheses(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_parentheses(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
    .. py:method:: generic_visit(node, children)
@@ -237,7 +237,7 @@ Attributes
 .. py:class:: DLSyntaxParser(namespace: Optional[Union[str, owlapy.namespaces.Namespaces]] = None, grammar=None)
 
 
-   Bases: :py:obj:`parsimonious.nodes.NodeVisitor`, :py:obj:`owlapy.owlobject.OWLObjectParser`
+   Bases: :py:obj:`parsimonious.nodes.NodeVisitor`, :py:obj:`owlapy.owl_object.OWLObjectParser`
 
    Description Logic Syntax parser to parse strings to OWLClassExpressions.
 
@@ -251,7 +251,7 @@ Attributes
 
       
 
-   .. py:method:: parse_expression(expression_str: str) -> owlapy.model.OWLClassExpression
+   .. py:method:: parse_expression(expression_str: str) -> owlapy.class_expression.OWLClassExpression
 
       Parse a string to an OWL Object.
 
@@ -261,58 +261,58 @@ Attributes
       :returns: The OWL Object which is represented by the string.
 
 
-   .. py:method:: visit_union(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_union(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
-   .. py:method:: visit_intersection(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_intersection(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
-   .. py:method:: visit_primary(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_primary(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
-   .. py:method:: visit_some_only_res(node, children) -> owlapy.model.OWLQuantifiedObjectRestriction
+   .. py:method:: visit_some_only_res(node, children) -> owlapy.class_expression.OWLQuantifiedObjectRestriction
 
 
-   .. py:method:: visit_cardinality_res(node, children) -> owlapy.model.OWLObjectCardinalityRestriction
+   .. py:method:: visit_cardinality_res(node, children) -> owlapy.class_expression.OWLObjectCardinalityRestriction
 
 
    .. py:method:: visit_value_res(node, children) -> owlapy.class_expression.OWLObjectHasValue
 
 
-   .. py:method:: visit_has_self(node, children) -> owlapy.model.OWLObjectHasSelf
+   .. py:method:: visit_has_self(node, children) -> owlapy.class_expression.OWLObjectHasSelf
 
 
-   .. py:method:: visit_object_property(node, children) -> owlapy.model.OWLObjectPropertyExpression
+   .. py:method:: visit_object_property(node, children) -> owlapy.owl_property.OWLObjectPropertyExpression
 
 
-   .. py:method:: visit_class_expression(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_class_expression(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
    .. py:method:: visit_individual_list(node, children) -> owlapy.class_expression.OWLObjectOneOf
 
 
-   .. py:method:: visit_data_primary(node, children) -> owlapy.model.OWLDataRange
+   .. py:method:: visit_data_primary(node, children) -> owlapy.data_ranges.OWLDataRange
 
 
-   .. py:method:: visit_data_some_only_res(node, children) -> owlapy.model.OWLQuantifiedDataRestriction
+   .. py:method:: visit_data_some_only_res(node, children) -> owlapy.class_expression.OWLQuantifiedDataRestriction
 
 
-   .. py:method:: visit_data_cardinality_res(node, children) -> owlapy.model.OWLDataCardinalityRestriction
+   .. py:method:: visit_data_cardinality_res(node, children) -> owlapy.class_expression.OWLDataCardinalityRestriction
 
 
-   .. py:method:: visit_data_value_res(node, children) -> owlapy.model.OWLDataHasValue
+   .. py:method:: visit_data_value_res(node, children) -> owlapy.class_expression.OWLDataHasValue
 
 
-   .. py:method:: visit_data_union(node, children) -> owlapy.model.OWLDataRange
+   .. py:method:: visit_data_union(node, children) -> owlapy.data_ranges.OWLDataRange
 
 
-   .. py:method:: visit_data_intersection(node, children) -> owlapy.model.OWLDataRange
+   .. py:method:: visit_data_intersection(node, children) -> owlapy.data_ranges.OWLDataRange
 
 
-   .. py:method:: visit_literal_list(node, children) -> owlapy.model.OWLDataOneOf
+   .. py:method:: visit_literal_list(node, children) -> owlapy.class_expression.OWLDataOneOf
 
 
-   .. py:method:: visit_data_parentheses(node, children) -> owlapy.model.OWLDataRange
+   .. py:method:: visit_data_parentheses(node, children) -> owlapy.data_ranges.OWLDataRange
 
 
    .. py:method:: visit_datatype_restriction(node, children) -> owlapy.class_expression.OWLDatatypeRestriction
@@ -324,41 +324,41 @@ Attributes
    .. py:method:: visit_facet_restriction(node, children) -> owlapy.class_expression.OWLFacetRestriction
 
 
-   .. py:method:: visit_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_typed_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_typed_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
    .. py:method:: visit_string_literal_language(node, children)
       :abstractmethod:
 
 
-   .. py:method:: visit_string_literal_no_language(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_string_literal_no_language(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
    .. py:method:: visit_quoted_string(node, children) -> str
 
 
-   .. py:method:: visit_float_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_float_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_decimal_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_decimal_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_integer_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_integer_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_boolean_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_boolean_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_datetime_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_datetime_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_duration_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_duration_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
-   .. py:method:: visit_date_literal(node, children) -> owlapy.model.OWLLiteral
+   .. py:method:: visit_date_literal(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
    .. py:method:: visit_non_negative_integer(node, children) -> int
@@ -367,38 +367,38 @@ Attributes
    .. py:method:: visit_datatype_iri(node, children) -> str
 
 
-   .. py:method:: visit_datatype(node, children) -> owlapy.model.OWLDatatype
+   .. py:method:: visit_datatype(node, children) -> owlapy.owl_datatype.OWLDatatype
 
 
    .. py:method:: visit_facet(node, children) -> owlapy.vocab.OWLFacet
 
 
-   .. py:method:: visit_class_iri(node, children) -> owlapy.model.OWLClass
+   .. py:method:: visit_class_iri(node, children) -> owlapy.class_expression.OWLClass
 
 
-   .. py:method:: visit_individual_iri(node, children) -> owlapy.model.OWLNamedIndividual
+   .. py:method:: visit_individual_iri(node, children) -> owlapy.owl_individual.OWLNamedIndividual
 
 
-   .. py:method:: visit_object_property_iri(node, children) -> owlapy.model.OWLObjectProperty
+   .. py:method:: visit_object_property_iri(node, children) -> owlapy.owl_property.OWLObjectProperty
 
 
-   .. py:method:: visit_data_property_iri(node, children) -> owlapy.model.OWLDataProperty
+   .. py:method:: visit_data_property_iri(node, children) -> owlapy.owl_property.OWLDataProperty
 
 
-   .. py:method:: visit_iri(node, children) -> owlapy.model.IRI
+   .. py:method:: visit_iri(node, children) -> owlapy.iri.IRI
 
 
-   .. py:method:: visit_full_iri(node, children) -> owlapy.model.IRI
+   .. py:method:: visit_full_iri(node, children) -> owlapy.iri.IRI
 
 
    .. py:method:: visit_abbreviated_iri(node, children)
       :abstractmethod:
 
 
-   .. py:method:: visit_simple_iri(node, children) -> owlapy.model.IRI
+   .. py:method:: visit_simple_iri(node, children) -> owlapy.iri.IRI
 
 
-   .. py:method:: visit_parentheses(node, children) -> owlapy.model.OWLClassExpression
+   .. py:method:: visit_parentheses(node, children) -> owlapy.class_expression.OWLClassExpression
 
 
    .. py:method:: generic_visit(node, children)
@@ -424,9 +424,9 @@ Attributes
 
    
 
-.. py:function:: dl_to_owl_expression(dl_expression: str)
+.. py:function:: dl_to_owl_expression(dl_expression: str, namespace: str)
 
 
-.. py:function:: manchester_to_owl_expression(manchester_expression: str)
+.. py:function:: manchester_to_owl_expression(manchester_expression: str, namespace: str)
 
 

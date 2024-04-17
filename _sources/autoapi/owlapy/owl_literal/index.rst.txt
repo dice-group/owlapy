@@ -3,6 +3,11 @@
 
 .. py:module:: owlapy.owl_literal
 
+.. autoapi-nested-parse::
+
+   OWL Literals
+
+
 
 Module Contents
 ---------------
@@ -48,7 +53,12 @@ Attributes
 
    Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
 
-   Represents a Literal in the OWL 2 Specification.
+   Literals represent data values such as particular strings or integers. They are analogous to typed RDF
+   literals and can also be understood as individuals denoting
+   data values. Each literal consists of a lexical form, which is a string, and a datatype.
+
+    (https://www.w3.org/TR/owl2-syntax/#Literals)
+
 
    .. py:attribute:: __slots__
       :value: ()
@@ -172,7 +182,7 @@ Attributes
    .. py:method:: to_python() -> Literals
 
 
-   .. py:method:: get_datatype() -> owlapy.types.OWLDatatype
+   .. py:method:: get_datatype() -> owlapy.owl_datatype.OWLDatatype
       :abstractmethod:
 
       Gets the OWLDatatype which types this literal.
@@ -242,12 +252,12 @@ Attributes
    
 
 .. py:data:: NUMERIC_DATATYPES
-   :type: Final[Set[owlapy.types.OWLDatatype]]
+   :type: Final[Set[owlapy.owl_datatype.OWLDatatype]]
 
    
 
 .. py:data:: TIME_DATATYPES
-   :type: Final[Set[owlapy.types.OWLDatatype]]
+   :type: Final[Set[owlapy.owl_datatype.OWLDatatype]]
 
    
 

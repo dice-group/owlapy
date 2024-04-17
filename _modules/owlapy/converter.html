@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.converter &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">OWLAPY</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.converter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.converter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Format converter.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">singledispatchmethod</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MappingProxyType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Set</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span>
+
+<span class="kn">from</span> <span class="nn">rdflib.plugins.sparql.parser</span> <span class="kn">import</span> <span class="n">parseQuery</span>
+
+<span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> \
+    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> \
+    <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> \
+    <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> \
+    <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> \
+    <span class="n">OWLDataOneOf</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">TopOWLDatatype</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_object</span> <span class="kn">import</span> <span class="n">OWLEntity</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_datatype</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLRDFVocabulary</span>
+
+<span class="n">_Variable_facet_comp</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">({</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">:</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span><span class="p">:</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">,</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">:</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">,</span>
+    <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span><span class="p">:</span> <span class="s2">&quot;&lt;&quot;</span>
+<span class="p">})</span>
+
+
+<div class="viewcode-block" id="peek">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.peek">[docs]</a>
+<span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Peek the last element of an array.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The last element arr[-1].</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="VariablesMapping">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.VariablesMapping">[docs]</a>
+<span class="k">class</span> <span class="nc">VariablesMapping</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper class for owl-to-sparql conversion.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;class_cnt&#39;</span><span class="p">,</span> <span class="s1">&#39;prop_cnt&#39;</span><span class="p">,</span> <span class="s1">&#39;ind_cnt&#39;</span><span class="p">,</span> <span class="s1">&#39;dict&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_cnt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prop_cnt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ind_cnt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="VariablesMapping.get_variable">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.VariablesMapping.get_variable">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="n">e</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">class_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;?cls_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">class_cnt</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prop_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;?p_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prop_cnt</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ind_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;?ind_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ind_cnt</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="k">return</span> <span class="n">var</span></div>
+
+
+<div class="viewcode-block" id="VariablesMapping.new_individual_variable">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.VariablesMapping.new_individual_variable">[docs]</a>
+    <span class="k">def</span> <span class="nf">new_individual_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ind_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;?s_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ind_cnt</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="VariablesMapping.new_property_variable">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.VariablesMapping.new_property_variable">[docs]</a>
+    <span class="k">def</span> <span class="nf">new_property_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prop_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;?p_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prop_cnt</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="VariablesMapping.__contains__">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.VariablesMapping.__contains__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict</span></div>
+
+
+<div class="viewcode-block" id="VariablesMapping.__getitem__">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.VariablesMapping.__getitem__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="n">item</span><span class="p">]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Owl2SparqlConverter">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter">[docs]</a>
+<span class="k">class</span> <span class="nc">Owl2SparqlConverter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert owl (owlapy model class expressions) to SPARQL.&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;ce&#39;</span><span class="p">,</span> <span class="s1">&#39;sparql&#39;</span><span class="p">,</span> <span class="s1">&#39;variables&#39;</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">,</span> <span class="s1">&#39;parent_var&#39;</span><span class="p">,</span> <span class="s1">&#39;properties&#39;</span><span class="p">,</span> <span class="s1">&#39;variable_entities&#39;</span><span class="p">,</span> <span class="s1">&#39;cnt&#39;</span><span class="p">,</span> \
+                <span class="s1">&#39;mapping&#39;</span><span class="p">,</span> <span class="s1">&#39;grouping_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;having_conditions&#39;</span><span class="p">,</span> <span class="s1">&#39;_intersection&#39;</span>
+    <span class="c1"># @TODO:CD: We need to document this class. The computation behind the mapping is not clear.</span>
+
+    <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span>
+    <span class="n">sparql</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">variables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">parent</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span>
+    <span class="n">parent_var</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">variable_entities</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]]</span>
+    <span class="n">_intersection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span>
+    <span class="n">mapping</span><span class="p">:</span> <span class="n">VariablesMapping</span>
+    <span class="n">grouping_vars</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">having_conditions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">cnt</span><span class="p">:</span> <span class="nb">int</span>
+
+<div class="viewcode-block" id="Owl2SparqlConverter.convert">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.convert">[docs]</a>
+    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Used to convert owl class expression to SPARQL syntax.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            root_variable (str): Root variable name that will be used in SPARQL query.</span>
+<span class="sd">            ce (OWLClassExpression): The owl class expression to convert.</span>
+<span class="sd">            named_individuals (bool): If &#39;True&#39; return only entities that are instances of owl:NamedIndividual.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[str]: The SPARQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="n">ce</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparql</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_var</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_entities</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intersection</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="n">VariablesMapping</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grouping_vars</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">having_conditions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+        <span class="c1"># if named_individuals is True, we return only entities that are instances of owl:NamedIndividual</span>
+        <span class="k">if</span> <span class="n">named_individuals</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NAMED_INDIVIDUAL</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">root_variable</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_parent</span><span class="p">(</span><span class="n">ce</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparql</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">modal_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Owl2SparqlConverter.render">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.render">[docs]</a>
+    <span class="nd">@singledispatchmethod</span>
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lit</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">lit</span><span class="o">.</span><span class="n">get_literal</span><span class="p">()</span><span class="si">}</span><span class="s1">&quot;^^&lt;</span><span class="si">{</span><span class="n">lit</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s1">&gt;&#39;</span>
+
+    <span class="nd">@render</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_entities</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">modal_depth</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="nf">_maybe_quote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">e</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_maybe_quote_p</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">p</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">p</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_maybe_render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">o</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Owl2SparqlConverter.stack_variable">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.stack_variable">[docs]</a>
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span> <span class="nf">stack_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Owl2SparqlConverter.stack_parent">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.stack_parent">[docs]</a>
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span> <span class="nf">stack_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_var</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent_var</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">peek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+
+    <span class="c1"># this method is responsible for translating class expressions to SPARQL queries</span>
+    <span class="c1"># the decorator &quot;@singledispatchmethod&quot; denotes that the method is overload</span>
+    <span class="c1"># each overload of the method is responsible for processing a different type of class expressions (e.g., ⊔ or ⊓)</span>
+<div class="viewcode-block" id="Owl2SparqlConverter.process">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.process">[docs]</a>
+    <span class="nd">@singledispatchmethod</span>
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
+
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling single concepts (e.g., Brother)</span>
+    <span class="c1"># general case: C</span>
+    <span class="c1"># this is the final step of the recursion</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">==</span> <span class="n">ce</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">ce</span><span class="p">))</span>
+            <span class="c1"># old_var = self.current_variable</span>
+            <span class="c1"># new_var = self.mapping.new_individual_variable()</span>
+            <span class="c1"># with self.stack_variable(new_var):</span>
+            <span class="c1">#     self.append_triple(old_var, &quot;a&quot;, new_var)</span>
+            <span class="c1">#     self.append_triple(new_var, &quot;&lt;http://www.w3.org/2000/01/rdf-schema#subClassOf&gt;*&quot;, self.render(ce))</span>
+        <span class="k">elif</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;http://www.w3.org/2002/07/owl#Thing&gt;&quot;</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling intersections of concepts (e.g., Brother ⊓ Father)</span>
+    <span class="c1"># general case: C1 ⊓ ... ⊓ Cn</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+        <span class="c1"># we iterate over the concepts that appear in the intersection</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling unions of concepts (e.g., Brother ⊔ Sister)</span>
+    <span class="c1"># general case: C1 ⊔ ... ⊔ Cn</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># we iterate over the concepts that appear in the union</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+            <span class="c1"># SPARQL&#39;s UNION comes after the first concept</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; UNION &quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;{ &quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_parent</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; }&quot;</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling complements of concepts (e.g., ¬Brother)</span>
+    <span class="c1"># general case: ¬C</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
+        <span class="c1"># process the concept after the ¬</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_operand</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; }&quot;</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling the exists operator (e.g., ∃hasChild.Male)</span>
+    <span class="c1"># general case: ∃r.C</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">):</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="c1"># property expression holds the role of the class expression (hasChild in our example)</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="c1"># property expression is inverse of a property</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">object_variable</span><span class="p">)</span>
+        <span class="c1"># filler holds the concept of the expression (Male in our example) and is processed recursively</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling the forAll operator (e.g., ∀hasChild.Male)</span>
+    <span class="c1"># general case: ∀r.C</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="c1"># property expression holds the role of the class expression (hasChild in our example)</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="n">predicate</span> <span class="o">=</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">()</span>
+        <span class="c1"># filler holds the concept of the expression (Male in our example) and is processed recursively</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="c1"># property expression is inverse of a property</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">object_variable</span><span class="p">)</span>
+
+        <span class="c1"># restrict filler</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">cnt_var1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_count_var</span><span class="p">()</span>
+        <span class="c1"># the count needs to use distinct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> ( COUNT( DISTINCT </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> ) AS </span><span class="si">{</span><span class="n">cnt_var1</span><span class="si">}</span><span class="s2"> ) WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+        <span class="c1"># here, we recursively process the filler (Male in our example)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">cnt_var2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_count_var</span><span class="p">()</span>
+        <span class="c1"># the count needs to use distinct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> ( COUNT( DISTINCT </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> ) AS </span><span class="si">{</span><span class="n">cnt_var2</span><span class="si">}</span><span class="s2"> ) WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER( </span><span class="si">{</span><span class="n">cnt_var1</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">cnt_var2</span><span class="si">}</span><span class="s2"> )&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;} UNION { &quot;</span><span class="p">)</span>
+
+        <span class="c1"># here, the second group graph pattern starts</span>
+        <span class="c1"># the second group graph pattern returns all those entities that do not appear in a triple with the property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="c1"># property expression is inverse of a property</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="n">predicate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; } }&quot;</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling the exists operator combined with an individual (e.g., ∃hasChild.{john})</span>
+    <span class="c1"># general case: ∃r.{a}</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectHasValue</span><span class="p">):</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="c1"># we ensure that the value is an individual</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">(),</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling the exists operator combined with an individual(e.g., &gt;=3 hasChild.Male)</span>
+    <span class="c1"># general case: \theta n r.C</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">):</span>
+        <span class="n">subject_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="n">cardinality</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;&gt;=&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;&lt;=&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;=&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
+        <span class="c1"># if the comparator is ≤ or the cardinality is 0, we need an additional group graph pattern</span>
+        <span class="c1"># the additional group graph pattern will take care the cases where an individual is not associated with the</span>
+        <span class="c1"># property expression</span>
+        <span class="k">if</span> <span class="n">comparator</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span> <span class="ow">or</span> <span class="n">cardinality</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject_variable</span><span class="si">}</span><span class="s2"> WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="c1"># property expression is inverse of a property</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">subject_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">object_variable</span><span class="p">)</span>
+
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject_variable</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; HAVING ( COUNT ( </span><span class="si">{</span><span class="n">object_variable</span><span class="si">}</span><span class="s2"> ) </span><span class="si">{</span><span class="n">comparator</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cardinality</span><span class="si">}</span><span class="s2"> ) </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># here, the second group graph pattern starts</span>
+        <span class="k">if</span> <span class="n">comparator</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span> <span class="ow">or</span> <span class="n">cardinality</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;} UNION {&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject_variable</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
+            <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+                <span class="c1"># property expression is inverse of a property</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">object_variable</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; } }&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">):</span>
+        <span class="n">subject_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">property_expression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
+        <span class="n">cardinality</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;&gt;=&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;&lt;=&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;=&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject_variable</span><span class="si">}</span><span class="s2"> WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="p">,</span> <span class="n">object_variable</span><span class="p">)</span>
+
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject_variable</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; HAVING ( COUNT ( </span><span class="si">{</span><span class="n">object_variable</span><span class="si">}</span><span class="s2"> ) </span><span class="si">{</span><span class="n">comparator</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cardinality</span><span class="si">}</span><span class="s2"> ) </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling the exists operator combined with SELF</span>
+    <span class="c1"># general case: ∃r.SELF</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectHasSelf</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="nb">property</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">subject</span><span class="p">)</span>
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling the one of case (e.g., { john, jane }</span>
+    <span class="c1"># general case: { a1, ..., an }</span>
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">modal_depth</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="s2">&quot;?p&quot;</span><span class="p">,</span> <span class="s2">&quot;?o&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> IN ( &quot;</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">individuals</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">ind</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; ) )&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">):</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">property_expression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="p">,</span> <span class="n">object_variable</span><span class="p">)</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">property_expression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
+        <span class="n">predicate</span> <span class="o">=</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">object_variable</span><span class="p">)</span>
+
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">cnt_var1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_count_var</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> ( COUNT( </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> ) AS </span><span class="si">{</span><span class="n">cnt_var1</span><span class="si">}</span><span class="s2"> ) WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">cnt_var2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_count_var</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> ( COUNT( </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> ) AS </span><span class="si">{</span><span class="n">cnt_var2</span><span class="si">}</span><span class="s2"> ) WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER( </span><span class="si">{</span><span class="n">cnt_var1</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">cnt_var2</span><span class="si">}</span><span class="s2"> )&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataHasValue</span><span class="p">):</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="o">!=</span> <span class="n">TopOWLDatatype</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( DATATYPE ( </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> = &lt;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt; ) ) &quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">OWLDataOneOf</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">modal_depth</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="s2">&quot;?p&quot;</span><span class="p">,</span> <span class="s2">&quot;?o&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> IN ( &quot;</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; ) ) &quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">OWLDatatypeRestriction</span><span class="p">):</span>
+        <span class="n">frs</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">fr</span> <span class="ow">in</span> <span class="n">frs</span><span class="p">:</span>
+            <span class="n">facet</span> <span class="o">=</span> <span class="n">fr</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">fr</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">facet</span> <span class="ow">in</span> <span class="n">_Variable_facet_comp</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39; FILTER ( </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">_Variable_facet_comp</span><span class="p">[</span><span class="n">facet</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39; &quot;</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">get_literal</span><span class="p">()</span><span class="si">}</span><span class="s1">&quot;^^&lt;</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s1">&gt; ) &#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Owl2SparqlConverter.new_count_var">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.new_count_var">[docs]</a>
+    <span class="k">def</span> <span class="nf">new_count_var</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;?cnt_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cnt</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="Owl2SparqlConverter.append_triple">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.append_triple">[docs]</a>
+    <span class="k">def</span> <span class="nf">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">object_</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">object_</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Owl2SparqlConverter.append">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.append">[docs]</a>
+    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frag</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparql</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frag</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Owl2SparqlConverter.triple">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.triple">[docs]</a>
+    <span class="k">def</span> <span class="nf">triple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">object_</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_maybe_quote</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_maybe_quote_p</span><span class="p">(</span><span class="n">predicate</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_maybe_render</span><span class="p">(</span><span class="n">object_</span><span class="p">)</span><span class="si">}</span><span class="s2"> . &quot;</span></div>
+
+
+<div class="viewcode-block" id="Owl2SparqlConverter.as_query">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.as_query">[docs]</a>
+    <span class="k">def</span> <span class="nf">as_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                 <span class="n">count</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        root variable: the variable that will be projected</span>
+<span class="sd">        ce: the class expression to be transformed to a SPARQL query</span>
+<span class="sd">        count: True, counts the results ; False, projects the individuals</span>
+<span class="sd">        values: positive or negative examples from a class expression problem</span>
+<span class="sd">        named_individuals: if set to True, the generated SPARQL query will return only entities that are instances</span>
+<span class="sd">        of owl:NamedIndividual</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">qs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SELECT&quot;</span><span class="p">]</span>
+        <span class="n">tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+            <span class="n">qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; ( COUNT ( DISTINCT </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2"> ) AS ?cnt ) WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; DISTINCT </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2"> WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">root_variable</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">):</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;VALUES </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2"> </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">}}</span><span class="s2"> . &quot;</span><span class="p">)</span>
+            <span class="n">qs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="n">qs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+        <span class="n">qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+        <span class="n">parseQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">query</span></div>
+</div>
+
+
+
+<span class="n">converter</span> <span class="o">=</span> <span class="n">Owl2SparqlConverter</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="owl_expression_to_sparql">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.owl_expression_to_sparql">[docs]</a>
+<span class="k">def</span> <span class="nf">owl_expression_to_sparql</span><span class="p">(</span><span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?x&quot;</span><span class="p">,</span>
+                             <span class="n">expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query</span>
+<span class="sd">     root variable: the variable that will be projected</span>
+<span class="sd">     expression: the class expression to be transformed to a SPARQL query</span>
+
+<span class="sd">     values: positive or negative examples from a class expression problem. Unclear</span>
+<span class="sd">     named_individuals: if set to True, the generated SPARQL query will return only entities</span>
+<span class="sd">     that are instances of owl:NamedIndividual</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;expression cannot be None&quot;</span>
+    <span class="k">return</span> <span class="n">converter</span><span class="o">.</span><span class="n">as_query</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

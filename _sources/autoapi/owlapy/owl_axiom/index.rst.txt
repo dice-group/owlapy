@@ -3,6 +3,11 @@
 
 .. py:module:: owlapy.owl_axiom
 
+.. autoapi-nested-parse::
+
+   OWL Axioms
+
+
 
 Module Contents
 ---------------
@@ -77,7 +82,7 @@ Classes
 .. py:class:: OWLAxiom(annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+   Bases: :py:obj:`owlapy.owl_object.OWLObject`
 
    Represents Axioms in the OWL 2 Specification.
 
@@ -107,8 +112,8 @@ Classes
 
    Bases: :py:obj:`OWLAxiom`
 
-   A base interface of all axioms that affect the logical meaning of an ontology. This excludes declaration axioms
-   (including imports declarations) and annotation axioms.
+   A base interface of all axioms that affect the logical meaning of an ontology. This excludes declaration
+   axioms (including imports declarations) and annotation axioms.
 
    .. py:attribute:: __slots__
       :value: ()
@@ -184,7 +189,7 @@ Classes
       
 
 
-.. py:class:: OWLDeclarationAxiom(entity: owlapy.owlobject.OWLEntity, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDeclarationAxiom(entity: owlapy.owl_object.OWLEntity, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLAxiom`
@@ -197,7 +202,7 @@ Classes
 
       
 
-   .. py:method:: get_entity() -> owlapy.owlobject.OWLEntity
+   .. py:method:: get_entity() -> owlapy.owl_object.OWLEntity
 
 
    .. py:method:: __eq__(other)
@@ -216,22 +221,27 @@ Classes
 
 
 
-.. py:class:: OWLDatatypeDefinitionAxiom(datatype: owlapy.types.OWLDatatype, datarange: owlapy.types.OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDatatypeDefinitionAxiom(datatype: owlapy.owl_datatype.OWLDatatype, datarange: owlapy.owl_datatype.OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
    Bases: :py:obj:`OWLLogicalAxiom`
 
-   Represents a DatatypeDefinition axiom in the OWL 2 Specification.
+   A datatype definition DatatypeDefinition( DT DR ) defines a new datatype DT as being semantically
+   equivalent to the data range DR; the latter must be a unary data range. This axiom allows one to use
+   the defined datatype DT as a synonym for DR — that is, in any expression in the ontology containing
+   such an axiom, DT can be replaced with DR without affecting the meaning of the ontology.
+
+   (https://www.w3.org/TR/owl2-syntax/#Datatype_Definitions)
 
    .. py:attribute:: __slots__
       :value: ('_datatype', '_datarange')
 
       
 
-   .. py:method:: get_datatype() -> owlapy.types.OWLDatatype
+   .. py:method:: get_datatype() -> owlapy.owl_datatype.OWLDatatype
 
 
-   .. py:method:: get_datarange() -> owlapy.types.OWLDataRange
+   .. py:method:: get_datarange() -> owlapy.owl_datatype.OWLDataRange
 
 
    .. py:method:: __eq__(other)
@@ -255,7 +265,19 @@ Classes
 
    Bases: :py:obj:`OWLLogicalAxiom`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_property.OWLPropertyExpression`\ ]
 
-   Represents a HasKey axiom in the OWL 2 Specification.
+   A key axiom HasKey( CE ( OPE1 ... OPEm ) ( DPE1 ... DPEn ) ) states that each
+   (named) instance of the class expression CE is uniquely identified by the object
+   property expressions OPEi and/or the data property expressions DPEj — that is,
+   no two distinct (named) instances of CE can coincide on the values of all
+   object property expressions OPEi and all data property expressions DPEj. In each
+   such axiom in an OWL ontology, m or n (or both) must be larger than zero. A key
+   axiom of the form HasKey( owl:Thing ( OPE ) () ) is similar to the axiom
+   InverseFunctionalObjectProperty( OPE ), the main differences being that the
+   former axiom is applicable only to individuals that are explicitly named in an
+   ontology, while the latter axiom is also applicable to anonymous individuals and
+   individuals whose existence is implied by existential quantification.
+
+   (https://www.w3.org/TR/owl2-syntax/#Keys)
 
    .. py:attribute:: __slots__
       :value: ('_class_expression', '_property_expressions')
@@ -361,7 +383,12 @@ Classes
 
    Bases: :py:obj:`OWLNaryClassAxiom`
 
-   Represents an EquivalentClasses axiom in the OWL 2 Specification.
+   An equivalent classes axiom EquivalentClasses( CE1 ... CEn ) states that all of the class expressions CEi,
+   1 ≤ i ≤ n, are semantically equivalent to each other. This axiom allows one to use each CEi as a synonym
+   for each CEj — that is, in any expression in the ontology containing such an axiom, CEi can be replaced
+   with CEj without affecting the meaning of the ontology.
+
+   (https://www.w3.org/TR/owl2-syntax/#Equivalent_Classes)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -386,7 +413,10 @@ Classes
 
    Bases: :py:obj:`OWLNaryClassAxiom`
 
-   Represents a DisjointClasses axiom in the OWL 2 Specification.
+   A disjoint classes axiom DisjointClasses( CE1 ... CEn ) states that all of the class expressions CEi, 1 ≤ i ≤ n,
+   are pairwise disjoint; that is, no individual can be at the same time an instance of both CEi and CEj for i ≠ j.
+
+   (https://www.w3.org/TR/owl2-syntax/#Disjoint_Classes)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -438,7 +468,10 @@ Classes
 
    Bases: :py:obj:`OWLNaryIndividualAxiom`
 
-   Represents a DifferentIndividuals axiom in the OWL 2 Specification.
+   An individual inequality axiom DifferentIndividuals( a1 ... an ) states that all of the individuals ai,
+   1 ≤ i ≤ n, are different from each other; that is, no individuals ai and aj with i ≠ j can be derived to be equal.
+   This axiom can be used to axiomatize the unique name assumption — the assumption that all different individual
+   names denote different individuals. (https://www.w3.org/TR/owl2-syntax/#Individual_Inequality)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -451,7 +484,12 @@ Classes
 
    Bases: :py:obj:`OWLNaryIndividualAxiom`
 
-   Represents a SameIndividual axiom in the OWL 2 Specification.
+   An individual equality axiom SameIndividual( a1 ... an ) states that all of the individuals ai, 1 ≤ i ≤ n,
+   are equal to each other. This axiom allows one to use each ai as a synonym for each aj — that is, in any
+   expression in the ontology containing such an axiom, ai can be replaced with aj without affecting the
+   meaning of the ontology.
+
+   (https://www.w3.org/TR/owl2-syntax/#Individual_Equality)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -503,7 +541,12 @@ Classes
 
    Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
-   Represents EquivalentObjectProperties axioms in the OWL 2 Specification.
+   An equivalent object properties axiom EquivalentObjectProperties( OPE1 ... OPEn ) states that all of the object
+   property expressions OPEi, 1 ≤ i ≤ n, are semantically equivalent to each other. This axiom allows one to use each
+   OPEi as a synonym for each OPEj — that is, in any expression in the ontology containing such an axiom, OPEi can be
+   replaced with OPEj without affecting the meaning of the ontology.
+
+   (https://www.w3.org/TR/owl2-syntax/#Equivalent_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -516,7 +559,11 @@ Classes
 
    Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
-   Represents DisjointObjectProperties axioms in the OWL 2 Specification.
+   A disjoint object properties axiom DisjointObjectProperties( OPE1 ... OPEn ) states that all of the object
+   property expressions OPEi, 1 ≤ i ≤ n, are pairwise disjoint; that is, no individual x can be connected to an
+   individual y by both OPEi and OPEj for i ≠ j.
+
+   (https://www.w3.org/TR/owl2-syntax/#Disjoint_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -529,7 +576,11 @@ Classes
 
    Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
-   Represents InverseObjectProperties axioms in the OWL 2 Specification.
+   An inverse object properties axiom InverseObjectProperties( OPE1 OPE2 ) states that the object property
+   expression OPE1 is an inverse of the object property expression OPE2. Thus, if an individual x is connected by
+   OPE1 to an individual y, then y is also connected by OPE2 to x, and vice versa.
+
+   (https://www.w3.org/TR/owl2-syntax/#Inverse_Object_Properties_2)
 
    .. py:attribute:: __slots__
       :value: ('_first', '_second')
@@ -553,7 +604,12 @@ Classes
 
    Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
 
-   Represents EquivalentDataProperties axioms in the OWL 2 Specification.
+   An equivalent data properties axiom EquivalentDataProperties( DPE1 ... DPEn ) states that all the data property
+   expressions DPEi, 1 ≤ i ≤ n, are semantically equivalent to each other. This axiom allows one to use each DPEi as a
+   synonym for each DPEj — that is, in any expression in the ontology containing such an axiom, DPEi can be replaced
+   with DPEj without affecting the meaning of the ontology.
+
+   (https://www.w3.org/TR/owl2-syntax/#Equivalent_Data_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -566,7 +622,11 @@ Classes
 
    Bases: :py:obj:`OWLNaryPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
 
-   Represents DisjointDataProperties axioms in the OWL 2 Specification.
+   A disjoint data properties axiom DisjointDataProperties( DPE1 ... DPEn ) states that all of the data property
+   expressions DPEi, 1 ≤ i ≤ n, are pairwise disjoint; that is, no individual x can be connected to a literal y by both
+    DPEi and DPEj for i ≠ j.
+
+    (https://www.w3.org/TR/owl2-syntax/#Disjoint_Data_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -579,7 +639,13 @@ Classes
 
    Bases: :py:obj:`OWLClassAxiom`
 
-   Represents an SubClassOf axiom in the OWL 2 Specification.
+   A subclass axiom SubClassOf( CE1 CE2 ) states that the class expression CE1 is a subclass of the class
+   expression CE2. Roughly speaking, this states that CE1 is more specific than CE2. Subclass axioms are a
+   fundamental type of axioms in OWL 2 and can be used to construct a class hierarchy. Other kinds of class
+   expression axiom can be seen as syntactic shortcuts for one or more subclass axioms.
+
+    (https://www.w3.org/TR/owl2-syntax/#Subclass_Axioms)
+
 
    .. py:attribute:: __slots__
       :value: ('_sub_class', '_super_class')
@@ -613,7 +679,12 @@ Classes
 
    Bases: :py:obj:`OWLClassAxiom`
 
-   Represents a DisjointUnion axiom in the OWL 2 Specification.
+   A disjoint union axiom DisjointUnion( C CE1 ... CEn ) states that a class C is a disjoint union of the class
+   expressions CEi, 1 ≤ i ≤ n, all of which are pairwise disjoint. Such axioms are sometimes referred to as
+   covering axioms, as they state that the extensions of all CEi exactly cover the extension of C. Thus, each
+   instance of C is an instance of exactly one CEi, and each instance of CEi is an instance of C.
+
+   (https://www.w3.org/TR/owl2-syntax/#Disjoint_Union_of_Class_Expressions)
 
    .. py:attribute:: __slots__
       :value: ('_cls', '_class_expressions')
@@ -653,7 +724,9 @@ Classes
 
    Bases: :py:obj:`OWLIndividualAxiom`
 
-   Represents ClassAssertion axioms in the OWL 2 Specification.
+   A class assertion ClassAssertion( CE a ) states that the individual a is an instance of the class expression CE.
+
+   (https://www.w3.org/TR/owl2-syntax/#Class_Assertions)
 
    .. py:attribute:: __slots__
       :value: ('_individual', '_class_expression')
@@ -682,30 +755,37 @@ Classes
 
 
 
-.. py:class:: OWLAnnotationProperty(iri: owlapy.iri.IRI)
+.. py:class:: OWLAnnotationProperty(iri: Union[owlapy.iri.IRI, str])
 
 
    Bases: :py:obj:`owlapy.owl_property.OWLProperty`
 
    Represents an AnnotationProperty in the OWL 2 specification.
 
-   .. py:attribute:: __slots__
-      :value: '_iri'
-
-      
-
-   .. py:method:: get_iri() -> owlapy.iri.IRI
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
 
       Gets the IRI of this object.
 
       :returns: The IRI of this object.
 
+   .. py:property:: str
+      :type: str
+
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+      
 
 
 .. py:class:: OWLAnnotation(property: OWLAnnotationProperty, value: owlapy.owl_annotation.OWLAnnotationValue)
 
 
-   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+   Bases: :py:obj:`owlapy.owl_object.OWLObject`
 
    Annotations are used in the various types of annotation axioms, which bind annotations to their subjects
    (i.e. axioms or declarations).
@@ -767,7 +847,11 @@ Classes
 
    Bases: :py:obj:`OWLAnnotationAxiom`
 
-   Represents AnnotationAssertion axioms in the OWL 2 specification.
+   An annotation assertion AnnotationAssertion( AP as av ) states that the annotation subject as — an IRI or an
+   anonymous individual — is annotated with the annotation property AP and the annotation value av.
+
+
+   (https://www.w3.org/TR/owl2-syntax/#Annotation_Assertion)
 
    .. py:attribute:: __slots__
       :value: ('_subject', '_annotation')
@@ -816,7 +900,10 @@ Classes
 
    Bases: :py:obj:`OWLAnnotationAxiom`
 
-   Represents an SubAnnotationPropertyOf axiom in the OWL 2 specification.
+   An annotation subproperty axiom SubAnnotationPropertyOf( AP1 AP2 ) states that the annotation property AP1 is
+   a subproperty of the annotation property AP2.
+
+   (https://www.w3.org/TR/owl2-syntax/#Annotation_Subproperties)
 
    .. py:attribute:: __slots__
       :value: ('_sub_property', '_super_property')
@@ -850,7 +937,10 @@ Classes
 
    Bases: :py:obj:`OWLAnnotationAxiom`
 
-   Represents an AnnotationPropertyDomain axiom in the OWL 2 specification.
+   An annotation property domain axiom AnnotationPropertyDomain( AP U ) states that the domain of the annotation
+   property AP is the IRI U.
+
+    (https://www.w3.org/TR/owl2-syntax/#Annotation_Property_Domain)
 
    .. py:attribute:: __slots__
       :value: ('_property', '_domain')
@@ -884,7 +974,10 @@ Classes
 
    Bases: :py:obj:`OWLAnnotationAxiom`
 
-   Represents an AnnotationPropertyRange axiom in the OWL 2 specification.
+   An annotation property range axiom AnnotationPropertyRange( AP U )
+   states that the range of the annotation property AP is the IRI U.
+
+   (https://www.w3.org/TR/owl2-syntax/#Annotation_Property_Range)
 
    .. py:attribute:: __slots__
       :value: ('_property', '_range')
@@ -952,7 +1045,14 @@ Classes
 
    Bases: :py:obj:`OWLSubPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ], :py:obj:`OWLObjectPropertyAxiom`
 
-   Represents a SubObjectPropertyOf axiom in the OWL 2 specification.
+   Object subproperty axioms are analogous to subclass axioms, and they come in two forms.
+   The basic form is SubObjectPropertyOf( OPE1 OPE2 ). This axiom states that the object property expression OPE1
+   is a subproperty of the object property expression OPE2 — that is, if an individual x is connected by OPE1 to an
+   individual y, then x is also connected by OPE2 to y.
+   The more complex form is SubObjectPropertyOf( ObjectPropertyChain( OPE1 ... OPEn ) OPE )
+   but ObjectPropertyChain is not represented in owlapy yet.
+
+   (https://www.w3.org/TR/owl2-syntax/#Object_Subproperties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -965,7 +1065,11 @@ Classes
 
    Bases: :py:obj:`OWLSubPropertyAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ], :py:obj:`OWLDataPropertyAxiom`
 
-   Represents a SubDataPropertyOf axiom in the OWL 2 specification.
+   A data subproperty axiom SubDataPropertyOf( DPE1 DPE2 ) states that the data property expression DPE1 is a
+   subproperty of the data property expression DPE2 — that is, if an individual x is connected by DPE1 to a literal y,
+    then x is connected by DPE2 to y as well.
+
+    (https://www.w3.org/TR/owl2-syntax/#Data_Subproperties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -978,7 +1082,7 @@ Classes
 
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ , :py:obj:`_C`\ ], :py:obj:`OWLIndividualAxiom`
 
-   Represents a PropertyAssertion axiom in the OWL 2 specification.
+   Base class for Property Assertion axioms.
 
    .. py:attribute:: __slots__
       :value: ('_subject', '_property', '_object')
@@ -1015,7 +1119,10 @@ Classes
 
    Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
 
-   Represents an ObjectPropertyAssertion axiom in the OWL 2 specification.
+   A positive object property assertion ObjectPropertyAssertion( OPE a1 a2 ) states that the individual a1 is
+   connected by the object property expression OPE to the individual a2.
+
+   (https://www.w3.org/TR/owl2-syntax/#Positive_Object_Property_Assertions)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1028,7 +1135,10 @@ Classes
 
    Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
 
-   Represents a NegativeObjectPropertyAssertion axiom in the OWL 2 specification.
+   A negative object property assertion NegativeObjectPropertyAssertion( OPE a1 a2 ) states that the individual a1
+   is not connected by the object property expression OPE to the individual a2.
+
+   (https://www.w3.org/TR/owl2-syntax/#Negative_Object_Property_Assertions)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1041,7 +1151,10 @@ Classes
 
    Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
 
-   Represents an DataPropertyAssertion axiom in the OWL 2 specification.
+   A positive data property assertion DataPropertyAssertion( DPE a lt ) states that the individual a is connected
+   by the data property expression DPE to the literal lt.
+
+   (https://www.w3.org/TR/owl2-syntax/#Positive_Data_Property_Assertions)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1054,7 +1167,10 @@ Classes
 
    Bases: :py:obj:`OWLPropertyAssertionAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
 
-   Represents an NegativeDataPropertyAssertion axiom in the OWL 2 specification.
+   A negative data property assertion NegativeDataPropertyAssertion( DPE a lt ) states that the individual a is not
+   connected by the data property expression DPE to the literal lt.
+
+   (https://www.w3.org/TR/owl2-syntax/#Negative_Data_Property_Assertions)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1067,7 +1183,7 @@ Classes
 
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ ], :py:obj:`OWLPropertyAxiom`
 
-   Unary property axiom.
+   Base class for Unary property axiom.
 
    .. py:attribute:: __slots__
       :value: '_property'
@@ -1111,7 +1227,11 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
 
-   Represents FunctionalObjectProperty axioms in the OWL 2 specification.
+   An object property functionality axiom FunctionalObjectProperty( OPE ) states that
+   the object property expression OPE is functional — that is, for each individual x,
+   there can be at most one distinct individual y such that x is connected by OPE to y.
+
+   (https://www.w3.org/TR/owl2-syntax/#Functional_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1124,7 +1244,11 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
 
-   Represents AsymmetricObjectProperty axioms in the OWL 2 specification.
+   An object property asymmetry axiom AsymmetricObjectProperty( OPE ) states that
+   the object property expression OPE is asymmetric — that is, if an individual x is
+   connected by OPE to an individual y, then y cannot be connected by OPE to x.
+
+   (https://www.w3.org/TR/owl2-syntax/#Symmetric_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1137,7 +1261,11 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
 
-   Represents InverseFunctionalObjectProperty axioms in the OWL 2 specification.
+   An object property inverse functionality axiom InverseFunctionalObjectProperty( OPE )
+   states that the object property expression OPE is inverse-functional — that is, for each
+   individual x, there can be at most one individual y such that y is connected by OPE with x.
+
+   (https://www.w3.org/TR/owl2-syntax/#Inverse-Functional_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1150,7 +1278,11 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
 
-   Represents IrreflexiveObjectProperty axioms in the OWL 2 specification.
+   An object property irreflexivity axiom IrreflexiveObjectProperty( OPE ) states that the
+   object property expression OPE is irreflexive — that is, no individual is connected by
+   OPE to itself.
+
+   (https://www.w3.org/TR/owl2-syntax/#Irreflexive_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1163,7 +1295,12 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
 
-   Represents ReflexiveObjectProperty axioms in the OWL 2 specification.
+   An object property reflexivity axiom ReflexiveObjectProperty( OPE ) states that the
+   object property expression OPE is reflexive — that is, each individual is connected
+   by OPE to itself. Each such axiom can be seen as a syntactic shortcut for the
+   following axiom: SubClassOf( owl:Thing ObjectHasSelf( OPE ) )
+
+   (https://www.w3.org/TR/owl2-syntax/#Reflexive_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1176,7 +1313,14 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
 
-   Represents SymmetricObjectProperty axioms in the OWL 2 specification.
+   An object property symmetry axiom SymmetricObjectProperty( OPE ) states that
+   the object property expression OPE is symmetric — that is, if an individual x
+   is connected by OPE to an individual y, then y is also connected by OPE to x.
+   Each such axiom can be seen as a syntactic shortcut for the following axiom:
+    SubObjectPropertyOf( OPE ObjectInverseOf( OPE ) )
+
+    (https://www.w3.org/TR/owl2-syntax/#Symmetric_Object_Properties)
+
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1189,7 +1333,14 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyCharacteristicAxiom`
 
-   Represents TransitiveObjectProperty axioms in the OWL 2 specification.
+   An object property transitivity axiom TransitiveObjectProperty( OPE ) states that the
+   object property expressionOPE is transitive — that is, if an individual x is connected
+   by OPE to an individual y that is connected by OPE to an individual z, then x is also
+   connected by OPE to z. Each such axiom can be seen as a syntactic shortcut for the
+   following axiom: SubObjectPropertyOf( ObjectPropertyChain( OPE OPE ) OPE )
+
+    (https://www.w3.org/TR/owl2-syntax/#Transitive_Object_Properties)
+
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1230,7 +1381,13 @@ Classes
 
    Bases: :py:obj:`OWLDataPropertyCharacteristicAxiom`
 
-   Represents FunctionalDataProperty axioms in the OWL 2 specification.
+   A data property functionality axiom FunctionalDataProperty( DPE ) states that
+   the data property expression DPE is functional — that is, for each individual x,
+   there can be at most one distinct literal y such that x is connected by DPE with
+   y. Each such axiom can be seen as a syntactic shortcut for the following axiom:
+   SubClassOf( owl:Thing DataMaxCardinality( 1 DPE ) )
+
+   (https://www.w3.org/TR/owl2-syntax/#Transitive_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1243,7 +1400,7 @@ Classes
 
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ ], :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`_P`\ ]
 
-   Represents ObjectPropertyDomain axioms in the OWL 2 specification.
+   Base class for Property Domain axioms.
 
    .. py:attribute:: __slots__
       :value: '_domain'
@@ -1274,7 +1431,7 @@ Classes
 
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_P`\ , :py:obj:`_R`\ ], :py:obj:`OWLUnaryPropertyAxiom`\ [\ :py:obj:`_P`\ ]
 
-   Represents ObjectPropertyRange axioms in the OWL 2 specification.
+   Base class for Property Range axioms.
 
    .. py:attribute:: __slots__
       :value: '_range'
@@ -1305,7 +1462,13 @@ Classes
 
    Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ ]
 
-   Represents a ObjectPropertyDomain axiom in the OWL 2 Specification.
+   An object property domain axiom ObjectPropertyDomain( OPE CE ) states that the domain of the
+   object property expression OPE is the class expression CE — that is, if an individual x is
+   connected by OPE with some other individual, then x is an instance of CE. Each such axiom can
+   be seen as a syntactic shortcut for the following axiom:
+   SubClassOf( ObjectSomeValuesFrom( OPE owl:Thing ) CE )
+
+   (https://www.w3.org/TR/owl2-syntax/#Object_Property_Domain)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1318,7 +1481,13 @@ Classes
 
    Bases: :py:obj:`OWLPropertyDomainAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ ]
 
-   Represents a DataPropertyDomain axiom in the OWL 2 Specification.
+   A data property domain axiom DataPropertyDomain( DPE CE ) states that the domain of the
+   data property expression DPE is the class expression CE — that is, if an individual x is
+   connected by DPE with some literal, then x is an instance of CE. Each such axiom can be
+   seen as a syntactic shortcut for the following axiom:
+   SubClassOf( DataSomeValuesFrom( DPE rdfs:Literal) CE )
+
+   (https://www.w3.org/TR/owl2-syntax/#Data_Property_Domain)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1331,7 +1500,12 @@ Classes
 
    Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLObjectPropertyExpression`\ , :py:obj:`owlapy.class_expression.OWLClassExpression`\ ]
 
-   Represents a ObjectPropertyRange axiom in the OWL 2 Specification.
+   An object property range axiom ObjectPropertyRange( OPE CE ) states that the range of the object property
+   expression OPE is the class expression CE — that is, if some individual is connected by OPE with an individual x,
+   then x is an instance of CE. Each such axiom can be seen as a syntactic shortcut for the following axiom:
+   SubClassOf( owl:Thing ObjectAllValuesFrom( OPE CE ) )
+
+   (https://www.w3.org/TR/owl2-syntax/#Object_Property_Range)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -1339,12 +1513,17 @@ Classes
       
 
 
-.. py:class:: OWLDataPropertyRangeAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, range_: owlapy.types.OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
+.. py:class:: OWLDataPropertyRangeAxiom(property_: owlapy.owl_property.OWLDataPropertyExpression, range_: owlapy.owl_datatype.OWLDataRange, annotations: Optional[Iterable[OWLAnnotation]] = None)
 
 
-   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`owlapy.types.OWLDataRange`\ ]
+   Bases: :py:obj:`OWLPropertyRangeAxiom`\ [\ :py:obj:`owlapy.owl_property.OWLDataPropertyExpression`\ , :py:obj:`owlapy.owl_datatype.OWLDataRange`\ ]
 
-   Represents a DataPropertyRange axiom in the OWL 2 Specification.
+   A data property range axiom DataPropertyRange( DPE DR ) states that the range of the data property
+   expression DPE is the data range DR — that is, if some individual is connected by DPE with a literal x,
+   then x is in DR. The arity of DR must be one. Each such axiom can be seen as a syntactic shortcut for
+   the following axiom:  SubClassOf( owl:Thing DataAllValuesFrom( DPE DR ) )
+
+   (https://www.w3.org/TR/owl2-syntax/#Data_Property_Range)
 
    .. py:attribute:: __slots__
       :value: ()

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.owl_ontology_manager &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="owlapy.owl_property" href="../owl_property/index.html" />
+    <link rel="prev" title="owlapy.owl_ontology" href="../owl_ontology/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">OWLAPY</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../converter/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.converter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../has/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.has</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.iri</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.meta_classes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.namespaces</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_annotation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_axiom</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_datatype/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_datatype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_individual</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_literal</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_object</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_ontology</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_ontology_manager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyChange"><code class="docutils literal notranslate"><span class="pre">OWLOntologyChange</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager"><code class="docutils literal notranslate"><span class="pre">OWLOntologyManager</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration"><code class="docutils literal notranslate"><span class="pre">OWLImportsDeclaration</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.AddImport"><code class="docutils literal notranslate"><span class="pre">AddImport</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_property</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_reasoner</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.parser</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../providers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.providers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../render/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.render</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.util</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vocab/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.vocab</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_ontology_manager</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/owlapy/owl_ontology_manager/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.owl_ontology_manager">
+<span id="owlapy-owl-ontology-manager"></span><h1><a class="reference internal" href="#module-owlapy.owl_ontology_manager" title="owlapy.owl_ontology_manager"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_ontology_manager</span></code></a><a class="headerlink" href="#module-owlapy.owl_ontology_manager" title="Link to this heading"></a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyChange" title="owlapy.owl_ontology_manager.OWLOntologyChange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLOntologyChange</span></code></a></p></td>
+<td><p>Represents an ontology change.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager" title="owlapy.owl_ontology_manager.OWLOntologyManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLOntologyManager</span></code></a></p></td>
+<td><p>An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration" title="owlapy.owl_ontology_manager.OWLImportsDeclaration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLImportsDeclaration</span></code></a></p></td>
+<td><p>Represents an import statement in an ontology.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_ontology_manager.AddImport" title="owlapy.owl_ontology_manager.AddImport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AddImport</span></code></a></p></td>
+<td><p>Represents an ontology change where an import statement is added to an ontology.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyChange">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology_manager.</span></span><span class="sig-name descname"><span class="pre">OWLOntologyChange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyChange"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyChange" title="Link to this definition"></a></dt>
+<dd><p>Represents an ontology change.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyChange.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyChange.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyChange.get_ontology">
+<span class="sig-name descname"><span class="pre">get_ontology</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyChange.get_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyChange.get_ontology" title="Link to this definition"></a></dt>
+<dd><p>Gets the ontology that the change is/was applied to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The ontology that the change is applicable to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology_manager.</span></span><span class="sig-name descname"><span class="pre">OWLOntologyManager</span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager" title="Link to this definition"></a></dt>
+<dd><p>An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing
+ontologies.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.create_ontology">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.create_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.create_ontology" title="Link to this definition"></a></dt>
+<dd><p>Creates a new (empty) ontology that that has the specified ontology IRI (and no version IRI).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iri</strong> – The IRI of the ontology to be created.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The newly created ontology, or if an ontology with the specified IRI already exists then this existing
+ontology will be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.load_ontology">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.load_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.load_ontology" title="Link to this definition"></a></dt>
+<dd><p>Loads an ontology that is assumed to have the specified ontology IRI as its IRI or version IRI. The ontology
+IRI will be mapped to an ontology document IRI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iri</strong> – The IRI that identifies the ontology. It is expected that the ontology will also have this IRI
+(although the OWL API should tolerate situations where this is not the case).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The OWLOntology representation of the ontology that was loaded.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.apply_change">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyChange" title="owlapy.owl_ontology_manager.OWLOntologyChange"><span class="pre">OWLOntologyChange</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.apply_change"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.apply_change" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that applies just one change to an ontology. When this method is used through an
+OWLOntologyManager implementation, the instance used should be the one that the ontology returns through the
+get_owl_ontology_manager() call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>change</strong> – The change to be applied.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ChangeApplied.UNSUCCESSFULLY</strong> – if the change was not applied successfully.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.add_axiom">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.add_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.add_axiom" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that adds a single axiom to an ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to add the axiom to.</p></li>
+<li><p><strong>axiom</strong> – The axiom to be added.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.remove_axiom">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.remove_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.remove_axiom" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that removes a single axiom from an ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to remove the axiom from.</p></li>
+<li><p><strong>axiom</strong> – The axiom to be removed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.save_ontology">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.save_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.save_ontology" title="Link to this definition"></a></dt>
+<dd><p>Saves the specified ontology, using the specified document IRI to determine where/how the ontology should be
+saved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to be saved.</p></li>
+<li><p><strong>document_iri</strong> – The document IRI where the ontology should be saved to.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLImportsDeclaration">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology_manager.</span></span><span class="sig-name descname"><span class="pre">OWLImportsDeclaration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">import_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLImportsDeclaration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../meta_classes/index.html#owlapy.meta_classes.HasIRI" title="owlapy.meta_classes.HasIRI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.meta_classes.HasIRI</span></code></a></p>
+<p>Represents an import statement in an ontology.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLImportsDeclaration.iri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></em><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration.iri" title="Link to this definition"></a></dt>
+<dd><p>Gets the import IRI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The import IRI that points to the ontology to be imported. The imported ontology might have this IRI as
+its ontology IRI but this is not mandated. For example, an ontology with a non-resolvable ontology IRI
+can be deployed at a resolvable URL.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLImportsDeclaration.str">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration.str" title="Link to this definition"></a></dt>
+<dd><p>Gets the string representation of this object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The IRI as string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLImportsDeclaration.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_iri'</span></em><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.AddImport">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology_manager.</span></span><span class="sig-name descname"><span class="pre">AddImport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">import_declaration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration" title="owlapy.owl_ontology_manager.OWLImportsDeclaration"><span class="pre">OWLImportsDeclaration</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#AddImport"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.AddImport" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyChange" title="owlapy.owl_ontology_manager.OWLOntologyChange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLOntologyChange</span></code></a></p>
+<p>Represents an ontology change where an import statement is added to an ontology.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.AddImport.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_ont',</span> <span class="pre">'_declaration')</span></em><a class="headerlink" href="#owlapy.owl_ontology_manager.AddImport.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.AddImport.get_import_declaration">
+<span class="sig-name descname"><span class="pre">get_import_declaration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration" title="owlapy.owl_ontology_manager.OWLImportsDeclaration"><span class="pre">OWLImportsDeclaration</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#AddImport.get_import_declaration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.AddImport.get_import_declaration" title="Link to this definition"></a></dt>
+<dd><p>Gets the import declaration that the change pertains to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The import declaration.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../owl_ontology/index.html" class="btn btn-neutral float-left" title="owlapy.owl_ontology" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../owl_property/index.html" class="btn btn-neutral float-right" title="owlapy.owl_property" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

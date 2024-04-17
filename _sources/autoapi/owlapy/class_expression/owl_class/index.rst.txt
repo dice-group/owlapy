@@ -3,6 +3,11 @@
 
 .. py:module:: owlapy.class_expression.owl_class
 
+.. autoapi-nested-parse::
+
+   OWL Class
+
+
 
 Module Contents
 ---------------
@@ -20,12 +25,23 @@ Classes
 .. py:class:: OWLClass(iri: Union[owlapy.iri.IRI, str])
 
 
-   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`, :py:obj:`owlapy.owl_object.OWLEntity`
 
-   An OWL 2 named Class
+   An OWL 2 named Class. Classes can be understood as sets of individuals.
+   (https://www.w3.org/TR/owl2-syntax/#Classes)
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
 
    .. py:property:: str
 
+      Gets the string representation of this object
+
+      :returns: The IRI as string
 
    .. py:property:: reminder
       :type: str
@@ -42,13 +58,6 @@ Classes
       :value: 1001
 
       
-
-   .. py:method:: get_iri() -> owlapy.iri.IRI
-
-      Gets the IRI of this object.
-
-      :returns: The IRI of this object.
-
 
    .. py:method:: is_owl_thing() -> bool
 

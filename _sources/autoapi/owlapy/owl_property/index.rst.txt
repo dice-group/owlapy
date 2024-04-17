@@ -3,6 +3,11 @@
 
 .. py:module:: owlapy.owl_property
 
+.. autoapi-nested-parse::
+
+   OWL Properties
+
+
 
 Module Contents
 ---------------
@@ -26,7 +31,7 @@ Classes
 .. py:class:: OWLPropertyExpression
 
 
-   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+   Bases: :py:obj:`owlapy.owl_object.OWLObject`
 
    Represents a property or possibly the inverse of a property.
 
@@ -117,7 +122,7 @@ Classes
 .. py:class:: OWLProperty
 
 
-   Bases: :py:obj:`OWLPropertyExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
+   Bases: :py:obj:`OWLPropertyExpression`, :py:obj:`owlapy.owl_object.OWLEntity`
 
    A marker interface for properties that aren't expression i.e. named properties. By definition, properties
    are either data properties or object properties.
@@ -133,15 +138,23 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyExpression`, :py:obj:`OWLProperty`
 
-   Represents an Object Property in the OWL 2 Specification.
+   Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.
+
+   (https://www.w3.org/TR/owl2-syntax/#Object_Properties)
 
    .. py:property:: str
       :type: str
 
+      Gets the string representation of this object
+
+      :returns: The IRI as string
 
    .. py:property:: iri
       :type: str
 
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
 
    .. py:attribute:: __slots__
       :value: '_iri'
@@ -168,13 +181,6 @@ Classes
       :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
 
 
-   .. py:method:: get_iri() -> owlapy.iri.IRI
-
-      Gets the IRI of this object.
-
-      :returns: The IRI of this object.
-
-
    .. py:method:: is_owl_top_object_property() -> bool
 
       Determines if this is the owl:topObjectProperty.
@@ -189,10 +195,14 @@ Classes
 
    Bases: :py:obj:`OWLObjectPropertyExpression`
 
-   Represents the inverse of a property expression (ObjectInverseOf). This can be used to refer to the inverse of
-   a property, without actually naming the property. For example, consider the property hasPart, the inverse property
-   of hasPart (isPartOf) can be referred to using this interface inverseOf(hasPart), which can be used in
+   Represents the inverse of a property expression (ObjectInverseOf). An inverse object property expression
+   ObjectInverseOf( P ) connects an individual I1 with I2 if and only if the object property P connects I2 with I1.
+   This can be used to refer to the inverse of a property, without actually naming the property.
+   For example, consider the property hasPart, the inverse
+   property of hasPart (isPartOf) can be referred to using this interface inverseOf(hasPart), which can be used in
    restrictions e.g. inverseOf(hasPart) some Car refers to the set of things that are part of at least one car.
+
+   (https://www.w3.org/TR/owl2-syntax/#Inverse_Object_Properties)
 
    .. py:attribute:: __slots__
       :value: '_inverse_property'
@@ -247,7 +257,24 @@ Classes
 
    Bases: :py:obj:`OWLDataPropertyExpression`, :py:obj:`OWLProperty`
 
-   Represents a Data Property in the OWL 2 Specification.
+   Represents a Data Property in the OWL 2 Specification. Data properties connect individuals with literals.
+   In some knowledge representation systems, functional data properties are called attributes.
+
+   (https://www.w3.org/TR/owl2-syntax/#Data_Properties)
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+   .. py:property:: str
+      :type: str
+
+      Gets the string representation of this object
+
+      :returns: The IRI as string
 
    .. py:attribute:: __slots__
       :value: '_iri'
@@ -259,13 +286,6 @@ Classes
       :value: 1004
 
       
-
-   .. py:method:: get_iri() -> owlapy.iri.IRI
-
-      Gets the IRI of this object.
-
-      :returns: The IRI of this object.
-
 
    .. py:method:: is_owl_top_data_property() -> bool
 

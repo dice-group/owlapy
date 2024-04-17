@@ -5,6 +5,7 @@
 
 .. autoapi-nested-parse::
 
+   OWL Class Expressions
    https://www.w3.org/TR/owl2-syntax/#Class_Expressions
    ClassExpression :=
        owl_class.py:
@@ -95,7 +96,10 @@ Attributes
 
    Bases: :py:obj:`owlapy.data_ranges.OWLPropertyRange`
 
-   An OWL 2 Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
+   OWL Class expressions represent sets of individuals by formally specifying conditions on the individuals' properties;
+   individuals satisfying these conditions are said to be instances of the respective class expressions.
+   In the structural specification of OWL 2, class expressions are represented by ClassExpression.
+   (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
 
    .. py:attribute:: __slots__
       :value: ()
@@ -236,12 +240,23 @@ Attributes
 .. py:class:: OWLClass(iri: Union[owlapy.iri.IRI, str])
 
 
-   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`, :py:obj:`owlapy.owlobject.OWLEntity`
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`, :py:obj:`owlapy.owl_object.OWLEntity`
 
-   An OWL 2 named Class
+   An OWL 2 named Class. Classes can be understood as sets of individuals.
+   (https://www.w3.org/TR/owl2-syntax/#Classes)
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
 
    .. py:property:: str
 
+      Gets the string representation of this object
+
+      :returns: The IRI as string
 
    .. py:property:: reminder
       :type: str
@@ -258,13 +273,6 @@ Attributes
       :value: 1001
 
       
-
-   .. py:method:: get_iri() -> owlapy.iri.IRI
-
-      Gets the IRI of this object.
-
-      :returns: The IRI of this object.
-
 
    .. py:method:: is_owl_thing() -> bool
 
@@ -337,7 +345,9 @@ Attributes
 
    Bases: :py:obj:`OWLNaryBooleanClassExpression`
 
-   Represents an ObjectUnionOf class expression in the OWL 2 Specification.
+   A union class expression ObjectUnionOf( CE1 ... CEn ) contains all individuals that are instances
+   of at least one class expression CEi for 1 ≤ i ≤ n.
+   (https://www.w3.org/TR/owl2-syntax/#Union_of_Class_Expressions)
 
    .. py:attribute:: __slots__
       :value: '_operands'
@@ -356,7 +366,9 @@ Attributes
 
    Bases: :py:obj:`OWLNaryBooleanClassExpression`
 
-   Represents an OWLObjectIntersectionOf class expression in the OWL 2 Specification.
+   An intersection class expression ObjectIntersectionOf( CE1 ... CEn ) contains all individuals that are instances
+   of all class expressions CEi for 1 ≤ i ≤ n.
+   (https://www.w3.org/TR/owl2-syntax/#Intersection_of_Class_Expressions)
 
    .. py:attribute:: __slots__
       :value: '_operands'
@@ -445,7 +457,7 @@ Attributes
 
    Bases: :py:obj:`OWLRestriction`
 
-   Represents a Object Property Restriction in the OWL 2 specification.
+   Represents an Object Property Restriction in the OWL 2 specification.
 
    .. py:attribute:: __slots__
       :value: ()
@@ -471,7 +483,7 @@ Attributes
 
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ], :py:obj:`OWLRestriction`, :py:obj:`owlapy.meta_classes.HasFiller`\ [\ :py:obj:`_T`\ ]
 
-   OWLHasValueRestriction.
+   Represent a HasValue restriction in the OWL 2
 
    :param _T: The value type.
 
@@ -505,7 +517,7 @@ Attributes
 
    Bases: :py:obj:`OWLRestriction`
 
-   Represents a Data Property Restriction in the OWL 2 specification.
+   Represents a Data Property Restriction.
 
    .. py:attribute:: __slots__
       :value: ()
@@ -589,7 +601,9 @@ Attributes
 
    Bases: :py:obj:`OWLObjectRestriction`
 
-   Represents an ObjectHasSelf class expression in the OWL 2 Specification.
+   A self-restriction ObjectHasSelf( OPE ) consists of an object property expression OPE,
+   and it contains all those individuals that are connected by OPE to themselves.
+   (https://www.w3.org/TR/owl2-syntax/#Self-Restriction)
 
    .. py:attribute:: __slots__
       :value: '_property'
@@ -628,7 +642,8 @@ Attributes
 
    Bases: :py:obj:`owlapy.data_ranges.OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
 
-   Represents DataOneOf in the OWL 2 Specification.
+   An enumeration of literals DataOneOf( lt1 ... ltn ) contains exactly the explicitly specified literals lti with
+   1 ≤ i ≤ n. The resulting data range has arity one. (https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Literals)
 
    .. py:attribute:: type_index
       :type: Final
@@ -694,7 +709,7 @@ Attributes
 
    Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.data_ranges.OWLDataRange`\ ], :py:obj:`OWLQuantifiedDataRestriction`, :py:obj:`OWLDataRestriction`
 
-   Represents Data Property Cardinality Restrictions in the OWL 2 specification.
+   Represents Data Property Cardinality Restrictions.
 
    .. py:attribute:: __slots__
       :value: ()
@@ -727,7 +742,9 @@ Attributes
 
    Bases: :py:obj:`OWLQuantifiedObjectRestriction`
 
-   Represents an ObjectSomeValuesFrom class expression in the OWL 2 Specification.
+   An existential class expression ObjectSomeValuesFrom( OPE CE ) consists of an object property expression OPE and
+   a class expression CE, and it contains all those individuals that are connected by OPE to an individual that is
+   an instance of CE.
 
    .. py:attribute:: __slots__
       :value: ('_property', '_filler')
@@ -766,7 +783,9 @@ Attributes
 
    Bases: :py:obj:`OWLQuantifiedObjectRestriction`
 
-   Represents an ObjectAllValuesFrom class expression in the OWL 2 Specification.
+   A universal class expression ObjectAllValuesFrom( OPE CE ) consists of an object property expression OPE and a
+   class expression CE, and it contains all those individuals that are connected by OPE only to
+   individuals that are instances of CE. (https://www.w3.org/TR/owl2-syntax/#Universal_Quantification)
 
    .. py:attribute:: __slots__
       :value: ('_property', '_filler')
@@ -805,7 +824,10 @@ Attributes
 
    Bases: :py:obj:`OWLHasValueRestriction`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ], :py:obj:`OWLObjectRestriction`
 
-   Represents an ObjectHasValue class expression in the OWL 2 Specification.
+   A has-value class expression ObjectHasValue( OPE a ) consists of an object property expression OPE and an
+   individual a, and it contains all those individuals that are connected by OPE to a. Each such class expression
+   can be seen as a syntactic shortcut for the class expression ObjectSomeValuesFrom( OPE ObjectOneOf( a ) ).
+   (https://www.w3.org/TR/owl2-syntax/#Individual_Value_Restriction)
 
    .. py:attribute:: __slots__
       :value: ('_property', '_v')
@@ -836,12 +858,16 @@ Attributes
 
 
 
-.. py:class:: OWLDatatypeRestriction(type_: owlapy.types.OWLDatatype, facet_restrictions: Union[OWLFacetRestriction, Iterable[OWLFacetRestriction]])
+.. py:class:: OWLDatatypeRestriction(type_: owlapy.owl_datatype.OWLDatatype, facet_restrictions: Union[OWLFacetRestriction, Iterable[OWLFacetRestriction]])
 
 
    Bases: :py:obj:`owlapy.data_ranges.OWLDataRange`
 
-   Represents a DatatypeRestriction data range in the OWL 2 Specification.
+   A datatype restriction DatatypeRestriction( DT F1 lt1 ... Fn ltn ) consists of a unary datatype DT and n pairs
+   ( Fi , lti ). The resulting data range is unary and is obtained by restricting the value space of DT according to
+   the semantics of all ( Fi , vi ) (multiple pairs are interpreted conjunctively), where vi are the data values of
+   the literals lti.
+   (https://www.w3.org/TR/owl2-syntax/#Datatype_Restrictions)
 
    .. py:attribute:: __slots__
       :value: ('_type', '_facet_restrictions')
@@ -854,7 +880,7 @@ Attributes
 
       
 
-   .. py:method:: get_datatype() -> owlapy.types.OWLDatatype
+   .. py:method:: get_datatype() -> owlapy.owl_datatype.OWLDatatype
 
 
    .. py:method:: get_facet_restrictions() -> Sequence[OWLFacetRestriction]
@@ -957,7 +983,7 @@ Attributes
 .. py:class:: OWLFacetRestriction(facet: owlapy.vocab.OWLFacet, literal: Literals)
 
 
-   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+   Bases: :py:obj:`owlapy.owl_object.OWLObject`
 
    A facet restriction is used to restrict a particular datatype.
 
@@ -999,7 +1025,10 @@ Attributes
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
 
-   Represents a ObjectMinCardinality restriction in the OWL 2 Specification.
+   A minimum cardinality expression ObjectMinCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+   property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+   to at least n different individuals that are instances of CE.
+   (https://www.w3.org/TR/owl2-syntax/#Minimum_Cardinality)
 
    .. py:attribute:: __slots__
       :value: ('_cardinality', '_filler', '_property')
@@ -1018,7 +1047,10 @@ Attributes
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
 
-   Represents a ObjectMaxCardinality restriction in the OWL 2 Specification.
+   A maximum cardinality expression ObjectMaxCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+   property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+    to at most n different individuals that are instances of CE.
+    (https://www.w3.org/TR/owl2-syntax/#Maximum_Cardinality)
 
    .. py:attribute:: __slots__
       :value: ('_cardinality', '_filler', '_property')
@@ -1037,7 +1069,10 @@ Attributes
 
    Bases: :py:obj:`OWLObjectCardinalityRestriction`
 
-   Represents an ObjectExactCardinality  restriction in the OWL 2 Specification.
+   An exact cardinality expression ObjectExactCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+    property expression OPE, and a class expression CE, and it contains all those individuals that are connected by
+    to exactly n different individuals that are instances of CE.
+   (https://www.w3.org/TR/owl2-syntax/#Exact_Cardinality)
 
    .. py:attribute:: __slots__
       :value: ('_cardinality', '_filler', '_property')
@@ -1063,7 +1098,12 @@ Attributes
 
    Bases: :py:obj:`OWLQuantifiedDataRestriction`
 
-   Represents a DataSomeValuesFrom restriction in the OWL 2 Specification.
+   An existential class expression DataSomeValuesFrom( DPE1 ... DPEn DR ) consists of n data property expressions
+   DPEi, 1 ≤ i ≤ n, and a data range DR whose arity must be n. Such a class expression contains all those individuals
+   that are connected by DPEi to literals lti, 1 ≤ i ≤ n, such that the tuple ( lt1 , ..., ltn ) is in DR. A class
+   expression of the form DataSomeValuesFrom( DPE DR ) can be seen as a syntactic shortcut for the class expression
+   DataMinCardinality( 1 DPE DR ).
+   (https://www.w3.org/TR/owl2-syntax/#Existential_Quantification_2)
 
    .. py:attribute:: __slots__
       :value: '_property'
@@ -1102,7 +1142,13 @@ Attributes
 
    Bases: :py:obj:`OWLQuantifiedDataRestriction`
 
-   Represents DataAllValuesFrom class expressions in the OWL 2 Specification.
+   A universal class expression DataAllValuesFrom( DPE1 ... DPEn DR ) consists of n data property expressions DPEi,
+   1 ≤ i ≤ n, and a data range DR whose arity must be n. Such a class expression contains all those individuals that
+    are connected by DPEi only to literals lti, 1 ≤ i ≤ n, such that each tuple ( lt1 , ..., ltn ) is in DR. A class
+     expression of the form DataAllValuesFrom( DPE DR ) can be seen as a syntactic shortcut for the class expression
+     DataMaxCardinality( 0 DPE DataComplementOf( DR ) ).
+     (https://www.w3.org/TR/owl2-syntax/#Universal_Quantification_2)
+
 
    .. py:attribute:: __slots__
       :value: '_property'
@@ -1141,7 +1187,10 @@ Attributes
 
    Bases: :py:obj:`OWLHasValueRestriction`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ], :py:obj:`OWLDataRestriction`
 
-   Represents DataHasValue restrictions in the OWL 2 Specification.
+   A has-value class expression DataHasValue( DPE lt ) consists of a data property expression DPE and a literal lt,
+   and it contains all those individuals that are connected by DPE to lt. Each such class expression can be seen as a
+   syntactic shortcut for the class expression DataSomeValuesFrom( DPE DataOneOf( lt ) ).
+   (https://www.w3.org/TR/owl2-syntax/#Literal_Value_Restriction)
 
    .. py:attribute:: __slots__
       :value: '_property'
@@ -1187,7 +1236,10 @@ Attributes
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
 
-   Represents DataMinCardinality restrictions in the OWL 2 Specification.
+   A minimum cardinality expression DataMinCardinality( n DPE DR ) consists of a nonnegative integer n, a data
+   property expression DPE, and a unary data range DR, and it contains all those individuals that are connected by
+   DPE to at least n different literals in DR.
+   (https://www.w3.org/TR/owl2-syntax/#Minimum_Cardinality)
 
    .. py:attribute:: __slots__
       :value: ('_cardinality', '_filler', '_property')
@@ -1206,7 +1258,10 @@ Attributes
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
 
-   Represents DataMaxCardinality restrictions in the OWL 2 Specification.
+   A maximum cardinality expression ObjectMaxCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+   property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+   to at most n different individuals that are instances of CE.
+   (https://www.w3.org/TR/owl2-syntax/#Maximum_Cardinality)
 
    .. py:attribute:: __slots__
       :value: ('_cardinality', '_filler', '_property')
@@ -1225,7 +1280,11 @@ Attributes
 
    Bases: :py:obj:`OWLDataCardinalityRestriction`
 
-   Represents DataExactCardinality restrictions in the OWL 2 Specification.
+   An exact cardinality expression ObjectExactCardinality( n OPE CE ) consists of a nonnegative integer n, an
+   object property expression OPE, and a class expression CE, and it contains all those individuals that are connected
+    by OPE to exactly n different individuals that are instances of CE
+    (https://www.w3.org/TR/owl2-syntax/#Exact_Cardinality)
+
 
    .. py:attribute:: __slots__
       :value: ('_cardinality', '_filler', '_property')
@@ -1251,7 +1310,8 @@ Attributes
 
    Bases: :py:obj:`owlapy.class_expression.class_expression.OWLAnonymousClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
 
-   Represents an ObjectOneOf class expression in the OWL 2 Specification.
+   An enumeration of individuals ObjectOneOf( a1 ... an ) contains exactly the individuals ai with 1 ≤ i ≤ n.
+   (https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Individuals)
 
    .. py:attribute:: __slots__
       :value: '_values'

@@ -3,6 +3,11 @@
 
 .. py:module:: owlapy.owl_individual
 
+.. autoapi-nested-parse::
+
+   OWL Individuals
+
+
 
 Module Contents
 ---------------
@@ -21,7 +26,7 @@ Classes
 .. py:class:: OWLIndividual
 
 
-   Bases: :py:obj:`owlapy.owlobject.OWLObject`
+   Bases: :py:obj:`owlapy.owl_object.OWLObject`
 
    Represents a named or anonymous individual.
 
@@ -34,15 +39,25 @@ Classes
 .. py:class:: OWLNamedIndividual(iri: Union[owlapy.iri.IRI, str])
 
 
-   Bases: :py:obj:`OWLIndividual`, :py:obj:`owlapy.owlobject.OWLEntity`
+   Bases: :py:obj:`OWLIndividual`, :py:obj:`owlapy.owl_object.OWLEntity`
 
-   Represents a Named Individual in the OWL 2 Specification.
+   Named individuals are identified using an IRI. Since they are given an IRI, named individuals are entities.
+   IRIs from the reserved vocabulary must not be used to identify named individuals in an OWL 2 DL ontology.
+
+   (https://www.w3.org/TR/owl2-syntax/#Named_Individuals)
 
    .. py:property:: iri
+      :type: owlapy.iri.IRI
 
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
 
    .. py:property:: str
 
+      Gets the string representation of this object
+
+      :returns: The IRI as string
 
    .. py:attribute:: __slots__
       :value: '_iri'
@@ -54,12 +69,5 @@ Classes
       :value: 1005
 
       
-
-   .. py:method:: get_iri() -> owlapy.iri.IRI
-
-      Gets the IRI of this object.
-
-      :returns: The IRI of this object.
-
 
 
