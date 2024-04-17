@@ -17,6 +17,7 @@ Classes
 
 .. autoapisummary::
 
+   owlapy.util.HasIndex
    owlapy.util.OrderedOWLObject
    owlapy.util.NNF
    owlapy.util.TopLevelCNF
@@ -33,6 +34,24 @@ Functions
    owlapy.util.combine_nary_expressions
    owlapy.util.iter_count
    owlapy.util.as_index
+
+
+
+.. py:class:: HasIndex
+
+
+   Bases: :py:obj:`Protocol`
+
+   Interface for types with an index; this is used to group objects by type when sorting.
+
+   .. py:attribute:: type_index
+      :type: ClassVar[int]
+
+      
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
 
 
 
@@ -130,7 +149,7 @@ Functions
    Count the number of elements in an iterable.
 
 
-.. py:function:: as_index(o: owlapy.owl_object.OWLObject) -> owlapy.has.HasIndex
+.. py:function:: as_index(o: owlapy.owl_object.OWLObject) -> HasIndex
 
    Cast OWL Object to HasIndex.
 
