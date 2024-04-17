@@ -1,6 +1,6 @@
 """OWL Individuals"""
 from abc import ABCMeta
-from .owlobject import OWLObject, OWLEntity
+from .owl_object import OWLObject, OWLEntity
 from .iri import IRI
 from typing import Final, Union
 

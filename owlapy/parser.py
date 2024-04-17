@@ -9,7 +9,7 @@ from .owl_individual import OWLNamedIndividual
 from .owl_literal import IntegerOWLDatatype, BooleanOWLDatatype, DoubleOWLDatatype, StringOWLDatatype, DateOWLDatatype, \
     DateTimeOWLDatatype, DurationOWLDatatype, OWLLiteral
 from .owl_property import OWLObjectPropertyExpression, OWLObjectProperty, OWLDataProperty
-from .owlobject import OWLObjectParser
+from .owl_object import OWLObjectParser
 from .namespaces import Namespaces
 from .render import _DL_SYNTAX, _MAN_SYNTAX
 from .types import OWLDatatype

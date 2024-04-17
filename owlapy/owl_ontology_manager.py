@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from owlapy._utils import MOVE
 from owlapy.owl_ontology import OWLOntology
-from owlapy.owlobject import OWLObject
+from owlapy.owl_object import OWLObject
 from owlapy.owl_annotation import OWLAnnotationObject, OWLAnnotationSubject, OWLAnnotationValue
 from owlapy.iri import IRI
 from owlapy.meta_classes import HasIRI

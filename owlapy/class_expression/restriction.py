@@ -9,7 +9,7 @@ from ..data_ranges import OWLPropertyRange, OWLDataRange
 from ..owl_literal import OWLLiteral
 from ..owl_individual import OWLIndividual
 from ..types import OWLDatatype
-from ..owlobject import OWLObject
+from ..owl_object import OWLObject
 from owlapy.vocab import OWLFacet
 from datetime import datetime, date
 from pandas import Timedelta

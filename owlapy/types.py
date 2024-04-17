@@ -1,5 +1,5 @@
 """OWL Datatype"""
-from .owlobject import OWLEntity
+from .owl_object import OWLEntity
 from .data_ranges import OWLDataRange
 from .iri import IRI
 from .meta_classes import HasIRI

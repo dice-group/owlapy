@@ -4,7 +4,7 @@ from typing import Iterable, TypeVar, Final, Optional
 from owlapy.owl_axiom import OWLEquivalentClassesAxiom, OWLClassAxiom, OWLDataPropertyDomainAxiom, \
     OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owlobject import OWLObject
+from owlapy.owl_object import OWLObject
 from owlapy.iri import IRI
 from owlapy.class_expression import OWLClass
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty

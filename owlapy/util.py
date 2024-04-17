@@ -15,7 +15,7 @@ from owlapy.class_expression import OWLClassExpression, OWLClass, OWLObjectCardi
     OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
 from .data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange, OWLDataRange, \
     OWLPropertyRange
-from .owlobject import OWLObject
+from .owl_object import OWLObject
 from .types import OWLDatatype
 
 _HasIRI = TypeVar('_HasIRI', bound=HasIRI)  #:

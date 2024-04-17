@@ -16,7 +16,7 @@ from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf, OWLDataty
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, TopOWLDatatype
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
-from owlapy.owlobject import OWLEntity
+from owlapy.owl_object import OWLEntity
 from owlapy.types import OWLDatatype
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 

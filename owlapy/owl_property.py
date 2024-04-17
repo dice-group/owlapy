@@ -1,5 +1,5 @@
 """OWL Properties"""
-from .owlobject import OWLObject, OWLEntity
+from .owl_object import OWLObject, OWLEntity
 from abc import ABCMeta, abstractmethod
 from typing import Final, Union
 from .iri import IRI

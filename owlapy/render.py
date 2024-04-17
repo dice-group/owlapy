@@ -9,7 +9,7 @@ from owlapy import namespaces
 from .iri import IRI
 from .owl_individual import OWLNamedIndividual
 from .owl_literal import OWLLiteral
-from .owlobject import OWLObjectRenderer, OWLEntity, OWLObject
+from .owl_object import OWLObjectRenderer, OWLEntity, OWLObject
 from .owl_property import OWLObjectInverseOf, OWLPropertyExpression
 from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWLClass, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectMinCardinality, \

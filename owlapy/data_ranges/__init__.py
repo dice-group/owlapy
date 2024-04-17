@@ -5,7 +5,7 @@ https://www.w3.org/TR/owl2-syntax/#Data_Ranges
 DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction
 """
 
-from ..owlobject import OWLObject
+from ..owl_object import OWLObject
 from ..meta_classes import HasOperands
 from typing import Final, Sequence, Iterable
 
