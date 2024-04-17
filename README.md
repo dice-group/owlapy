@@ -1,5 +1,10 @@
 # OWLAPY
 
+OWLAPY is a Python Framework that serves as a base structure for creating and manipulating 
+OWL Ontologies. 
+
+Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
+
 ## Installation
 <details><summary> Click me! </summary>
 
@@ -44,8 +49,6 @@ print(owl_expression_to_dl(teacher_that_hasChild_male))
 print(owl_expression_to_sparql("?x", teacher_that_hasChild_male))
 #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 ```
-For more, you can check the [API documentation](https://dice-group.github.io/owlapy/autoapi/owlapy/index.html).
-
 
 Every OWL object that can be used to classify individuals, is considered a class expression and 
 inherits from [OWLClassExpression](https://dice-group.github.io/owlapy/autoapi/owlapy/class_expression/class_expression/index.html#owlapy.class_expression.class_expression.OWLClassExpression) 
