@@ -76,26 +76,12 @@ class OWLDataPropertyExpression(OWLPropertyExpression, metaclass=ABCMeta):
         return True
 
 
-class OWLProperty(OWLPropertyExpression, OWLEntity, metaclass=ABCMeta):
-    """A marker interface for properties that aren't expression i.e. named properties. By definition, properties
+class OWLProperty(OWLPropertyExpression, OWLEntity):
+    """A base class for properties that aren't expression i.e. named properties. By definition, properties
     are either data properties or object properties."""
-    __slots__ = ()
-    pass
-
-
-class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
-    """Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.
-
-    (https://www.w3.org/TR/owl2-syntax/#Object_Properties)
-    """
     __slots__ = '_iri'
-    type_index: Final = 1002
 
-    _iri: Union['IRI', str]
-
-    def get_named_property(self) -> 'OWLObjectProperty':
-        # documented in parent
-        return self
+    _iri: IRI
 
     def __init__(self, iri: Union['IRI', str]):
         """Gets an instance of OWLObjectProperty that has the specified IRI.
@@ -108,17 +94,32 @@ class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
         else:
             self._iri = IRI.create(iri)
 
-    def get_inverse_property(self) -> 'OWLObjectInverseOf':
-        # documented in parent
-        return OWLObjectInverseOf(self)
-
     @property
     def str(self) -> str:
         return self._iri.as_str()
 
     @property
-    def iri(self) -> str:
+    def iri(self) -> IRI:
         return self._iri
+
+
+class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
+    """Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.
+
+    (https://www.w3.org/TR/owl2-syntax/#Object_Properties)
+    """
+    __slots__ = '_iri'
+    type_index: Final = 1002
+
+    _iri: IRI
+
+    def get_named_property(self) -> 'OWLObjectProperty':
+        # documented in parent
+        return self
+
+    def get_inverse_property(self) -> 'OWLObjectInverseOf':
+        # documented in parent
+        return OWLObjectInverseOf(self)
 
     def is_owl_top_object_property(self) -> bool:
         # documented in parent
@@ -185,23 +186,7 @@ class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
     __slots__ = '_iri'
     type_index: Final = 1004
 
-    _iri: 'IRI'
-
-    def __init__(self, iri: 'IRI'):
-        """Gets an instance of OWLDataProperty that has the specified IRI.
-
-        Args:
-            iri: The IRI.
-        """
-        self._iri = iri
-
-    @property
-    def iri(self) -> IRI:
-        return self._iri
-
-    @property
-    def str(self) -> str:
-        return self._iri.as_str()
+    _iri: IRI
 
     def is_owl_top_data_property(self) -> bool:
         # documented in parent
