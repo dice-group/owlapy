@@ -6,22 +6,21 @@ from functools import singledispatchmethod
 from typing import List, Callable
 
 from owlapy import namespaces
-from .owlobject import OWLObjectRenderer
-from .owl_property import OWLObjectInverseOf
-from .class_expression import OWLClassExpression, OWLBooleanClassExpression
-
-from owlapy.model import (OWLLiteral, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
-    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLNaryBooleanClassExpression, \
-    OWLObjectIntersectionOf, OWLObjectComplementOf, OWLRestriction, \
-    OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf,
-                          OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \
-    OWLDatatype, OWLDataAllValuesFrom, \
-    OWLDataHasValue, OWLDataOneOf, OWLDataMaxCardinality, \
-    OWLDataMinCardinality, OWLDataExactCardinality)
+from .iri import IRI
+from .owl_individual import OWLNamedIndividual
+from .owl_literal import OWLLiteral
+from .owl_object import OWLObjectRenderer, OWLEntity, OWLObject
+from .owl_property import OWLObjectInverseOf, OWLPropertyExpression
+from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWLClass, OWLObjectSomeValuesFrom, \
+    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectMinCardinality, \
+    OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
+    OWLDataHasValue, OWLDataMinCardinality, OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataOneOf, \
+    OWLNaryBooleanClassExpression, OWLRestriction
 from owlapy.vocab import OWLFacet
-
-from .data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
+from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
+from .owl_datatype import OWLDatatype
+
 
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
@@ -49,7 +48,7 @@ _DL_SYNTAX = types.SimpleNamespace(
 
 
 def _simple_short_form_provider(e: OWLEntity) -> str:
-    iri: IRI = e.get_iri()
+    iri: IRI = e.iri
     sf = iri.get_short_form()
     for ns in [namespaces.XSD, namespaces.OWL, namespaces.RDFS, namespaces.RDF]:
         if iri.get_namespace() == ns:

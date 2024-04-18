@@ -1,1 +1,0 @@
-"""OWL-to-SPARQL converter."""

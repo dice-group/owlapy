@@ -1,18 +1,29 @@
 """Owlapy utils."""
 from functools import singledispatchmethod, total_ordering
-from typing import Iterable, List, Type, TypeVar, Generic, Tuple, cast, Optional, Union, overload
-from .has import HasIndex
+from typing import Iterable, List, Type, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, ClassVar
+from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
+from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf
-from owlapy.model import HasIRI, OWLClassExpression, OWLClass, OWLObjectCardinalityRestriction, \
-    OWLObjectComplementOf, OWLNothing, OWLPropertyRange, OWLRestriction, OWLThing, OWLObjectSomeValuesFrom, \
+from owlapy.class_expression import OWLClassExpression, OWLClass, OWLObjectCardinalityRestriction, \
+    OWLObjectComplementOf, OWLNothing, OWLRestriction, OWLThing, OWLObjectSomeValuesFrom, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectHasSelf, \
     OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataExactCardinality, OWLDataHasValue, \
-    OWLDataAllValuesFrom, OWLDataSomeValuesFrom, OWLObjectAllValuesFrom, HasFiller, HasCardinality, HasOperands, \
-    OWLDatatype,OWLDataOneOf, OWLLiteral, OWLObjectIntersectionOf, \
+    OWLDataAllValuesFrom, OWLDataSomeValuesFrom, OWLObjectAllValuesFrom, \
+    OWLDataOneOf, OWLObjectIntersectionOf, \
     OWLDataCardinalityRestriction, OWLNaryBooleanClassExpression, OWLObjectUnionOf, \
-    OWLDataRange, OWLObject
-from .data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange
-from .class_expression import OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
+    OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
+from .owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange, OWLDataRange, \
+    OWLPropertyRange
+from .owl_object import OWLObject
+from .owl_datatype import OWLDatatype
+
+
+class HasIndex(Protocol):
+    """Interface for types with an index; this is used to group objects by type when sorting."""
+    type_index: ClassVar[int]  #: index for this type. This is a sorting index for the types.
+
+    def __eq__(self, other): ...
+
 
 _HasIRI = TypeVar('_HasIRI', bound=HasIRI)  #:
 _HasIndex = TypeVar('_HasIndex', bound=HasIndex)  #:
@@ -55,7 +66,7 @@ class OrderedOWLObject:
             if isinstance(self.o, OWLRestriction):
                 c.append(OrderedOWLObject(as_index(self.o.get_property())))
             if isinstance(self.o, OWLObjectInverseOf):
-                c.append(self.o.get_named_property().get_iri().as_str())
+                c.append(self.o.get_named_property().str)
             if isinstance(self.o, HasFiller):
                 c.append(OrderedOWLObject(self.o.get_filler()))
             if isinstance(self.o, HasCardinality):
@@ -63,14 +74,14 @@ class OrderedOWLObject:
             if isinstance(self.o, HasOperands):
                 c.append(tuple(map(OrderedOWLObject, self.o.operands())))
             if isinstance(self.o, HasIRI):
-                c.append(self.o.get_iri().as_str())
+                c.append(self.o.str)
             if isinstance(self.o, OWLDataComplementOf):
                 c.append(OrderedOWLObject(self.o.get_data_range()))
             if isinstance(self.o, OWLDatatypeRestriction):
                 c.append((OrderedOWLObject(self.o.get_datatype()),
                           tuple(map(OrderedOWLObject, self.o.get_facet_restrictions()))))
             if isinstance(self.o, OWLFacetRestriction):
-                c.append((self.o.get_facet().get_iri().as_str(), self.o.get_facet_value().get_literal()))
+                c.append((self.o.get_facet().str, self.o.get_facet_value().get_literal()))
             if isinstance(self.o, OWLLiteral):
                 c.append(self.o.get_literal())
             if len(c) == 1:
@@ -406,7 +417,7 @@ def combine_nary_expressions(ce: OWLPropertyRange) -> OWLPropertyRange:
     elif isinstance(ce, OWLPropertyRange):
         return ce
     else:
-        raise ValueError(f'({expr}) is not an OWLObject.')
+        raise ValueError(f'({ce}) is not an OWLObject.')
 
 
 def iter_count(i: Iterable) -> int:
@@ -526,3 +537,19 @@ class LRUCache(Generic[_K, _V]):
             self.root[:] = [self.root, self.root, None, None]
             self.hits = self.misses = 0
             self.full = False
+
+
+def move(*args):
+    """"Move" an imported class to the current module by setting the classes __module__ attribute.
+
+    This is useful for documentation purposes to hide internal packages in sphinx.
+
+    Args:
+        args: List of classes to move.
+    """
+    from inspect import currentframe
+    f = currentframe()
+    f = f.f_back
+    mod = f.f_globals['__name__']
+    for cls in args:
+        cls.__module__ = mod

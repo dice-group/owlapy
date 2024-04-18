@@ -1,4 +1,5 @@
-"""https://www.w3.org/TR/owl2-syntax/#Class_Expressions
+""" OWL Class Expressions
+https://www.w3.org/TR/owl2-syntax/#Class_Expressions
 ClassExpression :=
     owl_class.py:
     Class
@@ -36,5 +37,5 @@ from .restriction import (OWLRestriction, OWLQuantifiedRestriction, OWLQuantifie
 from typing import Final
 from ..vocab import OWLRDFVocabulary
 
-OWLThing: Final = OWLClass(OWLRDFVocabulary.OWL_THING.get_iri())  #: : :The OWL Class corresponding to owl:Thing
-OWLNothing: Final = OWLClass(OWLRDFVocabulary.OWL_NOTHING.get_iri())  #: : :The OWL Class corresponding to owl:Nothing
+OWLThing: Final = OWLClass(OWLRDFVocabulary.OWL_THING.iri)  #: : :The OWL Class corresponding to owl:Thing
+OWLNothing: Final = OWLClass(OWLRDFVocabulary.OWL_NOTHING.iri)  #: : :The OWL Class corresponding to owl:Nothing

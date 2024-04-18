@@ -1,5 +1,10 @@
 # OWLAPY
 
+OWLAPY is a Python Framework that serves as a base structure for creating and manipulating 
+OWL Ontologies. 
+
+Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
+
 ## Installation
 <details><summary> Click me! </summary>
 
@@ -21,11 +26,10 @@ In this example we start with a simple atomic class expression and move to some 
 ones and finally render and print the last of them in description logics syntax.
 
 ```python
-from owlapy.iri import IRI
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
 from owlapy.owl_property import OWLObjectProperty
-from owlapy.owl2sparql.converter import owl_expression_to_sparql
-from owlapy.render import owl_expression_to_dl
+from owlapy import owl_expression_to_sparql, owl_expression_to_dl
+
 # Create the male class
 male = OWLClass("http://example.com/society#male")
 
@@ -33,30 +37,28 @@ male = OWLClass("http://example.com/society#male")
 hasChild = OWLObjectProperty("http://example.com/society#hasChild")
 
 # Create an existential restrictions
-males_with_children = OWLObjectSomeValuesFrom(hasChild, male)
+hasChild_male = OWLObjectSomeValuesFrom(hasChild, male)
 
 # Let's make it more complex by intersecting with another class
 teacher = OWLClass("http://example.com/society#teacher")
-male_teachers_with_children = OWLObjectIntersectionOf([males_with_children, teacher])
+teacher_that_hasChild_male = OWLObjectIntersectionOf([hasChild_male, teacher])
 
 # You can render and print owl class expressions in description logics syntax (and vice-versa)
-print(owl_expression_to_dl(male_teachers_with_children))
+print(owl_expression_to_dl(teacher_that_hasChild_male))
 # (∃ hasChild.male) ⊓ teacher
-print(owl_expression_to_sparql("?x", male_teachers_with_children))
+print(owl_expression_to_sparql("?x", teacher_that_hasChild_male))
 #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 ```
-For more, you can check the [API documentation](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/#module-owlapy).
-
 
 Every OWL object that can be used to classify individuals, is considered a class expression and 
-inherits from [OWLClassExpression](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLClassExpression) 
+inherits from [OWLClassExpression](https://dice-group.github.io/owlapy/autoapi/owlapy/class_expression/class_expression/index.html#owlapy.class_expression.class_expression.OWLClassExpression) 
 class. In the above examples we have introduced 3 types of class expressions: 
-- [OWLClass](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLClass), 
-- [OWLObjectSomeValuesFrom](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLObjectSomeValuesFrom)
-- [OWLObjectIntersectionOf](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#owlapy.model.OWLObjectIntersectionOf).
+- [OWLClass](https://dice-group.github.io/owlapy/autoapi/owlapy/class_expression/owl_class/index.html#owlapy.class_expression.owl_class.OWLClass), 
+- [OWLObjectSomeValuesFrom](https://dice-group.github.io/owlapy/autoapi/owlapy/class_expression/restriction/index.html#owlapy.class_expression.restriction.OWLObjectSomeValuesFrom)
+- [OWLObjectIntersectionOf](https://dice-group.github.io/owlapy/autoapi/owlapy/class_expression/nary_boolean_expression/index.html#owlapy.class_expression.nary_boolean_expression.OWLObjectIntersectionOf).
 
 Like we showed in this example, you can create all kinds of class expressions using the 
-OWL objects in [owlapy model](https://ontolearn-docs-dice-group.netlify.app/autoapi/owlapy/model/#module-owlapy.model).
+OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/index.html).
 </details>
 
 ## How to cite

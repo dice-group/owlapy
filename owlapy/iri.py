@@ -1,5 +1,6 @@
+"""OWL IRI"""
 import weakref
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from typing import Final, Union, overload
 from weakref import WeakKeyDictionary
 
@@ -105,7 +106,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
             :True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
         """
         from owlapy.vocab import OWLRDFVocabulary
-        return self == OWLRDFVocabulary.OWL_NOTHING.get_iri()
+        return self == OWLRDFVocabulary.OWL_NOTHING.iri
 
     def is_thing(self):
         """Determines if this IRI is equal to the IRI that owl:Thing is named with.
@@ -114,7 +115,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
             :True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
         """
         from owlapy.vocab import OWLRDFVocabulary
-        return self == OWLRDFVocabulary.OWL_THING.get_iri()
+        return self == OWLRDFVocabulary.OWL_THING.iri
 
     def is_reserved_vocabulary(self) -> bool:
         """Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with

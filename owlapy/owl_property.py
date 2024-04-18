@@ -1,7 +1,9 @@
-from .owlobject import OWLObject, OWLEntity
+"""OWL Properties"""
+from .owl_object import OWLObject, OWLEntity
 from abc import ABCMeta, abstractmethod
 from typing import Final, Union
 from .iri import IRI
+
 
 class OWLPropertyExpression(OWLObject, metaclass=ABCMeta):
     """Represents a property or possibly the inverse of a property."""
@@ -36,6 +38,8 @@ class OWLPropertyExpression(OWLObject, metaclass=ABCMeta):
             True if this property is the owl:topDataProperty.
         """
         return False
+
+
 class OWLObjectPropertyExpression(OWLPropertyExpression):
     """A high level interface to describe different types of object properties."""
     __slots__ = ()
@@ -61,6 +65,8 @@ class OWLObjectPropertyExpression(OWLPropertyExpression):
     def is_object_property_expression(self) -> bool:
         # documented in parent
         return True
+
+
 class OWLDataPropertyExpression(OWLPropertyExpression, metaclass=ABCMeta):
     """A high level interface to describe different types of data properties."""
     __slots__ = ()
@@ -69,22 +75,13 @@ class OWLDataPropertyExpression(OWLPropertyExpression, metaclass=ABCMeta):
         # documented in parent
         return True
 
-class OWLProperty(OWLPropertyExpression, OWLEntity, metaclass=ABCMeta):
-    """A marker interface for properties that aren't expression i.e. named properties. By definition, properties
+
+class OWLProperty(OWLPropertyExpression, OWLEntity):
+    """A base class for properties that aren't expression i.e. named properties. By definition, properties
     are either data properties or object properties."""
-    __slots__ = ()
-    pass
-
-class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
-    """Represents an Object Property in the OWL 2 Specification."""
     __slots__ = '_iri'
-    type_index: Final = 1002
 
-    _iri: Union['IRI', str]
-
-    def get_named_property(self) -> 'OWLObjectProperty':
-        # documented in parent
-        return self
+    _iri: IRI
 
     def __init__(self, iri: Union['IRI', str]):
         """Gets an instance of OWLObjectProperty that has the specified IRI.
@@ -97,32 +94,48 @@ class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
         else:
             self._iri = IRI.create(iri)
 
-    def get_inverse_property(self) -> 'OWLObjectInverseOf':
-        # documented in parent
-        return OWLObjectInverseOf(self)
-
     @property
     def str(self) -> str:
         return self._iri.as_str()
 
     @property
-    def iri(self) -> str:
+    def iri(self) -> IRI:
         return self._iri
 
-    def get_iri(self) -> 'IRI':
-        # TODO:CD: can be deprecated
+
+class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
+    """Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.
+
+    (https://www.w3.org/TR/owl2-syntax/#Object_Properties)
+    """
+    __slots__ = '_iri'
+    type_index: Final = 1002
+
+    _iri: IRI
+
+    def get_named_property(self) -> 'OWLObjectProperty':
         # documented in parent
-        return self._iri
+        return self
+
+    def get_inverse_property(self) -> 'OWLObjectInverseOf':
+        # documented in parent
+        return OWLObjectInverseOf(self)
 
     def is_owl_top_object_property(self) -> bool:
         # documented in parent
-        return self.get_iri() == OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.get_iri()
+        return self.str == "http://www.w3.org/2002/07/owl#topObjectProperty"
+
 
 class OWLObjectInverseOf(OWLObjectPropertyExpression):
-    """Represents the inverse of a property expression (ObjectInverseOf). This can be used to refer to the inverse of
-    a property, without actually naming the property. For example, consider the property hasPart, the inverse property
-    of hasPart (isPartOf) can be referred to using this interface inverseOf(hasPart), which can be used in
-    restrictions e.g. inverseOf(hasPart) some Car refers to the set of things that are part of at least one car."""
+    """Represents the inverse of a property expression (ObjectInverseOf). An inverse object property expression
+    ObjectInverseOf( P ) connects an individual I1 with I2 if and only if the object property P connects I2 with I1.
+    This can be used to refer to the inverse of a property, without actually naming the property.
+    For example, consider the property hasPart, the inverse
+    property of hasPart (isPartOf) can be referred to using this interface inverseOf(hasPart), which can be used in
+    restrictions e.g. inverseOf(hasPart) some Car refers to the set of things that are part of at least one car.
+
+    (https://www.w3.org/TR/owl2-syntax/#Inverse_Object_Properties)
+    """
     __slots__ = '_inverse_property'
     type_index: Final = 1003
 
@@ -165,24 +178,16 @@ class OWLObjectInverseOf(OWLObjectPropertyExpression):
 
 
 class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
-    """Represents a Data Property in the OWL 2 Specification."""
+    """Represents a Data Property in the OWL 2 Specification. Data properties connect individuals with literals.
+    In some knowledge representation systems, functional data properties are called attributes.
+
+    (https://www.w3.org/TR/owl2-syntax/#Data_Properties)
+    """
     __slots__ = '_iri'
     type_index: Final = 1004
 
-    _iri: 'IRI'
-
-    def __init__(self, iri: 'IRI'):
-        """Gets an instance of OWLDataProperty that has the specified IRI.
-
-        Args:
-            iri: The IRI.
-        """
-        self._iri = iri
-
-    def get_iri(self) -> 'IRI':
-        # documented in parent
-        return self._iri
+    _iri: IRI
 
     def is_owl_top_data_property(self) -> bool:
         # documented in parent
-        return self.get_iri() == OWLRDFVocabulary.OWL_TOP_DATA_PROPERTY.get_iri()
+        return self.str == "http://www.w3.org/2002/07/owl#topDataProperty"

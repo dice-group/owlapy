@@ -4,9 +4,8 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 setup(
     name="owlapy",
-    description="Owlapy is loosely based on owlapi - the java counterpart, "
-                "successfully representing the main owl objects in python.",
-    version="0.1.3",
+    description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
+    version="1.0.0",
     packages=find_packages(),
     install_requires=[
         "pandas>=1.5.0",

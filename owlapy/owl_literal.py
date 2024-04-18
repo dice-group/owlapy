@@ -1,18 +1,24 @@
+"""OWL Literals"""
 from abc import ABCMeta, abstractmethod
 from functools import total_ordering
 from .owl_annotation import OWLAnnotationValue
-from typing import Final, Optional, Union, TypeVar, Set
-from .types import OWLDatatype
+from typing import Final, Optional, Union, Set
+from .owl_datatype import OWLDatatype
 from datetime import datetime, date
 from pandas import Timedelta
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary
 from .owl_property import OWLObjectProperty, OWLDataProperty
 
 Literals = Union['OWLLiteral', int, float, bool, Timedelta, datetime, date, str]  #:
-_R = TypeVar('_R', bound='OWLPropertyRange')  #:
+
 
 class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
-    """Represents a Literal in the OWL 2 Specification."""
+    """Literals represent data values such as particular strings or integers. They are analogous to typed RDF
+    literals and can also be understood as individuals denoting
+    data values. Each literal consists of a lexical form, which is a string, and a datatype.
+
+     (https://www.w3.org/TR/owl2-syntax/#Literals)
+     """
     __slots__ = ()
 
     type_index: Final = 4008
@@ -255,6 +261,8 @@ class _OWLLiteralImplInteger(OWLLiteral):
     def get_datatype(self) -> OWLDatatype:
         # documented in parent
         return IntegerOWLDatatype
+
+
 class _OWLLiteralImplBoolean(OWLLiteral):
     __slots__ = '_v'
 
@@ -480,14 +488,15 @@ class _OWLLiteralImpl(OWLLiteral):
     def __repr__(self):
         return f'OWLLiteral({repr(self._v)}, {self._datatype})'
 
+
 #: the built in top object property
-OWLTopObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.get_iri())
+OWLTopObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.iri)
 #: the built in bottom object property
-OWLBottomObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_BOTTOM_OBJECT_PROPERTY.get_iri())
+OWLBottomObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_BOTTOM_OBJECT_PROPERTY.iri)
 #: the built in top data property
-OWLTopDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_TOP_DATA_PROPERTY.get_iri())
+OWLTopDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_TOP_DATA_PROPERTY.iri)
 #: the built in bottom data property
-OWLBottomDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_BOTTOM_DATA_PROPERTY.get_iri())
+OWLBottomDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_BOTTOM_DATA_PROPERTY.iri)
 
 DoubleOWLDatatype: Final = OWLDatatype(XSDVocabulary.DOUBLE)  #: An object representing a double datatype.
 IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)  #: An object representing an integer datatype.
