@@ -141,7 +141,7 @@
 <td><p>A high level interface to describe different types of data properties.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_property.OWLProperty" title="owlapy.owl_property.OWLProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLProperty</span></code></a></p></td>
-<td><p>A marker interface for properties that aren't expression i.e. named properties. By definition, properties</p></td>
+<td><p>A base class for properties that aren't expression i.e. named properties. By definition, properties</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLObjectProperty</span></code></a></p></td>
 <td><p>Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.</p></td>
@@ -282,13 +282,35 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.owl_property.OWLProperty">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_property.</span></span><span class="sig-name descname"><span class="pre">OWLProperty</span></span><a class="reference internal" href="../../../_modules/owlapy/owl_property.html#OWLProperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_property.OWLProperty" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_property.</span></span><span class="sig-name descname"><span class="pre">OWLProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_property.html#OWLProperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_property.OWLProperty" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#owlapy.owl_property.OWLPropertyExpression" title="owlapy.owl_property.OWLPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLPropertyExpression</span></code></a>, <a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_object.OWLEntity</span></code></a></p>
-<p>A marker interface for properties that aren’t expression i.e. named properties. By definition, properties
+<p>A base class for properties that aren’t expression i.e. named properties. By definition, properties
 are either data properties or object properties.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="owlapy.owl_property.OWLProperty.str">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#owlapy.owl_property.OWLProperty.str" title="Link to this definition"></a></dt>
+<dd><p>Gets the string representation of this object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The IRI as string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="owlapy.owl_property.OWLProperty.iri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></em><a class="headerlink" href="#owlapy.owl_property.OWLProperty.iri" title="Link to this definition"></a></dt>
+<dd><p>Gets the IRI of this object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The IRI of this object.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.owl_property.OWLProperty.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_property.OWLProperty.__slots__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_iri'</span></em><a class="headerlink" href="#owlapy.owl_property.OWLProperty.__slots__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -299,28 +321,6 @@ are either data properties or object properties.</p>
 <dd><p>Bases: <a class="reference internal" href="#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLObjectPropertyExpression</span></code></a>, <a class="reference internal" href="#owlapy.owl_property.OWLProperty" title="owlapy.owl_property.OWLProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLProperty</span></code></a></p>
 <p>Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.</p>
 <p>(<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Object_Properties">https://www.w3.org/TR/owl2-syntax/#Object_Properties</a>)</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="owlapy.owl_property.OWLObjectProperty.str">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#owlapy.owl_property.OWLObjectProperty.str" title="Link to this definition"></a></dt>
-<dd><p>Gets the string representation of this object</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The IRI as string</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="owlapy.owl_property.OWLObjectProperty.iri">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#owlapy.owl_property.OWLObjectProperty.iri" title="Link to this definition"></a></dt>
-<dd><p>Gets the IRI of this object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The IRI of this object.</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.owl_property.OWLObjectProperty.__slots__">
 <span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_iri'</span></em><a class="headerlink" href="#owlapy.owl_property.OWLObjectProperty.__slots__" title="Link to this definition"></a></dt>
@@ -445,33 +445,11 @@ restrictions e.g. inverseOf(hasPart) some Car refers to the set of things that a
 
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.owl_property.OWLDataProperty">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_property.</span></span><span class="sig-name descname"><span class="pre">OWLDataProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_property.html#OWLDataProperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_property.OWLDataProperty" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_property.</span></span><span class="sig-name descname"><span class="pre">OWLDataProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_property.html#OWLDataProperty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_property.OWLDataProperty" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#owlapy.owl_property.OWLDataPropertyExpression" title="owlapy.owl_property.OWLDataPropertyExpression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDataPropertyExpression</span></code></a>, <a class="reference internal" href="#owlapy.owl_property.OWLProperty" title="owlapy.owl_property.OWLProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLProperty</span></code></a></p>
 <p>Represents a Data Property in the OWL 2 Specification. Data properties connect individuals with literals.
 In some knowledge representation systems, functional data properties are called attributes.</p>
 <p>(<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Data_Properties">https://www.w3.org/TR/owl2-syntax/#Data_Properties</a>)</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="owlapy.owl_property.OWLDataProperty.iri">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></em><a class="headerlink" href="#owlapy.owl_property.OWLDataProperty.iri" title="Link to this definition"></a></dt>
-<dd><p>Gets the IRI of this object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The IRI of this object.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="owlapy.owl_property.OWLDataProperty.str">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">str</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#owlapy.owl_property.OWLDataProperty.str" title="Link to this definition"></a></dt>
-<dd><p>Gets the string representation of this object</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The IRI as string</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.owl_property.OWLDataProperty.__slots__">
 <span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_iri'</span></em><a class="headerlink" href="#owlapy.owl_property.OWLDataProperty.__slots__" title="Link to this definition"></a></dt>

@@ -119,16 +119,30 @@ Classes
 
 
 
-.. py:class:: OWLProperty
+.. py:class:: OWLProperty(iri: Union[owlapy.iri.IRI, str])
 
 
    Bases: :py:obj:`OWLPropertyExpression`, :py:obj:`owlapy.owl_object.OWLEntity`
 
-   A marker interface for properties that aren't expression i.e. named properties. By definition, properties
+   A base class for properties that aren't expression i.e. named properties. By definition, properties
    are either data properties or object properties.
 
+   .. py:property:: str
+      :type: str
+
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
    .. py:attribute:: __slots__
-      :value: ()
+      :value: '_iri'
 
       
 
@@ -141,20 +155,6 @@ Classes
    Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.
 
    (https://www.w3.org/TR/owl2-syntax/#Object_Properties)
-
-   .. py:property:: str
-      :type: str
-
-      Gets the string representation of this object
-
-      :returns: The IRI as string
-
-   .. py:property:: iri
-      :type: str
-
-      Gets the IRI of this object.
-
-      :returns: The IRI of this object.
 
    .. py:attribute:: __slots__
       :value: '_iri'
@@ -252,7 +252,7 @@ Classes
 
 
 
-.. py:class:: OWLDataProperty(iri: owlapy.iri.IRI)
+.. py:class:: OWLDataProperty(iri: Union[owlapy.iri.IRI, str])
 
 
    Bases: :py:obj:`OWLDataPropertyExpression`, :py:obj:`OWLProperty`
@@ -261,20 +261,6 @@ Classes
    In some knowledge representation systems, functional data properties are called attributes.
 
    (https://www.w3.org/TR/owl2-syntax/#Data_Properties)
-
-   .. py:property:: iri
-      :type: owlapy.iri.IRI
-
-      Gets the IRI of this object.
-
-      :returns: The IRI of this object.
-
-   .. py:property:: str
-      :type: str
-
-      Gets the string representation of this object
-
-      :returns: The IRI as string
 
    .. py:attribute:: __slots__
       :value: '_iri'
