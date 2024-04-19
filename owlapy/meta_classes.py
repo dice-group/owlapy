@@ -1,3 +1,5 @@
+"""Meta classes for OWL objects."""
+
 # https://docs.python.org/3/reference/datamodel.html#metaclasses
 from typing import TypeVar, Generic, Iterable
 from abc import ABCMeta, abstractmethod
@@ -9,12 +11,23 @@ class HasIRI(metaclass=ABCMeta):
     """Simple class to access the IRI."""
     __slots__ = ()
 
+    @property
     @abstractmethod
-    def get_iri(self) -> 'IRI':
+    def iri(self) -> 'IRI':
         """Gets the IRI of this object.
 
         Returns:
             The IRI of this object.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def str(self) -> str:
+        """Gets the string representation of this object
+
+        Returns:
+            The IRI as string
         """
         pass
 

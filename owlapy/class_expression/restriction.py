@@ -1,15 +1,16 @@
+"""OWL Restrictions"""
 from abc import ABCMeta, abstractmethod
 from ..meta_classes import HasFiller, HasCardinality, HasOperands
 from typing import TypeVar, Generic, Final, Sequence, Union, Iterable
 from .nary_boolean_expression import OWLObjectIntersectionOf
 from .class_expression import OWLAnonymousClassExpression, OWLClassExpression
 from ..owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, OWLDataPropertyExpression
-from ..data_ranges import OWLPropertyRange, OWLDataRange
+from ..owl_data_ranges import OWLPropertyRange, OWLDataRange
 from ..owl_literal import OWLLiteral
 from ..owl_individual import OWLIndividual
-from ..types import OWLDatatype
-from ..owlobject import OWLObject
-from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary, OWLFacet
+from ..owl_datatype import OWLDatatype
+from ..owl_object import OWLObject
+from owlapy.vocab import OWLFacet
 from datetime import datetime, date
 from pandas import Timedelta
 
@@ -17,6 +18,7 @@ _T = TypeVar('_T')  #:
 _F = TypeVar('_F', bound=OWLPropertyRange)  #:
 
 Literals = Union['OWLLiteral', int, float, bool, Timedelta, datetime, date, str]  #:
+
 
 class OWLRestriction(OWLAnonymousClassExpression):
     """Represents an Object Property Restriction or Data Property Restriction in the OWL 2 specification."""
@@ -45,29 +47,10 @@ class OWLRestriction(OWLAnonymousClassExpression):
             True if this is an object restriction.
         """
         return False
-class OWLDataRestriction(OWLRestriction, metaclass=ABCMeta):
-    """Represents a Data Property Restriction in the OWL 2 specification."""
-    __slots__ = ()
 
-    def is_data_restriction(self) -> bool:
-        # documented in parent
-        return True
 
-    pass
-class OWLObjectRestriction(OWLRestriction, metaclass=ABCMeta):
-    """Represents a Object Property Restriction in the OWL 2 specification."""
-    __slots__ = ()
-
-    def is_object_restriction(self) -> bool:
-        # documented in parent
-        return True
-
-    @abstractmethod
-    def get_property(self) -> OWLObjectPropertyExpression:
-        # documented in parent
-        pass
 class OWLHasValueRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metaclass=ABCMeta):
-    """OWLHasValueRestriction.
+    """Represent a HasValue restriction in the OWL 2
 
     Args:
         _T: The value type.
@@ -90,6 +73,27 @@ class OWLHasValueRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metacla
     def get_filler(self) -> _T:
         # documented in parent
         return self._v
+
+
+# =================================================================================================================
+# =========================================OBJECT RESTRICTIONS=====================================================
+# =================================================================================================================
+
+
+class OWLObjectRestriction(OWLRestriction, metaclass=ABCMeta):
+    """Represents an Object Property Restriction in the OWL 2 specification."""
+    __slots__ = ()
+
+    def is_object_restriction(self) -> bool:
+        # documented in parent
+        return True
+
+    @abstractmethod
+    def get_property(self) -> OWLObjectPropertyExpression:
+        # documented in parent
+        pass
+
+
 class OWLQuantifiedRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metaclass=ABCMeta):
     """Represents a quantified restriction.
 
@@ -98,74 +102,7 @@ class OWLQuantifiedRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metac
     """
     __slots__ = ()
     pass
-class OWLQuantifiedObjectRestriction(OWLQuantifiedRestriction[OWLClassExpression], OWLObjectRestriction,
-                                     metaclass=ABCMeta):
-    """Represents a quantified object restriction."""
-    __slots__ = ()
 
-    _filler: OWLClassExpression
-
-    def __init__(self, filler: OWLClassExpression):
-        self._filler = filler
-
-    def get_filler(self) -> OWLClassExpression:
-        # documented in parent (HasFiller)
-        return self._filler
-class OWLObjectSomeValuesFrom(OWLQuantifiedObjectRestriction):
-    """Represents an ObjectSomeValuesFrom class expression in the OWL 2 Specification."""
-    __slots__ = '_property', '_filler'
-    type_index: Final = 3005
-
-    def __init__(self, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
-        """Gets an OWLObjectSomeValuesFrom restriction.
-
-        Args:
-            property: The object property that the restriction acts along.
-            filler: The class expression that is the filler.
-
-        Returns:
-            An OWLObjectSomeValuesFrom restriction along the specified property with the specified filler.
-        """
-        super().__init__(filler)
-        self._property = property
-
-    def __repr__(self):
-        return f"OWLObjectSomeValuesFrom(property={repr(self._property)},filler={repr(self._filler)})"
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self._filler == other._filler and self._property == other._property
-        return NotImplemented
-
-    def __hash__(self):
-        return hash((self._filler, self._property))
-
-    def get_property(self) -> OWLObjectPropertyExpression:
-        # documented in parent
-        return self._property
-class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
-    """Represents an ObjectAllValuesFrom class expression in the OWL 2 Specification."""
-    __slots__ = '_property', '_filler'
-    type_index: Final = 3006
-
-    def __init__(self, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
-        super().__init__(filler)
-        self._property = property
-
-    def __repr__(self):
-        return f"OWLObjectAllValuesFrom(property={repr(self._property)},filler={repr(self._filler)})"
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self._filler == other._filler and self._property == other._property
-        return NotImplemented
-
-    def __hash__(self):
-        return hash((self._filler, self._property))
-
-    def get_property(self) -> OWLObjectPropertyExpression:
-        # documented in parent
-        return self._property
 
 class OWLCardinalityRestriction(Generic[_F], OWLQuantifiedRestriction[_F], HasCardinality, metaclass=ABCMeta):
     """Base interface for owl min and max cardinality restriction.
@@ -188,6 +125,21 @@ class OWLCardinalityRestriction(Generic[_F], OWLQuantifiedRestriction[_F], HasCa
 
     def get_filler(self) -> _F:
         # documented in parent
+        return self._filler
+
+
+class OWLQuantifiedObjectRestriction(OWLQuantifiedRestriction[OWLClassExpression], OWLObjectRestriction,
+                                     metaclass=ABCMeta):
+    """Represents a quantified object restriction."""
+    __slots__ = ()
+
+    _filler: OWLClassExpression
+
+    def __init__(self, filler: OWLClassExpression):
+        self._filler = filler
+
+    def get_filler(self) -> OWLClassExpression:
+        # documented in parent (HasFiller)
         return self._filler
 
 
@@ -220,8 +172,12 @@ class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpressi
     def __hash__(self):
         return hash((self._property, self._cardinality, self._filler))
 
+
 class OWLObjectMinCardinality(OWLObjectCardinalityRestriction):
-    """Represents a ObjectMinCardinality restriction in the OWL 2 Specification."""
+    """A minimum cardinality expression ObjectMinCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+    property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+    to at least n different individuals that are instances of CE.
+    (https://www.w3.org/TR/owl2-syntax/#Minimum_Cardinality)"""
     __slots__ = '_cardinality', '_filler', '_property'
     type_index: Final = 3008
 
@@ -236,8 +192,13 @@ class OWLObjectMinCardinality(OWLObjectCardinalityRestriction):
             An ObjectMinCardinality on the specified property.
         """
         super().__init__(cardinality, property, filler)
+
+
 class OWLObjectMaxCardinality(OWLObjectCardinalityRestriction):
-    """Represents a ObjectMaxCardinality restriction in the OWL 2 Specification."""
+    """A maximum cardinality expression ObjectMaxCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+    property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+     to at most n different individuals that are instances of CE.
+     (https://www.w3.org/TR/owl2-syntax/#Maximum_Cardinality)"""
     __slots__ = '_cardinality', '_filler', '_property'
     type_index: Final = 3010
 
@@ -252,8 +213,14 @@ class OWLObjectMaxCardinality(OWLObjectCardinalityRestriction):
             An ObjectMaxCardinality on the specified property.
         """
         super().__init__(cardinality, property, filler)
+
+
 class OWLObjectExactCardinality(OWLObjectCardinalityRestriction):
-    """Represents an ObjectExactCardinality  restriction in the OWL 2 Specification."""
+    """An exact cardinality expression ObjectExactCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+       property expression OPE, and a class expression CE, and it contains all those individuals that are connected by
+       to exactly n different individuals that are instances of CE.
+      (https://www.w3.org/TR/owl2-syntax/#Exact_Cardinality)
+      """
     __slots__ = '_cardinality', '_filler', '_property'
     type_index: Final = 3009
 
@@ -277,8 +244,76 @@ class OWLObjectExactCardinality(OWLObjectCardinalityRestriction):
         """
         args = self.get_cardinality(), self.get_property(), self.get_filler()
         return OWLObjectIntersectionOf((OWLObjectMinCardinality(*args), OWLObjectMaxCardinality(*args)))
+
+
+class OWLObjectSomeValuesFrom(OWLQuantifiedObjectRestriction):
+    """An existential class expression ObjectSomeValuesFrom( OPE CE ) consists of an object property expression OPE and
+     a class expression CE, and it contains all those individuals that are connected by OPE to an individual that is
+     an instance of CE. """
+    __slots__ = '_property', '_filler'
+    type_index: Final = 3005
+
+    def __init__(self, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
+        """Gets an OWLObjectSomeValuesFrom restriction.
+
+        Args:
+            property: The object property that the restriction acts along.
+            filler: The class expression that is the filler.
+
+        Returns:
+            An OWLObjectSomeValuesFrom restriction along the specified property with the specified filler.
+        """
+        super().__init__(filler)
+        self._property = property
+
+    def __repr__(self):
+        return f"OWLObjectSomeValuesFrom(property={repr(self._property)},filler={repr(self._filler)})"
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._filler == other._filler and self._property == other._property
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self._filler, self._property))
+
+    def get_property(self) -> OWLObjectPropertyExpression:
+        # documented in parent
+        return self._property
+
+
+class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
+    """A universal class expression ObjectAllValuesFrom( OPE CE ) consists of an object property expression OPE and a
+    class expression CE, and it contains all those individuals that are connected by OPE only to
+    individuals that are instances of CE. (https://www.w3.org/TR/owl2-syntax/#Universal_Quantification)"""
+    __slots__ = '_property', '_filler'
+    type_index: Final = 3006
+
+    def __init__(self, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
+        super().__init__(filler)
+        self._property = property
+
+    def __repr__(self):
+        return f"OWLObjectAllValuesFrom(property={repr(self._property)},filler={repr(self._filler)})"
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._filler == other._filler and self._property == other._property
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self._filler, self._property))
+
+    def get_property(self) -> OWLObjectPropertyExpression:
+        # documented in parent
+        return self._property
+
+
 class OWLObjectHasSelf(OWLObjectRestriction):
-    """Represents an ObjectHasSelf class expression in the OWL 2 Specification."""
+    """A self-restriction ObjectHasSelf( OPE ) consists of an object property expression OPE,
+    and it contains all those individuals that are connected by OPE to themselves.
+    (https://www.w3.org/TR/owl2-syntax/#Self-Restriction)
+    """
     __slots__ = '_property'
     type_index: Final = 3011
 
@@ -311,221 +346,33 @@ class OWLObjectHasSelf(OWLObjectRestriction):
         return f'OWLObjectHasSelf({self._property})'
 
 
+class OWLObjectHasValue(OWLHasValueRestriction[OWLIndividual], OWLObjectRestriction):
+    """A has-value class expression ObjectHasValue( OPE a ) consists of an object property expression OPE and an
+    individual a, and it contains all those individuals that are connected by OPE to a. Each such class expression
+    can be seen as a syntactic shortcut for the class expression ObjectSomeValuesFrom( OPE ObjectOneOf( a ) ).
+    (https://www.w3.org/TR/owl2-syntax/#Individual_Value_Restriction)
+    """
+    __slots__ = '_property', '_v'
+    type_index: Final = 3007
 
-class OWLQuantifiedDataRestriction(OWLQuantifiedRestriction[OWLDataRange],
-                                   OWLDataRestriction, metaclass=ABCMeta):
-    """Represents a quantified data restriction."""
-    __slots__ = ()
+    _property: OWLObjectPropertyExpression
+    _v: OWLIndividual
 
-    _filler: OWLDataRange
-
-    def __init__(self, filler: OWLDataRange):
-        self._filler = filler
-
-    def get_filler(self) -> OWLDataRange:
-        # documented in parent (HasFiller)
-        return self._filler
-class OWLDataAllValuesFrom(OWLQuantifiedDataRestriction):
-    """Represents DataAllValuesFrom class expressions in the OWL 2 Specification."""
-    __slots__ = '_property'
-
-    type_index: Final = 3013
-
-    _property: OWLDataPropertyExpression
-
-    def __init__(self, property: OWLDataPropertyExpression, filler: OWLDataRange):
-        """Gets an OWLDataAllValuesFrom restriction.
-
+    def __init__(self, property: OWLObjectPropertyExpression, individual: OWLIndividual):
+        """
         Args:
-            property: The data property that the restriction acts along.
-            filler: The data range that is the filler.
+            property: The property that the restriction acts along.
+            individual: Individual for restriction.
 
         Returns:
-            An OWLDataAllValuesFrom restriction along the specified property with the specified filler.
+            A HasValue restriction with specified property and value
         """
-        super().__init__(filler)
+        super().__init__(individual)
         self._property = property
 
-    def __repr__(self):
-        return f"OWLDataAllValuesFrom(property={repr(self._property)},filler={repr(self._filler)})"
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self._filler == other._filler and self._property == other._property
-        return NotImplemented
-
-    def __hash__(self):
-        return hash((self._filler, self._property))
-
-    def get_property(self) -> OWLDataPropertyExpression:
+    def get_property(self) -> OWLObjectPropertyExpression:
         # documented in parent
         return self._property
-
-
-
-class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
-                                    OWLQuantifiedDataRestriction,
-                                    OWLDataRestriction, metaclass=ABCMeta):
-    """Represents Data Property Cardinality Restrictions in the OWL 2 specification."""
-    __slots__ = ()
-
-    _property: OWLDataPropertyExpression
-
-    @abstractmethod
-    def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
-        super().__init__(cardinality, filler)
-        self._property = property
-
-    def get_property(self) -> OWLDataPropertyExpression:
-        # documented in parent
-        return self._property
-
-    def __repr__(self):
-        return f"{type(self).__name__}(" \
-               f"property={repr(self.get_property())},{self.get_cardinality()},filler={repr(self.get_filler())})"
-
-    def __eq__(self, other):
-        if type(other) == type(self):
-            return self._property == other._property \
-                and self._cardinality == other._cardinality \
-                and self._filler == other._filler
-        return NotImplemented
-
-    def __hash__(self):
-        return hash((self._property, self._cardinality, self._filler))
-
-
-
-class OWLDataExactCardinality(OWLDataCardinalityRestriction):
-    """Represents DataExactCardinality restrictions in the OWL 2 Specification."""
-    __slots__ = '_cardinality', '_filler', '_property'
-
-    type_index: Final = 3016
-
-    def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
-        """
-        Args:
-            cardinality: Cannot be negative.
-            property: The property that the restriction acts along.
-            filler: Data range for restriction
-
-        Returns:
-            A DataExactCardinality on the specified property.
-        """
-        super().__init__(cardinality, property, filler)
-
-    def as_intersection_of_min_max(self) -> OWLObjectIntersectionOf:
-        """Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
-
-        Returns:
-            The semantically equivalent but structurally simpler form (= 1 R D) = >= 1 R D and <= 1 R D.
-        """
-        args = self.get_cardinality(), self.get_property(), self.get_filler()
-        return OWLObjectIntersectionOf((OWLDataMinCardinality(*args), OWLDataMaxCardinality(*args)))
-
-class OWLDataMaxCardinality(OWLDataCardinalityRestriction):
-    """Represents DataMaxCardinality restrictions in the OWL 2 Specification."""
-    __slots__ = '_cardinality', '_filler', '_property'
-
-    type_index: Final = 3017
-
-    def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
-        """
-        Args:
-            cardinality: Cannot be negative.
-            property: The property that the restriction acts along.
-            filler: Data range for restriction.
-
-        Returns:
-            A DataMaxCardinality on the specified property.
-        """
-        super().__init__(cardinality, property, filler)
-class OWLDataMinCardinality(OWLDataCardinalityRestriction):
-    """Represents DataMinCardinality restrictions in the OWL 2 Specification."""
-    __slots__ = '_cardinality', '_filler', '_property'
-
-    type_index: Final = 3015
-
-    def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
-        """
-        Args:
-            cardinality: Cannot be negative.
-            property: The property that the restriction acts along.
-            filler: Data range for restriction.
-
-        Returns:
-            A DataMinCardinality on the specified property.
-        """
-        super().__init__(cardinality, property, filler)
-
-
-class OWLDataSomeValuesFrom(OWLQuantifiedDataRestriction):
-    """Represents a DataSomeValuesFrom restriction in the OWL 2 Specification."""
-    __slots__ = '_property'
-
-    type_index: Final = 3012
-
-    _property: OWLDataPropertyExpression
-
-    def __init__(self, property: OWLDataPropertyExpression, filler: OWLDataRange):
-        """Gets an OWLDataSomeValuesFrom restriction.
-
-        Args:
-            property: The data property that the restriction acts along.
-            filler: The data range that is the filler.
-
-        Returns:
-            An OWLDataSomeValuesFrom restriction along the specified property with the specified filler.
-        """
-        super().__init__(filler)
-        self._property = property
-
-    def __repr__(self):
-        return f"OWLDataSomeValuesFrom(property={repr(self._property)},filler={repr(self._filler)})"
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self._filler == other._filler and self._property == other._property
-        return NotImplemented
-
-    def __hash__(self):
-        return hash((self._filler, self._property))
-
-    def get_property(self) -> OWLDataPropertyExpression:
-        # documented in parent
-        return self._property
-
-class OWLDataHasValue(OWLHasValueRestriction[OWLLiteral], OWLDataRestriction):
-    """Represents DataHasValue restrictions in the OWL 2 Specification."""
-    __slots__ = '_property'
-
-    type_index: Final = 3014
-
-    _property: OWLDataPropertyExpression
-
-    def __init__(self, property: OWLDataPropertyExpression, value: OWLLiteral):
-        """Gets an OWLDataHasValue restriction.
-
-        Args:
-            property: The data property that the restriction acts along.
-            filler: The literal value.
-
-        Returns:
-            An OWLDataHasValue restriction along the specified property with the specified literal.
-        """
-        super().__init__(value)
-        self._property = property
-
-    def __repr__(self):
-        return f"OWLDataHasValue(property={repr(self._property)},value={repr(self._v)})"
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self._v == other._v and self._property == other._property
-        return NotImplemented
-
-    def __hash__(self):
-        return hash((self._v, self._property))
 
     def as_some_values_from(self) -> OWLClassExpression:
         """A convenience method that obtains this restriction as an existential restriction with a nominal filler.
@@ -533,16 +380,16 @@ class OWLDataHasValue(OWLHasValueRestriction[OWLLiteral], OWLDataRestriction):
         Returns:
             The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).
         """
-        return OWLDataSomeValuesFrom(self.get_property(), OWLDataOneOf(self.get_filler()))
+        return OWLObjectSomeValuesFrom(self.get_property(), OWLObjectOneOf(self.get_filler()))
 
-    def get_property(self) -> OWLDataPropertyExpression:
-        # documented in parent
-        return self._property
-
+    def __repr__(self):
+        return f'OWLObjectHasValue(property={self.get_property()}, individual={self._v})'
 
 
 class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
-    """Represents an ObjectOneOf class expression in the OWL 2 Specification."""
+    """An enumeration of individuals ObjectOneOf( a1 ... an ) contains exactly the individuals ai with 1 ≤ i ≤ n.
+    (https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Individuals)
+    """
     __slots__ = '_values'
     type_index: Final = 3004
 
@@ -590,8 +437,285 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
         return f'OWLObjectOneOf({self._values})'
 
 
+# =================================================================================================================
+# =========================================DATA RESTRICTIONS=======================================================
+# =================================================================================================================
+
+
+class OWLDataRestriction(OWLRestriction, metaclass=ABCMeta):
+    """Represents a Data Property Restriction."""
+    __slots__ = ()
+
+    def is_data_restriction(self) -> bool:
+        # documented in parent
+        return True
+
+    pass
+
+
+class OWLQuantifiedDataRestriction(OWLQuantifiedRestriction[OWLDataRange],
+                                   OWLDataRestriction, metaclass=ABCMeta):
+    """Represents a quantified data restriction."""
+    __slots__ = ()
+
+    _filler: OWLDataRange
+
+    def __init__(self, filler: OWLDataRange):
+        self._filler = filler
+
+    def get_filler(self) -> OWLDataRange:
+        # documented in parent (HasFiller)
+        return self._filler
+
+
+class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
+                                    OWLQuantifiedDataRestriction,
+                                    OWLDataRestriction, metaclass=ABCMeta):
+    """Represents Data Property Cardinality Restrictions."""
+    __slots__ = ()
+
+    _property: OWLDataPropertyExpression
+
+    @abstractmethod
+    def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
+        super().__init__(cardinality, filler)
+        self._property = property
+
+    def get_property(self) -> OWLDataPropertyExpression:
+        # documented in parent
+        return self._property
+
+    def __repr__(self):
+        return f"{type(self).__name__}(" \
+               f"property={repr(self.get_property())},{self.get_cardinality()},filler={repr(self.get_filler())})"
+
+    def __eq__(self, other):
+        if type(other) == type(self):
+            return self._property == other._property \
+                and self._cardinality == other._cardinality \
+                and self._filler == other._filler
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self._property, self._cardinality, self._filler))
+
+
+class OWLDataMinCardinality(OWLDataCardinalityRestriction):
+    """A minimum cardinality expression DataMinCardinality( n DPE DR ) consists of a nonnegative integer n, a data
+       property expression DPE, and a unary data range DR, and it contains all those individuals that are connected by
+       DPE to at least n different literals in DR.
+       (https://www.w3.org/TR/owl2-syntax/#Minimum_Cardinality)
+       """
+    __slots__ = '_cardinality', '_filler', '_property'
+
+    type_index: Final = 3015
+
+    def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
+        """
+        Args:
+            cardinality: Cannot be negative.
+            property: The property that the restriction acts along.
+            filler: Data range for restriction.
+
+        Returns:
+            A DataMinCardinality on the specified property.
+        """
+        super().__init__(cardinality, property, filler)
+
+
+class OWLDataMaxCardinality(OWLDataCardinalityRestriction):
+    """A maximum cardinality expression ObjectMaxCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+    property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+    to at most n different individuals that are instances of CE.
+    (https://www.w3.org/TR/owl2-syntax/#Maximum_Cardinality)
+    """
+    __slots__ = '_cardinality', '_filler', '_property'
+
+    type_index: Final = 3017
+
+    def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
+        """
+        Args:
+            cardinality: Cannot be negative.
+            property: The property that the restriction acts along.
+            filler: Data range for restriction.
+
+        Returns:
+            A DataMaxCardinality on the specified property.
+        """
+        super().__init__(cardinality, property, filler)
+
+
+class OWLDataExactCardinality(OWLDataCardinalityRestriction):
+    """An exact cardinality expression ObjectExactCardinality( n OPE CE ) consists of a nonnegative integer n, an
+    object property expression OPE, and a class expression CE, and it contains all those individuals that are connected
+     by OPE to exactly n different individuals that are instances of CE
+     (https://www.w3.org/TR/owl2-syntax/#Exact_Cardinality)
+     """
+    __slots__ = '_cardinality', '_filler', '_property'
+
+    type_index: Final = 3016
+
+    def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
+        """
+        Args:
+            cardinality: Cannot be negative.
+            property: The property that the restriction acts along.
+            filler: Data range for restriction
+
+        Returns:
+            A DataExactCardinality on the specified property.
+        """
+        super().__init__(cardinality, property, filler)
+
+    def as_intersection_of_min_max(self) -> OWLObjectIntersectionOf:
+        """Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
+
+        Returns:
+            The semantically equivalent but structurally simpler form (= 1 R D) = >= 1 R D and <= 1 R D.
+        """
+        args = self.get_cardinality(), self.get_property(), self.get_filler()
+        return OWLObjectIntersectionOf((OWLDataMinCardinality(*args), OWLDataMaxCardinality(*args)))
+
+
+class OWLDataSomeValuesFrom(OWLQuantifiedDataRestriction):
+    """An existential class expression DataSomeValuesFrom( DPE1 ... DPEn DR ) consists of n data property expressions
+     DPEi, 1 ≤ i ≤ n, and a data range DR whose arity must be n. Such a class expression contains all those individuals
+     that are connected by DPEi to literals lti, 1 ≤ i ≤ n, such that the tuple ( lt1 , ..., ltn ) is in DR. A class
+     expression of the form DataSomeValuesFrom( DPE DR ) can be seen as a syntactic shortcut for the class expression
+     DataMinCardinality( 1 DPE DR ).
+     (https://www.w3.org/TR/owl2-syntax/#Existential_Quantification_2)
+     """
+    __slots__ = '_property'
+
+    type_index: Final = 3012
+
+    _property: OWLDataPropertyExpression
+
+    def __init__(self, property: OWLDataPropertyExpression, filler: OWLDataRange):
+        """Gets an OWLDataSomeValuesFrom restriction.
+
+        Args:
+            property: The data property that the restriction acts along.
+            filler: The data range that is the filler.
+
+        Returns:
+            An OWLDataSomeValuesFrom restriction along the specified property with the specified filler.
+        """
+        super().__init__(filler)
+        self._property = property
+
+    def __repr__(self):
+        return f"OWLDataSomeValuesFrom(property={repr(self._property)},filler={repr(self._filler)})"
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._filler == other._filler and self._property == other._property
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self._filler, self._property))
+
+    def get_property(self) -> OWLDataPropertyExpression:
+        # documented in parent
+        return self._property
+
+
+class OWLDataAllValuesFrom(OWLQuantifiedDataRestriction):
+    """A universal class expression DataAllValuesFrom( DPE1 ... DPEn DR ) consists of n data property expressions DPEi,
+    1 ≤ i ≤ n, and a data range DR whose arity must be n. Such a class expression contains all those individuals that
+     are connected by DPEi only to literals lti, 1 ≤ i ≤ n, such that each tuple ( lt1 , ..., ltn ) is in DR. A class
+      expression of the form DataAllValuesFrom( DPE DR ) can be seen as a syntactic shortcut for the class expression
+      DataMaxCardinality( 0 DPE DataComplementOf( DR ) ).
+      (https://www.w3.org/TR/owl2-syntax/#Universal_Quantification_2)
+      """
+    __slots__ = '_property'
+
+    type_index: Final = 3013
+
+    _property: OWLDataPropertyExpression
+
+    def __init__(self, property: OWLDataPropertyExpression, filler: OWLDataRange):
+        """Gets an OWLDataAllValuesFrom restriction.
+
+        Args:
+            property: The data property that the restriction acts along.
+            filler: The data range that is the filler.
+
+        Returns:
+            An OWLDataAllValuesFrom restriction along the specified property with the specified filler.
+        """
+        super().__init__(filler)
+        self._property = property
+
+    def __repr__(self):
+        return f"OWLDataAllValuesFrom(property={repr(self._property)},filler={repr(self._filler)})"
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._filler == other._filler and self._property == other._property
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self._filler, self._property))
+
+    def get_property(self) -> OWLDataPropertyExpression:
+        # documented in parent
+        return self._property
+
+
+class OWLDataHasValue(OWLHasValueRestriction[OWLLiteral], OWLDataRestriction):
+    """A has-value class expression DataHasValue( DPE lt ) consists of a data property expression DPE and a literal lt,
+    and it contains all those individuals that are connected by DPE to lt. Each such class expression can be seen as a
+    syntactic shortcut for the class expression DataSomeValuesFrom( DPE DataOneOf( lt ) ).
+    (https://www.w3.org/TR/owl2-syntax/#Literal_Value_Restriction)
+    """
+    __slots__ = '_property'
+
+    type_index: Final = 3014
+
+    _property: OWLDataPropertyExpression
+
+    def __init__(self, property: OWLDataPropertyExpression, value: OWLLiteral):
+        """Gets an OWLDataHasValue restriction.
+
+        Args:
+            property: The data property that the restriction acts along.
+            filler: The literal value.
+
+        Returns:
+            An OWLDataHasValue restriction along the specified property with the specified literal.
+        """
+        super().__init__(value)
+        self._property = property
+
+    def __repr__(self):
+        return f"OWLDataHasValue(property={repr(self._property)},value={repr(self._v)})"
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._v == other._v and self._property == other._property
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self._v, self._property))
+
+    def as_some_values_from(self) -> OWLClassExpression:
+        """A convenience method that obtains this restriction as an existential restriction with a nominal filler.
+
+        Returns:
+            The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).
+        """
+        return OWLDataSomeValuesFrom(self.get_property(), OWLDataOneOf(self.get_filler()))
+
+    def get_property(self) -> OWLDataPropertyExpression:
+        # documented in parent
+        return self._property
+
+
 class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
-    """Represents DataOneOf in the OWL 2 Specification."""
+    """An enumeration of literals DataOneOf( lt1 ... ltn ) contains exactly the explicitly specified literals lti with
+    1 ≤ i ≤ n. The resulting data range has arity one. (https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Literals)"""
     type_index: Final = 4003
 
     _values: Sequence[OWLLiteral]
@@ -628,42 +752,13 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
         return f'OWLDataOneOf({self._values})'
 
 
-class OWLObjectHasValue(OWLHasValueRestriction[OWLIndividual], OWLObjectRestriction):
-    """Represents an ObjectHasValue class expression in the OWL 2 Specification."""
-    __slots__ = '_property', '_v'
-    type_index: Final = 3007
-
-    _property: OWLObjectPropertyExpression
-    _v: OWLIndividual
-
-    def __init__(self, property: OWLObjectPropertyExpression, individual: OWLIndividual):
-        """
-        Args:
-            property: The property that the restriction acts along.
-            individual: Individual for restriction.
-
-        Returns:
-            A HasValue restriction with specified property and value
-        """
-        super().__init__(individual)
-        self._property = property
-
-    def get_property(self) -> OWLObjectPropertyExpression:
-        # documented in parent
-        return self._property
-
-    def as_some_values_from(self) -> OWLClassExpression:
-        """A convenience method that obtains this restriction as an existential restriction with a nominal filler.
-
-        Returns:
-            The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).
-        """
-        return OWLObjectSomeValuesFrom(self.get_property(), OWLObjectOneOf(self.get_filler()))
-
-    def __repr__(self):
-        return f'OWLObjectHasValue(property={self.get_property()}, individual={self._v})'
 class OWLDatatypeRestriction(OWLDataRange):
-    """Represents a DatatypeRestriction data range in the OWL 2 Specification."""
+    """A datatype restriction DatatypeRestriction( DT F1 lt1 ... Fn ltn ) consists of a unary datatype DT and n pairs
+    ( Fi , lti ). The resulting data range is unary and is obtained by restricting the value space of DT according to
+    the semantics of all ( Fi , vi ) (multiple pairs are interpreted conjunctively), where vi are the data values of
+    the literals lti.
+    (https://www.w3.org/TR/owl2-syntax/#Datatype_Restrictions)
+    """
     __slots__ = '_type', '_facet_restrictions'
 
     type_index: Final = 4006
@@ -695,6 +790,8 @@ class OWLDatatypeRestriction(OWLDataRange):
 
     def __repr__(self):
         return f'OWLDatatypeRestriction({repr(self._type)}, {repr(self._facet_restrictions)})'
+
+
 class OWLFacetRestriction(OWLObject):
     """A facet restriction is used to restrict a particular datatype."""
 

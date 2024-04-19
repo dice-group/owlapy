@@ -3,7 +3,8 @@ from typing import Final
 
 
 class Namespaces:
-    """A Namespace and its prefix."""
+    """Namespaces provide a simple method for qualifying element and attribute names used in Extensible Markup
+    Language documents by associating them with namespaces identified by URI references"""
     __slots__ = '_prefix', '_ns'
 
     _prefix: str

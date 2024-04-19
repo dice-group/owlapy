@@ -1,9 +1,7 @@
-
-from owlapy.iri import IRI
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.class_expression import OWLObjectSomeValuesFrom
-from owlapy.owl2sparql.converter import owl_expression_to_sparql
+from owlapy.converter import owl_expression_to_sparql
 from owlapy.render import owl_expression_to_dl
 
 class TestRunningExamples:
