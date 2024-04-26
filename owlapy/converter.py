@@ -498,7 +498,7 @@ class Owl2SparqlConverter:
     def _(self, ce: OWLDataHasValue):
         property_expression = ce.get_property()
         value = ce.get_filler()
-        assert isinstance(value, OWLDataProperty)
+        assert isinstance(value, OWLLiteral)
         self.append_triple(self.current_variable, property_expression, value)
 
     @process.register
