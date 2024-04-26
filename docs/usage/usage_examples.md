@@ -101,7 +101,7 @@ from owlapy import owl_expression_to_sparql, owl_expression_to_dl, owl_expressio
 print(owl_expression_to_dl(ce))
 # Result: male ⊓ (≥ 1 hasChild.person)
 
-print(owl_expression_to_sparql(expression=ce))
+print(owl_expression_to_sparql(ce))
 # Result: SELECT DISTINCT ?x WHERE { ?x a <http://example.com/family#male> . { SELECT ?x WHERE { ?x <http://example.com/family#hasChild> ?s_1 . ?s_1 a <http://example.com/family#person> .  } GROUP BY ?x HAVING ( COUNT ( ?s_1 ) >= 1 ) } }
 
 print(owl_expression_to_manchester(ce))
