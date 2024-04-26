@@ -461,6 +461,7 @@ class OWLQuantifiedDataRestriction(OWLQuantifiedRestriction[OWLDataRange],
     _filler: OWLDataRange
 
     def __init__(self, filler: OWLDataRange):
+        assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
         self._filler = filler
 
     def get_filler(self) -> OWLDataRange:
@@ -478,6 +479,7 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
 
     @abstractmethod
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
+        assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
         super().__init__(cardinality, filler)
         self._property = property
 
