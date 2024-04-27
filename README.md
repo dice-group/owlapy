@@ -46,7 +46,7 @@ teacher_that_hasChild_male = OWLObjectIntersectionOf([hasChild_male, teacher])
 # You can render and print owl class expressions in description logics syntax (and vice-versa)
 print(owl_expression_to_dl(teacher_that_hasChild_male))
 # (∃ hasChild.male) ⊓ teacher
-print(owl_expression_to_sparql("?x", teacher_that_hasChild_male))
+print(owl_expression_to_sparql(teacher_that_hasChild_male))
 #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 ```
 

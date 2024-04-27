@@ -498,7 +498,7 @@ class Owl2SparqlConverter:
     def _(self, ce: OWLDataHasValue):
         property_expression = ce.get_property()
         value = ce.get_filler()
-        assert isinstance(value, OWLDataProperty)
+        assert isinstance(value, OWLLiteral)
         self.append_triple(self.current_variable, property_expression, value)
 
     @process.register
@@ -587,10 +587,10 @@ class Owl2SparqlConverter:
 converter = Owl2SparqlConverter()
 
 
-def owl_expression_to_sparql(root_variable: str = "?x",
-                             expression: OWLClassExpression = None,
+def owl_expression_to_sparql(expression: OWLClassExpression = None,
+                             root_variable: str = "?x",
                              values: Optional[Iterable[OWLNamedIndividual]] = None,
-                             named_individuals: bool = False)->str:
+                             named_individuals: bool = False) -> str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
      root variable: the variable that will be projected
      expression: the class expression to be transformed to a SPARQL query
