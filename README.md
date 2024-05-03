@@ -6,8 +6,6 @@ OWL Ontologies.
 Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
 
 ## Installation
-<details><summary> Click me! </summary>
-
 ### Installation from Source
 ``` bash
 git clone https://github.com/dice-group/owlapy
@@ -17,10 +15,9 @@ or
 ```bash
 pip3 install owlapy
 ```
-</details>
+
 
 ## Usage
-<details><summary> Click me! </summary>
 
 In this example we start with a simple atomic class expression and move to some more complex 
 ones and finally render and print the last of them in description logics syntax.
@@ -46,7 +43,7 @@ teacher_that_hasChild_male = OWLObjectIntersectionOf([hasChild_male, teacher])
 # You can render and print owl class expressions in description logics syntax (and vice-versa)
 print(owl_expression_to_dl(teacher_that_hasChild_male))
 # (∃ hasChild.male) ⊓ teacher
-print(owl_expression_to_sparql("?x", teacher_that_hasChild_male))
+print(owl_expression_to_sparql(teacher_that_hasChild_male))
 #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 ```
 
@@ -59,7 +56,6 @@ class. In the above examples we have introduced 3 types of class expressions:
 
 Like we showed in this example, you can create all kinds of class expressions using the 
 OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/index.html).
-</details>
 
 ## How to cite
 Currently, we are working on our manuscript describing our framework.

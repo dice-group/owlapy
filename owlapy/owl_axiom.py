@@ -1,5 +1,6 @@
 """OWL Axioms"""
 from abc import ABCMeta, abstractmethod
+from itertools import combinations
 
 from typing import TypeVar, List, Optional, Iterable, Generic, Final, Union
 from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
@@ -7,7 +8,7 @@ from .owl_object import OWLObject, OWLEntity
 from .owl_datatype import OWLDatatype, OWLDataRange
 from .meta_classes import HasOperands
 from .owl_property import OWLPropertyExpression, OWLProperty
-from .class_expression import OWLClassExpression, OWLClass
+from .class_expression import OWLClassExpression, OWLClass, OWLNothing, OWLThing, OWLObjectUnionOf
 from .owl_individual import OWLIndividual
 from .iri import IRI
 from owlapy.owl_annotation import OWLAnnotationSubject, OWLAnnotationValue

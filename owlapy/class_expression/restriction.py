@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from ..meta_classes import HasFiller, HasCardinality, HasOperands
 from typing import TypeVar, Generic, Final, Sequence, Union, Iterable
-from .nary_boolean_expression import OWLObjectIntersectionOf
+from .nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
 from .class_expression import OWLAnonymousClassExpression, OWLClassExpression
 from ..owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, OWLDataPropertyExpression
 from ..owl_data_ranges import OWLPropertyRange, OWLDataRange
@@ -461,6 +461,7 @@ class OWLQuantifiedDataRestriction(OWLQuantifiedRestriction[OWLDataRange],
     _filler: OWLDataRange
 
     def __init__(self, filler: OWLDataRange):
+        assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
         self._filler = filler
 
     def get_filler(self) -> OWLDataRange:
@@ -478,6 +479,7 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
 
     @abstractmethod
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
+        assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
         super().__init__(cardinality, filler)
         self._property = property
 

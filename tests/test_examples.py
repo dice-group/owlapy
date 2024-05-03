@@ -20,7 +20,7 @@ class TestRunningExamples:
         male_teachers_with_children = OWLObjectIntersectionOf([males_with_children, teacher])
 
         assert owl_expression_to_dl(male_teachers_with_children)=="(∃ hasChild.male) ⊓ teacher"
-        assert owl_expression_to_sparql("?x", male_teachers_with_children)=="""SELECT
+        assert owl_expression_to_sparql(male_teachers_with_children)=="""SELECT
  DISTINCT ?x WHERE { 
 ?x <http://example.com/society#hasChild> ?s_1 . 
 ?s_1 a <http://example.com/society#male> . 
