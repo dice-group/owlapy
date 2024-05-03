@@ -322,6 +322,8 @@
         <span class="k">pass</span></div>
 </div>
 
+
+
 <span class="nd">@total_ordering</span>
 <span class="k">class</span> <span class="nc">_OWLLiteralImplDouble</span><span class="p">(</span><span class="n">OWLLiteral</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_v&#39;</span>
@@ -361,6 +363,8 @@
     <span class="k">def</span> <span class="nf">get_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatype</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="n">DoubleOWLDatatype</span>
+
+
 <span class="nd">@total_ordering</span>
 <span class="k">class</span> <span class="nc">_OWLLiteralImplInteger</span><span class="p">(</span><span class="n">OWLLiteral</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_v&#39;</span>
@@ -414,6 +418,14 @@
             <span class="n">value</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">strtobool</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_v</span> <span class="o">=</span> <span class="n">value</span>
 
+    <span class="k">def</span> <span class="nf">get_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the lexical value of this literal. Note that the language tag is not included.</span>
+<span class="sd">        boolean True/False should be true/false in string</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The lexical value of this literal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_v</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_v</span>
@@ -436,6 +448,8 @@
     <span class="k">def</span> <span class="nf">get_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatype</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="n">BooleanOWLDatatype</span>
+
+
 <span class="nd">@total_ordering</span>
 <span class="k">class</span> <span class="nc">_OWLLiteralImplString</span><span class="p">(</span><span class="n">OWLLiteral</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_v&#39;</span>
@@ -478,6 +492,8 @@
     <span class="k">def</span> <span class="nf">get_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatype</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="n">StringOWLDatatype</span>
+
+
 <span class="nd">@total_ordering</span>
 <span class="k">class</span> <span class="nc">_OWLLiteralImplDate</span><span class="p">(</span><span class="n">OWLLiteral</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_v&#39;</span>
