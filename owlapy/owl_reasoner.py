@@ -371,11 +371,6 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def is_using_triplestore(self):
-        """Return True if this reasoner is using a triplestore to retrieve instances."""
-        pass
-
-    @abstractmethod
     def super_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
             -> Iterable[OWLClassExpression]:
         """Gets the stream of named classes that are the strict (potentially direct) super classes of the specified
