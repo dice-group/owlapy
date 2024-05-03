@@ -18,6 +18,7 @@ pip3 install owlapy
 
 
 ## Usage
+
 In this example we start with a simple atomic class expression and move to some more complex 
 ones and finally render and print the last of them in description logics syntax.
 
