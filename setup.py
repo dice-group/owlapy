@@ -11,7 +11,7 @@ setup(
         "pandas>=1.5.0",
         "rdflib>=6.0.2",
         "parsimonious>=0.8.1",
-        "pytest>=8.1.1,"
+        "pytest>=8.1.1",
         "sortedcontainers>=2.4.0"],
     author='Caglar Demir',
     author_email='caglardemir8@gmail.com',
