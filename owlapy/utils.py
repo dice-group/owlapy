@@ -278,6 +278,13 @@ class OWLClassExpressionLengthMetric:
         return self.datatype_length
 
 
+measurer = OWLClassExpressionLengthMetric.get_default()
+
+
+def get_expression_length(ce: OWLClassExpression) -> int:
+    return measurer.length(ce)
+
+
 _N = TypeVar('_N')  #:
 _O = TypeVar('_O')  #:
 
