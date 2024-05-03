@@ -183,6 +183,8 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
             The OWLDatatype that types this literal.
         """
         pass
+
+
 @total_ordering
 class _OWLLiteralImplDouble(OWLLiteral):
     __slots__ = '_v'
@@ -222,6 +224,8 @@ class _OWLLiteralImplDouble(OWLLiteral):
     def get_datatype(self) -> OWLDatatype:
         # documented in parent
         return DoubleOWLDatatype
+
+
 @total_ordering
 class _OWLLiteralImplInteger(OWLLiteral):
     __slots__ = '_v'
@@ -275,6 +279,14 @@ class _OWLLiteralImplBoolean(OWLLiteral):
             value = bool(strtobool(value))
         self._v = value
 
+    def get_literal(self) -> str:
+        """Gets the lexical value of this literal. Note that the language tag is not included.
+        boolean True/False should be true/false in string
+        Returns:
+            The lexical value of this literal.
+        """
+        return str(self._v).lower()
+
     def __eq__(self, other):
         if type(other) is type(self):
             return self._v == other._v
@@ -297,6 +309,8 @@ class _OWLLiteralImplBoolean(OWLLiteral):
     def get_datatype(self) -> OWLDatatype:
         # documented in parent
         return BooleanOWLDatatype
+
+
 @total_ordering
 class _OWLLiteralImplString(OWLLiteral):
     __slots__ = '_v'
@@ -339,6 +353,8 @@ class _OWLLiteralImplString(OWLLiteral):
     def get_datatype(self) -> OWLDatatype:
         # documented in parent
         return StringOWLDatatype
+
+
 @total_ordering
 class _OWLLiteralImplDate(OWLLiteral):
     __slots__ = '_v'
