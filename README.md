@@ -6,8 +6,6 @@ OWL Ontologies.
 Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
 
 ## Installation
-<details><summary> Click me! </summary>
-
 ### Installation from Source
 ``` bash
 git clone https://github.com/dice-group/owlapy
@@ -17,11 +15,9 @@ or
 ```bash
 pip3 install owlapy
 ```
-</details>
+
 
 ## Usage
-<details><summary> Click me! </summary>
-
 In this example we start with a simple atomic class expression and move to some more complex 
 ones and finally render and print the last of them in description logics syntax.
 
@@ -59,7 +55,6 @@ class. In the above examples we have introduced 3 types of class expressions:
 
 Like we showed in this example, you can create all kinds of class expressions using the 
 OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/index.html).
-</details>
 
 ## How to cite
 Currently, we are working on our manuscript describing our framework.
