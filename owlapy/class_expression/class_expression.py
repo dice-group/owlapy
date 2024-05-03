@@ -67,7 +67,7 @@ class OWLAnonymousClassExpression(OWLClassExpression, metaclass=ABCMeta):
 
     def get_nnf(self) -> 'OWLClassExpression':
         # documented in parent
-        from owlapy.util import NNF
+        from owlapy.utils import NNF
         return NNF().get_class_nnf(self)
 
 
