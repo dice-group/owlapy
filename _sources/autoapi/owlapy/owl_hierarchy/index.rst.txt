@@ -1,0 +1,246 @@
+:py:mod:`owlapy.owl_hierarchy`
+==============================
+
+.. py:module:: owlapy.owl_hierarchy
+
+.. autoapi-nested-parse::
+
+   Classes representing hierarchy in OWL.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.owl_hierarchy.AbstractHierarchy
+   owlapy.owl_hierarchy.ClassHierarchy
+   owlapy.owl_hierarchy.ObjectPropertyHierarchy
+   owlapy.owl_hierarchy.DatatypePropertyHierarchy
+
+
+
+
+.. py:class:: AbstractHierarchy(factory: Type[_S], hierarchy_down: Iterable[Tuple[_S, Iterable[_S]]])
+              AbstractHierarchy(factory: Type[_S], reasoner: owlapy.owl_reasoner.OWLReasoner)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_S`\ ]
+
+   Representation of an abstract hierarchy which can be used for classes or properties.
+
+   :param hierarchy_down: A downwards hierarchy given as a mapping of Entities to sub-entities.
+   :param reasoner: Alternatively, a reasoner whose root_ontology is queried for entities.
+
+   .. py:attribute:: __slots__
+      :value: ('_Type', '_ent_set', '_parents_map', '_parents_map_trans', '_children_map',...
+
+      
+
+   .. py:method:: get_top_entity() -> _S
+      :classmethod:
+      :abstractmethod:
+
+      The most general entity in this hierarchy, which contains all the entities.
+
+
+   .. py:method:: get_bottom_entity() -> _S
+      :classmethod:
+      :abstractmethod:
+
+      The most specific entity in this hierarchy, which contains none of the entities.
+
+
+   .. py:method:: restrict(hierarchy: _U, *, remove: Iterable[_S] = None, allow: Iterable[_S] = None) -> _U
+      :staticmethod:
+
+      Restrict a given hierarchy to a set of allowed/removed entities.
+
+      :param hierarchy: An existing Entity hierarchy to restrict.
+      :param remove: Set of entities which should be ignored.
+      :param allow: Set of entities which should be used.
+
+      :returns: The restricted hierarchy.
+
+
+   .. py:method:: restrict_and_copy(*, remove: Iterable[_S] = None, allow: Iterable[_S] = None) -> _U
+
+      Restrict this hierarchy.
+
+      See restrict for more info.
+
+
+   .. py:method:: parents(entity: _S, direct: bool = True) -> Iterable[_S]
+
+      Parents of an entity.
+
+      :param entity: Entity for which to query parent entities.
+      :param direct: False to return transitive parents.
+
+      :returns: Super-entities.
+
+
+   .. py:method:: is_parent_of(a: _S, b: _S) -> bool
+
+      if A is a parent of B.
+
+      .. note:: A is always a parent of A.
+
+
+   .. py:method:: is_child_of(a: _S, b: _S) -> bool
+
+      If A is a child of B.
+
+      .. note:: A is always a child of A.
+
+
+   .. py:method:: children(entity: _S, direct: bool = True) -> Iterable[_S]
+
+      Children of an entity.
+
+      :param entity: Entity for which to query child entities.
+      :param direct: False to return transitive children.
+
+      :returns: Sub-entities.
+
+
+   .. py:method:: siblings(entity: _S) -> Iterable[_S]
+
+
+   .. py:method:: items() -> Iterable[_S]
+
+
+   .. py:method:: roots(of: Optional[_S] = None) -> Iterable[_S]
+
+
+   .. py:method:: leaves(of: Optional[_S] = None) -> Iterable[_S]
+
+
+   .. py:method:: __contains__(item: _S) -> bool
+
+
+   .. py:method:: __len__()
+
+
+
+.. py:class:: ClassHierarchy(hierarchy_down: Iterable[Tuple[owlapy.class_expression.OWLClass, Iterable[owlapy.class_expression.OWLClass]]])
+              ClassHierarchy(reasoner: owlapy.owl_reasoner.OWLReasoner)
+
+
+   Bases: :py:obj:`AbstractHierarchy`\ [\ :py:obj:`owlapy.class_expression.OWLClass`\ ]
+
+   Representation of a class hierarchy.
+
+   :param hierarchy_down: A downwards hierarchy given as a mapping of Class to sub-classes.
+   :param reasoner: Alternatively, a reasoner whose root_ontology is queried for classes and sub-classes.
+
+   .. py:method:: get_top_entity() -> owlapy.class_expression.OWLClass
+      :classmethod:
+
+      The most general entity in this hierarchy, which contains all the entities.
+
+
+   .. py:method:: get_bottom_entity() -> owlapy.class_expression.OWLClass
+      :classmethod:
+
+      The most specific entity in this hierarchy, which contains none of the entities.
+
+
+   .. py:method:: sub_classes(entity: owlapy.class_expression.OWLClass, direct: bool = True) -> Iterable[owlapy.class_expression.OWLClass]
+
+
+   .. py:method:: super_classes(entity: owlapy.class_expression.OWLClass, direct: bool = True) -> Iterable[owlapy.class_expression.OWLClass]
+
+
+   .. py:method:: is_subclass_of(subclass: owlapy.class_expression.OWLClass, superclass: owlapy.class_expression.OWLClass) -> bool
+
+
+
+.. py:class:: ObjectPropertyHierarchy(hierarchy_down: Iterable[Tuple[owlapy.owl_property.OWLObjectProperty, Iterable[owlapy.owl_property.OWLObjectProperty]]])
+              ObjectPropertyHierarchy(reasoner: owlapy.owl_reasoner.OWLReasoner)
+
+
+   Bases: :py:obj:`AbstractHierarchy`\ [\ :py:obj:`owlapy.owl_property.OWLObjectProperty`\ ]
+
+   Representation of an objet property hierarchy.
+
+   .. py:method:: get_top_entity() -> owlapy.owl_property.OWLObjectProperty
+      :classmethod:
+
+      The most general entity in this hierarchy, which contains all the entities.
+
+
+   .. py:method:: get_bottom_entity() -> owlapy.owl_property.OWLObjectProperty
+      :classmethod:
+
+      The most specific entity in this hierarchy, which contains none of the entities.
+
+
+   .. py:method:: sub_object_properties(entity: owlapy.owl_property.OWLObjectProperty, direct: bool = True) -> Iterable[owlapy.owl_property.OWLObjectProperty]
+
+
+   .. py:method:: super_object_properties(entity: owlapy.owl_property.OWLObjectProperty, direct: bool = True) -> Iterable[owlapy.owl_property.OWLObjectProperty]
+
+
+   .. py:method:: more_general_roles(role: owlapy.owl_property.OWLObjectProperty, direct: bool = True) -> Iterable[owlapy.owl_property.OWLObjectProperty]
+
+
+   .. py:method:: more_special_roles(role: owlapy.owl_property.OWLObjectProperty, direct: bool = True) -> Iterable[owlapy.owl_property.OWLObjectProperty]
+
+
+   .. py:method:: is_sub_property_of(sub_property: owlapy.owl_property.OWLObjectProperty, super_property: owlapy.owl_property.OWLObjectProperty) -> bool
+
+
+   .. py:method:: most_general_roles() -> Iterable[owlapy.owl_property.OWLObjectProperty]
+
+
+   .. py:method:: most_special_roles() -> Iterable[owlapy.owl_property.OWLObjectProperty]
+
+
+
+.. py:class:: DatatypePropertyHierarchy(hierarchy_down: Iterable[Tuple[owlapy.owl_property.OWLDataProperty, Iterable[owlapy.owl_property.OWLDataProperty]]])
+              DatatypePropertyHierarchy(reasoner: owlapy.owl_reasoner.OWLReasoner)
+
+
+   Bases: :py:obj:`AbstractHierarchy`\ [\ :py:obj:`owlapy.owl_property.OWLDataProperty`\ ]
+
+   Representation of a data property hierarchy.
+
+   .. py:method:: get_top_entity() -> owlapy.owl_property.OWLDataProperty
+      :classmethod:
+
+      The most general entity in this hierarchy, which contains all the entities.
+
+
+   .. py:method:: get_bottom_entity() -> owlapy.owl_property.OWLDataProperty
+      :classmethod:
+
+      The most specific entity in this hierarchy, which contains none of the entities.
+
+
+   .. py:method:: sub_data_properties(entity: owlapy.owl_property.OWLDataProperty, direct: bool = True)
+
+
+   .. py:method:: super_data_properties(entity: owlapy.owl_property.OWLDataProperty, direct: bool = True)
+
+
+   .. py:method:: more_general_roles(role: owlapy.owl_property.OWLDataProperty, direct: bool = True) -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+
+   .. py:method:: more_special_roles(role: owlapy.owl_property.OWLDataProperty, direct: bool = True) -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+
+   .. py:method:: is_sub_property_of(sub_property: owlapy.owl_property.OWLDataProperty, super_property: owlapy.owl_property.OWLDataProperty) -> bool
+
+
+   .. py:method:: most_general_roles() -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+
+   .. py:method:: most_special_roles() -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+
+

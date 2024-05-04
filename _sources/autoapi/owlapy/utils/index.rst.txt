@@ -1,0 +1,459 @@
+:py:mod:`owlapy.utils`
+======================
+
+.. py:module:: owlapy.utils
+
+.. autoapi-nested-parse::
+
+   Owlapy utils.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.utils.OWLClassExpressionLengthMetric
+   owlapy.utils.EvaluatedDescriptionSet
+   owlapy.utils.ConceptOperandSorter
+   owlapy.utils.OperandSetTransform
+   owlapy.utils.HasIndex
+   owlapy.utils.OrderedOWLObject
+   owlapy.utils.NNF
+   owlapy.utils.TopLevelCNF
+   owlapy.utils.TopLevelDNF
+   owlapy.utils.LRUCache
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.utils.get_expression_length
+   owlapy.utils.combine_nary_expressions
+   owlapy.utils.iter_count
+   owlapy.utils.as_index
+   owlapy.utils.move
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   owlapy.utils.measurer
+
+
+.. py:class:: OWLClassExpressionLengthMetric(*, class_length: int, object_intersection_length: int, object_union_length: int, object_complement_length: int, object_some_values_length: int, object_all_values_length: int, object_has_value_length: int, object_cardinality_length: int, object_has_self_length: int, object_one_of_length: int, data_some_values_length: int, data_all_values_length: int, data_has_value_length: int, data_cardinality_length: int, object_property_length: int, object_inverse_length: int, data_property_length: int, datatype_length: int, data_one_of_length: int, data_complement_length: int, data_intersection_length: int, data_union_length: int)
+
+
+   Length calculation of OWLClassExpression
+
+   :param class_length: Class: "C"
+   :param object_intersection_length: Intersection: A ⨅ B
+   :param object_union_length: Union: A ⨆ B
+   :param object_complement_length: Complement: ¬ C
+   :param object_some_values_length: Obj. Some Values: ∃ r.C
+   :param object_all_values_length: Obj. All Values: ∀ r.C
+   :param object_has_value_length: Obj. Has Value: ∃ r.{I}
+   :param object_cardinality_length: Obj. Cardinality restriction: ≤n r.C
+   :param object_has_self_length: Obj. Self restriction: ∃ r.Self
+   :param object_one_of_length: Obj. One of: ∃ r.{X,Y,Z}
+   :param data_some_values_length: Data Some Values: ∃ p.t
+   :param data_all_values_length: Data All Values: ∀ p.t
+   :param data_has_value_length: Data Has Value: ∃ p.{V}
+   :param data_cardinality_length: Data Cardinality restriction: ≤n r.t
+   :param object_property_length: Obj. Property: ∃ r.C
+   :param object_inverse_length: Inverse property: ∃ r⁻.C
+   :param data_property_length: Data Property: ∃ p.t
+   :param datatype_length: Datatype: ^^datatype
+   :param data_one_of_length: Data One of: ∃ p.{U,V,W}
+   :param data_complement_length: Data Complement: ¬datatype
+   :param data_intersection_length: Data Intersection: datatype ⨅ datatype
+   :param data_union_length: Data Union: datatype ⨆ datatype
+
+   .. py:attribute:: __slots__
+      :value: ('class_length', 'object_intersection_length', 'object_union_length',...
+
+      
+
+   .. py:attribute:: class_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_intersection_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_union_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_complement_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_some_values_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_all_values_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_has_value_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_cardinality_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_has_self_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_one_of_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_some_values_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_all_values_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_has_value_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_cardinality_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_property_length
+      :type: int
+
+      
+
+   .. py:attribute:: object_inverse_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_property_length
+      :type: int
+
+      
+
+   .. py:attribute:: datatype_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_one_of_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_complement_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_intersection_length
+      :type: int
+
+      
+
+   .. py:attribute:: data_union_length
+      :type: int
+
+      
+
+   .. py:method:: get_default() -> OWLClassExpressionLengthMetric
+      :staticmethod:
+
+
+   .. py:method:: length(o: owlapy.owl_object.OWLObject) -> int
+      :abstractmethod:
+
+
+
+.. py:data:: measurer
+
+   
+
+.. py:function:: get_expression_length(ce: owlapy.class_expression.OWLClassExpression) -> int
+
+
+.. py:class:: EvaluatedDescriptionSet(ordering: Callable[[_N], _O], max_size: int = 10)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_N`\ , :py:obj:`_O`\ ]
+
+   Abstract base class for generic types.
+
+   A generic type is typically declared by inheriting from
+   this class parameterized with one or more type variables.
+   For example, a generic mapping type might be defined as::
+
+     class Mapping(Generic[KT, VT]):
+         def __getitem__(self, key: KT) -> VT:
+             ...
+         # Etc.
+
+   This class can then be used as follows::
+
+     def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -> VT:
+         try:
+             return mapping[key]
+         except KeyError:
+             return default
+
+   .. py:attribute:: __slots__
+      :value: ('items', '_max_size', '_Ordering')
+
+      
+
+   .. py:attribute:: items
+      :type: SortedSet[_N]
+
+      
+
+   .. py:method:: maybe_add(node: _N)
+
+
+   .. py:method:: clean()
+
+
+   .. py:method:: worst()
+
+
+   .. py:method:: best()
+
+
+   .. py:method:: best_quality_value() -> float
+
+
+   .. py:method:: __iter__() -> Iterable[_N]
+
+
+
+.. py:class:: ConceptOperandSorter
+
+
+   .. py:method:: sort(o: _O) -> _O
+      :abstractmethod:
+
+
+
+.. py:class:: OperandSetTransform
+
+
+   .. py:method:: simplify(o: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+
+
+.. py:class:: HasIndex
+
+
+   Bases: :py:obj:`Protocol`
+
+   Interface for types with an index; this is used to group objects by type when sorting.
+
+   .. py:attribute:: type_index
+      :type: ClassVar[int]
+
+      
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+.. py:class:: OrderedOWLObject(o: _HasIndex)
+
+
+   Holder of OWL Objects that can be used for Python sorted.
+
+   The Ordering is dependent on the type_index of the impl. classes recursively followed by all components of the
+   OWL Object.
+
+   .. attribute:: o
+
+      OWL object.
+
+   .. py:attribute:: __slots__
+      :value: ('o', '_chain')
+
+      
+
+   .. py:attribute:: o
+      :type: _HasIndex
+
+      
+
+   .. py:method:: __lt__(other)
+
+      Return self<value.
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+.. py:class:: NNF
+
+
+   This class contains functions to transform a Class Expression into Negation Normal Form.
+
+   .. py:method:: get_class_nnf(ce: owlapy.class_expression.OWLClassExpression, negated: bool = False) -> owlapy.class_expression.OWLClassExpression
+      :abstractmethod:
+
+      Convert a Class Expression to Negation Normal Form. Operands will be sorted.
+
+      :param ce: Class Expression.
+      :param negated: Whether the result should be negated.
+
+      :returns: Class Expression in Negation Normal Form.
+
+
+
+.. py:class:: TopLevelCNF
+
+
+   This class contains functions to transform a class expression into Top-Level Conjunctive Normal Form.
+
+   .. py:method:: get_top_level_cnf(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+      Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
+
+      :param ce: Class Expression.
+
+      :returns: Class Expression in Top-Level Conjunctive Normal Form.
+
+
+
+.. py:class:: TopLevelDNF
+
+
+   This class contains functions to transform a class expression into Top-Level Disjunctive Normal Form.
+
+   .. py:method:: get_top_level_dnf(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+      Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
+
+      :param ce: Class Expression.
+
+      :returns: Class Expression in Top-Level Disjunctive Normal Form.
+
+
+
+.. py:function:: combine_nary_expressions(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+                 combine_nary_expressions(ce: owlapy.owl_data_ranges.OWLDataRange) -> owlapy.owl_data_ranges.OWLDataRange
+
+   Shortens an OWLClassExpression or OWLDataRange by combining all nested nary expressions of the same type.
+   Operands will be sorted.
+
+   E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -> OWLObjectUnionOf(A, B, C).
+
+
+.. py:function:: iter_count(i: Iterable) -> int
+
+   Count the number of elements in an iterable.
+
+
+.. py:function:: as_index(o: owlapy.owl_object.OWLObject) -> HasIndex
+
+   Cast OWL Object to HasIndex.
+
+
+.. py:class:: LRUCache(maxsize: Optional[int] = None)
+
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_K`\ , :py:obj:`_V`\ ]
+
+   Constants shares by all lru cache instances.
+
+   Adapted from functools.lru_cache.
+
+   .. attribute:: sentinel
+
+      Unique object used to signal cache misses.
+
+   .. attribute:: PREV
+
+      Name for the link field 0.
+
+   .. attribute:: NEXT
+
+      Name for the link field 1.
+
+   .. attribute:: KEY
+
+      Name for the link field 2.
+
+   .. attribute:: RESULT
+
+      Name for the link field 3.
+
+   .. py:attribute:: sentinel
+
+      
+
+   .. py:method:: __contains__(item: _K) -> bool
+
+
+   .. py:method:: __getitem__(item: _K) -> _V
+
+
+   .. py:method:: __setitem__(key: _K, value: _V)
+
+
+   .. py:method:: cache_info()
+
+      Report cache statistics.
+
+
+   .. py:method:: cache_clear()
+
+      Clear the cache and cache statistics.
+
+
+
+.. py:function:: move(*args)
+
+   "Move" an imported class to the current module by setting the classes __module__ attribute.
+
+   This is useful for documentation purposes to hide internal packages in sphinx.
+
+   :param args: List of classes to move.
+
+

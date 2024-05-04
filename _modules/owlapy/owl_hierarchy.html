@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.owl_hierarchy &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.owl_hierarchy</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.owl_hierarchy</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Classes representing hierarchy in OWL.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">overload</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Set</span>
+
+<span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLThing</span><span class="p">,</span> <span class="n">OWLNothing</span>
+<span class="kn">from</span> <span class="nn">owlapy.meta_classes</span> <span class="kn">import</span> <span class="n">HasIRI</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLTopObjectProperty</span><span class="p">,</span> <span class="n">OWLBottomObjectProperty</span><span class="p">,</span> <span class="n">OWLTopDataProperty</span><span class="p">,</span> <span class="n">OWLBottomDataProperty</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_reasoner</span> <span class="kn">import</span> <span class="n">OWLReasoner</span>
+
+<span class="n">_S</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_S&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">HasIRI</span><span class="p">)</span>  <span class="c1">#:</span>
+<span class="n">_U</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_U&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;AbstractHierarchy&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
+
+
+<div class="viewcode-block" id="AbstractHierarchy">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy">[docs]</a>
+<span class="k">class</span> <span class="nc">AbstractHierarchy</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_S</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation of an abstract hierarchy which can be used for classes or properties.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        hierarchy_down: A downwards hierarchy given as a mapping of Entities to sub-entities.</span>
+<span class="sd">        reasoner: Alternatively, a reasoner whose root_ontology is queried for entities.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_Type&#39;</span><span class="p">,</span> <span class="s1">&#39;_ent_set&#39;</span><span class="p">,</span> <span class="s1">&#39;_parents_map&#39;</span><span class="p">,</span> <span class="s1">&#39;_parents_map_trans&#39;</span><span class="p">,</span> <span class="s1">&#39;_children_map&#39;</span><span class="p">,</span> <span class="s1">&#39;_children_map_trans&#39;</span><span class="p">,</span> \
+                <span class="s1">&#39;_leaf_set&#39;</span><span class="p">,</span> <span class="s1">&#39;_root_set&#39;</span><span class="p">,</span> \
+        <span class="c1"># &#39;_eq_set&#39;</span>
+
+    <span class="n">_ent_set</span><span class="p">:</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span>
+    <span class="n">_parents_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]]</span>  <span class="c1"># Entity =&gt; parent entities</span>
+    <span class="n">_parents_map_trans</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]]</span>  <span class="c1"># Entity =&gt; parent entities</span>
+    <span class="n">_children_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]]</span>  <span class="c1"># Entity =&gt; child entities</span>
+    <span class="n">_children_map_trans</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]]</span>  <span class="c1"># Entity =&gt; child entities</span>
+    <span class="c1"># _eq_set: Dict[_S, Set[_S]]  # Entity =&gt; equivalent entities  # TODO</span>
+    <span class="n">_root_set</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span>  <span class="c1"># root entities</span>
+    <span class="n">_leaf_set</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span>  <span class="c1"># leaf entities</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">_S</span><span class="p">],</span> <span class="n">hierarchy_down</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]]]):</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">_S</span><span class="p">],</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">_S</span><span class="p">],</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Type</span> <span class="o">=</span> <span class="n">factory</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">OWLReasoner</span><span class="p">):</span>
+            <span class="n">hier_down_gen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hierarchy_down_generator</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">hier_down_gen</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the suitable downwards hierarchy based on the reasoner.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="AbstractHierarchy.get_top_entity">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.get_top_entity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_top_entity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_S</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The most general entity in this hierarchy, which contains all the entities.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.get_bottom_entity">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.get_bottom_entity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_bottom_entity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_S</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The most specific entity in this hierarchy, which contains none of the entities.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.restrict">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.restrict">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">restrict</span><span class="p">(</span><span class="n">hierarchy</span><span class="p">:</span> <span class="n">_U</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">_U</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Restrict a given hierarchy to a set of allowed/removed entities.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hierarchy: An existing Entity hierarchy to restrict.</span>
+<span class="sd">            remove: Set of entities which should be ignored.</span>
+<span class="sd">            allow: Set of entities which should be used.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The restricted hierarchy.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">remove_set</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">remove</span><span class="p">)</span> <span class="k">if</span> <span class="n">remove</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">allow_set</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">allow</span><span class="p">)</span> <span class="k">if</span> <span class="n">allow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">def</span> <span class="nf">_filter</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">_S</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">remove_set</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_set</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">allow_set</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">allow_set</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">_gen</span> <span class="o">=</span> <span class="p">((</span><span class="n">_</span><span class="p">,</span> <span class="nb">filter</span><span class="p">(</span><span class="n">_filter</span><span class="p">,</span> <span class="n">hierarchy</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)))</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="n">_filter</span><span class="p">,</span> <span class="n">hierarchy</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">hierarchy</span><span class="p">)(</span><span class="n">_gen</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.restrict_and_copy">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.restrict_and_copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">restrict_and_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">_U</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">_U</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Restrict this hierarchy.</span>
+
+<span class="sd">        See restrict for more info.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">restrict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="n">remove</span><span class="p">,</span> <span class="n">allow</span><span class="o">=</span><span class="n">allow</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchy_down</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map_trans</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="c1"># self._eq_set = dict()</span>
+
+        <span class="n">ent_to_sub_entities</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hierarchy_down</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ent_set</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">ent_to_sub_entities</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">ent</span><span class="p">,</span> <span class="n">sub_it</span> <span class="ow">in</span> <span class="n">ent_to_sub_entities</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="p">[</span><span class="n">ent</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sub_it</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map_trans</span><span class="p">[</span><span class="n">ent</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># create empty parent entry for all classes</span>
+
+        <span class="k">del</span> <span class="n">ent_to_sub_entities</span>  <span class="c1"># exhausted</span>
+
+        <span class="c1"># calculate transitive children</span>
+        <span class="k">for</span> <span class="n">ent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="p">:</span>
+            <span class="n">_children_transitive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="p">,</span> <span class="n">ent</span><span class="o">=</span><span class="n">ent</span><span class="p">,</span> <span class="n">seen_set</span><span class="o">=</span><span class="nb">set</span><span class="p">())</span>
+
+        <span class="c1"># TODO handling of eq_sets</span>
+        <span class="c1"># sccs = list(_strongly_connected_components(self._children_map_trans))</span>
+        <span class="c1"># for scc in sccs:</span>
+        <span class="c1">#     sub_entities = 0</span>
+        <span class="c1">#     for ent_enc in iter_bits(scc):</span>
+        <span class="c1">#         self._eq_set[ent_enc] = scc</span>
+        <span class="c1">#         sub_entities |= self._children_map_trans[ent_enc]</span>
+        <span class="c1">#         del self._children_map_trans[ent_enc]</span>
+        <span class="c1">#         del self._parents_map_trans[ent_enc]</span>
+        <span class="c1">#     self._children_map_trans[scc] = sub_entities</span>
+        <span class="c1">#     self._parents_map_trans[scc] = 0</span>
+
+        <span class="c1"># fill transitive parents</span>
+        <span class="k">for</span> <span class="n">ent</span><span class="p">,</span> <span class="n">sub_entities</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">sub_entities</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map_trans</span><span class="p">[</span><span class="n">sub</span><span class="p">]</span> <span class="o">|=</span> <span class="p">{</span><span class="n">ent</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_children_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leaf_set</span> <span class="o">=</span> <span class="n">_reduce_transitive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map_trans</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_set</span> <span class="o">=</span> <span class="n">_reduce_transitive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parents_map_trans</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AbstractHierarchy.parents">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.parents">[docs]</a>
+    <span class="k">def</span> <span class="nf">parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">_S</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parents of an entity.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entity: Entity for which to query parent entities.</span>
+<span class="sd">            direct: False to return transitive parents.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Super-entities.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">entity</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_bottom_entity</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">leaves</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">entity</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_top_entity</span><span class="p">():</span>
+            <span class="k">yield from</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map_trans</span><span class="p">[</span><span class="n">entity</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map</span><span class="p">[</span><span class="n">entity</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.is_parent_of">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.is_parent_of">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_parent_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">_S</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;if A is a parent of B.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">              A is always a parent of A.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_top_entity</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="p">{</span><span class="n">a</span><span class="p">}</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map_trans</span><span class="p">[</span><span class="n">b</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.is_child_of">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.is_child_of">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_child_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">_S</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;If A is a child of B.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">              A is always a child of A.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_bottom_entity</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="p">{</span><span class="n">a</span><span class="p">}</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="p">[</span><span class="n">b</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.children">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.children">[docs]</a>
+    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">_S</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Children of an entity.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entity: Entity for which to query child entities.</span>
+<span class="sd">            direct: False to return transitive children.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Sub-entities.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">entity</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_top_entity</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">roots</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">entity</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_bottom_entity</span><span class="p">():</span>
+            <span class="k">yield from</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="p">[</span><span class="n">entity</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_map</span><span class="p">[</span><span class="n">entity</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.siblings">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.siblings">[docs]</a>
+    <span class="k">def</span> <span class="nf">siblings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">_S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]:</span>
+        <span class="n">seen_set</span> <span class="o">=</span> <span class="p">{</span><span class="n">entity</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">sibling</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">sibling</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_set</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">sibling</span>
+                    <span class="n">seen_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sibling</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.items">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.items">[docs]</a>
+    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ent_set</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.roots">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.roots">[docs]</a>
+    <span class="k">def</span> <span class="nf">roots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">of</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">of</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">of</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_bottom_entity</span><span class="p">():</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_set</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parents_map_trans</span><span class="p">[</span><span class="n">of</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_set</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.leaves">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.leaves">[docs]</a>
+    <span class="k">def</span> <span class="nf">leaves</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">of</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_S</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">of</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">of</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_top_entity</span><span class="p">():</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leaf_set</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_map_trans</span><span class="p">[</span><span class="n">of</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_leaf_set</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.__contains__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.__contains__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">_S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ent_set</span></div>
+
+
+<div class="viewcode-block" id="AbstractHierarchy.__len__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.AbstractHierarchy.__len__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ent_set</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ClassHierarchy">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ClassHierarchy">[docs]</a>
+<span class="k">class</span> <span class="nc">ClassHierarchy</span><span class="p">(</span><span class="n">AbstractHierarchy</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation of a class hierarchy.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        hierarchy_down: A downwards hierarchy given as a mapping of Class to sub-classes.</span>
+<span class="sd">        reasoner: Alternatively, a reasoner whose root_ontology is queried for classes and sub-classes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ClassHierarchy.get_top_entity">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ClassHierarchy.get_top_entity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_top_entity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClass</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLThing</span></div>
+
+
+<div class="viewcode-block" id="ClassHierarchy.get_bottom_entity">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ClassHierarchy.get_bottom_entity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_bottom_entity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClass</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLNothing</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]]]:</span>
+        <span class="k">yield from</span> <span class="p">((</span><span class="n">_</span><span class="p">,</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">())</span>
+
+<div class="viewcode-block" id="ClassHierarchy.sub_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ClassHierarchy.sub_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">sub_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ClassHierarchy.super_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ClassHierarchy.super_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">super_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ClassHierarchy.is_subclass_of">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ClassHierarchy.is_subclass_of">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_subclass_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subclass</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">superclass</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_child_of</span><span class="p">(</span><span class="n">subclass</span><span class="p">,</span> <span class="n">superclass</span><span class="p">)</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchy_down</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]]]):</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">):</span> <span class="o">...</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy">[docs]</a>
+<span class="k">class</span> <span class="nc">ObjectPropertyHierarchy</span><span class="p">(</span><span class="n">AbstractHierarchy</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation of an objet property hierarchy.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ObjectPropertyHierarchy.get_top_entity">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.get_top_entity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_top_entity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLTopObjectProperty</span></div>
+
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy.get_bottom_entity">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.get_bottom_entity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_bottom_entity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLBottomObjectProperty</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]]]:</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">cast</span><span class="p">(</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span>
+                        <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">),</span>
+                               <span class="n">reasoner</span><span class="o">.</span><span class="n">sub_object_properties</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">))))</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">())</span>
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy.sub_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.sub_object_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">sub_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy.super_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.super_object_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">super_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy.more_general_roles">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.more_general_roles">[docs]</a>
+    <span class="k">def</span> <span class="nf">more_general_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy.more_special_roles">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.more_special_roles">[docs]</a>
+    <span class="k">def</span> <span class="nf">more_special_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy.is_sub_property_of">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.is_sub_property_of">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_sub_property_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">super_property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_child_of</span><span class="p">(</span><span class="n">sub_property</span><span class="p">,</span> <span class="n">super_property</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy.most_general_roles">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.most_general_roles">[docs]</a>
+    <span class="k">def</span> <span class="nf">most_general_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">roots</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ObjectPropertyHierarchy.most_special_roles">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.ObjectPropertyHierarchy.most_special_roles">[docs]</a>
+    <span class="k">def</span> <span class="nf">most_special_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">leaves</span><span class="p">()</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchy_down</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]]]):</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">):</span> <span class="o">...</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy">[docs]</a>
+<span class="k">class</span> <span class="nc">DatatypePropertyHierarchy</span><span class="p">(</span><span class="n">AbstractHierarchy</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation of a data property hierarchy.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DatatypePropertyHierarchy.get_top_entity">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.get_top_entity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_top_entity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLTopDataProperty</span></div>
+
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy.get_bottom_entity">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.get_bottom_entity">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_bottom_entity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataProperty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OWLBottomDataProperty</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]]]:</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">_</span><span class="p">,</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">sub_data_properties</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">())</span>
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy.sub_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.sub_data_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">sub_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy.super_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.super_data_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">super_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy.more_general_roles">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.more_general_roles">[docs]</a>
+    <span class="k">def</span> <span class="nf">more_general_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy.more_special_roles">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.more_special_roles">[docs]</a>
+    <span class="k">def</span> <span class="nf">more_special_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy.is_sub_property_of">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.is_sub_property_of">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_sub_property_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_property</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">super_property</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_child_of</span><span class="p">(</span><span class="n">sub_property</span><span class="p">,</span> <span class="n">super_property</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy.most_general_roles">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.most_general_roles">[docs]</a>
+    <span class="k">def</span> <span class="nf">most_general_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">roots</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DatatypePropertyHierarchy.most_special_roles">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_hierarchy/index.html#owlapy.owl_hierarchy.DatatypePropertyHierarchy.most_special_roles">[docs]</a>
+    <span class="k">def</span> <span class="nf">most_special_roles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">leaves</span><span class="p">()</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchy_down</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]]]):</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">):</span> <span class="o">...</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_children_transitive</span><span class="p">(</span><span class="n">hier_trans</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]],</span> <span class="n">ent</span><span class="p">:</span> <span class="n">_S</span><span class="p">,</span> <span class="n">seen_set</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add transitive links to map_trans.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Changes map_trans.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        hier_trans: Map to which transitive links are added.</span>
+<span class="sd">        ent: Class in map_trans for which to add transitive sub-classes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sub_classes_ent</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">hier_trans</span><span class="p">[</span><span class="n">ent</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">sub_ent</span> <span class="ow">in</span> <span class="n">sub_classes_ent</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">{</span><span class="n">sub_ent</span><span class="p">}</span> <span class="o">&amp;</span> <span class="n">seen_set</span><span class="p">:</span>
+            <span class="n">_children_transitive</span><span class="p">(</span><span class="n">hier_trans</span><span class="p">,</span> <span class="n">sub_ent</span><span class="p">,</span> <span class="n">seen_set</span> <span class="o">|</span> <span class="p">{</span><span class="n">ent</span><span class="p">})</span>
+            <span class="n">seen_set</span> <span class="o">=</span> <span class="n">seen_set</span> <span class="o">|</span> <span class="p">{</span><span class="n">sub_ent</span><span class="p">}</span> <span class="o">|</span> <span class="n">hier_trans</span><span class="p">[</span><span class="n">sub_ent</span><span class="p">]</span>
+            <span class="n">hier_trans</span><span class="p">[</span><span class="n">ent</span><span class="p">]</span> <span class="o">|=</span> <span class="n">hier_trans</span><span class="p">[</span><span class="n">sub_ent</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_reduce_transitive</span><span class="p">(</span><span class="n">hier</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]],</span> <span class="n">hier_inverse</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]])</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]],</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">_S</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove all transitive links.</span>
+
+<span class="sd">    Takes a downward hierarchy and an upward hierarchy with transitive links, and removes all links that can be</span>
+<span class="sd">    implicitly detected since they are transitive.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         hier: downward hierarchy with all transitive links, from Class =&gt; sub-classes.</span>
+<span class="sd">         hier_inverse: upward hierarchy with all transitive links, from Class =&gt; super-classes.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Thin map with only direct sub-classes.</span>
+<span class="sd">        Set of classes without sub-classes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result_hier</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">leaf_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ent</span><span class="p">,</span> <span class="n">set_ent</span> <span class="ow">in</span> <span class="n">hier</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">direct_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">item_ent</span> <span class="ow">in</span> <span class="n">set_ent</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">hier_inverse</span><span class="p">[</span><span class="n">item_ent</span><span class="p">]</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">set_ent</span> <span class="o">^</span> <span class="p">{</span><span class="n">item_ent</span><span class="p">}):</span>
+                <span class="n">direct_set</span> <span class="o">|=</span> <span class="p">{</span><span class="n">item_ent</span><span class="p">}</span>
+        <span class="n">result_hier</span><span class="p">[</span><span class="n">ent</span><span class="p">]</span> <span class="o">=</span> <span class="n">direct_set</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">direct_set</span><span class="p">:</span>
+            <span class="n">leaf_set</span> <span class="o">|=</span> <span class="p">{</span><span class="n">ent</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">result_hier</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">leaf_set</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_strongly_connected_components</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">FrozenSet</span><span class="p">[</span><span class="n">_S</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Strongly connected component algorithm.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        graph: Directed Graph dictionary, vertex =&gt; set of vertices (there is an edge from v to each V).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The strongly connected components.</span>
+
+<span class="sd">    Author: Mario Alviano</span>
+<span class="sd">    Source: https://github.com/alviano/python/blob/master/rewrite_aggregates/scc.py</span>
+<span class="sd">    Licence: GPL-3.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">identified</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">boundaries</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">identified</span>
+        <span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+        <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">v</span><span class="p">})</span>
+        <span class="n">boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">w</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="n">dfs</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="p">{</span><span class="n">w</span><span class="p">}</span> <span class="o">&amp;</span> <span class="n">identified</span><span class="p">:</span>
+                <span class="k">while</span> <span class="n">index</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">boundaries</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">boundaries</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">boundaries</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
+            <span class="n">boundaries</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">scc</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">or_</span><span class="p">,</span> <span class="n">stack</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]:])</span>
+            <span class="k">del</span> <span class="n">stack</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]:]</span>
+            <span class="n">identified</span> <span class="o">|=</span> <span class="n">scc</span>
+            <span class="k">yield</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">scc</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">dfs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
