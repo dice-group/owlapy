@@ -18,7 +18,7 @@ setup(
     url='https://github.com/dice-group/owlapy',
     classifiers=[
         "Programming Language :: Python :: 3.10",
-        "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+        "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering"],
     python_requires='>=3.10.13',
     long_description=long_description,
