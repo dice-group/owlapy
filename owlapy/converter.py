@@ -651,4 +651,4 @@ def owl_expression_to_sparql(expression: OWLClassExpression = None,
      that are instances of owl:NamedIndividual
     """
     assert expression is not None, "expression cannot be None"
-    return converter.as_query(root_variable, expression, False, values, named_individuals)
+    return converter.as_query(root_variable, expression, count=False, values=values, named_individuals=named_individuals)
