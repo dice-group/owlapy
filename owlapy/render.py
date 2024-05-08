@@ -6,16 +6,20 @@ from functools import singledispatchmethod
 from typing import List, Callable
 
 from owlapy import namespaces
-from owlapy.io import OWLObjectRenderer
-from owlapy.model import OWLLiteral, OWLNaryDataRange, OWLObject, OWLClass, OWLObjectSomeValuesFrom, \
-    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLBooleanClassExpression, OWLNaryBooleanClassExpression, \
-    OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectInverseOf, OWLClassExpression, OWLRestriction, \
-    OWLObjectMinCardinality, OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLObjectHasValue, \
-    OWLObjectOneOf, OWLNamedIndividual, OWLEntity, IRI, OWLPropertyExpression, OWLDataSomeValuesFrom, \
-    OWLFacetRestriction, OWLDatatypeRestriction, OWLDatatype, OWLDataAllValuesFrom, OWLDataComplementOf, \
-    OWLDataUnionOf, OWLDataIntersectionOf, OWLDataHasValue, OWLDataOneOf, OWLDataMaxCardinality, \
-    OWLDataMinCardinality, OWLDataExactCardinality
+from .iri import IRI
+from .owl_individual import OWLNamedIndividual
+from .owl_literal import OWLLiteral
+from .owl_object import OWLObjectRenderer, OWLEntity, OWLObject
+from .owl_property import OWLObjectInverseOf, OWLPropertyExpression
+from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWLClass, OWLObjectSomeValuesFrom, \
+    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectMinCardinality, \
+    OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
+    OWLDataHasValue, OWLDataMinCardinality, OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataOneOf, \
+    OWLNaryBooleanClassExpression, OWLRestriction
 from owlapy.vocab import OWLFacet
+from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
+from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
+from .owl_datatype import OWLDatatype
 
 
 _DL_SYNTAX = types.SimpleNamespace(
@@ -44,7 +48,7 @@ _DL_SYNTAX = types.SimpleNamespace(
 
 
 def _simple_short_form_provider(e: OWLEntity) -> str:
-    iri: IRI = e.get_iri()
+    iri: IRI = e.iri
     sf = iri.get_short_form()
     for ns in [namespaces.XSD, namespaces.OWL, namespaces.RDFS, namespaces.RDF]:
         if iri.get_namespace() == ns:
@@ -142,7 +146,7 @@ class DLSyntaxObjectRenderer(OWLObjectRenderer):
 
     @render.register
     def _(self, r: OWLObjectOneOf):
-        return "{%s}" % (" %s " % _DL_SYNTAX.OR).join(
+        return "{%s}" % (" %s " % _DL_SYNTAX.COMMA).join(
             "%s" % (self.render(_)) for _ in r.individuals())
 
     @render.register
@@ -420,3 +424,15 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
             return "(%s)" % self.render(c)
         else:
             return self.render(c)
+
+
+DLrenderer = DLSyntaxObjectRenderer()
+ManchesterRenderer = ManchesterOWLSyntaxOWLObjectRenderer()
+
+
+def owl_expression_to_dl(o: OWLObject) -> str:
+    return DLrenderer.render(o)
+
+
+def owl_expression_to_manchester(o: OWLObject) -> str:
+    return ManchesterRenderer.render(o)

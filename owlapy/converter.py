@@ -7,12 +7,17 @@ from typing import Set, List, Dict, Optional, Iterable
 
 from rdflib.plugins.sparql.parser import parseQuery
 
-from owlapy.model import OWLClassExpression, OWLClass, OWLEntity, OWLObjectProperty, \
-    OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectHasValue, \
-    OWLNamedIndividual, OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectExactCardinality, \
-    OWLObjectMaxCardinality, OWLDataCardinalityRestriction, OWLDataProperty, OWLObjectHasSelf, OWLObjectOneOf, \
-    OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, OWLDatatype, TopOWLDatatype, OWLDataOneOf, \
-    OWLLiteral, OWLDatatypeRestriction, OWLObjectIntersectionOf
+from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction, OWLDataMinCardinality, \
+    OWLDataMaxCardinality, OWLDataExactCardinality, OWLClass, OWLClassExpression, OWLObjectIntersectionOf, \
+    OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, \
+    OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, \
+    OWLDataCardinalityRestriction, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, \
+    OWLDataOneOf
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLLiteral, TopOWLDatatype
+from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
+from owlapy.owl_object import OWLEntity
+from owlapy.owl_datatype import OWLDatatype
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 
 _Variable_facet_comp = MappingProxyType({
@@ -81,6 +86,7 @@ class Owl2SparqlConverter:
     """Convert owl (owlapy model class expressions) to SPARQL."""
     __slots__ = 'ce', 'sparql', 'variables', 'parent', 'parent_var', 'properties', 'variable_entities', 'cnt', \
                 'mapping', 'grouping_vars', 'having_conditions', 'for_all_de_morgan', 'named_individuals', '_intersection'
+    # @TODO:CD: We need to document this class. The computation behind the mapping is not clear.
 
     ce: OWLClassExpression
     sparql: List[str]
@@ -137,10 +143,6 @@ class Owl2SparqlConverter:
     def modal_depth(self):
         return len(self.variables)
 
-    # @property
-    # def in_intersection(self):
-    #     return self._intersection[self.modal_depth]
-
     @singledispatchmethod
     def render(self, e):
         raise NotImplementedError(e)
@@ -181,13 +183,6 @@ class Owl2SparqlConverter:
         else:
             return self.render(o)
 
-    # @contextmanager
-    # def intersection(self):
-    #     self._intersection[self.modal_depth] = True
-    #     try:
-    #         yield
-    #     finally:
-    #         del self._intersection[self.modal_depth]
 
     @contextmanager
     def stack_variable(self, var):
@@ -242,21 +237,6 @@ class Owl2SparqlConverter:
         # we iterate over the concepts that appear in the intersection
         for op in ce.operands():
             self.process(op)
-
-        # the following part was commented out because it was related to the possible optimization in the complement
-        # operator that has also been commented out
-        # with self.intersection():
-        #     for op in ce.operands():
-        #         self.process(op)
-        #     props = self.properties[self.modal_depth]
-        #     vars_ = set()
-        #     if props:
-        #         for p in props:
-        #             if p in self.mapping:
-        #                 vars_.add(self.mapping[p])
-        #         if len(vars_) == 2:
-        #             v0, v1 = sorted(vars_)
-        #             self.append(f"FILTER ( {v0} != {v1} )")
 
     # an overload of process function
     # this overload is responsible for handling unions of concepts (e.g., Brother ⊔ Sister)
@@ -338,19 +318,8 @@ class Owl2SparqlConverter:
         # filler holds the concept of the expression (Male in our example) and is processed recursively
         filler = ce.get_filler()
 
-        # if the current class expression is the first one we are processing (root of recursion), the following
-        # if-clause tries to restrict the entities (individuals) to consider using owl:NamedIndividual.
-        # However, it is not guaranteed that entities in every KG are instances of owl:NamedIndividual, hence, adding
-        # this triple will affect the results in such cases.
-        # if self.modal_depth == 1:
-        #     self.append_triple(self.current_variable, "a", f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
-
-        # here, the first group graph pattern starts
-        # the first group graph pattern ensures deals with the entities that appear in a triple with the property
         self.append("{")
-        # if filler.is_owl_thing():
-        #     self.append_triple(self.current_variable, self.mapping.new_property_variable(), object_variable)
-        # else:
+
         if property_expression.is_anonymous():
             # property expression is inverse of a property
             self.append_triple(object_variable, predicate, self.current_variable)
@@ -493,12 +462,11 @@ class Owl2SparqlConverter:
         property_expression = ce.get_property()
         assert isinstance(property_expression, OWLDataProperty)
         cardinality = ce.get_cardinality()
-
-        if isinstance(ce, OWLObjectMinCardinality):
+        if isinstance(ce, OWLDataMinCardinality):
             comparator = ">="
-        elif isinstance(ce, OWLObjectMaxCardinality):
+        elif isinstance(ce, OWLDataMaxCardinality):
             comparator = "<="
-        elif isinstance(ce, OWLObjectExactCardinality):
+        elif isinstance(ce, OWLDataExactCardinality):
             comparator = "="
         else:
             raise ValueError(ce)
@@ -540,7 +508,7 @@ class Owl2SparqlConverter:
                 self.append(",")
             assert isinstance(ind, OWLNamedIndividual)
             self.append(f"<{ind.to_string_id()}>")
-        self.append(f" )")
+        self.append(f" ) )")
 
     @process.register
     def _(self, ce: OWLDataSomeValuesFrom):
@@ -583,7 +551,7 @@ class Owl2SparqlConverter:
     def _(self, ce: OWLDataHasValue):
         property_expression = ce.get_property()
         value = ce.get_filler()
-        assert isinstance(value, OWLDataProperty)
+        assert isinstance(value, OWLLiteral)
         self.append_triple(self.current_variable, property_expression, value)
 
     @process.register
@@ -638,7 +606,7 @@ class Owl2SparqlConverter:
                  for_all_de_morgan: bool = True,
                  count: bool = False,
                  values: Optional[Iterable[OWLNamedIndividual]] = None,
-                 named_individuals: bool = False):
+                 named_individuals: bool = False) -> str:
         # root variable: the variable that will be projected
         # ce: the class expression to be transformed to a SPARQL query
         # for_all_de_morgan: true -> ¬(∃r.¬C), false -> (∀r.C)
@@ -661,15 +629,26 @@ class Owl2SparqlConverter:
         qs.extend(tp)
         qs.append(f" }}")
 
-        # group_by_vars = self.grouping_vars[ce]
-        # if group_by_vars:
-        #     qs.append("GROUP BY " + " ".join(sorted(group_by_vars)))
-        # conditions = self.having_conditions[ce]
-        # if conditions:
-        #     qs.append(" HAVING ( ")
-        #     qs.append(" && ".join(sorted(conditions)))
-        #     qs.append(" )")
 
         query = "\n".join(qs)
         parseQuery(query)
         return query
+
+
+converter = Owl2SparqlConverter()
+
+
+def owl_expression_to_sparql(expression: OWLClassExpression = None,
+                             root_variable: str = "?x",
+                             values: Optional[Iterable[OWLNamedIndividual]] = None,
+                             named_individuals: bool = False) -> str:
+    """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
+     root variable: the variable that will be projected
+     expression: the class expression to be transformed to a SPARQL query
+
+     values: positive or negative examples from a class expression problem. Unclear
+     named_individuals: if set to True, the generated SPARQL query will return only entities
+     that are instances of owl:NamedIndividual
+    """
+    assert expression is not None, "expression cannot be None"
+    return converter.as_query(root_variable, expression, False, values, named_individuals)

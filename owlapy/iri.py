@@ -1,25 +1,12 @@
+"""OWL IRI"""
 import weakref
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from typing import Final, Union, overload
 from weakref import WeakKeyDictionary
 
 from owlapy import namespaces
-from owlapy.model._base import OWLAnnotationSubject, OWLAnnotationValue
+from .owl_annotation import OWLAnnotationSubject, OWLAnnotationValue
 from owlapy.namespaces import Namespaces
-
-
-class HasIRI(metaclass=ABCMeta):
-    """Simple class to access the IRI."""
-    __slots__ = ()
-
-    @abstractmethod
-    def get_iri(self) -> 'IRI':
-        """Gets the IRI of this object.
-
-        Returns:
-            The IRI of this object.
-        """
-        pass
 
 
 class _WeakCached(type):
@@ -119,7 +106,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
             :True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
         """
         from owlapy.vocab import OWLRDFVocabulary
-        return self == OWLRDFVocabulary.OWL_NOTHING.get_iri()
+        return self == OWLRDFVocabulary.OWL_NOTHING.iri
 
     def is_thing(self):
         """Determines if this IRI is equal to the IRI that owl:Thing is named with.
@@ -128,7 +115,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
             :True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
         """
         from owlapy.vocab import OWLRDFVocabulary
-        return self == OWLRDFVocabulary.OWL_THING.get_iri()
+        return self == OWLRDFVocabulary.OWL_THING.iri
 
     def is_reserved_vocabulary(self) -> bool:
         """Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with
@@ -147,10 +134,29 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
 
     def as_str(self) -> str:
         """
+        CD: Should be deprecated.
         Returns:
             The string that specifies the IRI.
         """
         return self._namespace + self._remainder
+
+    @property
+    def str(self) -> str:
+        """
+
+        Returns:
+            The string that specifies the IRI.
+        """
+        return self.as_str()
+
+    @property
+    def reminder(self) -> str:
+        """
+
+        Returns:
+            The string corresponding to the reminder of the IRI.
+        """
+        return self.reminder()
 
     def get_short_form(self) -> str:
         """Gets the short form.

@@ -6,7 +6,8 @@ from operator import lt, le, gt, ge
 from re import match
 
 from owlapy import namespaces
-from owlapy.model._iri import HasIRI, IRI
+from .meta_classes import HasIRI
+from .iri import IRI
 from owlapy.namespaces import Namespaces
 
 
@@ -22,8 +23,13 @@ class _Vocabulary(HasIRI):
         self._remainder = remainder
         self._iri = IRI(namespace, remainder)
 
-    def get_iri(self) -> IRI:
+    @property
+    def iri(self) -> IRI:
         return self._iri
+
+    @property
+    def str(self) -> str:
+        return self._iri.as_str()
 
     def as_str(self) -> str:
         return self._iri.as_str()

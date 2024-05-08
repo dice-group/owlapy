@@ -4,20 +4,25 @@ from typing import Final, List, Optional, Union
 from parsimonious.grammar import Grammar
 from parsimonious.nodes import NodeVisitor
 from parsimonious.nodes import Node
-from owlapy.io import OWLObjectParser
-from owlapy.model import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMinCardinality, OWLObjectOneOf, \
-    OWLObjectProperty, OWLObjectPropertyExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, OWLClass, IRI, \
-    OWLClassExpression, OWLDataProperty, OWLNamedIndividual, OWLObjectComplementOf, OWLObjectExactCardinality, \
-    OWLObjectHasValue, OWLQuantifiedDataRestriction, OWLQuantifiedObjectRestriction, StringOWLDatatype,  \
-    DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, \
-    OWLDataSomeValuesFrom, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataExactCardinality, \
-    OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataIntersectionOf, OWLDataMinCardinality, OWLDataHasValue, \
-    OWLLiteral, OWLDataRange, OWLDataUnionOf, OWLDataOneOf, OWLDatatype, OWLObjectCardinalityRestriction, \
-    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom, OWLDataComplementOf, BooleanOWLDatatype
-from owlapy.namespaces import Namespaces
-
-from owlapy.render import _DL_SYNTAX, _MAN_SYNTAX
-from owlapy.vocab import OWLFacet, OWLRDFVocabulary
+from .iri import IRI
+from .owl_individual import OWLNamedIndividual
+from .owl_literal import IntegerOWLDatatype, BooleanOWLDatatype, DoubleOWLDatatype, StringOWLDatatype, DateOWLDatatype, \
+    DateTimeOWLDatatype, DurationOWLDatatype, OWLLiteral
+from .owl_property import OWLObjectPropertyExpression, OWLObjectProperty, OWLDataProperty
+from .owl_object import OWLObjectParser
+from .namespaces import Namespaces
+from .render import _DL_SYNTAX, _MAN_SYNTAX
+from .owl_datatype import OWLDatatype
+from .vocab import OWLFacet, OWLRDFVocabulary
+from owlapy.class_expression import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMinCardinality, \
+    OWLObjectSomeValuesFrom, OWLObjectUnionOf, OWLClass, OWLObjectOneOf, \
+    OWLClassExpression, OWLObjectComplementOf, OWLObjectExactCardinality, \
+    OWLQuantifiedDataRestriction, OWLQuantifiedObjectRestriction,  OWLFacetRestriction, \
+    OWLDataSomeValuesFrom, OWLDataExactCardinality, OWLObjectHasValue, \
+    OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, \
+    OWLDataOneOf, OWLObjectCardinalityRestriction, OWLDatatypeRestriction, \
+    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom
+from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf, OWLDataRange
 
 
 MANCHESTER_GRAMMAR = Grammar(r"""
@@ -402,9 +407,9 @@ class ManchesterOWLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_Manches
     def visit_simple_iri(self, node, children) -> IRI:
         simple_iri = _node_text(node)
         if simple_iri == "Thing":
-            return OWLRDFVocabulary.OWL_THING.get_iri()
+            return OWLRDFVocabulary.OWL_THING.iri
         elif simple_iri == "Nothing":
-            return OWLRDFVocabulary.OWL_NOTHING.get_iri()
+            return OWLRDFVocabulary.OWL_NOTHING.iri
         elif self.ns is not None:
             return IRI(self.ns, simple_iri)
         else:
@@ -721,9 +726,9 @@ class DLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_DLSyntaxParserMeta
     def visit_class_iri(self, node, children) -> OWLClass:
         top_bottom = _node_text(node)
         if top_bottom == _DL_SYNTAX.TOP:
-            return OWLClass(OWLRDFVocabulary.OWL_THING.get_iri())
+            return OWLClass(OWLRDFVocabulary.OWL_THING.iri)
         elif top_bottom == _DL_SYNTAX.BOTTOM:
-            return OWLClass(OWLRDFVocabulary.OWL_NOTHING.get_iri())
+            return OWLClass(OWLRDFVocabulary.OWL_NOTHING.iri)
         else:
             return OWLClass(children[0])
 
@@ -744,7 +749,7 @@ class DLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_DLSyntaxParserMeta
             iri = _node_text(node)[1:-1]
             return IRI.create(iri)
         except IndexError:
-            raise ValueError(f"{iri} is not a valid IRI.")
+            raise ValueError(f"{_node_text(node)[1:-1]} is not a valid IRI.")
 
     def visit_abbreviated_iri(self, node, children):
         # TODO: Add support for prefixes
@@ -764,3 +769,17 @@ class DLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_DLSyntaxParserMeta
 
     def generic_visit(self, node, children):
         return children or node
+
+
+DLparser = DLSyntaxParser()
+ManchesterParser = ManchesterOWLSyntaxParser()
+
+
+def dl_to_owl_expression(dl_expression: str, namespace: str):
+    DLparser.ns = namespace
+    return DLparser.parse_expression(dl_expression)
+
+
+def manchester_to_owl_expression(manchester_expression: str, namespace: str):
+    ManchesterParser.ns = namespace
+    return ManchesterParser.parse_expression(manchester_expression)

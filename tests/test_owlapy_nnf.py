@@ -24,15 +24,20 @@
 #
 import unittest
 
-from owlapy.model import OWLObjectProperty, OWLNamedIndividual, OWLObjectComplementOf, \
+from owlapy.class_expression import OWLObjectComplementOf, \
     OWLObjectAllValuesFrom, OWLObjectSomeValuesFrom, OWLObjectIntersectionOf, OWLObjectUnionOf, \
-    OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectHasValue, OWLObjectOneOf, OWLClassExpression, IRI, \
-    BooleanOWLDatatype, DoubleOWLDatatype, IntegerOWLDatatype, OWLClass, OWLDataAllValuesFrom, OWLDataComplementOf, \
-    OWLDataIntersectionOf, OWLDataProperty, OWLDataSomeValuesFrom, OWLDataUnionOf, \
-    OWLDataHasValue, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataOneOf, OWLLiteral
-from owlapy.model.providers import OWLDatatypeMinMaxExclusiveRestriction
-from owlapy.util import NNF
+    OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLClassExpression, \
+    OWLClass, OWLDataAllValuesFrom, \
+    OWLDataSomeValuesFrom, OWLDataHasValue, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataOneOf
+from owlapy.iri import IRI
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import IntegerOWLDatatype, BooleanOWLDatatype, DoubleOWLDatatype, OWLLiteral
+from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
+from owlapy.providers import owl_datatype_min_max_exclusive_restriction
+from owlapy.utils import NNF
 
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
+from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf
 
 def iri(suffix):
     NS = "http://example.org/"
@@ -356,7 +361,7 @@ class Owlapy_NNF_Test(unittest.TestCase):
         self.assertEqual(nnf, comp)
 
     def testDataNestedA(self):
-        restriction = OWLDatatypeMinMaxExclusiveRestriction(5, 6)
+        restriction = owl_datatype_min_max_exclusive_restriction(5, 6)
         prop = OWLDataProperty(iri("p"))
         filler_a = OWLDataUnionOf((IntegerOWLDatatype, DoubleOWLDatatype))
         op_a = OWLDataSomeValuesFrom(prop, filler_a)
