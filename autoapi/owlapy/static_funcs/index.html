@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_individual &mdash; OWLAPY 0.1.2 documentation</title>
+  <title>owlapy.static_funcs &mdash; OWLAPY 0.1.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
@@ -25,8 +25,8 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="owlapy.owl_literal" href="../owl_literal/index.html" />
-    <link rel="prev" title="owlapy.owl_hierarchy" href="../owl_hierarchy/index.html" /> 
+    <link rel="next" title="owlapy.utils" href="../utils/index.html" />
+    <link rel="prev" title="owlapy.render" href="../render/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -64,17 +64,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_data_ranges</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_datatype/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_datatype</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_hierarchy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_hierarchy</span></code></a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_individual</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="#classes">Classes</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_individual.OWLIndividual"><code class="docutils literal notranslate"><span class="pre">OWLIndividual</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_individual.OWLNamedIndividual"><code class="docutils literal notranslate"><span class="pre">OWLNamedIndividual</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_individual</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_literal</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_object</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_ontology</span></code></a></li>
@@ -84,7 +74,17 @@
 <li class="toctree-l3"><a class="reference internal" href="../parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.parser</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../providers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.providers</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../render/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.render</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.static_funcs</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.static_funcs</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#functions">Functions</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.static_funcs.move"><code class="docutils literal notranslate"><span class="pre">move()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.static_funcs.download_external_files"><code class="docutils literal notranslate"><span class="pre">download_external_files()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.utils</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../vocab/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.vocab</span></code></a></li>
 </ul>
@@ -109,9 +109,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy</span></code></a></li>
-      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_individual</span></code></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.static_funcs</span></code></li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../../_sources/autoapi/owlapy/owl_individual/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../../_sources/autoapi/owlapy/static_funcs/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -119,75 +119,39 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-owlapy.owl_individual">
-<span id="owlapy-owl-individual"></span><h1><a class="reference internal" href="#module-owlapy.owl_individual" title="owlapy.owl_individual"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.owl_individual</span></code></a><a class="headerlink" href="#module-owlapy.owl_individual" title="Link to this heading"></a></h1>
-<p>OWL Individuals</p>
+  <section id="module-owlapy.static_funcs">
+<span id="owlapy-static-funcs"></span><h1><a class="reference internal" href="#module-owlapy.static_funcs" title="owlapy.static_funcs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">owlapy.static_funcs</span></code></a><a class="headerlink" href="#module-owlapy.static_funcs" title="Link to this heading"></a></h1>
+<p>Static functions for general purposes.</p>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
-<section id="classes">
-<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h3>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLIndividual</span></code></a></p></td>
-<td><p>Represents a named or anonymous individual.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.static_funcs.move" title="owlapy.static_funcs.move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move</span></code></a>(*args)</p></td>
+<td><p>&quot;Move&quot; an imported class to the current module by setting the classes __module__ attribute.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLNamedIndividual</span></code></a></p></td>
-<td><p>Named individuals are identified using an IRI. Since they are given an IRI, named individuals are entities.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.static_funcs.download_external_files" title="owlapy.static_funcs.download_external_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_external_files</span></code></a>(ftp_link)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.owl_individual.OWLIndividual">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_individual.</span></span><span class="sig-name descname"><span class="pre">OWLIndividual</span></span><a class="reference internal" href="../../../_modules/owlapy/owl_individual.html#OWLIndividual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_individual.OWLIndividual" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_object.OWLObject</span></code></a></p>
-<p>Represents a named or anonymous individual.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_individual.OWLIndividual.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></em><a class="headerlink" href="#owlapy.owl_individual.OWLIndividual.__slots__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.owl_individual.OWLNamedIndividual">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_individual.</span></span><span class="sig-name descname"><span class="pre">OWLNamedIndividual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_individual.html#OWLNamedIndividual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_individual.OWLNamedIndividual" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_individual.OWLIndividual" title="owlapy.owl_individual.OWLIndividual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLIndividual</span></code></a>, <a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_object.OWLEntity</span></code></a></p>
-<p>Named individuals are identified using an IRI. Since they are given an IRI, named individuals are entities.
-IRIs from the reserved vocabulary must not be used to identify named individuals in an OWL 2 DL ontology.</p>
-<p>(<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Named_Individuals">https://www.w3.org/TR/owl2-syntax/#Named_Individuals</a>)</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="owlapy.owl_individual.OWLNamedIndividual.iri">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></em><a class="headerlink" href="#owlapy.owl_individual.OWLNamedIndividual.iri" title="Link to this definition"></a></dt>
-<dd><p>Gets the IRI of this object.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.static_funcs.move">
+<span class="sig-prename descclassname"><span class="pre">owlapy.static_funcs.</span></span><span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/static_funcs.html#move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.static_funcs.move" title="Link to this definition"></a></dt>
+<dd><p>“Move” an imported class to the current module by setting the classes __module__ attribute.</p>
+<p>This is useful for documentation purposes to hide internal packages in sphinx.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The IRI of this object.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> – List of classes to move.</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="owlapy.owl_individual.OWLNamedIndividual.str">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">str</span></span><a class="headerlink" href="#owlapy.owl_individual.OWLNamedIndividual.str" title="Link to this definition"></a></dt>
-<dd><p>Gets the string representation of this object</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The IRI as string</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_individual.OWLNamedIndividual.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_iri'</span></em><a class="headerlink" href="#owlapy.owl_individual.OWLNamedIndividual.__slots__" title="Link to this definition"></a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.static_funcs.download_external_files">
+<span class="sig-prename descclassname"><span class="pre">owlapy.static_funcs.</span></span><span class="sig-name descname"><span class="pre">download_external_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ftp_link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/static_funcs.html#download_external_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.static_funcs.download_external_files" title="Link to this definition"></a></dt>
 <dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_individual.OWLNamedIndividual.type_index">
-<span class="sig-name descname"><span class="pre">type_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Final</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1005</span></em><a class="headerlink" href="#owlapy.owl_individual.OWLNamedIndividual.type_index" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
 
 </section>
 </section>
@@ -197,8 +161,8 @@ IRIs from the reserved vocabulary must not be used to identify named individuals
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../owl_hierarchy/index.html" class="btn btn-neutral float-left" title="owlapy.owl_hierarchy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../owl_literal/index.html" class="btn btn-neutral float-right" title="owlapy.owl_literal" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../render/index.html" class="btn btn-neutral float-left" title="owlapy.render" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../utils/index.html" class="btn btn-neutral float-right" title="owlapy.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -144,17 +144,7 @@ Attributes
 
       
 
-   .. py:attribute:: for_all_de_morgan
-      :type: bool
-
-      
-
-   .. py:attribute:: named_individuals
-      :type: bool
-
-      
-
-   .. py:method:: convert(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, for_all_de_morgan: bool = True, named_individuals: bool = False)
+   .. py:method:: convert(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, named_individuals: bool = False)
 
       Used to convert owl class expression to SPARQL syntax.
 
@@ -183,12 +173,6 @@ Attributes
       :abstractmethod:
 
 
-   .. py:method:: forAll(ce: owlapy.class_expression.OWLObjectAllValuesFrom)
-
-
-   .. py:method:: forAllDeMorgan(ce: owlapy.class_expression.OWLObjectAllValuesFrom)
-
-
    .. py:method:: new_count_var() -> str
 
 
@@ -201,7 +185,15 @@ Attributes
    .. py:method:: triple(subject, predicate, object_)
 
 
-   .. py:method:: as_query(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, for_all_de_morgan: bool = True, count: bool = False, values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, named_individuals: bool = False) -> str
+   .. py:method:: as_query(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, count: bool = False, values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, named_individuals: bool = False) -> str
+
+      root variable: the variable that will be projected
+      ce: the class expression to be transformed to a SPARQL query
+      count: True, counts the results ; False, projects the individuals
+      values: positive or negative examples from a class expression problem
+      named_individuals: if set to True, the generated SPARQL query will return only entities that are instances
+      of owl:NamedIndividual
+
 
 
 
