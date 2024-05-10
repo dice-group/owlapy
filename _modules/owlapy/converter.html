@@ -187,7 +187,7 @@
 <span class="k">class</span> <span class="nc">Owl2SparqlConverter</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert owl (owlapy model class expressions) to SPARQL.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;ce&#39;</span><span class="p">,</span> <span class="s1">&#39;sparql&#39;</span><span class="p">,</span> <span class="s1">&#39;variables&#39;</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">,</span> <span class="s1">&#39;parent_var&#39;</span><span class="p">,</span> <span class="s1">&#39;properties&#39;</span><span class="p">,</span> <span class="s1">&#39;variable_entities&#39;</span><span class="p">,</span> <span class="s1">&#39;cnt&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;mapping&#39;</span><span class="p">,</span> <span class="s1">&#39;grouping_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;having_conditions&#39;</span><span class="p">,</span> <span class="s1">&#39;_intersection&#39;</span>
+                <span class="s1">&#39;mapping&#39;</span><span class="p">,</span> <span class="s1">&#39;grouping_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;having_conditions&#39;</span><span class="p">,</span> <span class="s1">&#39;for_all_de_morgan&#39;</span><span class="p">,</span> <span class="s1">&#39;named_individuals&#39;</span><span class="p">,</span> <span class="s1">&#39;_intersection&#39;</span>
     <span class="c1"># @TODO:CD: We need to document this class. The computation behind the mapping is not clear.</span>
 
     <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span>
@@ -202,10 +202,15 @@
     <span class="n">grouping_vars</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
     <span class="n">having_conditions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
     <span class="n">cnt</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span>
 
 <div class="viewcode-block" id="Owl2SparqlConverter.convert">
 <a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.convert">[docs]</a>
-    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Used to convert owl class expression to SPARQL syntax.</span>
 
 <span class="sd">        Args:</span>
@@ -228,9 +233,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="n">VariablesMapping</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grouping_vars</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">having_conditions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
-        <span class="c1"># if named_individuals is True, we return only entities that are instances of owl:NamedIndividual</span>
-        <span class="k">if</span> <span class="n">named_individuals</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NAMED_INDIVIDUAL</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">for_all_de_morgan</span> <span class="o">=</span> <span class="n">for_all_de_morgan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">named_individuals</span> <span class="o">=</span> <span class="n">named_individuals</span>
+        <span class="c1"># # if named_individuals is True, we return only entities that are instances of owl:NamedIndividual</span>
+        <span class="c1"># if named_individuals:</span>
+        <span class="c1">#     self.append_triple(root_variable, &#39;a&#39;, f&quot;&lt;{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}&gt;&quot;)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">root_variable</span><span class="p">):</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_parent</span><span class="p">(</span><span class="n">ce</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
@@ -372,7 +379,19 @@
     <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
         <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
+        <span class="c1"># the conversion was trying here to optimize the query</span>
+        <span class="c1"># but the proposed optimization alters the semantics of some queries</span>
+        <span class="c1"># example: ( A ⊓ ( B ⊔ ( ¬C ) ) )</span>
+        <span class="c1"># with the proposed optimization, the group graph pattern for (¬C) will be { FILTER NOT EXISTS { ?x a C } }</span>
+        <span class="c1"># however, the expected pattern is { ?x ?p ?o . FILTER NOT EXISTS { ?x a C } }</span>
+        <span class="c1"># the exclusion of &quot;?x ?p ?o&quot; results in the group graph pattern to just return true or false (not bindings)</span>
+        <span class="c1"># as a result, we need to comment out the if-clause of the following line</span>
+        <span class="c1"># if not self.in_intersection and self.modal_depth == 1:</span>
+        <span class="c1"># if namedIndividual is set to True, do not use variables --&gt; restrict the subject to instances of NamedIndividual</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_individuals</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NAMED_INDIVIDUAL</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
         <span class="c1"># process the concept after the ¬</span>
@@ -397,11 +416,19 @@
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
 
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">for_all_de_morgan</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forAllDeMorgan</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forAll</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
     <span class="c1"># an overload of process function</span>
     <span class="c1"># this overload is responsible for handling the forAll operator (e.g., ∀hasChild.Male)</span>
     <span class="c1"># general case: ∀r.C</span>
-    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">):</span>
+<div class="viewcode-block" id="Owl2SparqlConverter.forAll">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.forAll">[docs]</a>
+    <span class="k">def</span> <span class="nf">forAll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">):</span>
         <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
         <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
         <span class="c1"># property expression holds the role of the class expression (hasChild in our example)</span>
@@ -448,7 +475,39 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="n">predicate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; } }&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; } }&quot;</span><span class="p">)</span></div>
+
+
+    <span class="c1"># an overload of process function</span>
+    <span class="c1"># this overload is responsible for handling the forAll operator but as if the DeMorgan law was applied</span>
+    <span class="c1"># (e.g., ∀hasChild.Male == ¬(∃hasChild.¬Male))</span>
+    <span class="c1"># general case: ∀r.C == ¬(∃r.¬C)</span>
+<div class="viewcode-block" id="Owl2SparqlConverter.forAllDeMorgan">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.forAllDeMorgan">[docs]</a>
+    <span class="k">def</span> <span class="nf">forAllDeMorgan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="c1"># here, we need to apply the complement rule twice</span>
+        <span class="c1"># the first filter not exists covers the outer ¬</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="c1"># property expression holds the role of the class expression (hasChild in our example)</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="c1"># property expression is inverse of a property</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">object_variable</span><span class="p">)</span>
+
+        <span class="c1"># the second filter not exists covers the inner ¬</span>
+        <span class="c1"># filler holds the concept of the expression (Male in our example) and is processed recursively</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; }&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; }&quot;</span><span class="p">)</span></div>
+
 
     <span class="c1"># an overload of process function</span>
     <span class="c1"># this overload is responsible for handling the exists operator combined with an individual (e.g., ∃hasChild.{john})</span>
@@ -681,21 +740,19 @@
     <span class="k">def</span> <span class="nf">as_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                 <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">count</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        root variable: the variable that will be projected</span>
-<span class="sd">        ce: the class expression to be transformed to a SPARQL query</span>
-<span class="sd">        count: True, counts the results ; False, projects the individuals</span>
-<span class="sd">        values: positive or negative examples from a class expression problem</span>
-<span class="sd">        named_individuals: if set to True, the generated SPARQL query will return only entities that are instances</span>
-<span class="sd">        of owl:NamedIndividual</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-
+                 <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># root variable: the variable that will be projected</span>
+        <span class="c1"># ce: the class expression to be transformed to a SPARQL query</span>
+        <span class="c1"># for_all_de_morgan: true -&gt; ¬(∃r.¬C), false -&gt; (∀r.C)</span>
+        <span class="c1"># count: True, counts the results ; False, projects the individuals</span>
+        <span class="c1"># values: positive or negative examples from a class expression problem</span>
+        <span class="c1"># named_individuals: if set to True, the generated SPARQL query will return only entities that are instances</span>
+        <span class="c1">#                    of owl:NamedIndividual</span>
         <span class="n">qs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SELECT&quot;</span><span class="p">]</span>
-        <span class="n">tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">)</span>
+        <span class="n">tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span> <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
             <span class="n">qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; ( COUNT ( DISTINCT </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2"> ) AS ?cnt ) WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -725,17 +782,21 @@
 <span class="k">def</span> <span class="nf">owl_expression_to_sparql</span><span class="p">(</span><span class="n">expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?x&quot;</span><span class="p">,</span>
                              <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                              <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query</span>
 <span class="sd">     root variable: the variable that will be projected</span>
 <span class="sd">     expression: the class expression to be transformed to a SPARQL query</span>
 
 <span class="sd">     values: positive or negative examples from a class expression problem. Unclear</span>
+<span class="sd">     for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS</span>
+<span class="sd">     patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query</span>
 <span class="sd">     named_individuals: if set to True, the generated SPARQL query will return only entities</span>
 <span class="sd">     that are instances of owl:NamedIndividual</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;expression cannot be None&quot;</span>
-    <span class="k">return</span> <span class="n">converter</span><span class="o">.</span><span class="n">as_query</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">converter</span><span class="o">.</span><span class="n">as_query</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
+                              <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span> <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">)</span></div>
 
 </pre></div>
 
