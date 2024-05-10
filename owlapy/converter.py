@@ -641,14 +641,18 @@ converter = Owl2SparqlConverter()
 def owl_expression_to_sparql(expression: OWLClassExpression = None,
                              root_variable: str = "?x",
                              values: Optional[Iterable[OWLNamedIndividual]] = None,
+                             for_all_de_morgan: bool = True,
                              named_individuals: bool = False) -> str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
      root variable: the variable that will be projected
      expression: the class expression to be transformed to a SPARQL query
 
      values: positive or negative examples from a class expression problem. Unclear
+     for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS
+     patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
      named_individuals: if set to True, the generated SPARQL query will return only entities
      that are instances of owl:NamedIndividual
     """
     assert expression is not None, "expression cannot be None"
-    return converter.as_query(root_variable, expression, count=False, values=values, named_individuals=named_individuals)
+    return converter.as_query(root_variable, expression, count=False, values=values,
+                              named_individuals=named_individuals, for_all_de_morgan=for_all_de_morgan)
