@@ -24,7 +24,7 @@ from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassO
     OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom
 from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
-from owlapy.owl_ontology import OWLOntology, OWLOntology_Owlready2
+from owlapy.owl_ontology import OWLOntology, OWLOntology_Owlready2, ToOwlready2
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, \
     OWLProperty
 
