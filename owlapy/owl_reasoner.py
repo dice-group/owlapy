@@ -1,16 +1,24 @@
 """OWL Reasoner"""
 from abc import ABCMeta, abstractmethod
-from typing import Iterable
+from enum import Enum, auto
+from itertools import chain
+from typing import Iterable, List, Set
+import logging
 
-from owlapy.class_expression import OWLClassExpression
+import owlready2
+
+from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom
 from owlapy.class_expression import OWLClass
-from owlapy.owl_ontology import OWLOntology
-
-from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty
-
-
+from owlapy.iri import IRI
+from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
+from owlapy.owl_data_ranges import OWLDataRange
+from owlapy.owl_ontology import OWLOntology, OWLOntology_Owlready2, _parse_concept_to_owlapy
+from owlapy.owl_ontology_manager import OWLOntologyManager_Owlready2
+from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
+
+logger = logging.getLogger(__name__)
 
 
 class OWLReasoner(metaclass=ABCMeta):
@@ -388,3 +396,698 @@ class OWLReasoner(metaclass=ABCMeta):
             If ce is equivalent to owl:Thing then nothing will be returned.
         """
         pass
+
+
+class BaseReasoner_Owlready2(Enum):
+    """Enumeration class for base reasoner when calling sync_reasoner.
+
+    Attributes:
+        PELLET: Pellet base reasoner.
+        HERMIT: HermiT base reasoner.
+    """
+    PELLET = auto()
+    HERMIT = auto()
+
+
+class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
+    """Extra convenience methods for OWL Reasoners"""
+
+    # default
+    def data_property_ranges(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataRange]:
+        """Gets the data ranges that are the direct or indirect ranges of this property with respect to the imports
+        closure of the root ontology.
+
+        Args:
+            pe: The property expression whose ranges are to be retrieved.
+            direct: Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved
+                (False).
+
+        Returns:
+        """
+        for ax in self.get_root_ontology().data_property_range_axioms(pe):
+            yield ax.get_range()
+            if not direct:
+                logger.warning("indirect not implemented")
+                # TODO:
+
+    # default
+    def all_data_property_values(self, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
+        """Gets all values for the given data property expression that appear in the knowledge base.
+
+        Args:
+            pe: The data property expression whose values are to be retrieved
+            direct: Specifies if only the direct values of the data property pe should be retrieved (True), or if
+                    the values of sub properties of pe should be taken into account (False).
+
+        Returns:
+            A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+            axioms entails DataPropertyAssertion(pe ind l) for any ind.
+        """
+        onto = self.get_root_ontology()
+        for ind in onto.individuals_in_signature():
+            for lit in self.data_property_values(ind, pe, direct):
+                yield lit
+
+    # default
+    def ind_data_properties(self, ind: OWLNamedIndividual, direct: bool = True) -> Iterable[OWLDataProperty]:
+        """Gets all data properties for the given individual that appear in the knowledge base.
+
+        Args:
+            ind: The named individual whose data properties are to be retrieved
+            direct: Specifies if the direct data properties should be retrieved (True), or if all
+                data properties should be retrieved (False), so that sub properties are taken into account.
+
+        Returns:
+            All data properties pe where the set of reasoner axioms entails DataPropertyAssertion(pe ind l)
+            for atleast one l.
+        """
+        onto = self.get_root_ontology()
+        for dp in onto.data_properties_in_signature():
+            try:
+                next(iter(self.data_property_values(ind, dp, direct)))
+                yield dp
+            except StopIteration:
+                pass
+
+    # default
+    def ind_object_properties(self, ind: OWLNamedIndividual, direct: bool = True) -> Iterable[OWLObjectProperty]:
+        """Gets all object properties for the given individual that appear in the knowledge base.
+
+        Args:
+            ind: The named individual whose object properties are to be retrieved
+            direct: Specifies if the direct object properties should be retrieved (True), or if all
+                object properties should be retrieved (False), so that sub properties are taken into account.
+
+        Returns:
+            All data properties pe where the set of reasoner axioms entails ObjectPropertyAssertion(pe ind ind2)
+            for atleast one ind2.
+        """
+        onto = self.get_root_ontology()
+        for op in onto.object_properties_in_signature():
+            try:
+                next(iter(self.object_property_values(ind, op, direct)))
+                yield op
+            except StopIteration:
+                pass
+
+
+class OWLReasoner_Owlready2(OWLReasonerEx):
+    __slots__ = '_ontology', '_world'
+
+    _ontology: OWLOntology_Owlready2
+    _world: owlready2.World
+
+    def __init__(self, ontology: OWLOntology_Owlready2, isolate: bool = False):
+        """
+        Base reasoner in Ontolearn, used to reason in the given ontology.
+
+        Args:
+            ontology: The ontology that should be used by the reasoner.
+            isolate: Whether to isolate the reasoner in a new world + copy of the original ontology.
+                     Useful if you create multiple reasoner instances in the same script.
+        """
+        super().__init__(ontology)
+        assert isinstance(ontology, OWLOntology_Owlready2)
+
+        if isolate:
+            self._isolated = True
+            new_manager = OWLOntologyManager_Owlready2()
+            self._ontology = new_manager.load_ontology(ontology.get_original_iri())
+            self._world = new_manager._world
+            print("INFO  OWLReasoner    :: Using isolated ontology\n"
+                  "INFO  OWLReasoner    :: Changes you make in the original ontology won't be reflected to the isolated"
+                  " ontology\n"
+                  "INFO  OWLReasoner    :: To make changes on the isolated ontology use the method "
+                  "`update_isolated_ontology()`")
+
+        else:
+            self._isolated = False
+            self._ontology = ontology
+            self._world = ontology._world
+
+    def update_isolated_ontology(self, axioms_to_add: List[OWLAxiom] = None,
+                                 axioms_to_remove: List[OWLAxiom] = None):
+        """
+        Add or remove axioms to the isolated ontology that the reasoner is using.
+
+        Args:
+            axioms_to_add (List[OWLAxiom]): Axioms to add to the isolated ontology.
+            axioms_to_remove (List[OWLAxiom]): Axioms to remove from the isolated ontology.
+        """
+        if self._isolated:
+            if axioms_to_add is None and axioms_to_remove is None:
+                raise ValueError(f"At least one argument should be specified in method: "
+                                 f"{self.update_isolated_ontology.__name__}")
+            manager = self._ontology.get_owl_ontology_manager()
+            if axioms_to_add is not None:
+                for axiom in axioms_to_add:
+                    manager.add_axiom(self._ontology, axiom)
+            if axioms_to_remove is not None:
+                for axiom in axioms_to_remove:
+                    manager.remove_axiom(self._ontology, axiom)
+        else:
+            raise AssertionError(f"Misuse of method '{self.update_isolated_ontology.__name__}'. The reasoner is not "
+                                 f"using an isolated ontology.")
+
+    def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        domains = {d.get_domain() for d in self.get_root_ontology().data_property_domain_axioms(pe)}
+        super_domains = set(chain.from_iterable([self.super_classes(d) for d in domains]))
+        yield from domains - super_domains
+        if not direct:
+            yield from super_domains
+
+    def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        domains = {d.get_domain() for d in self.get_root_ontology().object_property_domain_axioms(pe)}
+        super_domains = set(chain.from_iterable([self.super_classes(d) for d in domains]))
+        yield from domains - super_domains
+        if not direct:
+            yield from super_domains
+
+    def object_property_ranges(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        ranges = {r.get_range() for r in self.get_root_ontology().object_property_range_axioms(pe)}
+        super_ranges = set(chain.from_iterable([self.super_classes(d) for d in ranges]))
+        yield from ranges - super_ranges
+        if not direct:
+            yield from super_ranges
+
+    def equivalent_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
+        seen_set = {ce}
+        if isinstance(ce, OWLClass):
+            c_x: owlready2.ThingClass = self._world[ce.str]
+            for eq_x in c_x.INDIRECT_equivalent_to:
+                eq = _parse_concept_to_owlapy(eq_x)
+                if (isinstance(eq, OWLClass) or
+                    (isinstance(eq, OWLClassExpression) and not only_named)) and eq not in seen_set:
+                    seen_set.add(eq)
+                    yield eq
+                # Workaround for problems in owlready2. It does not always recognize equivalent complex class
+                # expressions through INDIRECT_equivalent_to. Maybe it will work as soon as owlready2 adds support for
+                # EquivalentClasses general class axioms.
+                if not only_named and isinstance(eq_x, owlready2.ThingClass):
+                    for eq_2_x in eq_x.equivalent_to:
+                        eq_2 = _parse_concept_to_owlapy(eq_2_x)
+                        if eq_2 not in seen_set:
+                            seen_set.add(eq_2)
+                            yield eq_2
+        elif isinstance(ce, OWLClassExpression):
+            # Extend as soon as owlready2 supports EquivalentClasses general class axioms
+            # Slow but works. No better way to do this in owlready2 without using the reasoners at the moment.
+            # Might be able to change this when owlready2 supports general class axioms for EquivalentClasses.
+            for c in self._ontology.classes_in_signature():
+                if ce in self.equivalent_classes(c, only_named=False) and c not in seen_set:
+                    seen_set.add(c)
+                    yield c
+                    for e_c in self.equivalent_classes(c, only_named=False):
+                        if e_c not in seen_set and (not only_named or isinstance(e_c, OWLClass)):
+                            seen_set.add(e_c)
+                            yield e_c
+        else:
+            raise ValueError(f'Equivalent classes not implemented for: {ce}')
+
+    def _find_disjoint_classes(self, ce: OWLClassExpression, only_named: bool = True, seen_set=None):
+        if isinstance(ce, OWLClass):
+            c_x: owlready2.ThingClass = self._world[ce.str]
+            for d_x in chain.from_iterable(map(lambda d: d.entities, c_x.disjoints())):
+                if d_x != c_x and (isinstance(d_x, owlready2.ThingClass) or
+                                   (isinstance(d_x, owlready2.ClassConstruct) and not only_named)):
+                    d_owlapy = _parse_concept_to_owlapy(d_x)
+                    seen_set.add(d_owlapy)
+                    yield d_owlapy
+                    for c in self.equivalent_classes(d_owlapy, only_named=only_named):
+                        if c not in seen_set:
+                            seen_set.add(c)
+                            yield c
+                    for c in self.sub_classes(d_owlapy, only_named=only_named):
+                        if c not in seen_set:
+                            seen_set.add(c)
+                            yield c
+        elif isinstance(ce, OWLClassExpression):
+            # Extend as soon as owlready2 supports DisjointClasses general class axioms
+            # Slow but works. No better way to do this in owlready2 without using the reasoners at the moment.
+            # Might be able to change this when owlready2 supports general class axioms for DjsjointClasses
+            yield from (c for c in self._ontology.classes_in_signature() if ce in self.disjoint_classes(c, False))
+        else:
+            raise ValueError(f'Equivalent classes not implemented for: {ce}')
+
+    def disjoint_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
+        seen_set = set()
+        yield from self._find_disjoint_classes(ce, only_named, seen_set)
+        for c in self.super_classes(ce, only_named=only_named):
+            if c != OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')):
+                yield from self._find_disjoint_classes(c, only_named=only_named, seen_set=seen_set)
+
+    def different_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
+        i: owlready2.Thing = self._world[ind.str]
+        yield from (OWLNamedIndividual(IRI.create(d_i.iri))
+                    for d_i in chain.from_iterable(map(lambda x: x.entities, i.differents()))
+                    if isinstance(d_i, owlready2.Thing) and i != d_i)
+
+    def same_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
+        i: owlready2.Thing = self._world[ind.str]
+        yield from (OWLNamedIndividual(IRI.create(d_i.iri)) for d_i in i.equivalent_to
+                    if isinstance(d_i, owlready2.Thing))
+
+    def data_property_values(self, ind: OWLNamedIndividual, pe: OWLDataProperty, direct: bool = True) \
+            -> Iterable[OWLLiteral]:
+        i: owlready2.Thing = self._world[ind.str]
+        p: owlready2.DataPropertyClass = self._world[pe.str]
+        retrieval_func = p._get_values_for_individual if direct else p._get_indirect_values_for_individual
+        for val in retrieval_func(i):
+            yield OWLLiteral(val)
+
+    def all_data_property_values(self, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
+        p: owlready2.DataPropertyClass = self._world[pe.str]
+        relations = p.get_relations()
+        if not direct:
+            indirect_relations = chain.from_iterable(
+                map(lambda x: self._world[x.str].get_relations(),
+                    self.sub_data_properties(pe, direct=False)))
+            relations = chain(relations, indirect_relations)
+        for _, val in relations:
+            yield OWLLiteral(val)
+
+    def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = False) \
+            -> Iterable[OWLNamedIndividual]:
+        if isinstance(pe, OWLObjectProperty):
+            i: owlready2.Thing = self._world[ind.str]
+            p: owlready2.ObjectPropertyClass = self._world[pe.str]
+            # Recommended to use direct=False because _get_values_for_individual does not give consistent result
+            # for the case when there are equivalent object properties. At least until this is fixed on owlready2.
+            retieval_func = p._get_values_for_individual if direct else p._get_indirect_values_for_individual
+            for val in retieval_func(i):
+                yield OWLNamedIndividual(IRI.create(val.iri))
+        elif isinstance(pe, OWLObjectInverseOf):
+            p: owlready2.ObjectPropertyClass = self._world[pe.get_named_property().str]
+            inverse_p = p.inverse_property
+            # If the inverse property is explicitly defined we can take shortcut
+            if inverse_p is not None:
+                yield from self.object_property_values(ind, OWLObjectProperty(IRI.create(inverse_p.iri)), direct)
+            else:
+                if not direct:
+                    raise NotImplementedError('Indirect values of inverse properties are only implemented if the '
+                                              'inverse property is explicitly defined in the ontology.'
+                                              f'Property: {pe}')
+                i: owlready2.Thing = self._world[ind.str]
+                for val in p._get_inverse_values_for_individual(i):
+                    yield OWLNamedIndividual(IRI.create(val.iri))
+        else:
+            raise NotImplementedError(pe)
+
+    def flush(self) -> None:
+        pass
+
+    def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+        if direct:
+            if isinstance(ce, OWLClass):
+                c_x: owlready2.ThingClass = self._world[ce.str]
+                for i in self._ontology._onto.get_instances_of(c_x):
+                    if isinstance(i, owlready2.Thing):
+                        yield OWLNamedIndividual(IRI.create(i.iri))
+            else:
+                raise NotImplementedError("instances for complex class expressions not implemented", ce)
+        else:
+            if ce.is_owl_thing():
+                yield from self._ontology.individuals_in_signature()
+            elif isinstance(ce, OWLClass):
+                c_x: owlready2.ThingClass = self._world[ce.str]
+                for i in c_x.instances(world=self._world):
+                    if isinstance(i, owlready2.Thing):
+                        yield OWLNamedIndividual(IRI.create(i.iri))
+            # elif isinstance(ce, OWLObjectSomeValuesFrom) and ce.get_filler().is_owl_thing()\
+            #         and isinstance(ce.get_property(), OWLProperty):
+            #     seen_set = set()
+            #     p_x: owlready2.ObjectProperty = self._world[ce.get_property().get_named_property().str]
+            #     for i, _ in p_x.get_relations():
+            #         if isinstance(i, owlready2.Thing) and i not in seen_set:
+            #             seen_set.add(i)
+            #             yield OWLNamedIndividual(IRI.create(i.iri))
+            else:
+                raise NotImplementedError("instances for complex class expressions not implemented", ce)
+
+    def _sub_classes_recursive(self, ce: OWLClassExpression, seen_set: Set, only_named: bool = True) \
+            -> Iterable[OWLClassExpression]:
+
+        # work around issue in class equivalence detection in Owlready2
+        for c in [ce, *self.equivalent_classes(ce, only_named=False)]:
+            if c not in seen_set:
+                seen_set.add(c)
+                yield c
+            # First go through all general class axioms, they should only have complex classes as sub_classes.
+            # Done for OWLClass and OWLClassExpression.
+            for axiom in self._ontology.general_class_axioms():
+                if (isinstance(axiom, OWLSubClassOfAxiom) and axiom.get_super_class() == c
+                        and axiom.get_sub_class() not in seen_set):
+                    seen_set.add(axiom.get_sub_class())
+                    if not only_named:
+                        yield axiom.get_sub_class()
+                    yield from self._sub_classes_recursive(axiom.get_sub_class(), seen_set, only_named)
+
+            if isinstance(c, OWLClass):
+                c_x: owlready2.EntityClass = self._world[c.str]
+                # Subclasses will only return named classes
+                for sc_x in c_x.subclasses(world=self._world):
+                    sc = _parse_concept_to_owlapy(sc_x)
+                    if isinstance(sc, OWLClass) and sc not in seen_set:
+                        seen_set.add(sc)
+                        yield sc
+                        yield from self._sub_classes_recursive(sc, seen_set, only_named=only_named)
+            elif isinstance(c, OWLClassExpression):
+                # Slow but works. No better way to do this in owlready2 without using the reasoners at the moment.
+                for atomic_c in self._ontology.classes_in_signature():
+                    if c in self.super_classes(atomic_c, direct=True, only_named=False) and atomic_c not in seen_set:
+                        seen_set.add(atomic_c)
+                        yield atomic_c
+                        yield from self._sub_classes_recursive(atomic_c, seen_set, only_named=only_named)
+                if isinstance(ce, OWLObjectSomeValuesFrom):
+                    for r in self.sub_object_properties(ce.get_property()):
+                        osvf = OWLObjectSomeValuesFrom(property=r,
+                                                       filler=ce.get_filler())
+                        if osvf not in seen_set:
+                            seen_set.add(osvf)
+                            yield osvf
+                            # yield from self._sub_classes_recursive(osvf, seen_set, only_named=only_named)
+            else:
+                raise ValueError(f'Sub classes retrieval not implemented for: {ce}')
+
+    def sub_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
+            -> Iterable[OWLClassExpression]:
+        if not direct:
+            seen_set = {ce}
+            yield from self._sub_classes_recursive(ce, seen_set, only_named=only_named)
+        else:
+            # First go through all general class axioms, they should only have complex classes as sub_classes.
+            # Done for OWLClass and OWLClassExpression.
+            if not only_named:
+                for axiom in self._ontology.general_class_axioms():
+                    if isinstance(axiom, OWLSubClassOfAxiom) and axiom.get_super_class() == ce:
+                        yield axiom.get_sub_class()
+            if isinstance(ce, OWLClass):
+                c_x: owlready2.ThingClass = self._world[ce.str]
+                # Subclasses will only return named classes
+                for sc in c_x.subclasses(world=self._world):
+                    if isinstance(sc, owlready2.ThingClass):
+                        yield OWLClass(IRI.create(sc.iri))
+            elif isinstance(ce, OWLClassExpression):
+                # Slow but works. No better way to do this in owlready2 without using the reasoners at the moment.
+                for c in self._ontology.classes_in_signature():
+                    if ce in self.super_classes(c, direct=True, only_named=False):
+                        yield c
+            else:
+                raise ValueError(f'Sub classes retrieval not implemented for: {ce}')
+
+    def _super_classes_recursive(self, ce: OWLClassExpression, seen_set: Set, only_named: bool = True) \
+            -> Iterable[OWLClassExpression]:
+        # work around issue in class equivalence detection in Owlready2
+        for c in [ce, *self.equivalent_classes(ce, only_named=False)]:
+            if c not in seen_set:
+                seen_set.add(c)
+                yield c
+            if isinstance(c, OWLClass):
+                c_x: owlready2.EntityClass = self._world[c.str]
+                for sc_x in c_x.is_a:
+                    sc = _parse_concept_to_owlapy(sc_x)
+                    if (isinstance(sc, OWLClass) or isinstance(sc, OWLClassExpression)) and sc not in seen_set:
+                        seen_set.add(sc)
+                        # Return class expression if it is a named class or complex class expressions should be
+                        # included
+                        if isinstance(sc, OWLClass) or not only_named:
+                            yield sc
+                        yield from self._super_classes_recursive(sc, seen_set, only_named=only_named)
+            elif isinstance(c, OWLClassExpression):
+                for axiom in self._ontology.general_class_axioms():
+                    if (isinstance(axiom, OWLSubClassOfAxiom) and axiom.get_sub_class() == c
+                            and (axiom.get_super_class() not in seen_set)):
+                        super_class = axiom.get_super_class()
+                        seen_set.add(super_class)
+                        # Return class expression if it is a named class or complex class expressions should be
+                        # included
+                        if isinstance(super_class, OWLClass) or not only_named:
+                            yield super_class
+                        yield from self._super_classes_recursive(super_class, seen_set, only_named=only_named)
+
+                # Slow but works. No better way to do this in owlready2 without using the reasoners at the moment.
+                for atomic_c in self._ontology.classes_in_signature():
+                    if c in self.sub_classes(atomic_c, direct=True, only_named=False) and atomic_c not in seen_set:
+                        seen_set.add(atomic_c)
+                        yield atomic_c
+                        yield from self._super_classes_recursive(atomic_c, seen_set, only_named=only_named)
+            else:
+                raise ValueError(f'Super classes retrieval not supported for: {ce}')
+
+    def super_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
+            -> Iterable[OWLClassExpression]:
+        if not direct:
+            seen_set = {ce}
+            yield from self._super_classes_recursive(ce, seen_set, only_named=only_named)
+        else:
+            if isinstance(ce, OWLClass):
+                c_x: owlready2.ThingClass = self._world[ce.str]
+                for sc in c_x.is_a:
+                    if (isinstance(sc, owlready2.ThingClass) or
+                            (not only_named and isinstance(sc, owlready2.ClassConstruct))):
+                        yield _parse_concept_to_owlapy(sc)
+            elif isinstance(ce, OWLClassExpression):
+                seen_set = set()
+                for axiom in self._ontology.general_class_axioms():
+                    if (isinstance(axiom, OWLSubClassOfAxiom) and axiom.get_sub_class() == ce
+                            and (not only_named or isinstance(axiom.get_super_class(), OWLClass))):
+                        seen_set.add(axiom.get_super_class())
+                        yield axiom.get_super_class()
+                # Slow but works. No better way to do this in owlready2 without using the reasoners at the moment.
+                # TODO: Might not be needed, in theory the general class axioms above should cover all classes
+                # that can be found here
+                for c in self._ontology.classes_in_signature():
+                    if ce in self.sub_classes(c, direct=True, only_named=False) and c not in seen_set:
+                        seen_set.add(c)
+                        yield c
+            else:
+                raise ValueError(f'Super classes retrieval not supported for {ce}')
+
+    def equivalent_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
+        if isinstance(op, OWLObjectProperty):
+            p_x: owlready2.ObjectPropertyClass = self._world[op.str]
+            yield from (OWLObjectProperty(IRI.create(ep_x.iri)) for ep_x in p_x.INDIRECT_equivalent_to
+                        if isinstance(ep_x, owlready2.ObjectPropertyClass))
+        else:
+            raise NotImplementedError("equivalent properties of inverse properties not yet implemented", op)
+
+    def equivalent_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
+        p_x: owlready2.DataPropertyClass = self._world[dp.str]
+        yield from (OWLDataProperty(IRI.create(ep_x.iri)) for ep_x in p_x.INDIRECT_equivalent_to
+                    if isinstance(ep_x, owlready2.DataPropertyClass))
+
+    def _find_disjoint_object_properties(self, op: OWLObjectPropertyExpression, seen_set=None) \
+            -> Iterable[OWLObjectPropertyExpression]:
+        if isinstance(op, OWLObjectProperty):
+            p_x: owlready2.ObjectPropertyClass = self._world[op.str]
+            ont_x: owlready2.Ontology = self.get_root_ontology()._onto
+            for disjoint in ont_x.disjoint_properties():
+                if p_x in disjoint.entities:
+                    for o_p in disjoint.entities:
+                        if isinstance(o_p, owlready2.ObjectPropertyClass) and o_p != p_x:
+                            op_owlapy = OWLObjectProperty(IRI.create(o_p.iri))
+                            seen_set.add(op_owlapy)
+                            yield op_owlapy
+                            for o in self.equivalent_object_properties(op_owlapy):
+                                if o not in seen_set:
+                                    seen_set.add(o)
+                                    yield o
+                            for o in self.sub_object_properties(op_owlapy):
+                                if o not in seen_set:
+                                    seen_set.add(o)
+                                    yield o
+        else:
+            raise NotImplementedError("disjoint object properties of inverse properties not yet implemented", op)
+
+    def disjoint_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
+        seen_set = set()
+        yield from self._find_disjoint_object_properties(op, seen_set)
+        for o in self.super_object_properties(op):
+            if o != OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#', 'ObjectProperty')):
+                yield from self._find_disjoint_object_properties(o, seen_set=seen_set)
+
+    def _find_disjoint_data_properties(self, dp: OWLDataProperty, seen_set=None) -> Iterable[OWLDataProperty]:
+        p_x: owlready2.DataPropertyClass = self._world[dp.str]
+        ont_x: owlready2.Ontology = self.get_root_ontology()._onto
+        for disjoint in ont_x.disjoint_properties():
+            if p_x in disjoint.entities:
+                for d_p in disjoint.entities:
+                    if isinstance(d_p, owlready2.DataPropertyClass) and d_p != p_x:
+                        dp_owlapy = OWLDataProperty(IRI.create(d_p.iri))
+                        seen_set.add(dp_owlapy)
+                        yield dp_owlapy
+                        for d in self.equivalent_data_properties(dp_owlapy):
+                            if d not in seen_set:
+                                seen_set.add(d)
+                                yield d
+                        for d in self.sub_data_properties(dp_owlapy):
+                            if d not in seen_set:
+                                seen_set.add(d)
+                                yield d
+
+    def disjoint_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
+        seen_set = set()
+        yield from self._find_disjoint_data_properties(dp, seen_set)
+        for d in self.super_data_properties(dp):
+            if d != OWLDataProperty(IRI('http://www.w3.org/2002/07/owl#', 'DatatypeProperty')):
+                yield from self._find_disjoint_data_properties(d, seen_set=seen_set)
+
+    def _sup_or_sub_data_properties_recursive(self, dp: OWLDataProperty, seen_set: Set, super_or_sub="") \
+            -> Iterable[OWLDataProperty]:
+        for d in self.equivalent_data_properties(dp):
+            if d not in seen_set:
+                seen_set.add(d)
+                yield d
+        p_x: owlready2.DataPropertyClass = self._world[dp.str]
+        assert isinstance(p_x, owlready2.DataPropertyClass)
+        if super_or_sub == "super":
+            dps = set(p_x.is_a)
+        else:
+            dps = set(p_x.subclasses(world=self._world))
+        for sp_x in dps:
+            if isinstance(sp_x, owlready2.DataPropertyClass):
+                sp = OWLDataProperty(IRI.create(sp_x.iri))
+                if sp not in seen_set:
+                    seen_set.add(sp)
+                    yield sp
+                    yield from self._sup_or_sub_data_properties_recursive(sp, seen_set, super_or_sub)
+
+    def _sup_or_sub_data_properties(self, dp: OWLDataProperty, direct: bool = False, super_or_sub=""):
+        assert isinstance(dp, OWLDataProperty)
+        if direct:
+            p_x: owlready2.DataPropertyClass = self._world[dp.str]
+            if super_or_sub == "super":
+                dps = set(p_x.is_a)
+            else:
+                dps = set(p_x.subclasses(world=self._world))
+            for sp in dps:
+                if isinstance(sp, owlready2.DataPropertyClass):
+                    yield OWLDataProperty(IRI.create(sp.iri))
+        else:
+            seen_set = set()
+            yield from self._sup_or_sub_data_properties_recursive(dp, seen_set, super_or_sub)
+
+    def super_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
+        """Gets the stream of data properties that are the strict (potentially direct) super properties of the
+         specified data property with respect to the imports closure of the root ontology.
+
+         Args:
+             dp (OWLDataProperty): The data property whose super properties are to be retrieved.
+             direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all
+                            super properties (ancestors) should be retrieved (False).
+
+         Returns:
+             Iterable of super properties.
+         """
+        yield from self._sup_or_sub_data_properties(dp, direct, "super")
+
+    def sub_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
+        yield from self._sup_or_sub_data_properties(dp, direct, "sub")
+
+    def _sup_or_sub_object_properties_recursive(self, op: OWLObjectProperty, seen_set: Set, super_or_sub=""):
+        for o in self.equivalent_object_properties(op):
+            if o not in seen_set:
+                seen_set.add(o)
+                yield o
+        p_x: owlready2.ObjectPropertyClass = self._world[op.str]
+        assert isinstance(p_x, owlready2.ObjectPropertyClass)
+        if super_or_sub == "super":
+            dps = set(p_x.is_a)
+        else:
+            dps = set(p_x.subclasses(world=self._world))
+        for sp_x in dps:
+            if isinstance(sp_x, owlready2.ObjectPropertyClass):
+                sp = OWLObjectProperty(IRI.create(sp_x.iri))
+                if sp not in seen_set:
+                    seen_set.add(sp)
+                    yield sp
+                    yield from self._sup_or_sub_object_properties_recursive(sp, seen_set, super_or_sub)
+
+    def _sup_or_sub_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False, super_or_sub="") \
+            -> Iterable[OWLObjectPropertyExpression]:
+        if isinstance(op, OWLObjectProperty):
+            if direct:
+                p_x: owlready2.ObjectPropertyClass = self._world[op.str]
+                if super_or_sub == "super":
+                    dps = set(p_x.is_a)
+                else:
+                    dps = set(p_x.subclasses(world=self._world))
+                for sp in dps:
+                    if isinstance(sp, owlready2.ObjectPropertyClass):
+                        yield OWLObjectProperty(IRI.create(sp.iri))
+            else:
+                seen_set = set()
+                yield from self._sup_or_sub_object_properties_recursive(op, seen_set, super_or_sub)
+        elif isinstance(op, OWLObjectInverseOf):
+            p: owlready2.ObjectPropertyClass = self._world[op.get_named_property().str]
+            inverse_p = p.inverse_property
+            if inverse_p is not None:
+                yield from self._sup_or_sub_object_properties(OWLObjectProperty(IRI.create(inverse_p.iri)), direct,
+                                                              super_or_sub)
+            else:
+                raise NotImplementedError(f'{super_or_sub} properties of inverse properties are only implemented if the'
+                                          ' inverse property is explicitly defined in the ontology. '
+                                          f'Property: {op}')
+        else:
+            raise NotImplementedError(op)
+
+    def super_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) \
+            -> Iterable[OWLObjectPropertyExpression]:
+        """Gets the stream of object properties that are the strict (potentially direct) super properties of the
+         specified object property with respect to the imports closure of the root ontology.
+
+         Args:
+             op (OWLObjectPropertyExpression): The object property expression whose super properties are to be
+                                                retrieved.
+             direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all
+                            super properties (ancestors) should be retrieved (False).
+
+         Returns:
+             Iterable of super properties.
+         """
+        yield from self._sup_or_sub_object_properties(op, direct, "super")
+
+    def sub_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) \
+            -> Iterable[OWLObjectPropertyExpression]:
+        yield from self._sup_or_sub_object_properties(op, direct, "sub")
+
+    def types(self, ind: OWLNamedIndividual, direct: bool = False) -> Iterable[OWLClass]:
+        i: owlready2.Thing = self._world[ind.str]
+        if direct:
+            for c in i.is_a:
+                if isinstance(c, owlready2.ThingClass):
+                    yield OWLClass(IRI.create(c.iri))
+                # Anonymous classes are ignored
+        else:
+            for c in i.INDIRECT_is_a:
+                if isinstance(c, owlready2.ThingClass):
+                    yield OWLClass(IRI.create(c.iri))
+                # Anonymous classes are ignored
+
+    def _sync_reasoner(self, other_reasoner: BaseReasoner_Owlready2 = None,
+                       infer_property_values: bool = True,
+                       infer_data_property_values: bool = True, debug: bool = False) -> None:
+        """Call Owlready2's sync_reasoner method, which spawns a Java process on a temp file to infer more.
+
+        Args:
+            other_reasoner: Set to BaseReasoner.PELLET (default) or BaseReasoner.HERMIT.
+            infer_property_values: Whether to infer property values.
+            infer_data_property_values: Whether to infer data property values (only for PELLET).
+        """
+        assert other_reasoner is None or isinstance(other_reasoner, BaseReasoner_Owlready2)
+        with self.get_root_ontology()._onto:
+            if other_reasoner == BaseReasoner_Owlready2.HERMIT:
+                owlready2.sync_reasoner_hermit(self._world, infer_property_values=infer_property_values, debug=debug)
+            else:
+                owlready2.sync_reasoner_pellet(self._world,
+                                               infer_property_values=infer_property_values,
+                                               infer_data_property_values=infer_data_property_values,
+                                               debug=debug)
+
+    def get_root_ontology(self) -> OWLOntology:
+        return self._ontology
+
+    def is_isolated(self):
+        """Return True if this reasoner is using an isolated ontology."""
+        return self._isolated
+
