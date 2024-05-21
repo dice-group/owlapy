@@ -1,11 +1,11 @@
 # OWLAPY
 
-OWLAPY is a Python Framework that serves as a base structure for creating and manipulating 
-OWL Ontologies. 
+OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.
 
 Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
 
 ## Installation
+
 ### Installation from Source
 ``` bash
 git clone https://github.com/dice-group/owlapy
@@ -56,6 +56,8 @@ class. In the above examples we have introduced 3 types of class expressions:
 
 Like we showed in this example, you can create all kinds of class expressions using the 
 OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/index.html).
+
+Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) folder.
 
 ## How to cite
 Currently, we are working on our manuscript describing our framework.
