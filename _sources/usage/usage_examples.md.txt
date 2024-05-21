@@ -123,4 +123,5 @@ print(manchester_to_owl_expression("female and (hasChild max 2 person)", namespa
 ```
 
 In these examples we showed a fraction of **owlapy**. You can explore the
-[api documentation](owlapy) to learn more about all classes in owlapy.
+[api documentation](owlapy) to learn more about all classes in owlapy and check more 
+examples in the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) directory.
