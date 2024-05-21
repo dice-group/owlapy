@@ -1,5 +1,5 @@
-:py:mod:`owlapy.owl_object`
-===========================
+owlapy.owl_object
+=================
 
 .. py:module:: owlapy.owl_object
 
@@ -9,14 +9,12 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
+   owlapy.owl_object.HasIRI
    owlapy.owl_object.OWLObject
    owlapy.owl_object.OWLObjectRenderer
    owlapy.owl_object.OWLObjectParser
@@ -24,55 +22,94 @@ Classes
    owlapy.owl_object.OWLEntity
 
 
+Module Contents
+---------------
 
+.. py:class:: HasIRI
 
-.. py:class:: OWLObject
+   Simple class to access the IRI.
 
-
-   Base interface for OWL objects
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
+
+   .. py:property:: iri
+      :type: IRI
+
+      :abstractmethod:
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:property:: str
+      :type: str
+
+      :abstractmethod:
+
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+
+.. py:class:: OWLObject
+
+   Base interface for OWL objects
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
 
    .. py:method:: __eq__(other)
       :abstractmethod:
 
+
       Return self==value.
+
 
 
    .. py:method:: __hash__()
       :abstractmethod:
 
+
       Return hash(self).
+
 
 
    .. py:method:: __repr__()
       :abstractmethod:
 
+
       Return repr(self).
+
 
 
    .. py:method:: is_anonymous() -> bool
 
 
-
 .. py:class:: OWLObjectRenderer
-
 
    Abstract class with a render method to render an OWL Object into a string.
 
+
    .. py:method:: set_short_form_provider(short_form_provider) -> None
       :abstractmethod:
+
 
       Configure a short form provider that shortens the OWL objects during rendering.
 
       :param short_form_provider: Short form provider.
 
 
+
    .. py:method:: render(o: OWLObject) -> str
       :abstractmethod:
+
 
       Render OWL Object to string.
 
@@ -84,11 +121,12 @@ Classes
 
 .. py:class:: OWLObjectParser
 
-
    Abstract class with a parse method to parse a string to an OWL Object.
+
 
    .. py:method:: parse_expression(expression_str: str) -> OWLObject
       :abstractmethod:
+
 
       Parse a string to an OWL Object.
 
@@ -101,20 +139,22 @@ Classes
 
 .. py:class:: OWLNamedObject
 
-
    Bases: :py:obj:`OWLObject`, :py:obj:`owlapy.meta_classes.HasIRI`
+
 
    Represents a named object for example, class, property, ontology etc. - i.e. anything that has an
    IRI as its name.
 
+
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
 
    .. py:method:: __eq__(other)
 
       Return self==value.
+
 
 
    .. py:method:: __lt__(other)
@@ -122,9 +162,11 @@ Classes
       Return self<value.
 
 
+
    .. py:method:: __hash__()
 
       Return hash(self).
+
 
 
    .. py:method:: __repr__()
@@ -135,20 +177,20 @@ Classes
 
 .. py:class:: OWLEntity
 
-
    Bases: :py:obj:`OWLNamedObject`
 
+
    Represents Entities in the OWL 2 Specification.
+
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
 
    .. py:method:: to_string_id() -> str
 
 
    .. py:method:: is_anonymous() -> bool
-
 
 

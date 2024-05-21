@@ -1,5 +1,5 @@
-:py:mod:`owlapy.vocab`
-======================
+owlapy.vocab
+============
 
 .. py:module:: owlapy.vocab
 
@@ -9,154 +9,324 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
+   owlapy.vocab.HasIRI
+   owlapy.vocab.IRI
+   owlapy.vocab.Namespaces
    owlapy.vocab.OWLRDFVocabulary
    owlapy.vocab.XSDVocabulary
    owlapy.vocab.OWLFacet
 
 
+Module Contents
+---------------
+
+.. py:class:: HasIRI
+
+   Simple class to access the IRI.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:property:: iri
+      :type: IRI
+
+      :abstractmethod:
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:property:: str
+      :type: str
+
+      :abstractmethod:
+
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+
+.. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+
+   An IRI, consisting of a namespace and a remainder.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_namespace', '_remainder', '__weakref__')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 0
+
+
+
+   .. py:method:: create(namespace: owlapy.namespaces.Namespaces, remainder: str) -> IRI
+                  create(namespace: str, remainder: str) -> IRI
+                  create(string: str) -> IRI
+      :staticmethod:
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: is_nothing()
+
+      Determines if this IRI is equal to the IRI that owl:Nothing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
+
+
+
+   .. py:method:: is_thing()
+
+      Determines if this IRI is equal to the IRI that owl:Thing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
+
+
+
+   .. py:method:: is_reserved_vocabulary() -> bool
+
+      Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with
+      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> or <http://www.w3.org/2000/01/rdf-schema#> or
+      <http://www.w3.org/2001/XMLSchema#> or <http://www.w3.org/2002/07/owl#>.
+
+      :returns: True if the IRI is in the reserved vocabulary, otherwise False.
+
+
+
+   .. py:method:: as_iri() -> IRI
+
+      :returns: if the value is an IRI, return it. Return Mone otherwise.
+
+
+
+   .. py:method:: as_str() -> str
+
+      CD: Should be deprecated.
+      :returns: The string that specifies the IRI.
+
+
+
+   .. py:property:: str
+      :type: str
+
+      Returns:
+      The string that specifies the IRI.
+
+
+   .. py:property:: reminder
+      :type: str
+
+      Returns:
+      The string corresponding to the reminder of the IRI.
+
+
+   .. py:method:: get_short_form() -> str
+
+      Gets the short form.
+
+      :returns: A string that represents the short form.
+
+
+
+   .. py:method:: get_namespace() -> str
+
+      :returns: The namespace as string.
+
+
+
+   .. py:method:: get_remainder() -> str
+
+      :returns: The remainder (coincident with NCName usually) for this IRI.
+
+
+
+.. py:class:: Namespaces(prefix: str, ns: str)
+
+   Namespaces provide a simple method for qualifying element and attribute names used in Extensible Markup
+   Language documents by associating them with namespaces identified by URI references
+
+
+   .. py:attribute:: __slots__
+      :value: ('_prefix', '_ns')
+
+
+
+   .. py:property:: ns
+      :type: str
+
+
+
+   .. py:property:: prefix
+      :type: str
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
 
 
 .. py:class:: OWLRDFVocabulary(namespace: owlapy.namespaces.Namespaces, remainder: str)
 
-
    Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
+
 
    Enumerations for OWL/RDF vocabulary.
 
-   .. py:attribute:: OWL_THING
-      :value: ()
 
-      
+   .. py:attribute:: OWL_THING
+
 
    .. py:attribute:: OWL_NOTHING
-      :value: ()
 
-      
 
    .. py:attribute:: OWL_CLASS
-      :value: ()
 
-      
 
    .. py:attribute:: OWL_NAMED_INDIVIDUAL
-      :value: ()
 
-      
 
    .. py:attribute:: OWL_TOP_OBJECT_PROPERTY
-      :value: ()
 
-      
 
    .. py:attribute:: OWL_BOTTOM_OBJECT_PROPERTY
-      :value: ()
 
-      
 
    .. py:attribute:: OWL_TOP_DATA_PROPERTY
-      :value: ()
 
-      
 
    .. py:attribute:: OWL_BOTTOM_DATA_PROPERTY
-      :value: ()
 
-      
 
    .. py:attribute:: RDFS_LITERAL
-      :value: ()
-
-      
 
 
 .. py:class:: XSDVocabulary(remainder: str)
 
-
    Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
+
 
    Enumerations for XSD vocabulary.
 
+
    .. py:attribute:: DECIMAL
-      :type: Final
+      :type:  Final
       :value: 'decimal'
 
-      
+
 
    .. py:attribute:: INTEGER
-      :type: Final
+      :type:  Final
       :value: 'integer'
 
-      
+
 
    .. py:attribute:: LONG
-      :type: Final
+      :type:  Final
       :value: 'long'
 
-      
+
 
    .. py:attribute:: DOUBLE
-      :type: Final
+      :type:  Final
       :value: 'double'
 
-      
+
 
    .. py:attribute:: FLOAT
-      :type: Final
+      :type:  Final
       :value: 'float'
 
-      
+
 
    .. py:attribute:: BOOLEAN
-      :type: Final
+      :type:  Final
       :value: 'boolean'
 
-      
+
 
    .. py:attribute:: STRING
-      :type: Final
+      :type:  Final
       :value: 'string'
 
-      
+
 
    .. py:attribute:: DATE
-      :type: Final
+      :type:  Final
       :value: 'date'
 
-      
+
 
    .. py:attribute:: DATE_TIME
-      :type: Final
+      :type:  Final
       :value: 'dateTime'
 
-      
+
 
    .. py:attribute:: DATE_TIME_STAMP
-      :type: Final
+      :type:  Final
       :value: 'dateTimeStamp'
 
-      
+
 
    .. py:attribute:: DURATION
-      :type: Final
+      :type:  Final
       :value: 'duration'
 
-      
 
 
 .. py:class:: OWLFacet(remainder: str, symbolic_form: str, operator: Callable[[_X, _X], bool])
 
-
    Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
 
+
    Enumerations for OWL facets.
+
 
    .. py:property:: symbolic_form
 
@@ -164,68 +334,48 @@ Classes
    .. py:property:: operator
 
 
-   .. py:attribute:: MIN_INCLUSIVE
-      :type: Final
-      :value: ('minInclusive', '>=')
-
-      
-
-   .. py:attribute:: MIN_EXCLUSIVE
-      :type: Final
-      :value: ('minExclusive', '>')
-
-      
-
-   .. py:attribute:: MAX_INCLUSIVE
-      :type: Final
-      :value: ('maxInclusive', '<=')
-
-      
-
-   .. py:attribute:: MAX_EXCLUSIVE
-      :type: Final
-      :value: ('maxExclusive', '<')
-
-      
-
-   .. py:attribute:: LENGTH
-      :type: Final
-      :value: ('length', 'length')
-
-      
-
-   .. py:attribute:: MIN_LENGTH
-      :type: Final
-      :value: ('minLength', 'minLength')
-
-      
-
-   .. py:attribute:: MAX_LENGTH
-      :type: Final
-      :value: ('maxLength', 'maxLength')
-
-      
-
-   .. py:attribute:: PATTERN
-      :type: Final
-      :value: ('pattern', 'pattern')
-
-      
-
-   .. py:attribute:: TOTAL_DIGITS
-      :type: Final
-      :value: ('totalDigits', 'totalDigits')
-
-      
-
-   .. py:attribute:: FRACTION_DIGITS
-      :type: Final
-      :value: ('fractionDigits', 'fractionDigits')
-
-      
-
    .. py:method:: from_str(name: str) -> OWLFacet
       :staticmethod:
 
+
+
+   .. py:attribute:: MIN_INCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MIN_EXCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MAX_INCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MAX_EXCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: MIN_LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: MAX_LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: PATTERN
+      :type:  Final
+
+
+   .. py:attribute:: TOTAL_DIGITS
+      :type:  Final
+
+
+   .. py:attribute:: FRACTION_DIGITS
+      :type:  Final
 
 

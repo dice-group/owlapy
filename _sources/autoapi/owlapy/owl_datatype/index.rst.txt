@@ -1,5 +1,5 @@
-:py:mod:`owlapy.owl_datatype`
-=============================
+owlapy.owl_datatype
+===================
 
 .. py:module:: owlapy.owl_datatype
 
@@ -9,23 +9,199 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
+   owlapy.owl_datatype.OWLEntity
+   owlapy.owl_datatype.OWLDataRange
+   owlapy.owl_datatype.IRI
+   owlapy.owl_datatype.HasIRI
    owlapy.owl_datatype.OWLDatatype
 
 
+Module Contents
+---------------
+
+.. py:class:: OWLEntity
+
+   Bases: :py:obj:`OWLNamedObject`
+
+
+   Represents Entities in the OWL 2 Specification.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: to_string_id() -> str
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+.. py:class:: OWLDataRange
+
+   Bases: :py:obj:`OWLPropertyRange`
+
+
+   Represents a DataRange in the OWL 2 Specification.
+
+
+.. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+
+   An IRI, consisting of a namespace and a remainder.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_namespace', '_remainder', '__weakref__')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 0
+
+
+
+   .. py:method:: create(namespace: owlapy.namespaces.Namespaces, remainder: str) -> IRI
+                  create(namespace: str, remainder: str) -> IRI
+                  create(string: str) -> IRI
+      :staticmethod:
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: is_nothing()
+
+      Determines if this IRI is equal to the IRI that owl:Nothing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
+
+
+
+   .. py:method:: is_thing()
+
+      Determines if this IRI is equal to the IRI that owl:Thing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
+
+
+
+   .. py:method:: is_reserved_vocabulary() -> bool
+
+      Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with
+      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> or <http://www.w3.org/2000/01/rdf-schema#> or
+      <http://www.w3.org/2001/XMLSchema#> or <http://www.w3.org/2002/07/owl#>.
+
+      :returns: True if the IRI is in the reserved vocabulary, otherwise False.
+
+
+
+   .. py:method:: as_iri() -> IRI
+
+      :returns: if the value is an IRI, return it. Return Mone otherwise.
+
+
+
+   .. py:method:: as_str() -> str
+
+      CD: Should be deprecated.
+      :returns: The string that specifies the IRI.
+
+
+
+   .. py:property:: str
+      :type: str
+
+      Returns:
+      The string that specifies the IRI.
+
+
+   .. py:property:: reminder
+      :type: str
+
+      Returns:
+      The string corresponding to the reminder of the IRI.
+
+
+   .. py:method:: get_short_form() -> str
+
+      Gets the short form.
+
+      :returns: A string that represents the short form.
+
+
+
+   .. py:method:: get_namespace() -> str
+
+      :returns: The namespace as string.
+
+
+
+   .. py:method:: get_remainder() -> str
+
+      :returns: The remainder (coincident with NCName usually) for this IRI.
+
+
+
+.. py:class:: HasIRI
+
+   Simple class to access the IRI.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:property:: iri
+      :type: IRI
+
+      :abstractmethod:
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:property:: str
+      :type: str
+
+      :abstractmethod:
+
+      Gets the string representation of this object
+
+      :returns: The IRI as string
 
 
 .. py:class:: OWLDatatype(iri: Union[owlapy.iri.IRI, owlapy.meta_classes.HasIRI])
 
-
    Bases: :py:obj:`owlapy.owl_object.OWLEntity`, :py:obj:`owlapy.owl_data_ranges.OWLDataRange`
+
 
    Datatypes are entities that refer to sets of data values. Thus, datatypes are analogous to classes,
    the main difference being that the former contain data values such as strings and numbers, rather than individuals.
@@ -35,6 +211,18 @@ Classes
 
    (https://www.w3.org/TR/owl2-syntax/#Datatypes)
 
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4001
+
+
+
    .. py:property:: iri
       :type: owlapy.iri.IRI
 
@@ -42,22 +230,12 @@ Classes
 
       :returns: The IRI of this object.
 
+
    .. py:property:: str
       :type: str
 
       Gets the string representation of this object
 
       :returns: The IRI as string
-
-   .. py:attribute:: __slots__
-      :value: '_iri'
-
-      
-
-   .. py:attribute:: type_index
-      :type: Final
-      :value: 4001
-
-      
 
 

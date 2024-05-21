@@ -1,5 +1,5 @@
-:py:mod:`owlapy.owl_annotation`
-===============================
+owlapy.owl_annotation
+=====================
 
 .. py:module:: owlapy.owl_annotation
 
@@ -9,36 +9,74 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
+   owlapy.owl_annotation.OWLObject
    owlapy.owl_annotation.OWLAnnotationObject
    owlapy.owl_annotation.OWLAnnotationSubject
    owlapy.owl_annotation.OWLAnnotationValue
 
 
+Module Contents
+---------------
 
+.. py:class:: OWLObject
 
-.. py:class:: OWLAnnotationObject
+   Base interface for OWL objects
 
-
-   Bases: :py:obj:`owlapy.owl_object.OWLObject`
-
-   A marker interface for the values (objects) of annotations.
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
+
+   .. py:method:: __eq__(other)
+      :abstractmethod:
+
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+      :abstractmethod:
+
+
+      Return hash(self).
+
+
+
+   .. py:method:: __repr__()
+      :abstractmethod:
+
+
+      Return repr(self).
+
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+.. py:class:: OWLAnnotationObject
+
+   Bases: :py:obj:`owlapy.owl_object.OWLObject`
+
+
+   A marker interface for the values (objects) of annotations.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
 
    .. py:method:: as_iri() -> Optional[IRI]
 
       :returns: if the value is an IRI, return it. Return Mone otherwise.
+
 
 
    .. py:method:: as_anonymous_individual()
@@ -49,32 +87,34 @@ Classes
 
 .. py:class:: OWLAnnotationSubject
 
-
    Bases: :py:obj:`OWLAnnotationObject`
 
+
    A marker interface for annotation subjects, which can either be IRIs or anonymous individuals
+
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
 
 
 .. py:class:: OWLAnnotationValue
 
-
    Bases: :py:obj:`OWLAnnotationObject`
 
+
    A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual.
+
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
 
    .. py:method:: is_literal() -> bool
 
       :returns: true if the annotation value is a literal
+
 
 
    .. py:method:: as_literal() -> Optional[OWLLiteral]

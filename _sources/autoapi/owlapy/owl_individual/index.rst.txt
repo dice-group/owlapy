@@ -1,5 +1,5 @@
-:py:mod:`owlapy.owl_individual`
-===============================
+owlapy.owl_individual
+=====================
 
 .. py:module:: owlapy.owl_individual
 
@@ -9,42 +9,228 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
+   owlapy.owl_individual.OWLObject
+   owlapy.owl_individual.OWLEntity
+   owlapy.owl_individual.IRI
    owlapy.owl_individual.OWLIndividual
    owlapy.owl_individual.OWLNamedIndividual
 
+
+Module Contents
+---------------
+
+.. py:class:: OWLObject
+
+   Base interface for OWL objects
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: __eq__(other)
+      :abstractmethod:
+
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+      :abstractmethod:
+
+
+      Return hash(self).
+
+
+
+   .. py:method:: __repr__()
+      :abstractmethod:
+
+
+      Return repr(self).
+
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+.. py:class:: OWLEntity
+
+   Bases: :py:obj:`OWLNamedObject`
+
+
+   Represents Entities in the OWL 2 Specification.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: to_string_id() -> str
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+.. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+
+   An IRI, consisting of a namespace and a remainder.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_namespace', '_remainder', '__weakref__')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 0
+
+
+
+   .. py:method:: create(namespace: owlapy.namespaces.Namespaces, remainder: str) -> IRI
+                  create(namespace: str, remainder: str) -> IRI
+                  create(string: str) -> IRI
+      :staticmethod:
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: is_nothing()
+
+      Determines if this IRI is equal to the IRI that owl:Nothing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
+
+
+
+   .. py:method:: is_thing()
+
+      Determines if this IRI is equal to the IRI that owl:Thing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
+
+
+
+   .. py:method:: is_reserved_vocabulary() -> bool
+
+      Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with
+      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> or <http://www.w3.org/2000/01/rdf-schema#> or
+      <http://www.w3.org/2001/XMLSchema#> or <http://www.w3.org/2002/07/owl#>.
+
+      :returns: True if the IRI is in the reserved vocabulary, otherwise False.
+
+
+
+   .. py:method:: as_iri() -> IRI
+
+      :returns: if the value is an IRI, return it. Return Mone otherwise.
+
+
+
+   .. py:method:: as_str() -> str
+
+      CD: Should be deprecated.
+      :returns: The string that specifies the IRI.
+
+
+
+   .. py:property:: str
+      :type: str
+
+      Returns:
+      The string that specifies the IRI.
+
+
+   .. py:property:: reminder
+      :type: str
+
+      Returns:
+      The string corresponding to the reminder of the IRI.
+
+
+   .. py:method:: get_short_form() -> str
+
+      Gets the short form.
+
+      :returns: A string that represents the short form.
+
+
+
+   .. py:method:: get_namespace() -> str
+
+      :returns: The namespace as string.
+
+
+
+   .. py:method:: get_remainder() -> str
+
+      :returns: The remainder (coincident with NCName usually) for this IRI.
 
 
 
 .. py:class:: OWLIndividual
 
-
    Bases: :py:obj:`owlapy.owl_object.OWLObject`
 
+
    Represents a named or anonymous individual.
+
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
 
 
 .. py:class:: OWLNamedIndividual(iri: Union[owlapy.iri.IRI, str])
 
-
    Bases: :py:obj:`OWLIndividual`, :py:obj:`owlapy.owl_object.OWLEntity`
+
 
    Named individuals are identified using an IRI. Since they are given an IRI, named individuals are entities.
    IRIs from the reserved vocabulary must not be used to identify named individuals in an OWL 2 DL ontology.
 
    (https://www.w3.org/TR/owl2-syntax/#Named_Individuals)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1005
+
+
 
    .. py:property:: iri
       :type: owlapy.iri.IRI
@@ -53,21 +239,10 @@ Classes
 
       :returns: The IRI of this object.
 
-   .. py:property:: str
 
+   .. py:property:: str
       Gets the string representation of this object
 
       :returns: The IRI as string
-
-   .. py:attribute:: __slots__
-      :value: '_iri'
-
-      
-
-   .. py:attribute:: type_index
-      :type: Final
-      :value: 1005
-
-      
 
 

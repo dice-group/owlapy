@@ -1,5 +1,5 @@
-:py:mod:`owlapy.owl_literal`
-============================
+owlapy.owl_literal
+==================
 
 .. py:module:: owlapy.owl_literal
 
@@ -9,21 +9,8 @@
 
 
 
-Module Contents
----------------
-
-Classes
-~~~~~~~
-
-.. autoapisummary::
-
-   owlapy.owl_literal.OWLLiteral
-
-
-
-
 Attributes
-~~~~~~~~~~
+----------
 
 .. autoapisummary::
 
@@ -44,14 +31,281 @@ Attributes
    owlapy.owl_literal.TIME_DATATYPES
 
 
-.. py:data:: Literals
+Classes
+-------
 
-   
+.. autoapisummary::
+
+   owlapy.owl_literal.OWLAnnotationValue
+   owlapy.owl_literal.OWLDatatype
+   owlapy.owl_literal.OWLRDFVocabulary
+   owlapy.owl_literal.XSDVocabulary
+   owlapy.owl_literal.OWLObjectProperty
+   owlapy.owl_literal.OWLDataProperty
+   owlapy.owl_literal.OWLLiteral
+
+
+Module Contents
+---------------
+
+.. py:class:: OWLAnnotationValue
+
+   Bases: :py:obj:`OWLAnnotationObject`
+
+
+   A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: is_literal() -> bool
+
+      :returns: true if the annotation value is a literal
+
+
+
+   .. py:method:: as_literal() -> Optional[OWLLiteral]
+
+      :returns: if the value is a literal, returns it. Return None otherwise
+
+
+
+.. py:class:: OWLDatatype(iri: Union[owlapy.iri.IRI, owlapy.meta_classes.HasIRI])
+
+   Bases: :py:obj:`owlapy.owl_object.OWLEntity`, :py:obj:`owlapy.owl_data_ranges.OWLDataRange`
+
+
+   Datatypes are entities that refer to sets of data values. Thus, datatypes are analogous to classes,
+   the main difference being that the former contain data values such as strings and numbers, rather than individuals.
+   Datatypes are a kind of data range, which allows them to be used in restrictions. Each data range is associated
+   with an arity; for datatypes, the arity is always one. The built-in datatype rdfs:Literal denotes any set of data
+   values that contains the union of the value spaces of all datatypes.
+
+   (https://www.w3.org/TR/owl2-syntax/#Datatypes)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4001
+
+
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:property:: str
+      :type: str
+
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+
+.. py:class:: OWLRDFVocabulary(namespace: owlapy.namespaces.Namespaces, remainder: str)
+
+   Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
+
+
+   Enumerations for OWL/RDF vocabulary.
+
+
+   .. py:attribute:: OWL_THING
+
+
+   .. py:attribute:: OWL_NOTHING
+
+
+   .. py:attribute:: OWL_CLASS
+
+
+   .. py:attribute:: OWL_NAMED_INDIVIDUAL
+
+
+   .. py:attribute:: OWL_TOP_OBJECT_PROPERTY
+
+
+   .. py:attribute:: OWL_BOTTOM_OBJECT_PROPERTY
+
+
+   .. py:attribute:: OWL_TOP_DATA_PROPERTY
+
+
+   .. py:attribute:: OWL_BOTTOM_DATA_PROPERTY
+
+
+   .. py:attribute:: RDFS_LITERAL
+
+
+.. py:class:: XSDVocabulary(remainder: str)
+
+   Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
+
+
+   Enumerations for XSD vocabulary.
+
+
+   .. py:attribute:: DECIMAL
+      :type:  Final
+      :value: 'decimal'
+
+
+
+   .. py:attribute:: INTEGER
+      :type:  Final
+      :value: 'integer'
+
+
+
+   .. py:attribute:: LONG
+      :type:  Final
+      :value: 'long'
+
+
+
+   .. py:attribute:: DOUBLE
+      :type:  Final
+      :value: 'double'
+
+
+
+   .. py:attribute:: FLOAT
+      :type:  Final
+      :value: 'float'
+
+
+
+   .. py:attribute:: BOOLEAN
+      :type:  Final
+      :value: 'boolean'
+
+
+
+   .. py:attribute:: STRING
+      :type:  Final
+      :value: 'string'
+
+
+
+   .. py:attribute:: DATE
+      :type:  Final
+      :value: 'date'
+
+
+
+   .. py:attribute:: DATE_TIME
+      :type:  Final
+      :value: 'dateTime'
+
+
+
+   .. py:attribute:: DATE_TIME_STAMP
+      :type:  Final
+      :value: 'dateTimeStamp'
+
+
+
+   .. py:attribute:: DURATION
+      :type:  Final
+      :value: 'duration'
+
+
+
+.. py:class:: OWLObjectProperty(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`OWLObjectPropertyExpression`, :py:obj:`OWLProperty`
+
+
+   Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.
+
+   (https://www.w3.org/TR/owl2-syntax/#Object_Properties)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1002
+
+
+
+   .. py:method:: get_named_property() -> OWLObjectProperty
+
+      Get the named object property used in this property expression.
+
+      :returns: P if this expression is either inv(P) or P.
+
+
+
+   .. py:method:: get_inverse_property() -> OWLObjectInverseOf
+
+      Obtains the property that corresponds to the inverse of this property.
+
+      :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
+
+
+
+   .. py:method:: is_owl_top_object_property() -> bool
+
+      Determines if this is the owl:topObjectProperty.
+
+      :returns: topObjectProperty.
+      :rtype: True if this property is the owl
+
+
+
+.. py:class:: OWLDataProperty(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`OWLDataPropertyExpression`, :py:obj:`OWLProperty`
+
+
+   Represents a Data Property in the OWL 2 Specification. Data properties connect individuals with literals.
+   In some knowledge representation systems, functional data properties are called attributes.
+
+   (https://www.w3.org/TR/owl2-syntax/#Data_Properties)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1004
+
+
+
+   .. py:method:: is_owl_top_data_property() -> bool
+
+      Determines if this is the owl:topDataProperty.
+
+      :returns: topDataProperty.
+      :rtype: True if this property is the owl
+
+
+
+.. py:data:: Literals
 
 .. py:class:: OWLLiteral
 
-
    Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
 
    Literals represent data values such as particular strings or integers. They are analogous to typed RDF
    literals and can also be understood as individuals denoting
@@ -60,16 +314,17 @@ Attributes
     (https://www.w3.org/TR/owl2-syntax/#Literals)
 
 
+
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
 
    .. py:attribute:: type_index
-      :type: Final
+      :type:  Final
       :value: 4008
 
-      
+
 
    .. py:method:: get_literal() -> str
 
@@ -78,9 +333,11 @@ Attributes
       :returns: The lexical value of this literal.
 
 
+
    .. py:method:: is_boolean() -> bool
 
       Whether this literal is typed as boolean.
+
 
 
    .. py:method:: parse_boolean() -> bool
@@ -91,9 +348,11 @@ Attributes
       :returns: A bool value that is represented by this literal.
 
 
+
    .. py:method:: is_double() -> bool
 
       Whether this literal is typed as double.
+
 
 
    .. py:method:: parse_double() -> float
@@ -104,9 +363,11 @@ Attributes
       :returns: A double value that is represented by this literal.
 
 
+
    .. py:method:: is_integer() -> bool
 
       Whether this literal is typed as integer.
+
 
 
    .. py:method:: parse_integer() -> int
@@ -117,9 +378,11 @@ Attributes
       :returns: An integer value that is represented by this literal.
 
 
+
    .. py:method:: is_string() -> bool
 
       Whether this literal is typed as string.
+
 
 
    .. py:method:: parse_string() -> str
@@ -130,9 +393,11 @@ Attributes
       :returns: A string value that is represented by this literal.
 
 
+
    .. py:method:: is_date() -> bool
 
       Whether this literal is typed as date.
+
 
 
    .. py:method:: parse_date() -> datetime.date
@@ -143,9 +408,11 @@ Attributes
       :returns: A date value that is represented by this literal.
 
 
+
    .. py:method:: is_datetime() -> bool
 
       Whether this literal is typed as dateTime.
+
 
 
    .. py:method:: parse_datetime() -> datetime.datetime
@@ -156,9 +423,11 @@ Attributes
       :returns: A datetime value that is represented by this literal.
 
 
+
    .. py:method:: is_duration() -> bool
 
       Whether this literal is typed as duration.
+
 
 
    .. py:method:: parse_duration() -> pandas.Timedelta
@@ -169,14 +438,17 @@ Attributes
       :returns: A Timedelta value that is represented by this literal.
 
 
+
    .. py:method:: is_literal() -> bool
 
       :returns: true if the annotation value is a literal
 
 
+
    .. py:method:: as_literal() -> OWLLiteral
 
       :returns: if the value is a literal, returns it. Return None otherwise
+
 
 
    .. py:method:: to_python() -> Literals
@@ -185,6 +457,7 @@ Attributes
    .. py:method:: get_datatype() -> owlapy.owl_datatype.OWLDatatype
       :abstractmethod:
 
+
       Gets the OWLDatatype which types this literal.
 
       :returns: The OWLDatatype that types this literal.
@@ -192,72 +465,44 @@ Attributes
 
 
 .. py:data:: OWLTopObjectProperty
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: OWLBottomObjectProperty
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: OWLTopDataProperty
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: OWLBottomDataProperty
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: DoubleOWLDatatype
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: IntegerOWLDatatype
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: BooleanOWLDatatype
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: StringOWLDatatype
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: DateOWLDatatype
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: DateTimeOWLDatatype
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: DurationOWLDatatype
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: TopOWLDatatype
-   :type: Final
-
-   
+   :type:  Final
 
 .. py:data:: NUMERIC_DATATYPES
-   :type: Final[Set[owlapy.owl_datatype.OWLDatatype]]
-
-   
+   :type:  Final[Set[owlapy.owl_datatype.OWLDatatype]]
 
 .. py:data:: TIME_DATATYPES
-   :type: Final[Set[owlapy.owl_datatype.OWLDatatype]]
-
-   
+   :type:  Final[Set[owlapy.owl_datatype.OWLDatatype]]
 

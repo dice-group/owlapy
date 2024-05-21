@@ -1,5 +1,5 @@
-:py:mod:`owlapy.owl_data_ranges`
-================================
+owlapy.owl_data_ranges
+======================
 
 .. py:module:: owlapy.owl_data_ranges
 
@@ -13,14 +13,13 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
+   owlapy.owl_data_ranges.OWLObject
+   owlapy.owl_data_ranges.HasOperands
    owlapy.owl_data_ranges.OWLPropertyRange
    owlapy.owl_data_ranges.OWLDataRange
    owlapy.owl_data_ranges.OWLNaryDataRange
@@ -29,35 +28,100 @@ Classes
    owlapy.owl_data_ranges.OWLDataComplementOf
 
 
+Module Contents
+---------------
+
+.. py:class:: OWLObject
+
+   Base interface for OWL objects
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: __eq__(other)
+      :abstractmethod:
+
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+      :abstractmethod:
+
+
+      Return hash(self).
+
+
+
+   .. py:method:: __repr__()
+      :abstractmethod:
+
+
+      Return repr(self).
+
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+.. py:class:: HasOperands
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+
+   An interface to objects that have a collection of operands.
+
+   :param _T: Operand type.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: operands() -> Iterable[_T]
+      :abstractmethod:
+
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
 
 
 .. py:class:: OWLPropertyRange
 
-
    Bases: :py:obj:`owlapy.owl_object.OWLObject`
+
 
    OWL Objects that can be the ranges of properties.
 
 
 .. py:class:: OWLDataRange
 
-
    Bases: :py:obj:`OWLPropertyRange`
+
 
    Represents a DataRange in the OWL 2 Specification.
 
 
 .. py:class:: OWLNaryDataRange(operands: Iterable[OWLDataRange])
 
-
    Bases: :py:obj:`OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`OWLDataRange`\ ]
 
+
    OWLNaryDataRange.
+
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
 
    .. py:method:: operands() -> Iterable[OWLDataRange]
 
@@ -67,14 +131,17 @@ Classes
       :returns: The operands.
 
 
+
    .. py:method:: __repr__()
 
       Return repr(self).
 
 
+
    .. py:method:: __eq__(other)
 
       Return self==value.
+
 
 
    .. py:method:: __hash__()
@@ -85,8 +152,8 @@ Classes
 
 .. py:class:: OWLDataIntersectionOf(operands: Iterable[OWLDataRange])
 
-
    Bases: :py:obj:`OWLNaryDataRange`
+
 
    An intersection data range DataIntersectionOf( DR1 ... DRn ) contains all tuples of literals that are contained
    in each data range DRi for 1 ≤ i ≤ n. All data ranges DRi must be of the same arity, and the resulting data range
@@ -94,22 +161,22 @@ Classes
 
    (https://www.w3.org/TR/owl2-syntax/#Intersection_of_Data_Ranges)
 
+
    .. py:attribute:: __slots__
       :value: '_operands'
 
-      
+
 
    .. py:attribute:: type_index
-      :type: Final
+      :type:  Final
       :value: 4004
 
-      
 
 
 .. py:class:: OWLDataUnionOf(operands: Iterable[OWLDataRange])
 
-
    Bases: :py:obj:`OWLNaryDataRange`
+
 
    A union data range DataUnionOf( DR1 ... DRn ) contains all tuples of literals that are contained in the at least
    one data range DRi for 1 ≤ i ≤ n. All data ranges DRi must be of the same arity, and the resulting data range is of
@@ -117,37 +184,39 @@ Classes
 
    (https://www.w3.org/TR/owl2-syntax/#Union_of_Data_Ranges)
 
+
    .. py:attribute:: __slots__
       :value: '_operands'
 
-      
+
 
    .. py:attribute:: type_index
-      :type: Final
+      :type:  Final
       :value: 4005
 
-      
 
 
 .. py:class:: OWLDataComplementOf(data_range: OWLDataRange)
 
-
    Bases: :py:obj:`OWLDataRange`
+
 
    A complement data range DataComplementOf( DR ) contains all tuples of literals that are not contained in the
    data range DR. The resulting data range has the arity equal to the arity of DR.
 
    (https://www.w3.org/TR/owl2-syntax/#Complement_of_Data_Ranges)
 
+
    .. py:attribute:: type_index
-      :type: Final
+      :type:  Final
       :value: 4002
 
-      
+
 
    .. py:method:: get_data_range() -> OWLDataRange
 
       :returns: The wrapped data range.
+
 
 
    .. py:method:: __repr__()
@@ -155,9 +224,11 @@ Classes
       Return repr(self).
 
 
+
    .. py:method:: __eq__(other)
 
       Return self==value.
+
 
 
    .. py:method:: __hash__()

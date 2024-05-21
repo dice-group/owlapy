@@ -1,5 +1,5 @@
-:py:mod:`owlapy.iri`
-====================
+owlapy.iri
+==========
 
 .. py:module:: owlapy.iri
 
@@ -9,53 +9,77 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
+   owlapy.iri.OWLAnnotationSubject
+   owlapy.iri.OWLAnnotationValue
+   owlapy.iri.Namespaces
    owlapy.iri.IRI
 
 
+Module Contents
+---------------
+
+.. py:class:: OWLAnnotationSubject
+
+   Bases: :py:obj:`OWLAnnotationObject`
 
 
-.. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
+   A marker interface for annotation subjects, which can either be IRIs or anonymous individuals
 
-
-   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
-
-   An IRI, consisting of a namespace and a remainder.
-
-   .. py:property:: str
-      :type: str
-
-      Returns:
-      The string that specifies the IRI.
-
-   .. py:property:: reminder
-      :type: str
-
-      Returns:
-      The string corresponding to the reminder of the IRI.
 
    .. py:attribute:: __slots__
-      :value: ('_namespace', '_remainder', '__weakref__')
+      :value: ()
 
-      
 
-   .. py:attribute:: type_index
-      :type: Final
-      :value: 0
 
-      
+.. py:class:: OWLAnnotationValue
 
-   .. py:method:: create(namespace: owlapy.namespaces.Namespaces, remainder: str) -> IRI
-                  create(namespace: str, remainder: str) -> IRI
-                  create(string: str) -> IRI
-      :staticmethod:
+   Bases: :py:obj:`OWLAnnotationObject`
+
+
+   A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: is_literal() -> bool
+
+      :returns: true if the annotation value is a literal
+
+
+
+   .. py:method:: as_literal() -> Optional[OWLLiteral]
+
+      :returns: if the value is a literal, returns it. Return None otherwise
+
+
+
+.. py:class:: Namespaces(prefix: str, ns: str)
+
+   Namespaces provide a simple method for qualifying element and attribute names used in Extensible Markup
+   Language documents by associating them with namespaces identified by URI references
+
+
+   .. py:attribute:: __slots__
+      :value: ('_prefix', '_ns')
+
+
+
+   .. py:property:: ns
+      :type: str
+
+
+
+   .. py:property:: prefix
+      :type: str
+
 
 
    .. py:method:: __repr__()
@@ -63,14 +87,61 @@ Classes
       Return repr(self).
 
 
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
    .. py:method:: __eq__(other)
 
       Return self==value.
 
 
+
+.. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+
+   An IRI, consisting of a namespace and a remainder.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_namespace', '_remainder', '__weakref__')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 0
+
+
+
+   .. py:method:: create(namespace: owlapy.namespaces.Namespaces, remainder: str) -> IRI
+                  create(namespace: str, remainder: str) -> IRI
+                  create(string: str) -> IRI
+      :staticmethod:
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
    .. py:method:: __hash__()
 
       Return hash(self).
+
 
 
    .. py:method:: is_nothing()
@@ -80,11 +151,13 @@ Classes
       :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
 
 
+
    .. py:method:: is_thing()
 
       Determines if this IRI is equal to the IRI that owl:Thing is named with.
 
       :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
+
 
 
    .. py:method:: is_reserved_vocabulary() -> bool
@@ -96,15 +169,32 @@ Classes
       :returns: True if the IRI is in the reserved vocabulary, otherwise False.
 
 
+
    .. py:method:: as_iri() -> IRI
 
       :returns: if the value is an IRI, return it. Return Mone otherwise.
+
 
 
    .. py:method:: as_str() -> str
 
       CD: Should be deprecated.
       :returns: The string that specifies the IRI.
+
+
+
+   .. py:property:: str
+      :type: str
+
+      Returns:
+      The string that specifies the IRI.
+
+
+   .. py:property:: reminder
+      :type: str
+
+      Returns:
+      The string corresponding to the reminder of the IRI.
 
 
    .. py:method:: get_short_form() -> str
@@ -114,9 +204,11 @@ Classes
       :returns: A string that represents the short form.
 
 
+
    .. py:method:: get_namespace() -> str
 
       :returns: The namespace as string.
+
 
 
    .. py:method:: get_remainder() -> str

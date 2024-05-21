@@ -1,5 +1,5 @@
-:py:mod:`owlapy.providers`
-==========================
+owlapy.providers
+================
 
 .. py:module:: owlapy.providers
 
@@ -9,12 +9,27 @@
 
 
 
-Module Contents
----------------
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.providers.Restriction_Literals
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.providers.OWLLiteral
+   owlapy.providers.OWLDatatypeRestriction
+   owlapy.providers.OWLFacet
+   owlapy.providers.OWLFacetRestriction
 
 
 Functions
-~~~~~~~~~
+---------
 
 .. autoapisummary::
 
@@ -26,18 +41,321 @@ Functions
    owlapy.providers.owl_datatype_min_max_inclusive_restriction
 
 
+Module Contents
+---------------
 
-Attributes
-~~~~~~~~~~
+.. py:class:: OWLLiteral
 
-.. autoapisummary::
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
 
-   owlapy.providers.Restriction_Literals
+
+   Literals represent data values such as particular strings or integers. They are analogous to typed RDF
+   literals and can also be understood as individuals denoting
+   data values. Each literal consists of a lexical form, which is a string, and a datatype.
+
+    (https://www.w3.org/TR/owl2-syntax/#Literals)
+
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4008
+
+
+
+   .. py:method:: get_literal() -> str
+
+      Gets the lexical value of this literal. Note that the language tag is not included.
+
+      :returns: The lexical value of this literal.
+
+
+
+   .. py:method:: is_boolean() -> bool
+
+      Whether this literal is typed as boolean.
+
+
+
+   .. py:method:: parse_boolean() -> bool
+
+      Parses the lexical value of this literal into a bool. The lexical value of this literal should be in the
+      lexical space of the boolean datatype ("http://www.w3.org/2001/XMLSchema#boolean").
+
+      :returns: A bool value that is represented by this literal.
+
+
+
+   .. py:method:: is_double() -> bool
+
+      Whether this literal is typed as double.
+
+
+
+   .. py:method:: parse_double() -> float
+
+      Parses the lexical value of this literal into a double. The lexical value of this literal should be in the
+      lexical space of the double datatype ("http://www.w3.org/2001/XMLSchema#double").
+
+      :returns: A double value that is represented by this literal.
+
+
+
+   .. py:method:: is_integer() -> bool
+
+      Whether this literal is typed as integer.
+
+
+
+   .. py:method:: parse_integer() -> int
+
+      Parses the lexical value of this literal into an integer. The lexical value of this literal should be in the
+      lexical space of the integer datatype ("http://www.w3.org/2001/XMLSchema#integer").
+
+      :returns: An integer value that is represented by this literal.
+
+
+
+   .. py:method:: is_string() -> bool
+
+      Whether this literal is typed as string.
+
+
+
+   .. py:method:: parse_string() -> str
+
+      Parses the lexical value of this literal into a string. The lexical value of this literal should be in the
+      lexical space of the string datatype ("http://www.w3.org/2001/XMLSchema#string").
+
+      :returns: A string value that is represented by this literal.
+
+
+
+   .. py:method:: is_date() -> bool
+
+      Whether this literal is typed as date.
+
+
+
+   .. py:method:: parse_date() -> datetime.date
+
+      Parses the lexical value of this literal into a date. The lexical value of this literal should be in the
+      lexical space of the date datatype ("http://www.w3.org/2001/XMLSchema#date").
+
+      :returns: A date value that is represented by this literal.
+
+
+
+   .. py:method:: is_datetime() -> bool
+
+      Whether this literal is typed as dateTime.
+
+
+
+   .. py:method:: parse_datetime() -> datetime.datetime
+
+      Parses the lexical value of this literal into a datetime. The lexical value of this literal should be in the
+      lexical space of the dateTime datatype ("http://www.w3.org/2001/XMLSchema#dateTime").
+
+      :returns: A datetime value that is represented by this literal.
+
+
+
+   .. py:method:: is_duration() -> bool
+
+      Whether this literal is typed as duration.
+
+
+
+   .. py:method:: parse_duration() -> pandas.Timedelta
+
+      Parses the lexical value of this literal into a Timedelta. The lexical value of this literal should be in the
+      lexical space of the duration datatype ("http://www.w3.org/2001/XMLSchema#duration").
+
+      :returns: A Timedelta value that is represented by this literal.
+
+
+
+   .. py:method:: is_literal() -> bool
+
+      :returns: true if the annotation value is a literal
+
+
+
+   .. py:method:: as_literal() -> OWLLiteral
+
+      :returns: if the value is a literal, returns it. Return None otherwise
+
+
+
+   .. py:method:: to_python() -> Literals
+
+
+   .. py:method:: get_datatype() -> owlapy.owl_datatype.OWLDatatype
+      :abstractmethod:
+
+
+      Gets the OWLDatatype which types this literal.
+
+      :returns: The OWLDatatype that types this literal.
+
+
+
+.. py:class:: OWLDatatypeRestriction(type_: owlapy.owl_datatype.OWLDatatype, facet_restrictions: Union[OWLFacetRestriction, Iterable[OWLFacetRestriction]])
+
+   Bases: :py:obj:`owlapy.owl_data_ranges.OWLDataRange`
+
+
+   A datatype restriction DatatypeRestriction( DT F1 lt1 ... Fn ltn ) consists of a unary datatype DT and n pairs
+   ( Fi , lti ). The resulting data range is unary and is obtained by restricting the value space of DT according to
+   the semantics of all ( Fi , vi ) (multiple pairs are interpreted conjunctively), where vi are the data values of
+   the literals lti.
+   (https://www.w3.org/TR/owl2-syntax/#Datatype_Restrictions)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_type', '_facet_restrictions')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4006
+
+
+
+   .. py:method:: get_datatype() -> owlapy.owl_datatype.OWLDatatype
+
+
+   .. py:method:: get_facet_restrictions() -> Sequence[OWLFacetRestriction]
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLFacet(remainder: str, symbolic_form: str, operator: Callable[[_X, _X], bool])
+
+   Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
+
+
+   Enumerations for OWL facets.
+
+
+   .. py:property:: symbolic_form
+
+
+   .. py:property:: operator
+
+
+   .. py:method:: from_str(name: str) -> OWLFacet
+      :staticmethod:
+
+
+
+   .. py:attribute:: MIN_INCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MIN_EXCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MAX_INCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MAX_EXCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: MIN_LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: MAX_LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: PATTERN
+      :type:  Final
+
+
+   .. py:attribute:: TOTAL_DIGITS
+      :type:  Final
+
+
+   .. py:attribute:: FRACTION_DIGITS
+      :type:  Final
+
+
+.. py:class:: OWLFacetRestriction(facet: owlapy.vocab.OWLFacet, literal: Literals)
+
+   Bases: :py:obj:`owlapy.owl_object.OWLObject`
+
+
+   A facet restriction is used to restrict a particular datatype.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_facet', '_literal')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4007
+
+
+
+   .. py:method:: get_facet() -> owlapy.vocab.OWLFacet
+
+
+   .. py:method:: get_facet_value() -> owlapy.owl_literal.OWLLiteral
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
 
 
 .. py:data:: Restriction_Literals
-
-   
 
 .. py:function:: owl_datatype_max_exclusive_restriction(max_: Restriction_Literals) -> owlapy.class_expression.OWLDatatypeRestriction
 

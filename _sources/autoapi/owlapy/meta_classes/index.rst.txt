@@ -1,5 +1,5 @@
-:py:mod:`owlapy.meta_classes`
-=============================
+owlapy.meta_classes
+===================
 
 .. py:module:: owlapy.meta_classes
 
@@ -9,11 +9,8 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
@@ -23,51 +20,57 @@ Classes
    owlapy.meta_classes.HasCardinality
 
 
-
+Module Contents
+---------------
 
 .. py:class:: HasIRI
 
-
    Simple class to access the IRI.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
 
    .. py:property:: iri
       :type: IRI
+
       :abstractmethod:
 
       Gets the IRI of this object.
 
       :returns: The IRI of this object.
 
+
    .. py:property:: str
       :type: str
+
       :abstractmethod:
 
       Gets the string representation of this object
 
       :returns: The IRI as string
 
-   .. py:attribute:: __slots__
-      :value: ()
-
-      
-
 
 .. py:class:: HasOperands
 
-
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
 
    An interface to objects that have a collection of operands.
 
    :param _T: Operand type.
 
+
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
 
    .. py:method:: operands() -> Iterable[_T]
       :abstractmethod:
+
 
       Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
       classes axiom.
@@ -78,20 +81,22 @@ Classes
 
 .. py:class:: HasFiller
 
-
    Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
 
    An interface to objects that have a filler.
 
    :param _T: Filler type.
 
+
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
 
    .. py:method:: get_filler() -> _T
       :abstractmethod:
+
 
       Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
       the case of a data restriction this will be a constant (data value). For quantified restriction this will be
@@ -103,16 +108,17 @@ Classes
 
 .. py:class:: HasCardinality
 
-
    An interface to objects that have a cardinality.
+
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
 
    .. py:method:: get_cardinality() -> int
       :abstractmethod:
+
 
       Gets the cardinality of a restriction.
 

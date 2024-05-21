@@ -1,5 +1,5 @@
-:py:mod:`owlapy.parser`
-=======================
+owlapy.parser
+=============
 
 .. py:module:: owlapy.parser
 
@@ -9,21 +9,76 @@
 
 
 
-Module Contents
----------------
-
-Classes
-~~~~~~~
+Attributes
+----------
 
 .. autoapisummary::
 
+   owlapy.parser.IntegerOWLDatatype
+   owlapy.parser.BooleanOWLDatatype
+   owlapy.parser.DoubleOWLDatatype
+   owlapy.parser.StringOWLDatatype
+   owlapy.parser.DateOWLDatatype
+   owlapy.parser.DateTimeOWLDatatype
+   owlapy.parser.DurationOWLDatatype
+   owlapy.parser.MANCHESTER_GRAMMAR
+   owlapy.parser.DL_GRAMMAR
+   owlapy.parser.DLparser
+   owlapy.parser.ManchesterParser
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.parser.IRI
+   owlapy.parser.OWLNamedIndividual
+   owlapy.parser.OWLLiteral
+   owlapy.parser.OWLObjectPropertyExpression
+   owlapy.parser.OWLObjectProperty
+   owlapy.parser.OWLDataProperty
+   owlapy.parser.OWLObjectParser
+   owlapy.parser.Namespaces
+   owlapy.parser.OWLDatatype
+   owlapy.parser.OWLFacet
+   owlapy.parser.OWLRDFVocabulary
+   owlapy.parser.OWLObjectHasSelf
+   owlapy.parser.OWLObjectIntersectionOf
+   owlapy.parser.OWLObjectMinCardinality
+   owlapy.parser.OWLObjectSomeValuesFrom
+   owlapy.parser.OWLObjectUnionOf
+   owlapy.parser.OWLClass
+   owlapy.parser.OWLObjectOneOf
+   owlapy.parser.OWLClassExpression
+   owlapy.parser.OWLObjectComplementOf
+   owlapy.parser.OWLObjectExactCardinality
+   owlapy.parser.OWLQuantifiedDataRestriction
+   owlapy.parser.OWLQuantifiedObjectRestriction
+   owlapy.parser.OWLFacetRestriction
+   owlapy.parser.OWLDataSomeValuesFrom
+   owlapy.parser.OWLDataExactCardinality
+   owlapy.parser.OWLObjectHasValue
+   owlapy.parser.OWLDataMaxCardinality
+   owlapy.parser.OWLObjectMaxCardinality
+   owlapy.parser.OWLDataMinCardinality
+   owlapy.parser.OWLDataHasValue
+   owlapy.parser.OWLDataOneOf
+   owlapy.parser.OWLObjectCardinalityRestriction
+   owlapy.parser.OWLDatatypeRestriction
+   owlapy.parser.OWLDataCardinalityRestriction
+   owlapy.parser.OWLObjectAllValuesFrom
+   owlapy.parser.OWLDataAllValuesFrom
+   owlapy.parser.OWLDataIntersectionOf
+   owlapy.parser.OWLDataUnionOf
+   owlapy.parser.OWLDataComplementOf
+   owlapy.parser.OWLDataRange
    owlapy.parser.ManchesterOWLSyntaxParser
    owlapy.parser.DLSyntaxParser
 
 
-
 Functions
-~~~~~~~~~
+---------
 
 .. autoapisummary::
 
@@ -31,39 +86,1793 @@ Functions
    owlapy.parser.manchester_to_owl_expression
 
 
+Module Contents
+---------------
 
-Attributes
-~~~~~~~~~~
+.. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
 
-.. autoapisummary::
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
 
-   owlapy.parser.MANCHESTER_GRAMMAR
-   owlapy.parser.DL_GRAMMAR
-   owlapy.parser.DLparser
-   owlapy.parser.ManchesterParser
+
+   An IRI, consisting of a namespace and a remainder.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_namespace', '_remainder', '__weakref__')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 0
+
+
+
+   .. py:method:: create(namespace: owlapy.namespaces.Namespaces, remainder: str) -> IRI
+                  create(namespace: str, remainder: str) -> IRI
+                  create(string: str) -> IRI
+      :staticmethod:
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: is_nothing()
+
+      Determines if this IRI is equal to the IRI that owl:Nothing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
+
+
+
+   .. py:method:: is_thing()
+
+      Determines if this IRI is equal to the IRI that owl:Thing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
+
+
+
+   .. py:method:: is_reserved_vocabulary() -> bool
+
+      Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with
+      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> or <http://www.w3.org/2000/01/rdf-schema#> or
+      <http://www.w3.org/2001/XMLSchema#> or <http://www.w3.org/2002/07/owl#>.
+
+      :returns: True if the IRI is in the reserved vocabulary, otherwise False.
+
+
+
+   .. py:method:: as_iri() -> IRI
+
+      :returns: if the value is an IRI, return it. Return Mone otherwise.
+
+
+
+   .. py:method:: as_str() -> str
+
+      CD: Should be deprecated.
+      :returns: The string that specifies the IRI.
+
+
+
+   .. py:property:: str
+      :type: str
+
+      Returns:
+      The string that specifies the IRI.
+
+
+   .. py:property:: reminder
+      :type: str
+
+      Returns:
+      The string corresponding to the reminder of the IRI.
+
+
+   .. py:method:: get_short_form() -> str
+
+      Gets the short form.
+
+      :returns: A string that represents the short form.
+
+
+
+   .. py:method:: get_namespace() -> str
+
+      :returns: The namespace as string.
+
+
+
+   .. py:method:: get_remainder() -> str
+
+      :returns: The remainder (coincident with NCName usually) for this IRI.
+
+
+
+.. py:class:: OWLNamedIndividual(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`OWLIndividual`, :py:obj:`owlapy.owl_object.OWLEntity`
+
+
+   Named individuals are identified using an IRI. Since they are given an IRI, named individuals are entities.
+   IRIs from the reserved vocabulary must not be used to identify named individuals in an OWL 2 DL ontology.
+
+   (https://www.w3.org/TR/owl2-syntax/#Named_Individuals)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1005
+
+
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:property:: str
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+
+.. py:data:: IntegerOWLDatatype
+   :type:  Final
+
+.. py:data:: BooleanOWLDatatype
+   :type:  Final
+
+.. py:data:: DoubleOWLDatatype
+   :type:  Final
+
+.. py:data:: StringOWLDatatype
+   :type:  Final
+
+.. py:data:: DateOWLDatatype
+   :type:  Final
+
+.. py:data:: DateTimeOWLDatatype
+   :type:  Final
+
+.. py:data:: DurationOWLDatatype
+   :type:  Final
+
+.. py:class:: OWLLiteral
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+
+   Literals represent data values such as particular strings or integers. They are analogous to typed RDF
+   literals and can also be understood as individuals denoting
+   data values. Each literal consists of a lexical form, which is a string, and a datatype.
+
+    (https://www.w3.org/TR/owl2-syntax/#Literals)
+
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4008
+
+
+
+   .. py:method:: get_literal() -> str
+
+      Gets the lexical value of this literal. Note that the language tag is not included.
+
+      :returns: The lexical value of this literal.
+
+
+
+   .. py:method:: is_boolean() -> bool
+
+      Whether this literal is typed as boolean.
+
+
+
+   .. py:method:: parse_boolean() -> bool
+
+      Parses the lexical value of this literal into a bool. The lexical value of this literal should be in the
+      lexical space of the boolean datatype ("http://www.w3.org/2001/XMLSchema#boolean").
+
+      :returns: A bool value that is represented by this literal.
+
+
+
+   .. py:method:: is_double() -> bool
+
+      Whether this literal is typed as double.
+
+
+
+   .. py:method:: parse_double() -> float
+
+      Parses the lexical value of this literal into a double. The lexical value of this literal should be in the
+      lexical space of the double datatype ("http://www.w3.org/2001/XMLSchema#double").
+
+      :returns: A double value that is represented by this literal.
+
+
+
+   .. py:method:: is_integer() -> bool
+
+      Whether this literal is typed as integer.
+
+
+
+   .. py:method:: parse_integer() -> int
+
+      Parses the lexical value of this literal into an integer. The lexical value of this literal should be in the
+      lexical space of the integer datatype ("http://www.w3.org/2001/XMLSchema#integer").
+
+      :returns: An integer value that is represented by this literal.
+
+
+
+   .. py:method:: is_string() -> bool
+
+      Whether this literal is typed as string.
+
+
+
+   .. py:method:: parse_string() -> str
+
+      Parses the lexical value of this literal into a string. The lexical value of this literal should be in the
+      lexical space of the string datatype ("http://www.w3.org/2001/XMLSchema#string").
+
+      :returns: A string value that is represented by this literal.
+
+
+
+   .. py:method:: is_date() -> bool
+
+      Whether this literal is typed as date.
+
+
+
+   .. py:method:: parse_date() -> datetime.date
+
+      Parses the lexical value of this literal into a date. The lexical value of this literal should be in the
+      lexical space of the date datatype ("http://www.w3.org/2001/XMLSchema#date").
+
+      :returns: A date value that is represented by this literal.
+
+
+
+   .. py:method:: is_datetime() -> bool
+
+      Whether this literal is typed as dateTime.
+
+
+
+   .. py:method:: parse_datetime() -> datetime.datetime
+
+      Parses the lexical value of this literal into a datetime. The lexical value of this literal should be in the
+      lexical space of the dateTime datatype ("http://www.w3.org/2001/XMLSchema#dateTime").
+
+      :returns: A datetime value that is represented by this literal.
+
+
+
+   .. py:method:: is_duration() -> bool
+
+      Whether this literal is typed as duration.
+
+
+
+   .. py:method:: parse_duration() -> pandas.Timedelta
+
+      Parses the lexical value of this literal into a Timedelta. The lexical value of this literal should be in the
+      lexical space of the duration datatype ("http://www.w3.org/2001/XMLSchema#duration").
+
+      :returns: A Timedelta value that is represented by this literal.
+
+
+
+   .. py:method:: is_literal() -> bool
+
+      :returns: true if the annotation value is a literal
+
+
+
+   .. py:method:: as_literal() -> OWLLiteral
+
+      :returns: if the value is a literal, returns it. Return None otherwise
+
+
+
+   .. py:method:: to_python() -> Literals
+
+
+   .. py:method:: get_datatype() -> owlapy.owl_datatype.OWLDatatype
+      :abstractmethod:
+
+
+      Gets the OWLDatatype which types this literal.
+
+      :returns: The OWLDatatype that types this literal.
+
+
+
+.. py:class:: OWLObjectPropertyExpression
+
+   Bases: :py:obj:`OWLPropertyExpression`
+
+
+   A high level interface to describe different types of object properties.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: get_inverse_property() -> OWLObjectPropertyExpression
+      :abstractmethod:
+
+
+      Obtains the property that corresponds to the inverse of this property.
+
+      :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
+
+
+
+   .. py:method:: get_named_property() -> OWLObjectProperty
+      :abstractmethod:
+
+
+      Get the named object property used in this property expression.
+
+      :returns: P if this expression is either inv(P) or P.
+
+
+
+   .. py:method:: is_object_property_expression() -> bool
+
+      :returns: True if this is an object property.
+
+
+
+.. py:class:: OWLObjectProperty(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`OWLObjectPropertyExpression`, :py:obj:`OWLProperty`
+
+
+   Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.
+
+   (https://www.w3.org/TR/owl2-syntax/#Object_Properties)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1002
+
+
+
+   .. py:method:: get_named_property() -> OWLObjectProperty
+
+      Get the named object property used in this property expression.
+
+      :returns: P if this expression is either inv(P) or P.
+
+
+
+   .. py:method:: get_inverse_property() -> OWLObjectInverseOf
+
+      Obtains the property that corresponds to the inverse of this property.
+
+      :returns: The inverse of this property. Note that this property will not necessarily be in the simplest form.
+
+
+
+   .. py:method:: is_owl_top_object_property() -> bool
+
+      Determines if this is the owl:topObjectProperty.
+
+      :returns: topObjectProperty.
+      :rtype: True if this property is the owl
+
+
+
+.. py:class:: OWLDataProperty(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`OWLDataPropertyExpression`, :py:obj:`OWLProperty`
+
+
+   Represents a Data Property in the OWL 2 Specification. Data properties connect individuals with literals.
+   In some knowledge representation systems, functional data properties are called attributes.
+
+   (https://www.w3.org/TR/owl2-syntax/#Data_Properties)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1004
+
+
+
+   .. py:method:: is_owl_top_data_property() -> bool
+
+      Determines if this is the owl:topDataProperty.
+
+      :returns: topDataProperty.
+      :rtype: True if this property is the owl
+
+
+
+.. py:class:: OWLObjectParser
+
+   Abstract class with a parse method to parse a string to an OWL Object.
+
+
+   .. py:method:: parse_expression(expression_str: str) -> OWLObject
+      :abstractmethod:
+
+
+      Parse a string to an OWL Object.
+
+      :param expression_str: Expression string.
+      :type expression_str: str
+
+      :returns: The OWL Object which is represented by the string.
+
+
+
+.. py:class:: Namespaces(prefix: str, ns: str)
+
+   Namespaces provide a simple method for qualifying element and attribute names used in Extensible Markup
+   Language documents by associating them with namespaces identified by URI references
+
+
+   .. py:attribute:: __slots__
+      :value: ('_prefix', '_ns')
+
+
+
+   .. py:property:: ns
+      :type: str
+
+
+
+   .. py:property:: prefix
+      :type: str
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+.. py:class:: OWLDatatype(iri: Union[owlapy.iri.IRI, owlapy.meta_classes.HasIRI])
+
+   Bases: :py:obj:`owlapy.owl_object.OWLEntity`, :py:obj:`owlapy.owl_data_ranges.OWLDataRange`
+
+
+   Datatypes are entities that refer to sets of data values. Thus, datatypes are analogous to classes,
+   the main difference being that the former contain data values such as strings and numbers, rather than individuals.
+   Datatypes are a kind of data range, which allows them to be used in restrictions. Each data range is associated
+   with an arity; for datatypes, the arity is always one. The built-in datatype rdfs:Literal denotes any set of data
+   values that contains the union of the value spaces of all datatypes.
+
+   (https://www.w3.org/TR/owl2-syntax/#Datatypes)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4001
+
+
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:property:: str
+      :type: str
+
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+
+.. py:class:: OWLFacet(remainder: str, symbolic_form: str, operator: Callable[[_X, _X], bool])
+
+   Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
+
+
+   Enumerations for OWL facets.
+
+
+   .. py:property:: symbolic_form
+
+
+   .. py:property:: operator
+
+
+   .. py:method:: from_str(name: str) -> OWLFacet
+      :staticmethod:
+
+
+
+   .. py:attribute:: MIN_INCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MIN_EXCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MAX_INCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: MAX_EXCLUSIVE
+      :type:  Final
+
+
+   .. py:attribute:: LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: MIN_LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: MAX_LENGTH
+      :type:  Final
+
+
+   .. py:attribute:: PATTERN
+      :type:  Final
+
+
+   .. py:attribute:: TOTAL_DIGITS
+      :type:  Final
+
+
+   .. py:attribute:: FRACTION_DIGITS
+      :type:  Final
+
+
+.. py:class:: OWLRDFVocabulary(namespace: owlapy.namespaces.Namespaces, remainder: str)
+
+   Bases: :py:obj:`_Vocabulary`, :py:obj:`enum.Enum`
+
+
+   Enumerations for OWL/RDF vocabulary.
+
+
+   .. py:attribute:: OWL_THING
+
+
+   .. py:attribute:: OWL_NOTHING
+
+
+   .. py:attribute:: OWL_CLASS
+
+
+   .. py:attribute:: OWL_NAMED_INDIVIDUAL
+
+
+   .. py:attribute:: OWL_TOP_OBJECT_PROPERTY
+
+
+   .. py:attribute:: OWL_BOTTOM_OBJECT_PROPERTY
+
+
+   .. py:attribute:: OWL_TOP_DATA_PROPERTY
+
+
+   .. py:attribute:: OWL_BOTTOM_DATA_PROPERTY
+
+
+   .. py:attribute:: RDFS_LITERAL
+
+
+.. py:class:: OWLObjectHasSelf(property: owlapy.owl_property.OWLObjectPropertyExpression)
+
+   Bases: :py:obj:`OWLObjectRestriction`
+
+
+   A self-restriction ObjectHasSelf( OPE ) consists of an object property expression OPE,
+   and it contains all those individuals that are connected by OPE to themselves.
+   (https://www.w3.org/TR/owl2-syntax/#Self-Restriction)
+
+
+   .. py:attribute:: __slots__
+      :value: '_property'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3011
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLObjectIntersectionOf(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
+
+   An intersection class expression ObjectIntersectionOf( CE1 ... CEn ) contains all individuals that are instances
+   of all class expressions CEi for 1 ≤ i ≤ n.
+   (https://www.w3.org/TR/owl2-syntax/#Intersection_of_Class_Expressions)
+
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3001
+
+
+
+.. py:class:: OWLObjectMinCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
+
+   Bases: :py:obj:`OWLObjectCardinalityRestriction`
+
+
+   A minimum cardinality expression ObjectMinCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+   property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+   to at least n different individuals that are instances of CE.
+   (https://www.w3.org/TR/owl2-syntax/#Minimum_Cardinality)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_cardinality', '_filler', '_property')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3008
+
+
+
+.. py:class:: OWLObjectSomeValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
+
+   Bases: :py:obj:`OWLQuantifiedObjectRestriction`
+
+
+   An existential class expression ObjectSomeValuesFrom( OPE CE ) consists of an object property expression OPE and
+   a class expression CE, and it contains all those individuals that are connected by OPE to an individual that is
+   an instance of CE.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_property', '_filler')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3005
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+.. py:class:: OWLObjectUnionOf(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+   Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
+
+   A union class expression ObjectUnionOf( CE1 ... CEn ) contains all individuals that are instances
+   of at least one class expression CEi for 1 ≤ i ≤ n.
+   (https://www.w3.org/TR/owl2-syntax/#Union_of_Class_Expressions)
+
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3002
+
+
+
+.. py:class:: OWLClass(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`, :py:obj:`owlapy.owl_object.OWLEntity`
+
+
+   An OWL 2 named Class. Classes can be understood as sets of individuals.
+   (https://www.w3.org/TR/owl2-syntax/#Classes)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_iri', '_is_nothing', '_is_thing')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1001
+
+
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:property:: str
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+
+   .. py:property:: reminder
+      :type: str
+
+      The reminder of the IRI
+
+
+   .. py:method:: is_owl_thing() -> bool
+
+      Determines if this expression is the built in class owl:Thing. This method does not determine if the class
+      is equivalent to owl:Thing.
+
+      :returns: Thing.
+      :rtype: True if this expression is owl
+
+
+
+   .. py:method:: is_owl_nothing() -> bool
+
+      Determines if this expression is the built in class owl:Nothing. This method does not determine if the class
+      is equivalent to owl:Nothing.
+
+
+
+   .. py:method:: get_object_complement_of() -> owlapy.class_expression.class_expression.OWLObjectComplementOf
+
+      Gets the object complement of this class expression.
+
+      :returns: A class expression that is the complement of this class expression.
+
+
+
+   .. py:method:: get_nnf() -> OWLClass
+
+      Gets the negation normal form of the complement of this expression.
+
+      :returns: A expression that represents the NNF of the complement of this expression.
+
+
+
+.. py:class:: OWLObjectOneOf(values: Union[owlapy.owl_individual.OWLIndividual, Iterable[owlapy.owl_individual.OWLIndividual]])
+
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLAnonymousClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ]
+
+
+   An enumeration of individuals ObjectOneOf( a1 ... an ) contains exactly the individuals ai with 1 ≤ i ≤ n.
+   (https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Individuals)
+
+
+   .. py:attribute:: __slots__
+      :value: '_values'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3004
+
+
+
+   .. py:method:: individuals() -> Iterable[owlapy.owl_individual.OWLIndividual]
+
+      Gets the individuals that are in the oneOf. These individuals represent the exact instances (extension)
+      of this class expression.
+
+      :returns: The individuals that are the values of this {@code ObjectOneOf} class expression.
+
+
+
+   .. py:method:: operands() -> Iterable[owlapy.owl_individual.OWLIndividual]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+
+   .. py:method:: as_object_union_of() -> owlapy.class_expression.class_expression.OWLClassExpression
+
+      Simplifies this enumeration to a union of singleton nominals.
+
+      :returns: This enumeration in a more standard DL form.
+                simp({a}) = {a} simp({a0, ... , {an}) = unionOf({a0}, ... , {an})
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLClassExpression
+
+   Bases: :py:obj:`owlapy.owl_data_ranges.OWLPropertyRange`
+
+
+   OWL Class expressions represent sets of individuals by formally specifying conditions on the individuals' properties;
+   individuals satisfying these conditions are said to be instances of the respective class expressions.
+   In the structural specification of OWL 2, class expressions are represented by ClassExpression.
+   (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: is_owl_thing() -> bool
+      :abstractmethod:
+
+
+      Determines if this expression is the built in class owl:Thing. This method does not determine if the class
+      is equivalent to owl:Thing.
+
+      :returns: Thing.
+      :rtype: True if this expression is owl
+
+
+
+   .. py:method:: is_owl_nothing() -> bool
+      :abstractmethod:
+
+
+      Determines if this expression is the built in class owl:Nothing. This method does not determine if the class
+      is equivalent to owl:Nothing.
+
+
+
+   .. py:method:: get_object_complement_of() -> OWLObjectComplementOf
+      :abstractmethod:
+
+
+      Gets the object complement of this class expression.
+
+      :returns: A class expression that is the complement of this class expression.
+
+
+
+   .. py:method:: get_nnf() -> OWLClassExpression
+      :abstractmethod:
+
+
+      Gets the negation normal form of the complement of this expression.
+
+      :returns: A expression that represents the NNF of the complement of this expression.
+
+
+
+.. py:class:: OWLObjectComplementOf(op: OWLClassExpression)
+
+   Bases: :py:obj:`OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`OWLClassExpression`\ ]
+
+
+   Represents an ObjectComplementOf class expression in the OWL 2 Specification.
+
+
+   .. py:attribute:: __slots__
+      :value: '_operand'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3003
+
+
+
+   .. py:method:: get_operand() -> OWLClassExpression
+
+      :returns: The wrapped expression.
+
+
+
+   .. py:method:: operands() -> Iterable[OWLClassExpression]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLObjectExactCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
+
+   Bases: :py:obj:`OWLObjectCardinalityRestriction`
+
+
+   An exact cardinality expression ObjectExactCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+    property expression OPE, and a class expression CE, and it contains all those individuals that are connected by
+    to exactly n different individuals that are instances of CE.
+   (https://www.w3.org/TR/owl2-syntax/#Exact_Cardinality)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_cardinality', '_filler', '_property')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3009
+
+
+
+   .. py:method:: as_intersection_of_min_max() -> owlapy.class_expression.nary_boolean_expression.OWLObjectIntersectionOf
+
+      Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
+
+      :returns: The semantically equivalent but structurally simpler form (= 1 R C) = >= 1 R C and <= 1 R C.
+
+
+
+.. py:class:: OWLQuantifiedDataRestriction(filler: owlapy.owl_data_ranges.OWLDataRange)
+
+   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.owl_data_ranges.OWLDataRange`\ ], :py:obj:`OWLDataRestriction`
+
+
+   Represents a quantified data restriction.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: get_filler() -> owlapy.owl_data_ranges.OWLDataRange
+
+      Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
+      the case of a data restriction this will be a constant (data value). For quantified restriction this will be
+      a class expression or a data range.
+
+      :returns: the value
+
+
+
+.. py:class:: OWLQuantifiedObjectRestriction(filler: owlapy.class_expression.class_expression.OWLClassExpression)
+
+   Bases: :py:obj:`OWLQuantifiedRestriction`\ [\ :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`\ ], :py:obj:`OWLObjectRestriction`
+
+
+   Represents a quantified object restriction.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: get_filler() -> owlapy.class_expression.class_expression.OWLClassExpression
+
+      Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
+      the case of a data restriction this will be a constant (data value). For quantified restriction this will be
+      a class expression or a data range.
+
+      :returns: the value
+
+
+
+.. py:class:: OWLFacetRestriction(facet: owlapy.vocab.OWLFacet, literal: Literals)
+
+   Bases: :py:obj:`owlapy.owl_object.OWLObject`
+
+
+   A facet restriction is used to restrict a particular datatype.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_facet', '_literal')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4007
+
+
+
+   .. py:method:: get_facet() -> owlapy.vocab.OWLFacet
+
+
+   .. py:method:: get_facet_value() -> owlapy.owl_literal.OWLLiteral
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLDataSomeValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_data_ranges.OWLDataRange)
+
+   Bases: :py:obj:`OWLQuantifiedDataRestriction`
+
+
+   An existential class expression DataSomeValuesFrom( DPE1 ... DPEn DR ) consists of n data property expressions
+   DPEi, 1 ≤ i ≤ n, and a data range DR whose arity must be n. Such a class expression contains all those individuals
+   that are connected by DPEi to literals lti, 1 ≤ i ≤ n, such that the tuple ( lt1 , ..., ltn ) is in DR. A class
+   expression of the form DataSomeValuesFrom( DPE DR ) can be seen as a syntactic shortcut for the class expression
+   DataMinCardinality( 1 DPE DR ).
+   (https://www.w3.org/TR/owl2-syntax/#Existential_Quantification_2)
+
+
+   .. py:attribute:: __slots__
+      :value: '_property'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3012
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+.. py:class:: OWLDataExactCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_data_ranges.OWLDataRange)
+
+   Bases: :py:obj:`OWLDataCardinalityRestriction`
+
+
+   An exact cardinality expression ObjectExactCardinality( n OPE CE ) consists of a nonnegative integer n, an
+   object property expression OPE, and a class expression CE, and it contains all those individuals that are connected
+    by OPE to exactly n different individuals that are instances of CE
+    (https://www.w3.org/TR/owl2-syntax/#Exact_Cardinality)
+
+
+
+   .. py:attribute:: __slots__
+      :value: ('_cardinality', '_filler', '_property')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3016
+
+
+
+   .. py:method:: as_intersection_of_min_max() -> owlapy.class_expression.nary_boolean_expression.OWLObjectIntersectionOf
+
+      Obtains an equivalent form that is a conjunction of a min cardinality and max cardinality restriction.
+
+      :returns: The semantically equivalent but structurally simpler form (= 1 R D) = >= 1 R D and <= 1 R D.
+
+
+
+.. py:class:: OWLObjectHasValue(property: owlapy.owl_property.OWLObjectPropertyExpression, individual: owlapy.owl_individual.OWLIndividual)
+
+   Bases: :py:obj:`OWLHasValueRestriction`\ [\ :py:obj:`owlapy.owl_individual.OWLIndividual`\ ], :py:obj:`OWLObjectRestriction`
+
+
+   A has-value class expression ObjectHasValue( OPE a ) consists of an object property expression OPE and an
+   individual a, and it contains all those individuals that are connected by OPE to a. Each such class expression
+   can be seen as a syntactic shortcut for the class expression ObjectSomeValuesFrom( OPE ObjectOneOf( a ) ).
+   (https://www.w3.org/TR/owl2-syntax/#Individual_Value_Restriction)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_property', '_v')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3007
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+   .. py:method:: as_some_values_from() -> owlapy.class_expression.class_expression.OWLClassExpression
+
+      A convenience method that obtains this restriction as an existential restriction with a nominal filler.
+
+      :returns: The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLDataMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_data_ranges.OWLDataRange)
+
+   Bases: :py:obj:`OWLDataCardinalityRestriction`
+
+
+   A maximum cardinality expression ObjectMaxCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+   property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+   to at most n different individuals that are instances of CE.
+   (https://www.w3.org/TR/owl2-syntax/#Maximum_Cardinality)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_cardinality', '_filler', '_property')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3017
+
+
+
+.. py:class:: OWLObjectMaxCardinality(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
+
+   Bases: :py:obj:`OWLObjectCardinalityRestriction`
+
+
+   A maximum cardinality expression ObjectMaxCardinality( n OPE CE ) consists of a nonnegative integer n, an object
+   property expression OPE, and a class expression CE, and it contains all those individuals that are connected by OPE
+    to at most n different individuals that are instances of CE.
+    (https://www.w3.org/TR/owl2-syntax/#Maximum_Cardinality)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_cardinality', '_filler', '_property')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3010
+
+
+
+.. py:class:: OWLDataMinCardinality(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_data_ranges.OWLDataRange)
+
+   Bases: :py:obj:`OWLDataCardinalityRestriction`
+
+
+   A minimum cardinality expression DataMinCardinality( n DPE DR ) consists of a nonnegative integer n, a data
+   property expression DPE, and a unary data range DR, and it contains all those individuals that are connected by
+   DPE to at least n different literals in DR.
+   (https://www.w3.org/TR/owl2-syntax/#Minimum_Cardinality)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_cardinality', '_filler', '_property')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3015
+
+
+
+.. py:class:: OWLDataHasValue(property: owlapy.owl_property.OWLDataPropertyExpression, value: owlapy.owl_literal.OWLLiteral)
+
+   Bases: :py:obj:`OWLHasValueRestriction`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ], :py:obj:`OWLDataRestriction`
+
+
+   A has-value class expression DataHasValue( DPE lt ) consists of a data property expression DPE and a literal lt,
+   and it contains all those individuals that are connected by DPE to lt. Each such class expression can be seen as a
+   syntactic shortcut for the class expression DataSomeValuesFrom( DPE DataOneOf( lt ) ).
+   (https://www.w3.org/TR/owl2-syntax/#Literal_Value_Restriction)
+
+
+   .. py:attribute:: __slots__
+      :value: '_property'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3014
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: as_some_values_from() -> owlapy.class_expression.class_expression.OWLClassExpression
+
+      A convenience method that obtains this restriction as an existential restriction with a nominal filler.
+
+      :returns: The existential equivalent of this value restriction. simp(HasValue(p a)) = some(p {a}).
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+.. py:class:: OWLDataOneOf(values: Union[owlapy.owl_literal.OWLLiteral, Iterable[owlapy.owl_literal.OWLLiteral]])
+
+   Bases: :py:obj:`owlapy.owl_data_ranges.OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
+
+
+   An enumeration of literals DataOneOf( lt1 ... ltn ) contains exactly the explicitly specified literals lti with
+   1 ≤ i ≤ n. The resulting data range has arity one. (https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Literals)
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4003
+
+
+
+   .. py:method:: values() -> Iterable[owlapy.owl_literal.OWLLiteral]
+
+      Gets the values that are in the oneOf.
+
+      :returns: The values of this {@code DataOneOf} class expression.
+
+
+
+   .. py:method:: operands() -> Iterable[owlapy.owl_literal.OWLLiteral]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLObjectCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
+
+   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`\ ], :py:obj:`OWLQuantifiedObjectRestriction`
+
+
+   Represents Object Property Cardinality Restrictions in the OWL 2 specification.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLDatatypeRestriction(type_: owlapy.owl_datatype.OWLDatatype, facet_restrictions: Union[OWLFacetRestriction, Iterable[OWLFacetRestriction]])
+
+   Bases: :py:obj:`owlapy.owl_data_ranges.OWLDataRange`
+
+
+   A datatype restriction DatatypeRestriction( DT F1 lt1 ... Fn ltn ) consists of a unary datatype DT and n pairs
+   ( Fi , lti ). The resulting data range is unary and is obtained by restricting the value space of DT according to
+   the semantics of all ( Fi , vi ) (multiple pairs are interpreted conjunctively), where vi are the data values of
+   the literals lti.
+   (https://www.w3.org/TR/owl2-syntax/#Datatype_Restrictions)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_type', '_facet_restrictions')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4006
+
+
+
+   .. py:method:: get_datatype() -> owlapy.owl_datatype.OWLDatatype
+
+
+   .. py:method:: get_facet_restrictions() -> Sequence[OWLFacetRestriction]
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+.. py:class:: OWLDataCardinalityRestriction(cardinality: int, property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_data_ranges.OWLDataRange)
+
+   Bases: :py:obj:`OWLCardinalityRestriction`\ [\ :py:obj:`owlapy.owl_data_ranges.OWLDataRange`\ ], :py:obj:`OWLQuantifiedDataRestriction`, :py:obj:`OWLDataRestriction`
+
+
+   Represents Data Property Cardinality Restrictions.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLObjectAllValuesFrom(property: owlapy.owl_property.OWLObjectPropertyExpression, filler: owlapy.class_expression.class_expression.OWLClassExpression)
+
+   Bases: :py:obj:`OWLQuantifiedObjectRestriction`
+
+
+   A universal class expression ObjectAllValuesFrom( OPE CE ) consists of an object property expression OPE and a
+   class expression CE, and it contains all those individuals that are connected by OPE only to
+   individuals that are instances of CE. (https://www.w3.org/TR/owl2-syntax/#Universal_Quantification)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_property', '_filler')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3006
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLObjectPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+.. py:class:: OWLDataAllValuesFrom(property: owlapy.owl_property.OWLDataPropertyExpression, filler: owlapy.owl_data_ranges.OWLDataRange)
+
+   Bases: :py:obj:`OWLQuantifiedDataRestriction`
+
+
+   A universal class expression DataAllValuesFrom( DPE1 ... DPEn DR ) consists of n data property expressions DPEi,
+   1 ≤ i ≤ n, and a data range DR whose arity must be n. Such a class expression contains all those individuals that
+    are connected by DPEi only to literals lti, 1 ≤ i ≤ n, such that each tuple ( lt1 , ..., ltn ) is in DR. A class
+     expression of the form DataAllValuesFrom( DPE DR ) can be seen as a syntactic shortcut for the class expression
+     DataMaxCardinality( 0 DPE DataComplementOf( DR ) ).
+     (https://www.w3.org/TR/owl2-syntax/#Universal_Quantification_2)
+
+
+
+   .. py:attribute:: __slots__
+      :value: '_property'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 3013
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: get_property() -> owlapy.owl_property.OWLDataPropertyExpression
+
+      :returns: Property being restricted.
+
+
+
+.. py:class:: OWLDataIntersectionOf(operands: Iterable[OWLDataRange])
+
+   Bases: :py:obj:`OWLNaryDataRange`
+
+
+   An intersection data range DataIntersectionOf( DR1 ... DRn ) contains all tuples of literals that are contained
+   in each data range DRi for 1 ≤ i ≤ n. All data ranges DRi must be of the same arity, and the resulting data range
+   is of that arity as well.
+
+   (https://www.w3.org/TR/owl2-syntax/#Intersection_of_Data_Ranges)
+
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4004
+
+
+
+.. py:class:: OWLDataUnionOf(operands: Iterable[OWLDataRange])
+
+   Bases: :py:obj:`OWLNaryDataRange`
+
+
+   A union data range DataUnionOf( DR1 ... DRn ) contains all tuples of literals that are contained in the at least
+   one data range DRi for 1 ≤ i ≤ n. All data ranges DRi must be of the same arity, and the resulting data range is of
+   that arity as well.
+
+   (https://www.w3.org/TR/owl2-syntax/#Union_of_Data_Ranges)
+
+
+   .. py:attribute:: __slots__
+      :value: '_operands'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4005
+
+
+
+.. py:class:: OWLDataComplementOf(data_range: OWLDataRange)
+
+   Bases: :py:obj:`OWLDataRange`
+
+
+   A complement data range DataComplementOf( DR ) contains all tuples of literals that are not contained in the
+   data range DR. The resulting data range has the arity equal to the arity of DR.
+
+   (https://www.w3.org/TR/owl2-syntax/#Complement_of_Data_Ranges)
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4002
+
+
+
+   .. py:method:: get_data_range() -> OWLDataRange
+
+      :returns: The wrapped data range.
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+.. py:class:: OWLDataRange
+
+   Bases: :py:obj:`OWLPropertyRange`
+
+
+   Represents a DataRange in the OWL 2 Specification.
 
 
 .. py:data:: MANCHESTER_GRAMMAR
 
-   
-
 .. py:class:: ManchesterOWLSyntaxParser(namespace: Optional[Union[str, owlapy.namespaces.Namespaces]] = None, grammar=None)
 
-
    Bases: :py:obj:`parsimonious.nodes.NodeVisitor`, :py:obj:`owlapy.owl_object.OWLObjectParser`
+
 
    Manchester Syntax parser to parse strings to OWLClassExpressions.
    Following: https://www.w3.org/TR/owl2-manchester-syntax.
 
+
    .. py:attribute:: slots
       :value: ('ns', 'grammar')
 
-      
+
 
    .. py:attribute:: ns
-      :type: Optional[Union[str, owlapy.namespaces.Namespaces]]
+      :type:  Optional[Union[str, owlapy.namespaces.Namespaces]]
 
-      
 
    .. py:method:: parse_expression(expression_str: str) -> owlapy.class_expression.OWLClassExpression
 
@@ -73,6 +1882,7 @@ Attributes
       :type expression_str: str
 
       :returns: The OWL Object which is represented by the string.
+
 
 
    .. py:method:: visit_union(node, children) -> owlapy.class_expression.OWLClassExpression
@@ -148,6 +1958,7 @@ Attributes
       :abstractmethod:
 
 
+
    .. py:method:: visit_string_literal_no_language(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
@@ -207,6 +2018,7 @@ Attributes
 
    .. py:method:: visit_abbreviated_iri(node, children)
       :abstractmethod:
+
 
 
    .. py:method:: visit_simple_iri(node, children) -> owlapy.iri.IRI
@@ -232,24 +2044,22 @@ Attributes
 
 .. py:data:: DL_GRAMMAR
 
-   
-
 .. py:class:: DLSyntaxParser(namespace: Optional[Union[str, owlapy.namespaces.Namespaces]] = None, grammar=None)
-
 
    Bases: :py:obj:`parsimonious.nodes.NodeVisitor`, :py:obj:`owlapy.owl_object.OWLObjectParser`
 
+
    Description Logic Syntax parser to parse strings to OWLClassExpressions.
+
 
    .. py:attribute:: slots
       :value: ('ns', 'grammar')
 
-      
+
 
    .. py:attribute:: ns
-      :type: Optional[Union[str, owlapy.namespaces.Namespaces]]
+      :type:  Optional[Union[str, owlapy.namespaces.Namespaces]]
 
-      
 
    .. py:method:: parse_expression(expression_str: str) -> owlapy.class_expression.OWLClassExpression
 
@@ -259,6 +2069,7 @@ Attributes
       :type expression_str: str
 
       :returns: The OWL Object which is represented by the string.
+
 
 
    .. py:method:: visit_union(node, children) -> owlapy.class_expression.OWLClassExpression
@@ -334,6 +2145,7 @@ Attributes
       :abstractmethod:
 
 
+
    .. py:method:: visit_string_literal_no_language(node, children) -> owlapy.owl_literal.OWLLiteral
 
 
@@ -395,6 +2207,7 @@ Attributes
       :abstractmethod:
 
 
+
    .. py:method:: visit_simple_iri(node, children) -> owlapy.iri.IRI
 
 
@@ -418,15 +2231,9 @@ Attributes
 
 .. py:data:: DLparser
 
-   
-
 .. py:data:: ManchesterParser
-
-   
 
 .. py:function:: dl_to_owl_expression(dl_expression: str, namespace: str)
 
-
 .. py:function:: manchester_to_owl_expression(manchester_expression: str, namespace: str)
-
 

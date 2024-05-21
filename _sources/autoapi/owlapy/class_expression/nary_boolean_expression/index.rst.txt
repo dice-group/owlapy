@@ -1,5 +1,5 @@
-:py:mod:`owlapy.class_expression.nary_boolean_expression`
-=========================================================
+owlapy.class_expression.nary_boolean_expression
+===============================================
 
 .. py:module:: owlapy.class_expression.nary_boolean_expression
 
@@ -9,32 +9,130 @@
 
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
+   owlapy.class_expression.nary_boolean_expression.OWLClassExpression
+   owlapy.class_expression.nary_boolean_expression.OWLBooleanClassExpression
+   owlapy.class_expression.nary_boolean_expression.HasOperands
    owlapy.class_expression.nary_boolean_expression.OWLNaryBooleanClassExpression
    owlapy.class_expression.nary_boolean_expression.OWLObjectUnionOf
    owlapy.class_expression.nary_boolean_expression.OWLObjectIntersectionOf
 
 
+Module Contents
+---------------
+
+.. py:class:: OWLClassExpression
+
+   Bases: :py:obj:`owlapy.owl_data_ranges.OWLPropertyRange`
 
 
-.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+   OWL Class expressions represent sets of individuals by formally specifying conditions on the individuals' properties;
+   individuals satisfying these conditions are said to be instances of the respective class expressions.
+   In the structural specification of OWL 2, class expressions are represented by ClassExpression.
+   (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
 
-
-   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`\ ]
-
-   OWLNaryBooleanClassExpression.
 
    .. py:attribute:: __slots__
       :value: ()
 
-      
+
+
+   .. py:method:: is_owl_thing() -> bool
+      :abstractmethod:
+
+
+      Determines if this expression is the built in class owl:Thing. This method does not determine if the class
+      is equivalent to owl:Thing.
+
+      :returns: Thing.
+      :rtype: True if this expression is owl
+
+
+
+   .. py:method:: is_owl_nothing() -> bool
+      :abstractmethod:
+
+
+      Determines if this expression is the built in class owl:Nothing. This method does not determine if the class
+      is equivalent to owl:Nothing.
+
+
+
+   .. py:method:: get_object_complement_of() -> OWLObjectComplementOf
+      :abstractmethod:
+
+
+      Gets the object complement of this class expression.
+
+      :returns: A class expression that is the complement of this class expression.
+
+
+
+   .. py:method:: get_nnf() -> OWLClassExpression
+      :abstractmethod:
+
+
+      Gets the negation normal form of the complement of this expression.
+
+      :returns: A expression that represents the NNF of the complement of this expression.
+
+
+
+.. py:class:: OWLBooleanClassExpression
+
+   Bases: :py:obj:`OWLAnonymousClassExpression`
+
+
+   Represent an anonymous boolean class expression.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+.. py:class:: HasOperands
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+
+   An interface to objects that have a collection of operands.
+
+   :param _T: Operand type.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: operands() -> Iterable[_T]
+      :abstractmethod:
+
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+
+.. py:class:: OWLNaryBooleanClassExpression(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
+
+   Bases: :py:obj:`owlapy.class_expression.class_expression.OWLBooleanClassExpression`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.class_expression.class_expression.OWLClassExpression`\ ]
+
+
+   OWLNaryBooleanClassExpression.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
 
    .. py:method:: operands() -> Iterable[owlapy.class_expression.class_expression.OWLClassExpression]
 
@@ -44,14 +142,17 @@ Classes
       :returns: The operands.
 
 
+
    .. py:method:: __repr__()
 
       Return repr(self).
 
 
+
    .. py:method:: __eq__(other)
 
       Return self==value.
+
 
 
    .. py:method:: __hash__()
@@ -62,43 +163,43 @@ Classes
 
 .. py:class:: OWLObjectUnionOf(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
 
-
    Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
 
    A union class expression ObjectUnionOf( CE1 ... CEn ) contains all individuals that are instances
    of at least one class expression CEi for 1 ≤ i ≤ n.
    (https://www.w3.org/TR/owl2-syntax/#Union_of_Class_Expressions)
 
+
    .. py:attribute:: __slots__
       :value: '_operands'
 
-      
+
 
    .. py:attribute:: type_index
-      :type: Final
+      :type:  Final
       :value: 3002
 
-      
 
 
 .. py:class:: OWLObjectIntersectionOf(operands: Iterable[owlapy.class_expression.class_expression.OWLClassExpression])
 
-
    Bases: :py:obj:`OWLNaryBooleanClassExpression`
+
 
    An intersection class expression ObjectIntersectionOf( CE1 ... CEn ) contains all individuals that are instances
    of all class expressions CEi for 1 ≤ i ≤ n.
    (https://www.w3.org/TR/owl2-syntax/#Intersection_of_Class_Expressions)
 
+
    .. py:attribute:: __slots__
       :value: '_operands'
 
-      
+
 
    .. py:attribute:: type_index
-      :type: Final
+      :type:  Final
       :value: 3001
 
-      
 
 
