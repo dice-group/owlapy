@@ -2,9 +2,9 @@ from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLObjectIntersecti
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLSubClassOfAxiom, OWLObjectPropertyDomainAxiom, OWLEquivalentObjectPropertiesAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology_manager import OWLOntologyManager_Owlready2
+from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
-from owlapy.owl_reasoner import OWLReasoner_Owlready2, OWLReasoner_Owlready2_ComplexCEInstances, BaseReasoner_Owlready2
+from owlapy.owl_reasoner import OntologyReasoner, SyncReasoner, BaseReasoner_Owlready2
 
 data_file = '../KGs/Test/test_ontology.owl'
 NS = 'http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#'
@@ -116,7 +116,7 @@ r7EB = OWLObjectIntersectionOf([r7E, B])
 JK = OWLObjectIntersectionOf([J, K])
 r1T = OWLObjectSomeValuesFrom(property=r1, filler=OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')))
 
-manager = OWLOntologyManager_Owlready2()
+manager = OntologyManager()
 onto = manager.load_ontology(IRI.create(f'file://' + data_file))
 
 manager.add_axiom(onto, OWLEquivalentObjectPropertiesAxiom([r6, r5]))
@@ -126,11 +126,11 @@ manager.add_axiom(onto, OWLObjectPropertyDomainAxiom(r1, ST))
 manager.add_axiom(onto, OWLSubClassOfAxiom(R, r5Q))
 manager.add_axiom(onto, OWLSubClassOfAxiom(ST, U))
 
-base_reasoner = OWLReasoner_Owlready2(onto)
+base_reasoner = OntologyReasoner(onto)
 
 # ---------------------------------------- Reasoning ----------------------------------------
 
-reasoner = OWLReasoner_Owlready2_ComplexCEInstances(onto, BaseReasoner_Owlready2.HERMIT)
+reasoner = SyncReasoner(onto, BaseReasoner_Owlready2.HERMIT)
 
 # Instances
 t1 = list(reasoner.instances(N))

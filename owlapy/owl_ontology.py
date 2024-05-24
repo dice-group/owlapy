@@ -249,7 +249,7 @@ class OWLOntology(OWLObject, metaclass=ABCMeta):
         return self.get_ontology_id().is_anonymous()
 
 
-class OWLOntology_Owlready2(OWLOntology):
+class Ontology(OWLOntology):
     __slots__ = '_manager', '_iri', '_world', '_onto'
 
     _manager: 'OWLOntologyManager_Owlready2'

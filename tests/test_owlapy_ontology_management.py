@@ -2,8 +2,8 @@ from datetime import date, datetime
 import unittest
 
 from pandas import Timedelta
-from owlapy.owl_reasoner import OWLReasoner_FastInstanceChecker, OWLReasoner_Owlready2, \
-    OWLReasoner_Owlready2_ComplexCEInstances
+from owlapy.owl_reasoner import FastInstanceCheckerReasoner, OntologyReasoner, \
+    SyncReasoner
 from owlapy.providers import owl_datatype_max_inclusive_restriction, owl_datatype_min_inclusive_restriction, \
                               owl_datatype_min_max_exclusive_restriction, owl_datatype_min_max_inclusive_restriction
 
@@ -27,7 +27,7 @@ from owlapy.owl_literal import DoubleOWLDatatype, OWLLiteral, DurationOWLDatatyp
     BooleanOWLDatatype, DateTimeOWLDatatype, DateOWLDatatype
 from owlapy.owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
 
-from owlapy.owl_ontology_manager import OWLOntologyManager_Owlready2
+from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_ontology import ToOwlready2, FromOwlready2
 
 
@@ -35,9 +35,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_equivalent_classes(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
-        reasoner = OWLReasoner_Owlready2(onto)
+        reasoner = OntologyReasoner(onto)
 
         atom = OWLClass(IRI(ns, 'Atom'))
         bond = OWLClass(IRI(ns, 'Bond'))
@@ -79,9 +79,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_sub_classes(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
-        reasoner = OWLReasoner_Owlready2(onto)
+        reasoner = OntologyReasoner(onto)
 
         bond = OWLClass(IRI(ns, 'Bond'))
         ball3 = OWLClass(IRI(ns, 'Ball3'))
@@ -140,9 +140,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_super_classes(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
-        reasoner = OWLReasoner_Owlready2(onto)
+        reasoner = OntologyReasoner(onto)
 
         bond = OWLClass(IRI(ns, 'Bond'))
         ball3 = OWLClass(IRI(ns, 'Ball3'))
@@ -202,9 +202,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_sub_object_properties(self):
         ns = "http://www.biopax.org/examples/glycolysis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Biopax/biopax.owl"))
-        reasoner = OWLReasoner_Owlready2(onto)
+        reasoner = OntologyReasoner(onto)
 
         participants = OWLObjectProperty(IRI.create(ns, 'PARTICIPANTS'))
         target_props = frozenset({OWLObjectProperty(IRI(ns, 'COFACTOR')),
@@ -217,9 +217,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_instances(self):
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
-        reasoner = OWLReasoner_Owlready2(onto)
+        reasoner = OntologyReasoner(onto)
 
         inst = frozenset(reasoner.instances(OWLThing))
         target_inst = frozenset({OWLNamedIndividual(IRI(ns, 'anna')),
@@ -237,9 +237,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_types(self):
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
-        reasoner = OWLReasoner_Owlready2(onto)
+        reasoner = OntologyReasoner(onto)
 
         types = frozenset(reasoner.types(OWLNamedIndividual(IRI.create(ns, 'stefan'))))
         target_types = frozenset({OWLThing, OWLClass(IRI(ns, 'male')), OWLClass(IRI(ns, 'person'))})
@@ -247,9 +247,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_object_values(self):
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
-        reasoner = OWLReasoner_Owlready2(onto)
+        reasoner = OntologyReasoner(onto)
 
         stefan = OWLNamedIndividual(IRI.create(ns, 'stefan'))
         markus = OWLNamedIndividual(IRI.create(ns, 'markus'))
@@ -307,10 +307,10 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_data_values(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
-        base_reasoner = OWLReasoner_Owlready2(onto)
-        reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner)
+        base_reasoner = OntologyReasoner(onto)
+        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner)
 
         d100_1 = OWLNamedIndividual(IRI.create(ns, 'd100_1'))
         charge = OWLDataProperty(IRI.create(ns, 'charge'))
@@ -337,10 +337,10 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_all_data_values(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
-        base_reasoner = OWLReasoner_Owlready2(onto)
-        reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner)
+        base_reasoner = OntologyReasoner(onto)
+        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner)
 
         charge = OWLDataProperty(IRI.create(ns, 'charge'))
         super_charge = OWLDataProperty(IRI.create(ns, 'super_charge'))
@@ -358,10 +358,10 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_ind_object_properties(self):
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
-        base_reasoner = OWLReasoner_Owlready2(onto)
-        reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner)
+        base_reasoner = OntologyReasoner(onto)
+        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner)
 
         stefan = OWLNamedIndividual(IRI.create(ns, 'stefan'))
         has_child = OWLObjectProperty(IRI.create(ns, 'hasChild'))
@@ -379,10 +379,10 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_ind_data_properties(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
-        base_reasoner = OWLReasoner_Owlready2(onto)
-        reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner)
+        base_reasoner = OntologyReasoner(onto)
+        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner)
 
         d100_1 = OWLNamedIndividual(IRI.create(ns, 'd100_1'))
         charge = OWLDataProperty(IRI.create(ns, 'charge'))
@@ -400,9 +400,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_add_remove_axiom(self):
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
-        reasoner = OWLReasoner_Owlready2(onto)
+        reasoner = OntologyReasoner(onto)
 
         markus = OWLNamedIndividual(IRI.create(ns, 'markus'))
         michelle = OWLNamedIndividual(IRI.create(ns, 'michelle'))
@@ -582,7 +582,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_mapping(self):
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
 
         male = OWLClass(IRI.create(ns, 'male'))
@@ -638,7 +638,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_mapping_data_properties(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
 
         act = OWLDataProperty(IRI(ns, 'act'))
@@ -695,7 +695,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_mapping_rev(self):
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
 
         male = onto._onto.male
@@ -747,7 +747,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
     def test_mapping_rev_data_properties(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
 
         act = onto._onto.act
@@ -804,7 +804,7 @@ class Owlapy_Owlready2_ComplexCEInstances_Test(unittest.TestCase):
     # noinspection DuplicatedCode
     def test_instances(self):
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
 
         male = OWLClass(IRI.create(ns, 'male'))
@@ -812,7 +812,7 @@ class Owlapy_Owlready2_ComplexCEInstances_Test(unittest.TestCase):
         has_child = OWLObjectProperty(IRI(ns, 'hasChild'))
 
         # reasoner = OWLReasoner_Owlready2(onto)
-        reasoner = OWLReasoner_Owlready2_ComplexCEInstances(onto)
+        reasoner = SyncReasoner(onto)
 
         inst = frozenset(reasoner.instances(female))
         target_inst = frozenset({OWLNamedIndividual(IRI(ns, 'anna')),
@@ -832,11 +832,11 @@ class Owlapy_Owlready2_ComplexCEInstances_Test(unittest.TestCase):
     def test_isolated_ontology(self):
 
         ns = "http://example.com/father#"
-        mgr = OWLOntologyManager_Owlready2()
+        mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
 
-        reasoner1 = OWLReasoner_Owlready2(onto)
-        ccei_reasoner = OWLReasoner_Owlready2_ComplexCEInstances(onto, isolate=True)
+        reasoner1 = OntologyReasoner(onto)
+        ccei_reasoner = SyncReasoner(onto, isolate=True)
 
         new_individual = OWLNamedIndividual(IRI(ns, 'bob'))
         male_ce = OWLClass(IRI(ns, "male"))

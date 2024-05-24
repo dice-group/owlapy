@@ -24,7 +24,7 @@ from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassO
     OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom
 from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
-from owlapy.owl_ontology import OWLOntology, OWLOntology_Owlready2, ToOwlready2
+from owlapy.owl_ontology import OWLOntology, Ontology, ToOwlready2
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, \
     OWLProperty
 
@@ -831,7 +831,7 @@ def _check_expression(expr: OWLObject, ontology: OWLOntology, world: owlready2.n
         raise ValueError(f'({expr}) is not an OWLObject.')
 
 
-class OWLOntologyManager_Owlready2(OWLOntologyManager):
+class OntologyManager(OWLOntologyManager):
     __slots__ = '_world'
 
     _world: owlready2.namespace.World
@@ -849,11 +849,11 @@ class OWLOntologyManager_Owlready2(OWLOntologyManager):
         else:
             self._world = owlready2.World(filename=world_store)
 
-    def create_ontology(self, iri: IRI) -> 'OWLOntology_Owlready2':
-        return OWLOntology_Owlready2(self, iri, load=False)
+    def create_ontology(self, iri: IRI) -> 'Ontology':
+        return Ontology(self, iri, load=False)
 
-    def load_ontology(self, iri: IRI) -> 'OWLOntology_Owlready2':
-        return OWLOntology_Owlready2(self, iri, load=True)
+    def load_ontology(self, iri: IRI) -> 'Ontology':
+        return Ontology(self, iri, load=True)
 
     def apply_change(self, change: OWLOntologyChange):
         if isinstance(change, AddImport):

@@ -23,8 +23,8 @@ from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
 from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from owlapy.owl_datatype import OWLDatatype
-from owlapy.owl_ontology import OWLOntology, OWLOntology_Owlready2, _parse_concept_to_owlapy, ToOwlready2
-from owlapy.owl_ontology_manager import OWLOntologyManager_Owlready2
+from owlapy.owl_ontology import OWLOntology, Ontology, _parse_concept_to_owlapy, ToOwlready2
+from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
@@ -504,13 +504,13 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
                 pass
 
 
-class OWLReasoner_Owlready2(OWLReasonerEx):
+class OntologyReasoner(OWLReasonerEx):
     __slots__ = '_ontology', '_world'
 
-    _ontology: OWLOntology_Owlready2
+    _ontology: Ontology
     _world: owlready2.World
 
-    def __init__(self, ontology: OWLOntology_Owlready2, isolate: bool = False):
+    def __init__(self, ontology: Ontology, isolate: bool = False):
         """
         Base reasoner in Ontolearn, used to reason in the given ontology.
 
@@ -520,11 +520,11 @@ class OWLReasoner_Owlready2(OWLReasonerEx):
                      Useful if you create multiple reasoner instances in the same script.
         """
         super().__init__(ontology)
-        assert isinstance(ontology, OWLOntology_Owlready2)
+        assert isinstance(ontology, Ontology)
 
         if isolate:
             self._isolated = True
-            new_manager = OWLOntologyManager_Owlready2()
+            new_manager = OntologyManager()
             self._ontology = new_manager.load_ontology(ontology.get_original_iri())
             self._world = new_manager._world
             print("INFO  OWLReasoner    :: Using isolated ontology\n"
@@ -1107,7 +1107,7 @@ class OWLReasoner_Owlready2(OWLReasonerEx):
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
-class OWLReasoner_FastInstanceChecker(OWLReasonerEx):
+class FastInstanceCheckerReasoner(OWLReasonerEx):
     """Tries to check instances fast (but maybe incomplete)."""
     __slots__ = '_ontology', '_base_reasoner', \
                 '_ind_set', '_cls_to_ind', \
@@ -1294,8 +1294,8 @@ class OWLReasoner_FastInstanceChecker(OWLReasonerEx):
         opc: DefaultDict[OWLNamedIndividual, Set[OWLNamedIndividual]] = defaultdict(set)
 
         # shortcut for owlready2
-        from owlapy.owl_ontology import OWLOntology_Owlready2
-        if isinstance(self._ontology, OWLOntology_Owlready2):
+        from owlapy.owl_ontology import Ontology
+        if isinstance(self._ontology, Ontology):
             import owlready2
             # _x => owlready2 objects
             for l_x, r_x in self._retrieve_triples(pe):
@@ -1336,8 +1336,8 @@ class OWLReasoner_FastInstanceChecker(OWLReasonerEx):
             subs = set()
 
             # shortcut for owlready2
-            from owlapy.owl_ontology import OWLOntology_Owlready2
-            if isinstance(self._ontology, OWLOntology_Owlready2):
+            from owlapy.owl_ontology import Ontology
+            if isinstance(self._ontology, Ontology):
                 import owlready2
                 # _x => owlready2 objects
                 for s_x, o_x in self._retrieve_triples(pe):
@@ -1413,8 +1413,8 @@ class OWLReasoner_FastInstanceChecker(OWLReasonerEx):
         opc: Dict[OWLNamedIndividual, Set[OWLLiteral]] = dict()
 
         # shortcut for owlready2
-        from owlapy.owl_ontology  import OWLOntology_Owlready2
-        if isinstance(self._ontology, OWLOntology_Owlready2):
+        from owlapy.owl_ontology  import Ontology
+        if isinstance(self._ontology, Ontology):
             import owlready2
             # _x => owlready2 objects
             for s_x, o_x in self._retrieve_triples(pe):
@@ -1685,13 +1685,13 @@ class OWLReasoner_FastInstanceChecker(OWLReasonerEx):
         yield from relations
 
 
-class OWLReasoner_Owlready2_ComplexCEInstances(OWLReasoner_Owlready2):
+class SyncReasoner(OntologyReasoner):
     __slots__ = '_cnt', '_conv', '_base_reasoner'
 
     _conv: ToOwlready2
     _base_reasoner: BaseReasoner_Owlready2
 
-    def __init__(self, ontology: OWLOntology_Owlready2, base_reasoner: Optional[BaseReasoner_Owlready2] = None,
+    def __init__(self, ontology: Ontology, base_reasoner: Optional[BaseReasoner_Owlready2] = None,
                  infer_property_values: bool = True, infer_data_property_values: bool = True, isolate: bool = False):
         """
         OWL Reasoner with support for Complex Class Expression Instances + sync_reasoner.
@@ -1707,7 +1707,7 @@ class OWLReasoner_Owlready2_ComplexCEInstances(OWLReasoner_Owlready2):
 
         super().__init__(ontology, isolate)
         if isolate:
-            new_manager = OWLOntologyManager_Owlready2()
+            new_manager = OntologyManager()
             self.reference_ontology = new_manager.load_ontology(ontology.get_original_iri())
             self.reference_iri = IRI.create(f'file:/isolated_ontology_{id(self.reference_ontology)}.owl')
             new_manager.save_ontology(self.reference_ontology, self.reference_iri)
@@ -1728,7 +1728,7 @@ class OWLReasoner_Owlready2_ComplexCEInstances(OWLReasoner_Owlready2):
             self._ontology = self.reference_ontology
             super().update_isolated_ontology(axioms_to_add, axioms_to_remove)
             self.reference_ontology.get_owl_ontology_manager().save_ontology(self._ontology, self.reference_iri)
-            new_manager = OWLOntologyManager_Owlready2()
+            new_manager = OntologyManager()
             self._ontology = new_manager.load_ontology(IRI.create(f'file://isolated_ontology_'
                                                                   f'{id(self.reference_ontology)}.owl'))
             self._world = new_manager._world

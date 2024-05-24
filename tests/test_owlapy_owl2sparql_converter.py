@@ -8,8 +8,8 @@ from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLThing, \
 from owlapy.iri import IRI
 from owlapy.owl_property import OWLObjectProperty
 
-# from ontolearn.base.fast_instance_checker import OWLReasoner_FastInstanceChecker
-# from ontolearn.base import OWLOntologyManager_Owlready2, OWLReasoner_Owlready2
+from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_reasoner import OntologyReasoner, FastInstanceCheckerReasoner
 from owlapy.parser import DLSyntaxParser
 from owlapy.converter import Owl2SparqlConverter
 from rdflib import Graph
@@ -97,10 +97,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "Brother"
     #     ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -141,10 +141,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "Brother ⊓ Father"
     #     ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -169,10 +169,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "Sister ⊔ Mother"
     #     ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -198,10 +198,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "¬Mother"
     #     ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -227,10 +227,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "∃hasChild.Male"
     #     ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -255,10 +255,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "∀hasChild.Male"
     #     ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -305,10 +305,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "∀hasChild.Male"
     #     ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -340,10 +340,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     concepts = [
     #         "∀hasChild.(∃hasChild.¬Male)",
@@ -371,10 +371,10 @@ FILTER NOT EXISTS {
     #     family_rdf_graph = Graph()
     #     family_rdf_graph.parse(location=PATH_FAMILY)
     #     # knowledge base - using OWLReasoner
-    #     mgr = OWLOntologyManager_Owlready2()
+    #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     family_kb_reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner, negation_default=True)
+    #     base_reasoner = Reasoner(onto)
+    #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     concepts = [
     #         "≥ 2 hasChild.(Male ⊔ Female)",
