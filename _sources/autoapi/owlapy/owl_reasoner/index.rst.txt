@@ -50,9 +50,9 @@ Classes
    owlapy.owl_reasoner.OWLDataIntersectionOf
    owlapy.owl_reasoner.OWLDatatype
    owlapy.owl_reasoner.OWLOntology
-   owlapy.owl_reasoner.OWLOntology_Owlready2
+   owlapy.owl_reasoner.Ontology
    owlapy.owl_reasoner.ToOwlready2
-   owlapy.owl_reasoner.OWLOntologyManager_Owlready2
+   owlapy.owl_reasoner.OntologyManager
    owlapy.owl_reasoner.OWLObjectPropertyExpression
    owlapy.owl_reasoner.OWLDataProperty
    owlapy.owl_reasoner.OWLObjectProperty
@@ -65,9 +65,9 @@ Classes
    owlapy.owl_reasoner.OWLReasoner
    owlapy.owl_reasoner.BaseReasoner_Owlready2
    owlapy.owl_reasoner.OWLReasonerEx
-   owlapy.owl_reasoner.OWLReasoner_Owlready2
-   owlapy.owl_reasoner.OWLReasoner_FastInstanceChecker
-   owlapy.owl_reasoner.OWLReasoner_Owlready2_ComplexCEInstances
+   owlapy.owl_reasoner.OntologyReasoner
+   owlapy.owl_reasoner.FastInstanceCheckerReasoner
+   owlapy.owl_reasoner.SyncReasoner
 
 
 Module Contents
@@ -1381,7 +1381,7 @@ Module Contents
 
 
 
-.. py:class:: OWLOntology_Owlready2(manager: OWLOntologyManager_Owlready2, ontology_iri: owlapy.iri.IRI, load: bool)
+.. py:class:: Ontology(manager: OWLOntologyManager_Owlready2, ontology_iri: owlapy.iri.IRI, load: bool)
 
    Bases: :py:obj:`OWLOntology`
 
@@ -1561,7 +1561,7 @@ Module Contents
 
 
 
-.. py:class:: OWLOntologyManager_Owlready2(world_store=None)
+.. py:class:: OntologyManager(world_store=None)
 
    Bases: :py:obj:`OWLOntologyManager`
 
@@ -1575,7 +1575,7 @@ Module Contents
 
 
 
-   .. py:method:: create_ontology(iri: owlapy.iri.IRI) -> owlapy.owl_ontology.OWLOntology_Owlready2
+   .. py:method:: create_ontology(iri: owlapy.iri.IRI) -> owlapy.owl_ontology.Ontology
 
       Creates a new (empty) ontology that that has the specified ontology IRI (and no version IRI).
 
@@ -1586,7 +1586,7 @@ Module Contents
 
 
 
-   .. py:method:: load_ontology(iri: owlapy.iri.IRI) -> owlapy.owl_ontology.OWLOntology_Owlready2
+   .. py:method:: load_ontology(iri: owlapy.iri.IRI) -> owlapy.owl_ontology.Ontology
 
       Loads an ontology that is assumed to have the specified ontology IRI as its IRI or version IRI. The ontology
       IRI will be mapped to an ontology document IRI.
@@ -2612,7 +2612,7 @@ Module Contents
 
 
 
-.. py:class:: OWLReasoner_Owlready2(ontology: owlapy.owl_ontology.OWLOntology_Owlready2, isolate: bool = False)
+.. py:class:: OntologyReasoner(ontology: owlapy.owl_ontology.Ontology, isolate: bool = False)
 
    Bases: :py:obj:`OWLReasonerEx`
 
@@ -2975,7 +2975,7 @@ Module Contents
 
 
 
-.. py:class:: OWLReasoner_FastInstanceChecker(ontology: owlapy.owl_ontology.OWLOntology, base_reasoner: OWLReasoner, *, property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False)
+.. py:class:: FastInstanceCheckerReasoner(ontology: owlapy.owl_ontology.OWLOntology, base_reasoner: OWLReasoner, *, property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False)
 
    Bases: :py:obj:`OWLReasonerEx`
 
@@ -3349,9 +3349,9 @@ Module Contents
 
 
 
-.. py:class:: OWLReasoner_Owlready2_ComplexCEInstances(ontology: owlapy.owl_ontology.OWLOntology_Owlready2, base_reasoner: Optional[BaseReasoner_Owlready2] = None, infer_property_values: bool = True, infer_data_property_values: bool = True, isolate: bool = False)
+.. py:class:: SyncReasoner(ontology: owlapy.owl_ontology.Ontology, base_reasoner: Optional[BaseReasoner_Owlready2] = None, infer_property_values: bool = True, infer_data_property_values: bool = True, isolate: bool = False)
 
-   Bases: :py:obj:`OWLReasoner_Owlready2`
+   Bases: :py:obj:`OntologyReasoner`
 
 
    Extra convenience methods for OWL Reasoners

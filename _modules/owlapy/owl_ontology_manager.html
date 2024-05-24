@@ -103,7 +103,7 @@
     <span class="n">OWLEquivalentObjectPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLInverseObjectPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLNaryPropertyAxiom</span><span class="p">,</span> <span class="n">OWLNaryIndividualAxiom</span><span class="p">,</span> \
     <span class="n">OWLDifferentIndividualsAxiom</span><span class="p">,</span> <span class="n">OWLDisjointClassesAxiom</span><span class="p">,</span> <span class="n">OWLSameIndividualAxiom</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">OWLIndividual</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">OWLOntology_Owlready2</span><span class="p">,</span> <span class="n">ToOwlready2</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">ToOwlready2</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> \
     <span class="n">OWLProperty</span>
 
@@ -946,9 +946,9 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s1">) is not an OWLObject.&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="OWLOntologyManager_Owlready2">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OWLOntologyManager_Owlready2">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLOntologyManager_Owlready2</span><span class="p">(</span><span class="n">OWLOntologyManager</span><span class="p">):</span>
+<div class="viewcode-block" id="OntologyManager">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OntologyManager">[docs]</a>
+<span class="k">class</span> <span class="nc">OntologyManager</span><span class="p">(</span><span class="n">OWLOntologyManager</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_world&#39;</span>
 
     <span class="n">_world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">World</span>
@@ -966,20 +966,20 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">world_store</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OWLOntologyManager_Owlready2.create_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OWLOntologyManager_Owlready2.create_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">create_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLOntology_Owlready2&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLOntology_Owlready2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+<div class="viewcode-block" id="OntologyManager.create_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OntologyManager.create_ontology">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Ontology&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OWLOntologyManager_Owlready2.load_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OWLOntologyManager_Owlready2.load_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLOntology_Owlready2&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLOntology_Owlready2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+<div class="viewcode-block" id="OntologyManager.load_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OntologyManager.load_ontology">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Ontology&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OWLOntologyManager_Owlready2.apply_change">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OWLOntologyManager_Owlready2.apply_change">[docs]</a>
+<div class="viewcode-block" id="OntologyManager.apply_change">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OntologyManager.apply_change">[docs]</a>
     <span class="k">def</span> <span class="nf">apply_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">:</span> <span class="n">OWLOntologyChange</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="n">AddImport</span><span class="p">):</span>
             <span class="n">ont_x</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">Ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span>
@@ -991,20 +991,20 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
-<div class="viewcode-block" id="OWLOntologyManager_Owlready2.add_axiom">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OWLOntologyManager_Owlready2.add_axiom">[docs]</a>
+<div class="viewcode-block" id="OntologyManager.add_axiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OntologyManager.add_axiom">[docs]</a>
     <span class="k">def</span> <span class="nf">add_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">):</span>
         <span class="n">_add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OWLOntologyManager_Owlready2.remove_axiom">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OWLOntologyManager_Owlready2.remove_axiom">[docs]</a>
+<div class="viewcode-block" id="OntologyManager.remove_axiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OntologyManager.remove_axiom">[docs]</a>
     <span class="k">def</span> <span class="nf">remove_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">):</span>
         <span class="n">_remove_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OWLOntologyManager_Owlready2.save_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OWLOntologyManager_Owlready2.save_ontology">[docs]</a>
+<div class="viewcode-block" id="OntologyManager.save_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OntologyManager.save_ontology">[docs]</a>
     <span class="k">def</span> <span class="nf">save_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">document_iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
         <span class="n">ont_x</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">Ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span>
             <span class="n">ontology</span><span class="o">.</span><span class="n">get_ontology_id</span><span class="p">()</span><span class="o">.</span><span class="n">get_ontology_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
@@ -1017,8 +1017,8 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
-<div class="viewcode-block" id="OWLOntologyManager_Owlready2.save_world">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OWLOntologyManager_Owlready2.save_world">[docs]</a>
+<div class="viewcode-block" id="OntologyManager.save_world">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_ontology_manager.OntologyManager.save_world">[docs]</a>
     <span class="k">def</span> <span class="nf">save_world</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the actual state of the quadstore in the SQLite3 file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
