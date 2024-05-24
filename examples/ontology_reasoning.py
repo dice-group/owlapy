@@ -4,7 +4,7 @@ from owlapy.owl_axiom import OWLSubClassOfAxiom, OWLObjectPropertyDomainAxiom, O
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
-from owlapy.owl_reasoner import OntologyReasoner, SyncReasoner, BaseReasoner_Owlready2
+from owlapy.owl_reasoner import OntologyReasoner, SyncReasoner, BaseReasoner
 
 data_file = '../KGs/Test/test_ontology.owl'
 NS = 'http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#'
@@ -130,7 +130,7 @@ base_reasoner = OntologyReasoner(onto)
 
 # ---------------------------------------- Reasoning ----------------------------------------
 
-reasoner = SyncReasoner(onto, BaseReasoner_Owlready2.HERMIT)
+reasoner = SyncReasoner(onto, BaseReasoner.HERMIT)
 
 # Instances
 t1 = list(reasoner.instances(N))

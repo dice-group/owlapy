@@ -411,7 +411,7 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
 
-class BaseReasoner_Owlready2(Enum):
+class BaseReasoner(Enum):
     """Enumeration class for base reasoner when calling sync_reasoner.
 
     Attributes:
@@ -1077,7 +1077,7 @@ class OntologyReasoner(OWLReasonerEx):
                     yield OWLClass(IRI.create(c.iri))
                 # Anonymous classes are ignored
 
-    def _sync_reasoner(self, other_reasoner: BaseReasoner_Owlready2 = None,
+    def _sync_reasoner(self, other_reasoner: BaseReasoner = None,
                        infer_property_values: bool = True,
                        infer_data_property_values: bool = True, debug: bool = False) -> None:
         """Call Owlready2's sync_reasoner method, which spawns a Java process on a temp file to infer more.
@@ -1087,9 +1087,9 @@ class OntologyReasoner(OWLReasonerEx):
             infer_property_values: Whether to infer property values.
             infer_data_property_values: Whether to infer data property values (only for PELLET).
         """
-        assert other_reasoner is None or isinstance(other_reasoner, BaseReasoner_Owlready2)
+        assert other_reasoner is None or isinstance(other_reasoner, BaseReasoner)
         with self.get_root_ontology()._onto:
-            if other_reasoner == BaseReasoner_Owlready2.HERMIT:
+            if other_reasoner == BaseReasoner.HERMIT:
                 owlready2.sync_reasoner_hermit(self._world, infer_property_values=infer_property_values, debug=debug)
             else:
                 owlready2.sync_reasoner_pellet(self._world,
@@ -1689,9 +1689,9 @@ class SyncReasoner(OntologyReasoner):
     __slots__ = '_cnt', '_conv', '_base_reasoner'
 
     _conv: ToOwlready2
-    _base_reasoner: BaseReasoner_Owlready2
+    _base_reasoner: BaseReasoner
 
-    def __init__(self, ontology: Ontology, base_reasoner: Optional[BaseReasoner_Owlready2] = None,
+    def __init__(self, ontology: Ontology, base_reasoner: Optional[BaseReasoner] = None,
                  infer_property_values: bool = True, infer_data_property_values: bool = True, isolate: bool = False):
         """
         OWL Reasoner with support for Complex Class Expression Instances + sync_reasoner.
@@ -1743,7 +1743,7 @@ class SyncReasoner(OntologyReasoner):
         with self._world.get_ontology("http://temp.classes/"):
             temp_pred = cast(owlready2.ThingClass, types.new_class("TempCls%d" % self._cnt, (owlready2.owl.Thing,)))
             temp_pred.equivalent_to = [self._conv.map_concept(ce)]
-            if self._base_reasoner == BaseReasoner_Owlready2.HERMIT:
+            if self._base_reasoner == BaseReasoner.HERMIT:
                 owlready2.sync_reasoner_hermit(self._world.get_ontology("http://temp.classes/"),
                                                self.infer_property_values)
             else:

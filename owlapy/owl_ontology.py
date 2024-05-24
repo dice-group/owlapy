@@ -252,11 +252,11 @@ class OWLOntology(OWLObject, metaclass=ABCMeta):
 class Ontology(OWLOntology):
     __slots__ = '_manager', '_iri', '_world', '_onto'
 
-    _manager: 'OWLOntologyManager_Owlready2'
+    _manager: 'OntologyManager'
     _onto: owlready2.Ontology
     _world: owlready2.World
 
-    def __init__(self, manager: 'OWLOntologyManager_Owlready2', ontology_iri: IRI, load: bool):
+    def __init__(self, manager: 'OntologyManager', ontology_iri: IRI, load: bool):
         """Represents an Ontology in Ontolearn.
 
         Args:
@@ -300,7 +300,7 @@ class Ontology(OWLOntology):
             yield from (OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
                         for c in ca.is_a)
 
-    def get_owl_ontology_manager(self) -> 'OWLOntologyManager_Owlready2':
+    def get_owl_ontology_manager(self) -> 'OntologyManager':
         return self._manager
 
     def get_ontology_id(self) -> OWLOntologyID:
@@ -384,7 +384,7 @@ class Ontology(OWLOntology):
         return hash(self._onto.base_iri)
 
     def __repr__(self):
-        return f'OWLOntology_Owlready2({IRI.create(self._onto.base_iri)}, {self._onto.loaded})'
+        return f'Ontology({IRI.create(self._onto.base_iri)}, {self._onto.loaded})'
 
 
 OWLREADY2_FACET_KEYS = MappingProxyType({
