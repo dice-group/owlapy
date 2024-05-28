@@ -12,4 +12,7 @@ Welcome to OWLAPY!
 
    usage/main
    usage/usage_examples
+   usage/ontologies
+   usage/reasoner
+   usage/reasoner_details
    autoapi/owlapy/index
