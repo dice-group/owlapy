@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ontologies &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reasoners" href="reasoner.html" />
+    <link rel="prev" title="Basic Usage" href="usage_examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Ontologies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#loading-an-ontology">Loading an Ontology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modifying-an-ontology">Modifying an Ontology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#add-a-new-class">Add a new Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#add-a-new-object-property-data-property">Add a new Object Property / Data Property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#add-an-assertion-axiom">Add an Assertion Axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#remove-an-axiom">Remove an Axiom</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#save-an-ontology">Save an Ontology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#worlds">Worlds</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Ontologies</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/usage/ontologies.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ontologies">
+<h1>Ontologies<a class="headerlink" href="#ontologies" title="Link to this heading"></a></h1>
+<p>To get started with Structured Machine Learning, the first thing
+required is an <a class="reference external" href="https://www.w3.org/TR/owl2-overview/">Ontology</a> with
+<a class="reference external" href="https://www.w3.org/TR/owl-syntax/#Named_Individuals">Named Individuals</a>.
+In this guide we show the basics of working with ontologies in Owlapy.
+We will use the <em>father</em> ontology for the following examples.</p>
+<section id="loading-an-ontology">
+<h2>Loading an Ontology<a class="headerlink" href="#loading-an-ontology" title="Link to this heading"></a></h2>
+<p>To load an ontology as well as to manage it, you will need an
+<a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager" title="owlapy.owl_ontology_manager.OWLOntologyManager"><span class="xref myst py py-class">OWLOntologyManager</span></a>
+An ontology can be loaded using the following Python code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_ontology_manager</span> <span class="kn">import</span> <span class="n">OntologyManager</span>
+
+<span class="n">manager</span> <span class="o">=</span> <span class="n">OntologyManager</span><span class="p">()</span>
+<span class="n">onto</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;file://KGs/Family/father.owl&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>First, we import the <code class="docutils literal notranslate"><span class="pre">IRI</span></code> class and a suitable OWLOntologyManager. To
+load a file from our computer, we have to reference it with an
+<a class="reference internal" href="../autoapi/owlapy/iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="xref myst py py-class">IRI</span></a>. Secondly, we need the
+Ontology Manager. Owlapy contains one such manager: The
+<a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OntologyManager" title="owlapy.owl_ontology_manager.OntologyManager"><span class="xref myst py py-class">OntologyManager</span></a>.</p>
+<p>Now, we can already inspect the contents of the ontology. For example,
+to list all individuals:</p>
+<!--pytest-codeblocks:cont-->
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can get the object properties in the signature:</p>
+<!--pytest-codeblocks:cont-->
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">onto</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For more methods, see the abstract class <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="xref myst py py-class">OWLOntology</span></a>
+or the concrete implementation <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="xref myst py py-class">Ontology</span></a>.</p>
+</section>
+<section id="modifying-an-ontology">
+<h2>Modifying an Ontology<a class="headerlink" href="#modifying-an-ontology" title="Link to this heading"></a></h2>
+<p>Axioms in ontology serve as the basis for defining the vocabulary of a domain and for
+making statements about the relationships between individuals and concepts in that domain.
+They provide a formal and precise way to represent knowledge and allow for automated
+reasoning and inference. Axioms can be <strong>added</strong>, <strong>modified</strong>, or <strong>removed</strong> from an ontology,
+allowing the ontology to evolve and adapt as new knowledge is gained.</p>
+<p>In owlapy we also have different axioms represented by different classes. You can check all
+the axioms classes <a class="reference internal" href="#owlapy.owl_axioms"><span class="xref myst">here</span></a>. Some frequently used axioms are:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLDeclarationAxiom" title="owlapy.owl_axiom.OWLDeclarationAxiom"><span class="xref myst py py-class">OWLDeclarationAxiom</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLObjectPropertyAssertionAxiom" title="owlapy.owl_axiom.OWLObjectPropertyAssertionAxiom"><span class="xref myst py py-class">OWLObjectPropertyAssertionAxiom</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLDataPropertyAssertionAxiom" title="owlapy.owl_axiom.OWLDataPropertyAssertionAxiom"><span class="xref myst py py-class">OWLDataPropertyAssertionAxiom</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLClassAssertionAxiom" title="owlapy.owl_axiom.OWLClassAssertionAxiom"><span class="xref myst py py-class">OWLClassAssertionAxiom</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLSubClassOfAxiom" title="owlapy.owl_axiom.OWLSubClassOfAxiom"><span class="xref myst py py-class">OWLSubClassOfAxiom</span></a></p></li>
+<li><p><a class="reference internal" href="../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLEquivalentClassesAxiom" title="owlapy.owl_axiom.OWLEquivalentClassesAxiom"><span class="xref myst py py-class">OWLEquivalentClassesAxiom</span></a></p></li>
+</ul>
+<section id="add-a-new-class">
+<h3>Add a new Class<a class="headerlink" href="#add-a-new-class" title="Link to this heading"></a></h3>
+<p>Let’s suppose you want to add a new class in our example ontology <code class="docutils literal notranslate"><span class="pre">KGs/Family/father.owl</span></code>
+It can be done as follows:</p>
+<!--pytest-codeblocks:cont-->
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClass</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLDeclarationAxiom</span>
+
+<span class="n">iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="p">(</span><span class="s1">&#39;http://example.com/father#&#39;</span><span class="p">,</span> <span class="s1">&#39;child&#39;</span><span class="p">)</span>
+<span class="n">child_class</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+<span class="n">child_class_declaration_axiom</span> <span class="o">=</span> <span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="n">child_class</span><span class="p">)</span>
+
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">child_class_declaration_axiom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, we added the class ‘child’ to the <em>father.owl</em> ontology.
+Firstly we create an instance of <a class="reference internal" href="../autoapi/owlapy/class_expression/owl_class/index.html#owlapy.class_expression.owl_class.OWLClass" title="owlapy.class_expression.owl_class.OWLClass"><span class="xref myst py py-class">OWLClass</span></a> to represent the concept
+of ‘child’ by using an <a class="reference internal" href="../autoapi/owlapy/iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="xref myst py py-class">IRI</span></a>.
+On the other side, an instance of <code class="docutils literal notranslate"><span class="pre">IRI</span></code> is created by passing two arguments which are
+the namespace of the ontology and the remainder ‘child’. To declare this new class we need
+an axiom of type <code class="docutils literal notranslate"><span class="pre">OWLDeclarationAxiom</span></code>. We simply pass the <code class="docutils literal notranslate"><span class="pre">child_class</span></code> to create an
+instance of this axiom. The final step is to add this axiom to the ontology using the
+<a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager" title="owlapy.owl_ontology_manager.OWLOntologyManager"><span class="xref myst py py-class">OWLOntologyManager</span></a>. We use the <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code> method
+of the <code class="docutils literal notranslate"><span class="pre">manager</span></code> to add into the ontology
+<code class="docutils literal notranslate"><span class="pre">onto</span></code> the axiom <code class="docutils literal notranslate"><span class="pre">child_class_declaration_axiom</span></code>.</p>
+</section>
+<section id="add-a-new-object-property-data-property">
+<h3>Add a new Object Property / Data Property<a class="headerlink" href="#add-a-new-object-property-data-property" title="Link to this heading"></a></h3>
+<p>The idea is the same as adding a new class. Instead of <code class="docutils literal notranslate"><span class="pre">OWLClass</span></code>, for object properties,
+you can use the class <a class="reference internal" href="../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="xref myst py py-class">OWLObjectProperty</span></a> and for data
+properties you can use the class <a class="reference internal" href="../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="xref myst py py-class">OWLDataProperty</span></a>.</p>
+<!--pytest-codeblocks:cont-->
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
+
+<span class="c1"># adding the object property &#39;hasParent&#39;</span>
+<span class="n">hasParent_op</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s1">&#39;http://example.com/father#&#39;</span><span class="p">,</span> <span class="s1">&#39;hasParent&#39;</span><span class="p">))</span>
+<span class="n">hasParent_op_declaration_axiom</span> <span class="o">=</span> <span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="n">hasParent_op</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">hasParent_op_declaration_axiom</span><span class="p">)</span>
+
+<span class="c1"># adding the data property &#39;hasAge&#39; </span>
+<span class="n">hasAge_dp</span> <span class="o">=</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s1">&#39;http://example.com/father#&#39;</span><span class="p">,</span> <span class="s1">&#39;hasAge&#39;</span><span class="p">))</span>
+<span class="n">hasAge_dp_declaration_axiom</span> <span class="o">=</span> <span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="n">hasAge_dp</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">hasAge_dp_declaration_axiom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="../autoapi/owlapy/index.html#module-owlapy" title="owlapy"><span class="xref myst py py-mod">owlapy</span></a> for more OWL entities that you can add as a declaration axiom.</p>
+</section>
+<section id="add-an-assertion-axiom">
+<h3>Add an Assertion Axiom<a class="headerlink" href="#add-an-assertion-axiom" title="Link to this heading"></a></h3>
+<p>To assign a class to a specific individual use the following code:</p>
+<!--pytest-codeblocks:cont-->
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLClassAssertionAxiom</span>
+
+<span class="n">individuals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">onto</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span>
+<span class="n">heinz</span> <span class="o">=</span> <span class="n">individuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># get the 2nd individual in the list which is &#39;heinz&#39;</span>
+
+<span class="n">class_assertion_axiom</span> <span class="o">=</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">(</span><span class="n">heinz</span><span class="p">,</span> <span class="n">child_class</span><span class="p">)</span>
+
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">class_assertion_axiom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We have used the previous method <code class="docutils literal notranslate"><span class="pre">individuals_in_signature()</span></code> to get all the individuals
+and converted them to a list, so we can access them by using indexes. In this example, we
+want to assert a class axiom for the individual <code class="docutils literal notranslate"><span class="pre">heinz</span></code>.
+We have used the class <code class="docutils literal notranslate"><span class="pre">OWLClassAssertionAxiom</span></code>
+where the first argument is the ‘individual’ <code class="docutils literal notranslate"><span class="pre">heinz</span></code> and the second argument is
+the ‘class_expression’. As the class expression, we used the previously defined class
+<code class="docutils literal notranslate"><span class="pre">child_Class</span></code>. Finally, add the axiom by using <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code> method of the <a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager" title="owlapy.owl_ontology_manager.OWLOntologyManager"><span class="xref myst py py-class">OWLOntologyManager</span></a>.</p>
+<p>Let’s show one more example using a <code class="docutils literal notranslate"><span class="pre">OWLDataPropertyAssertionAxiom</span></code> to assign the age of 17 to
+heinz.</p>
+<!--pytest-codeblocks:cont-->
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLDataPropertyAssertionAxiom</span>
+
+<span class="n">literal_17</span> <span class="o">=</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="mi">17</span><span class="p">)</span>
+<span class="n">dp_assertion_axiom</span> <span class="o">=</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">(</span><span class="n">heinz</span><span class="p">,</span> <span class="n">hasAge_dp</span><span class="p">,</span> <span class="n">literal_17</span><span class="p">)</span>
+
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">dp_assertion_axiom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../autoapi/owlapy/owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="xref myst py py-class">OWLLiteral</span></a> is a class that represents the literal values in
+Owlapy. We have stored the integer literal value of ‘18’ in the variable <code class="docutils literal notranslate"><span class="pre">literal_17</span></code>.
+Then we construct the <code class="docutils literal notranslate"><span class="pre">OWLDataPropertyAssertionAxiom</span></code> by passing as the first argument, the
+individual <code class="docutils literal notranslate"><span class="pre">heinz</span></code>, as the second argument the data property <code class="docutils literal notranslate"><span class="pre">hasAge_dp</span></code>, and the third
+argument the literal value <code class="docutils literal notranslate"><span class="pre">literal_17</span></code>. Finally, add it to the ontology by using <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code>
+method.</p>
+<p>Check the <a class="reference internal" href="../autoapi/owlapy/index.html#module-owlapy" title="owlapy"><span class="xref myst py py-mod">owlapy</span></a> to see all the OWL
+assertion axioms that you can use.</p>
+</section>
+<section id="remove-an-axiom">
+<h3>Remove an Axiom<a class="headerlink" href="#remove-an-axiom" title="Link to this heading"></a></h3>
+<p>To remove an axiom you can use the <code class="docutils literal notranslate"><span class="pre">remove_axiom</span></code> method of the ontology manager as follows:</p>
+<!--pytest-codeblocks:cont-->
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">remove_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span><span class="n">dp_assertion_axiom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first argument is the ontology you want to remove the axiom from and the second
+argument is the axiom you want to remove.</p>
+</section>
+</section>
+<section id="save-an-ontology">
+<h2>Save an Ontology<a class="headerlink" href="#save-an-ontology" title="Link to this heading"></a></h2>
+<p>If you modified an ontology, you may want to save it as a new file. To do this
+you can use the <code class="docutils literal notranslate"><span class="pre">save_ontology</span></code> method of the <a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager" title="owlapy.owl_ontology_manager.OWLOntologyManager"><span class="xref myst py py-class">OWLOntologyManager</span></a>.
+It requires two arguments, the first is the ontology you want to save and The second
+is the IRI of the new ontology.</p>
+<!--pytest-codeblocks:cont-->
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">save_ontology</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;file:/&#39;</span> <span class="o">+</span> <span class="s1">&#39;test&#39;</span> <span class="o">+</span> <span class="s1">&#39;.owl&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The above line of code will save the ontology <code class="docutils literal notranslate"><span class="pre">onto</span></code> in the file <em>test.owl</em> which will be
+created in the same directory as the file you are running this code.</p>
+</section>
+<section id="worlds">
+<h2>Worlds<a class="headerlink" href="#worlds" title="Link to this heading"></a></h2>
+<p>Owlready2 stores every triple in a ‘World’ object, and it can handle several Worlds in parallel.
+Owlready2 uses an optimized quadstore to store the world. Each world object is stored in a separate quadstore and
+by default the quadstore is stored in memory,
+but it can also be stored in an SQLite3 file. The method <code class="docutils literal notranslate"><span class="pre">save_world()</span></code> of the ontology manager does the latter.
+When an <em>OWLOntologyManager</em> object is created, a new world is also created as an attribute of the manager.
+By calling the method <code class="docutils literal notranslate"><span class="pre">load_ontology(iri)</span></code> the ontology is loaded to this world.</p>
+<p>It possible to create several isolated “worlds”, sometimes
+called “universe of speech”. This makes it possible in particular to load
+the same ontology several times, independently, that is to say, without
+the modifications made on one copy affecting the other copy. Sometimes the need to <a class="reference internal" href="reasoning_details.html#isolated-world"><span class="std std-ref">isolate an ontology</span></a>
+arise. What that means is that you can have multiple reference of the same ontology in different
+worlds.</p>
+<hr class="docutils" />
+<p>It is important that an ontology is associated with a reasoner which is used to inferring knowledge
+from the ontology, i.e. to perform ontology reasoning.
+In the next guide we will see how to use a reasoner in Owlapy.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage_examples.html" class="btn btn-neutral float-left" title="Basic Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reasoner.html" class="btn btn-neutral float-right" title="Reasoners" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

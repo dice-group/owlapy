@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reasoning Details &mdash; OWLAPY 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8775fe07" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            OWLAPY
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Reasoning Details</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/usage/reasoning_details.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="reasoning-details">
+<h1>Reasoning Details<a class="headerlink" href="#reasoning-details" title="Link to this heading"></a></h1>
+<p>In the previous guide we explained how to <a class="reference internal" href="reasoner.html"><span class="std std-doc">use reasoners</span></a> in Owlapy. Here we cover a detailed explanation of
+the Owlapy reasoners, particularly <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">SyncReasoner</span></a>.
+Before we continue to talk about its <a class="reference internal" href="#capabilities">capabilities</a> we have to explain briefly
+the term <em>sync_reasoner</em>.</p>
+<section id="sync-reasoner">
+<h2>Sync Reasoner<a class="headerlink" href="#sync-reasoner" title="Link to this heading"></a></h2>
+<p><em>sync_reasoner</em> is a definition used in owlready2 to run <a class="reference external" href="http://www.hermit-reasoner.com/">HermiT</a>
+or <a class="reference external" href="https://github.com/stardog-union/pellet">Pellet</a> and
+automatically apply the facts deduced to the quadstore. In simple terms, by running HermiT or Pellet,
+one can infer more knowledge from the ontology (the specification are not mentioned here).
+We make use of this functionality in Owlapy, and it is represented by SyncReasoner.
+We explained the concept of “Worlds” in <a class="reference internal" href="ontologies.html#worlds"><span class="std std-ref">Working with Ontologies</span></a>. Having
+that in mind you need to know that sync_reasoner is applied to the World object.
+After this particular reasoner is instantiated, because the facts are applied to the quadstore, changes made
+in the ontology by using the ontology manager will not be reflected to the ontology. The reasoner will use the state of
+the ontology at the moment it is instantiated.</p>
+<p>There are 2 boolean parameters for sync_reasoner that you can specify when creating an instance of
+<a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">SyncReasoner</span></a>.
+The first one <code class="docutils literal notranslate"><span class="pre">infer_property_values</span></code> tells HermiT or Pellet whether to infer (or not) property values. The same idea but
+for data properties is specified by the parameter <code class="docutils literal notranslate"><span class="pre">infer_data_property_values</span></code> which is only relevant to Pellet.</p>
+<blockquote>
+<div><p>Note: HermiT and Pellet are Java programs, so you will need to install
+a Java virtual machine to use them. If you don’t have Java, you may install
+it from www.java.com (for Windows and macOS) or from the packages
+of your Linux distribution (the packages are often named “jre” or “jdk” for
+Java Runtime Environment and Java Development Kit).</p>
+</div></blockquote>
+</section>
+<section id="isolated-world">
+<h2>Isolated World<a class="headerlink" href="#isolated-world" title="Link to this heading"></a></h2>
+<p>In <a class="reference internal" href="ontologies.html#worlds"><span class="std std-ref"><em>Working with Ontologies</em></span></a> we mentioned that we can have multiple reference of in different
+worlds, which we can use to isolate an ontology to a specific World. For simplicity the terms “isolated world” and
+“isolated ontology” can be used interchangeably in this guide.
+The isolation comes in handy when we use multiple reasoners in the same script. If we create
+an instance of <em>SyncReasoner</em> it will apply sync_reasoner in the world object
+of the ontology and this will affect also the other reasoner/s which is/are using the same world.
+To overcome this issue you can set the argument <code class="docutils literal notranslate"><span class="pre">isolate=True</span></code> when
+initializing a reasoner.
+<a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner" title="owlapy.owl_reasoner.FastInstanceCheckerReasoner"><span class="xref myst py py-class">FastInstanceCheckerReasoner</span></a> (FIC)
+does not have this argument because it uses a base reasoner to delegate most of its methods. Therefore,
+if the base reasoner has <code class="docutils literal notranslate"><span class="pre">isolate=True</span></code> then FIC will also operate in the isolated world of it’s base reasoner.</p>
+<section id="modifying-an-isolated-ontology">
+<h3>Modifying an isolated ontology<a class="headerlink" href="#modifying-an-isolated-ontology" title="Link to this heading"></a></h3>
+<p>When a reasoner is operating in an isolated ontology, every axiom added to the original ontology before or after
+the initialization, will not be reflected to the isolated ontology. To update the isolated ontology and add
+or remove any axiom, you can use <code class="docutils literal notranslate"><span class="pre">update_isolated_ontology(axioms_to_add,</span> <span class="pre">axioms_to_remove)</span></code>. This method accepts
+a list of axioms for every argument (i.e. the axioms that you want to add and the axioms that you want to remove).</p>
+</section>
+</section>
+<section id="capabilities">
+<h2>Capabilities<a class="headerlink" href="#capabilities" title="Link to this heading"></a></h2>
+<p><em>SyncReasoner</em> provides full reasoning in
+<em>ALCH</em>. We have adapted and build upon
+<a class="reference external" href="https://owlready2.readthedocs.io/en/latest/">owlready2</a> reasoner to provide
+our own implementation in python. Below we give more details about each
+functionality of our reasoner:</p>
+<ul>
+<li><h4 class="rubric" id="sub-and-super-classes">Sub and Super Classes</h4>
+<p>You can retrieve sub (super) classes of a given class expression. Depending on
+your preferences you can retrieve the whole chain of sub (super) classes or only the
+direct sub (super) classes (<code class="docutils literal notranslate"><span class="pre">direct</span></code> argument). It is also possible to get anonymous classes in addition
+to named classes (<code class="docutils literal notranslate"><span class="pre">only_named</span></code> argument). Class equivalence entails subsumption of classes to each other.</p>
+</li>
+<li><h4 class="rubric" id="equivalent-classes">Equivalent Classes</h4>
+<p>You are able to get the equivalent classes of a given class expression. It can be
+decided whether only named classes should be returned
+or anonymous classes as well. If two classes are subclasses of each other they
+are considered equivalent.</p>
+</li>
+<li><h4 class="rubric" id="disjoint-classes">Disjoint Classes</h4>
+<p>Every class that is explicitly defined as disjoint with another class will be returned.
+In addition, every subclass and equivalent class of the disjoint classes will be
+returned. If a target class does not have explicitly-defined disjoint classes the search
+is transferred to the superclasses of that target class.</p>
+</li>
+<li><h4 class="rubric" id="equivalent-properties">Equivalent Properties</h4>
+<p>You are able to get equivalent properties of a given object or data property.
+If two properties are sub-properties of each other, they are considered equivalent.</p>
+</li>
+<li><h4 class="rubric" id="sub-and-super-properties">Sub and Super Properties</h4>
+<p>Our reasoner has support also for sub and super properties of a
+given property. You can set the <code class="docutils literal notranslate"><span class="pre">direct</span></code> argument like in sub (super) classes.
+Properties equivalence entails subsumption of properties to each other.</p>
+</li>
+<li><h4 class="rubric" id="disjoint-properties">Disjoint Properties</h4>
+<p>Similarly to disjoint classes, you can get the disjoint properties of a property.
+Same rules apply.</p>
+</li>
+<li><h4 class="rubric" id="property-values">Property values</h4>
+<p>Given an individual(instance) and an object property you can get all the object values.
+Similarly, given an individual and a data property you can get all the literal values.
+You can set whether you want only the direct values or all of them.</p>
+</li>
+<li><h4 class="rubric" id="property-domain-and-range">Property domain and range</h4>
+<p>Easily retrieval available for domain and range for object properties and domain for data properties.</p>
+</li>
+<li><h4 class="rubric" id="instances">Instances</h4>
+<p>This functionality enables you to get instances for a given named(atomic) class or complex class expression.
+For the moment direct instances of complex class expressions is not possible.</p>
+</li>
+<li><h4 class="rubric" id="types">Types</h4>
+<p>This functionality enables you to get the types of a given instance. It returns only
+named(atomic) classes. You can set the <code class="docutils literal notranslate"><span class="pre">direct</span></code> attribute.</p>
+</li>
+<li><h4 class="rubric" id="same-and-different-individuals">Same and Different Individuals</h4>
+<p>Given an individual you can get the individuals that are explicitly defined as same or different to that individual.</p>
+</li>
+</ul>
+</section>
+<section id="concrete-example">
+<h2>Concrete Example<a class="headerlink" href="#concrete-example" title="Link to this heading"></a></h2>
+<p>You can find the associated <a class="reference external" href="https://github.com/dice-group/owlapy/blob/develop/examples/ontology_reasoning.py">code</a>
+for the following examples inside <code class="docutils literal notranslate"><span class="pre">examples/example_reasoner</span></code>
+(note that the naming of the classes/relations/individuals may change from the table below).
+We constructed an ontology for testing purposes. On the table we show for
+each <strong>method</strong> of the reasoner <em>SyncReasoner</em> the results
+depending on a given <strong>TBox</strong> and <strong>Abox</strong>. The level of complexity of the TBox-es is low compared
+to real world scenarios, but it’s just to show the capabilities of the reasoner.</p>
+<blockquote>
+<div><p><strong>Note:</strong> not every method of the reasoner is used in this example. You can check all the methods at the
+<a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#module-owlapy.owl_reasoner" title="owlapy.owl_reasoner"><span class="xref myst py py-mod">API documentation</span></a>.</p>
+</div></blockquote>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>TBox</p></th>
+<th class="head"><p>ABox</p></th>
+<th class="head"><p>Returns<br>(T = Thing)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Equivalent_classes(A)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>-</p></td>
+<td><p>[B]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Equivalent_classes(B)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>-</p></td>
+<td><p>[A]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(A)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[a,b]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(B)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[a,b]</p></td>
+</tr>
+<tr class="row-even"><td><p>Types(a)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[T, A,B]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Types(b)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[T, A,B]</p></td>
+</tr>
+<tr class="row-even"><td><p>Sub_classes(A)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>-</p></td>
+<td><p>[B]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub_classes(B)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>-</p></td>
+<td><p>[A]</p></td>
+</tr>
+<tr class="row-even"><td><p>Super_classes(A)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>-</p></td>
+<td><p>[B,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Super_classes(B)</p></td>
+<td><p>A ≡ B</p></td>
+<td><p>-</p></td>
+<td><p>[A,T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Equivalent_object_properties(r1)</p></td>
+<td><p>r1 ≡ r2</p></td>
+<td><p>-</p></td>
+<td><p>[r2]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Equivalent_object_properties(r2)</p></td>
+<td><p>r1 ≡ r2</p></td>
+<td><p>-</p></td>
+<td><p>[r1]</p></td>
+</tr>
+<tr class="row-even"><td><p>sub_object_properties(r1)</p></td>
+<td><p>r1 ≡ r2</p></td>
+<td><p>-</p></td>
+<td><p>[r2]</p></td>
+</tr>
+<tr class="row-odd"><td><p>sub_object_properties(r2)</p></td>
+<td><p>r1 ≡ r2</p></td>
+<td><p>-</p></td>
+<td><p>[r1]</p></td>
+</tr>
+<tr class="row-even"><td><p>object_property_values(a, r1, direct=False)</p></td>
+<td><p>r1 ≡ r2</p></td>
+<td><p>r1(a,b) r2(a,c)</p></td>
+<td><p>[c]</p></td>
+</tr>
+<tr class="row-odd"><td><p>object_property_values(a, r2, direct=False)</p></td>
+<td><p>r1 ≡ r2</p></td>
+<td><p>r1(a,b) r2(a,c)</p></td>
+<td><p>[c]</p></td>
+</tr>
+<tr class="row-even"><td><p>Sub_classes(B)</p></td>
+<td><p>A ⊑ B</p></td>
+<td><p>-</p></td>
+<td><p>[A]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Super_classes(A)</p></td>
+<td><p>A ⊑ B</p></td>
+<td><p>-</p></td>
+<td><p>[T, B]</p></td>
+</tr>
+<tr class="row-even"><td><p>Types(a)</p></td>
+<td><p>A ⊑ B</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[A,B,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Types(b)</p></td>
+<td><p>A ⊑ B</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[B,T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(A)</p></td>
+<td><p>A ⊑ B</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[a]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(B)</p></td>
+<td><p>A ⊑ B</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[a,b]</p></td>
+</tr>
+<tr class="row-even"><td><p>sub_object_properties(r1)</p></td>
+<td><p>r2 ⊑ r1</p></td>
+<td><p>-</p></td>
+<td><p>[r2]</p></td>
+</tr>
+<tr class="row-odd"><td><p>object_property_values(a, r2)</p></td>
+<td><p>r2 ⊑ r1</p></td>
+<td><p>r2(a,b)</p></td>
+<td><p>[b]</p></td>
+</tr>
+<tr class="row-even"><td><p>object_property_values(a, r1, direct=False)</p></td>
+<td><p>r2 ⊑ r1</p></td>
+<td><p>r2(a,b)</p></td>
+<td><p>[b]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub_classes(r1.T)</p></td>
+<td><p>r2 ⊑ r1</p></td>
+<td><p>-</p></td>
+<td><p>[r2.T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Super_classes(D, only_named=False)</p></td>
+<td><p>D ⊑ ∃r.E</p></td>
+<td><p>-</p></td>
+<td><p>[T, ∃r.E]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub_classes(∃r.E)</p></td>
+<td><p>D ⊑ ∃r.E</p></td>
+<td><p>-</p></td>
+<td><p>[D]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(D)</p></td>
+<td><p>D ⊑ ∃r.E</p></td>
+<td><p>D(d) r(i,e) E(e)</p></td>
+<td><p>[d]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(∃r.E)</p></td>
+<td><p>D ⊑ ∃r.E</p></td>
+<td><p>D(d) r(i,e) E(e)</p></td>
+<td><p>[i, d]</p></td>
+</tr>
+<tr class="row-even"><td><p>types(d)</p></td>
+<td><p>D ⊑ ∃r.E</p></td>
+<td><p>D(d) r(i,e) E(e)</p></td>
+<td><p>[D,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>types(i)</p></td>
+<td><p>D ⊑ ∃r.E</p></td>
+<td><p>D(d) r(i,e) E(e)</p></td>
+<td><p>[T]</p></td>
+</tr>
+<tr class="row-even"><td><p>object_property_values(i, r)</p></td>
+<td><p>D ⊑ ∃r.E</p></td>
+<td><p>r(i,e) E(e)</p></td>
+<td><p>[e]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub_classes(D, only_named=False)</p></td>
+<td><p>∃r.E ⊑ D</p></td>
+<td><p>-</p></td>
+<td><p>[ ∃r.E]</p></td>
+</tr>
+<tr class="row-even"><td><p>Super_classes( ∃r.E)</p></td>
+<td><p>∃r.E ⊑ D</p></td>
+<td><p>-</p></td>
+<td><p>[D, T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(D)</p></td>
+<td><p>∃r.E ⊑ D</p></td>
+<td><p>D(d) r(i,e) E(e)</p></td>
+<td><p>[i, d]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(∃r.E)</p></td>
+<td><p>∃r.E ⊑ D</p></td>
+<td><p>D(d) r(i,e) E(e)</p></td>
+<td><p>[i]</p></td>
+</tr>
+<tr class="row-odd"><td><p>types(d)</p></td>
+<td><p>∃r.E ⊑ D</p></td>
+<td><p>D(d) r(i,e) E(e)</p></td>
+<td><p>[D, T]</p></td>
+</tr>
+<tr class="row-even"><td><p>types(i)</p></td>
+<td><p>∃r.E ⊑ D</p></td>
+<td><p>D(d) r(i,e) E(e)</p></td>
+<td><p>[D, T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>object_property_values(i, r)</p></td>
+<td><p>∃r.E ⊑ D</p></td>
+<td><p>r(i,e) E(e)</p></td>
+<td><p>[e]</p></td>
+</tr>
+<tr class="row-even"><td><p>Sub_classes(A)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>-</p></td>
+<td><p>[A,B]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub_classes(B)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>-</p></td>
+<td><p>[A,B]</p></td>
+</tr>
+<tr class="row-even"><td><p>Super_classes(A)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>-</p></td>
+<td><p>[T, B]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Super_classes(B)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>-</p></td>
+<td><p>[T, A]</p></td>
+</tr>
+<tr class="row-even"><td><p>Types(a)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[A,B,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Types(b)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[A,B,T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(A)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[a,b]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(B)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>A(a),B(b)</p></td>
+<td><p>[a,b]</p></td>
+</tr>
+<tr class="row-even"><td><p>Equivalent_classes(A,only_named=False)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>-</p></td>
+<td><p>[B]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Equivalent_classes(B,only_named=False)</p></td>
+<td><p>A ⊑ B, B ⊑ A</p></td>
+<td><p>-</p></td>
+<td><p>[A]</p></td>
+</tr>
+<tr class="row-even"><td><p>sub_object_properties(r1)</p></td>
+<td><p>r2⊑ r1, r1⊑ r2</p></td>
+<td><p>-</p></td>
+<td><p>[r2,r1]</p></td>
+</tr>
+<tr class="row-odd"><td><p>sub_object_properties(r2)</p></td>
+<td><p>r2⊑ r1, r1⊑ r2</p></td>
+<td><p>-</p></td>
+<td><p>[r1,r2]</p></td>
+</tr>
+<tr class="row-even"><td><p>Equivalent_object_properties(r1)</p></td>
+<td><p>r2⊑ r1, r1⊑ r2</p></td>
+<td><p>-</p></td>
+<td><p>[r2]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Equivalent_object_properties(r2)</p></td>
+<td><p>r2⊑ r1, r1⊑ r2</p></td>
+<td><p>-</p></td>
+<td><p>[r1]</p></td>
+</tr>
+<tr class="row-even"><td><p>object_property_values(a, r1, direct=False)</p></td>
+<td><p>r2 ⊑ r1, r1 ⊑ r2</p></td>
+<td><p>r1(a,b) r2(a,c)</p></td>
+<td><p>[b,c]</p></td>
+</tr>
+<tr class="row-odd"><td><p>object_property_values(a, r2, direct=False)</p></td>
+<td><p>r2 ⊑ r1, r1 ⊑ r2</p></td>
+<td><p>r1(a,b) r2(a,c)</p></td>
+<td><p>[b,c]</p></td>
+</tr>
+<tr class="row-even"><td><p>Sub_classes(J ⊓ K)</p></td>
+<td><p>I ⊑ J ⊓ K</p></td>
+<td><p>-</p></td>
+<td><p>[I]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Super_classes(I, only_named=False)</p></td>
+<td><p>I ⊑ J ⊓ K</p></td>
+<td><p>-</p></td>
+<td><p>[J ⊓ K, J, K, T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(J ⊓ K)</p></td>
+<td><p>I ⊑ J ⊓ K</p></td>
+<td><p>I(c)</p></td>
+<td><p>[c]</p></td>
+</tr>
+<tr class="row-odd"><td><p>types(c)</p></td>
+<td><p>I ⊑ J ⊓ K</p></td>
+<td><p>I(c)</p></td>
+<td><p>[J, K, I, T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Super_classes(J ⊓ K)</p></td>
+<td><p>J ⊓ K ⊑ I</p></td>
+<td><p>-</p></td>
+<td><p>[I, T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub_classes(I, only_named=False)</p></td>
+<td><p>J ⊓ K ⊑ I</p></td>
+<td><p>-</p></td>
+<td><p>[J ⊓ K]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(I)</p></td>
+<td><p>J ⊓ K ⊑ I</p></td>
+<td><p>J(s),K(s)</p></td>
+<td><p>[s]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(J ⊓ K)</p></td>
+<td><p>J ⊓ K ⊑ I</p></td>
+<td><p>J(s),K(s)</p></td>
+<td><p>[s]</p></td>
+</tr>
+<tr class="row-even"><td><p>types(s)</p></td>
+<td><p>J ⊓ K ⊑ I</p></td>
+<td><p>J(s),K(s)</p></td>
+<td><p>[J, K, I, T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub_classes( ∃r.E ⊓ B )</p></td>
+<td><p>D ⊑ ∃r.E ⊓ B</p></td>
+<td><p>-</p></td>
+<td><p>[D]</p></td>
+</tr>
+<tr class="row-even"><td><p>Super_classes(D, only_named=False)</p></td>
+<td><p>D ⊑ ∃r.E ⊓ B</p></td>
+<td><p>-</p></td>
+<td><p>[T, ∃r.E ⊓ B, B]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(∃r.E ⊓ B)</p></td>
+<td><p>D ⊑ ∃r.E ⊓ B</p></td>
+<td><p>D(d) r(b,f) E(f) B(b)</p></td>
+<td><p>[d,b]</p></td>
+</tr>
+<tr class="row-even"><td><p>Sub_classes(H, only_named= False)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>-</p></td>
+<td><p>[F, ∃r.G]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Super_classes(F)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>-</p></td>
+<td><p>[H,∃r.G,T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Super_classes(∃r.G)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>-</p></td>
+<td><p>[F,H,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Equivalent_classes(F, only_named=False)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>-</p></td>
+<td><p>[∃r.G]</p></td>
+</tr>
+<tr class="row-even"><td><p>Equivalent_classes(∃r.G)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>-</p></td>
+<td><p>[F]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(∃r.G)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>r(i,g) G(g)</p></td>
+<td><p>[i]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(F)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>r(i,g) G(g)</p></td>
+<td><p>[i]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(H)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>r(i,g) G(g)</p></td>
+<td><p>[i]</p></td>
+</tr>
+<tr class="row-even"><td><p>types(i)</p></td>
+<td><p>F ≡ ∃r.G, F ⊑ H</p></td>
+<td><p>r(i,g) G(g)</p></td>
+<td><p>[H,F,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sub_classes(C, only_named=False)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>-</p></td>
+<td><p>[R, A ⊓ B]</p></td>
+</tr>
+<tr class="row-even"><td><p>Super_classes(A ⊓ B)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>-</p></td>
+<td><p>[R, C,A,B,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Equivalent_classes(R,<br>only_named=False)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>-</p></td>
+<td><p>[A ⊓ B]</p></td>
+</tr>
+<tr class="row-even"><td><p>Equivalent_classes(A ⊓ B)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>-</p></td>
+<td><p>[R]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(A ⊓ B)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>R(e) A(a) B(a)</p></td>
+<td><p>[e,a]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(R)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>R(e) A(a) B(a)</p></td>
+<td><p>[a, e]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(C)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>R(e) A(a) B(a)</p></td>
+<td><p>[a, e]</p></td>
+</tr>
+<tr class="row-even"><td><p>Types(a)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>R(e) A(a) B(a)</p></td>
+<td><p>[A,B,R,C,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Types(e)</p></td>
+<td><p>A ⊓ B ≡ R, R ⊑ C</p></td>
+<td><p>R(e) A(a) B(a)</p></td>
+<td><p>[A,B,R,C,T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Sub_classes(D, only_named=False)</p></td>
+<td><p>∃r.P ⊓ C ≡ E, E ⊑ D</p></td>
+<td><p>-</p></td>
+<td><p>[E, ∃r.P  ⊓ C]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Super_classes(∃r.P ⊓ C)</p></td>
+<td><p>∃r.P ⊓ C ≡ E, E ⊑ D</p></td>
+<td><p>-</p></td>
+<td><p>[E, D, T]</p></td>
+</tr>
+<tr class="row-even"><td><p>Equivalent_classes(∃r.P ⊓ C)</p></td>
+<td><p>∃r.P ⊓ C ≡ E, E ⊑ D</p></td>
+<td><p>-</p></td>
+<td><p>[E]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Equivalent_classes(E,<br>only_named=False)</p></td>
+<td><p>∃r.P ⊓ C ≡ E, E ⊑ D</p></td>
+<td><p>-</p></td>
+<td><p>[∃r.P ⊓ C]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(∃r.P ⊓ C)</p></td>
+<td><p>∃r.P ⊓ C ≡ E, E ⊑ D</p></td>
+<td><p>r(x,y) C(x) P(y)</p></td>
+<td><p>[x]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Instances(E)</p></td>
+<td><p>∃r.P ⊓ C ≡ E, E ⊑ D</p></td>
+<td><p>r(x,y) C(x) P(y)</p></td>
+<td><p>[x]</p></td>
+</tr>
+<tr class="row-even"><td><p>Instances(D)</p></td>
+<td><p>∃r.P ⊓ C ≡ E, E ⊑ D</p></td>
+<td><p>r(x,y) C(x) P(y)</p></td>
+<td><p>[x]</p></td>
+</tr>
+<tr class="row-odd"><td><p>Types(x)</p></td>
+<td><p>∃r.P ⊓ C ≡ E, E ⊑ D</p></td>
+<td><p>r(x,y) C(x) P(y)</p></td>
+<td><p>[C]</p></td>
+</tr>
+<tr class="row-even"><td><p>disjoint_classes(A)</p></td>
+<td><p>A ⊔ B</p></td>
+<td><p>-</p></td>
+<td><p>[B]</p></td>
+</tr>
+<tr class="row-odd"><td><p>disjoint_classes(B)</p></td>
+<td><p>A ⊔ B</p></td>
+<td><p>-</p></td>
+<td><p>[A]</p></td>
+</tr>
+<tr class="row-even"><td><p>disjoint_classes(A)</p></td>
+<td><p>A ⊔ B, B ≡ C</p></td>
+<td><p>-</p></td>
+<td><p>[B, C]</p></td>
+</tr>
+<tr class="row-odd"><td><p>disjoint_classes(B)</p></td>
+<td><p>A ⊔ B, B ≡ C</p></td>
+<td><p>-</p></td>
+<td><p>[A]</p></td>
+</tr>
+<tr class="row-even"><td><p>disjoint_classes(C)</p></td>
+<td><p>A ⊔ B, B ≡ C</p></td>
+<td><p>-</p></td>
+<td><p>[A]</p></td>
+</tr>
+<tr class="row-odd"><td><p>object_property_domains(r)</p></td>
+<td><p>Domain(r) = A</p></td>
+<td><p>-</p></td>
+<td><p>[A,T]</p></td>
+</tr>
+<tr class="row-even"><td><p>object_property_domains(r)</p></td>
+<td><p>Domain(r) = A<br>A ≡ B</p></td>
+<td><p>-</p></td>
+<td><p>[A,T]</p></td>
+</tr>
+<tr class="row-odd"><td><p>object_property_domains(r2)</p></td>
+<td><p>Domain(r1) = A<br>r2 ⊑ r1</p></td>
+<td><p>-</p></td>
+<td><p>[A,T]</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
