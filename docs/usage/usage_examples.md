@@ -1,4 +1,4 @@
-# Usage
+# Basic Usage
 
 The main usage for owlapy is to use it for class expression construction. Class 
 expression learning algorithms require such basic structure to work upon. Let's walk 
