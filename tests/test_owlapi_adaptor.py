@@ -15,7 +15,7 @@ from owlapy.providers import owl_datatype_min_inclusive_restriction
 
 class TestOwlapiAdaptor(unittest.TestCase):
     ns = "http://dl-learner.org/mutagenesis#"
-    ontology_path = "../KGs/Mutagenesis/mutagenesis1.owl"
+    ontology_path = "KGs/Mutagenesis/mutagenesis1.owl"
     nitrogen38 = OWLClass(IRI.create(ns, "Nitrogen-38"))
     charge = OWLDataProperty(IRI.create(ns, "charge"))
     has_charge_more_than_0_85 = OWLDataSomeValuesFrom(charge, owl_datatype_min_inclusive_restriction(0.85))
