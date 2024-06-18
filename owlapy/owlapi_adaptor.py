@@ -17,7 +17,10 @@ class OWLAPIAdaptor:
         """Initialization via the `with` statement"""
         if not jpype.isJVMStarted():
             # Start a java virtual machine using the dependencies in the respective folder:
-            jar_folder = "../jar_dependencies"
+            if os.getcwd()[-6:] == "owlapy":
+                jar_folder = "jar_dependencies"
+            else:
+                jar_folder = "../jar_dependencies"
             jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
             jpype.startJVM(classpath=jar_files)
 
