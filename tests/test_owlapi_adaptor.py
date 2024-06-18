@@ -15,7 +15,7 @@ from owlapy.providers import owl_datatype_min_inclusive_restriction
 
 class TestOwlapiAdaptor(unittest.TestCase):
     ns = "http://dl-learner.org/mutagenesis#"
-    ontology_path = "KGs/Mutagenesis/mutagenesis.owl"
+    ontology_path = "../KGs/Mutagenesis/mutagenesis1.owl"
     nitrogen38 = OWLClass(IRI.create(ns, "Nitrogen-38"))
     charge = OWLDataProperty(IRI.create(ns, "charge"))
     has_charge_more_than_0_85 = OWLDataSomeValuesFrom(charge, owl_datatype_min_inclusive_restriction(0.85))
@@ -45,13 +45,17 @@ class TestOwlapiAdaptor(unittest.TestCase):
     def test_instances_retrieval(self):
         with OWLAPIAdaptor(self.ontology_path) as adaptor:
             instances = adaptor.instances(self.ce)
-            self.assertEqual(list(instances), [OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#','d141_10')),
-                                               OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#','d195_12')),
-                                               OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#','d144_10')),
-                                               OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#','d147_11')),
-                                               OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#','e18_9')),
-                                               OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#','d175_17')),
-                                               OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#','e16_9'))])
+            expected = [OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'd141_10')),
+                        OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'd195_12')),
+                        OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'd144_10')),
+                        OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'd147_11')),
+                        OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'e18_9')),
+                        OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'd175_17')),
+                        OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'e16_9'))]
+            # Assert equal without considering the order
+            for instance in instances:
+                self.assertIn(instance, expected)
+            self.assertEqual(len(list(instances)), len(expected))
 
     def test_conversion(self):
         with OWLAPIAdaptor(self.ontology_path) as adaptor:
