@@ -15,11 +15,11 @@ class OWLAPIAdaptor:
 
     def __enter__(self):
         """Initialization via the `with` statement"""
-
-        # Start a java virtual machine using the dependencies in the respective folder:
-        jar_folder = "../jar_dependencies"
-        jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
-        jpype.startJVM(classpath=jar_files)
+        if not jpype.isJVMStarted():
+            # Start a java virtual machine using the dependencies in the respective folder:
+            jar_folder = "../jar_dependencies"
+            jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
+            jpype.startJVM(classpath=jar_files)
 
         # Import Java classes
         from org.semanticweb.owlapi.apibinding import OWLManager
@@ -94,5 +94,6 @@ class OWLAPIAdaptor:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Shuts down the java virtual machine hosted by jpype."""
-        if jpype.isJVMStarted():
+        if jpype.isJVMStarted() and not jpype.isThreadAttachedToJVM():
             jpype.shutdownJVM()
+
