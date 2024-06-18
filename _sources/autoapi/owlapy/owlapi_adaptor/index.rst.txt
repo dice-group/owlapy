@@ -1,0 +1,294 @@
+owlapy.owlapi_adaptor
+=====================
+
+.. py:module:: owlapy.owlapi_adaptor
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.owlapi_adaptor.OWLClassExpression
+   owlapy.owlapi_adaptor.IRI
+   owlapy.owlapi_adaptor.OWLNamedIndividual
+   owlapy.owlapi_adaptor.OWLAPIAdaptor
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.owlapi_adaptor.manchester_to_owl_expression
+   owlapy.owlapi_adaptor.owl_expression_to_manchester
+
+
+Module Contents
+---------------
+
+.. py:function:: manchester_to_owl_expression(manchester_expression: str, namespace: str)
+
+.. py:class:: OWLClassExpression
+
+   Bases: :py:obj:`owlapy.owl_data_ranges.OWLPropertyRange`
+
+
+   OWL Class expressions represent sets of individuals by formally specifying conditions on the individuals' properties;
+   individuals satisfying these conditions are said to be instances of the respective class expressions.
+   In the structural specification of OWL 2, class expressions are represented by ClassExpression.
+   (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: is_owl_thing() -> bool
+      :abstractmethod:
+
+
+      Determines if this expression is the built in class owl:Thing. This method does not determine if the class
+      is equivalent to owl:Thing.
+
+      :returns: Thing.
+      :rtype: True if this expression is owl
+
+
+
+   .. py:method:: is_owl_nothing() -> bool
+      :abstractmethod:
+
+
+      Determines if this expression is the built in class owl:Nothing. This method does not determine if the class
+      is equivalent to owl:Nothing.
+
+
+
+   .. py:method:: get_object_complement_of() -> OWLObjectComplementOf
+      :abstractmethod:
+
+
+      Gets the object complement of this class expression.
+
+      :returns: A class expression that is the complement of this class expression.
+
+
+
+   .. py:method:: get_nnf() -> OWLClassExpression
+      :abstractmethod:
+
+
+      Gets the negation normal form of the complement of this expression.
+
+      :returns: A expression that represents the NNF of the complement of this expression.
+
+
+
+.. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
+
+   Bases: :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+
+   An IRI, consisting of a namespace and a remainder.
+
+
+   .. py:attribute:: __slots__
+      :value: ('_namespace', '_remainder', '__weakref__')
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 0
+
+
+
+   .. py:method:: create(namespace: owlapy.namespaces.Namespaces, remainder: str) -> IRI
+                  create(namespace: str, remainder: str) -> IRI
+                  create(string: str) -> IRI
+      :staticmethod:
+
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+
+   .. py:method:: __eq__(other)
+
+      Return self==value.
+
+
+
+   .. py:method:: __hash__()
+
+      Return hash(self).
+
+
+
+   .. py:method:: is_nothing()
+
+      Determines if this IRI is equal to the IRI that owl:Nothing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Nothing> and otherwise False.
+
+
+
+   .. py:method:: is_thing()
+
+      Determines if this IRI is equal to the IRI that owl:Thing is named with.
+
+      :returns: True if this IRI is equal to <http://www.w3.org/2002/07/owl#Thing> and otherwise False.
+
+
+
+   .. py:method:: is_reserved_vocabulary() -> bool
+
+      Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with
+      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> or <http://www.w3.org/2000/01/rdf-schema#> or
+      <http://www.w3.org/2001/XMLSchema#> or <http://www.w3.org/2002/07/owl#>.
+
+      :returns: True if the IRI is in the reserved vocabulary, otherwise False.
+
+
+
+   .. py:method:: as_iri() -> IRI
+
+      :returns: if the value is an IRI, return it. Return Mone otherwise.
+
+
+
+   .. py:method:: as_str() -> str
+
+      CD: Should be deprecated.
+      :returns: The string that specifies the IRI.
+
+
+
+   .. py:property:: str
+      :type: str
+
+      Returns:
+      The string that specifies the IRI.
+
+
+   .. py:property:: reminder
+      :type: str
+
+      Returns:
+      The string corresponding to the reminder of the IRI.
+
+
+   .. py:method:: get_short_form() -> str
+
+      Gets the short form.
+
+      :returns: A string that represents the short form.
+
+
+
+   .. py:method:: get_namespace() -> str
+
+      :returns: The namespace as string.
+
+
+
+   .. py:method:: get_remainder() -> str
+
+      :returns: The remainder (coincident with NCName usually) for this IRI.
+
+
+
+.. py:class:: OWLNamedIndividual(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`OWLIndividual`, :py:obj:`owlapy.owl_object.OWLEntity`
+
+
+   Named individuals are identified using an IRI. Since they are given an IRI, named individuals are entities.
+   IRIs from the reserved vocabulary must not be used to identify named individuals in an OWL 2 DL ontology.
+
+   (https://www.w3.org/TR/owl2-syntax/#Named_Individuals)
+
+
+   .. py:attribute:: __slots__
+      :value: '_iri'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1005
+
+
+
+   .. py:property:: iri
+      :type: owlapy.iri.IRI
+
+      Gets the IRI of this object.
+
+      :returns: The IRI of this object.
+
+
+   .. py:property:: str
+      Gets the string representation of this object
+
+      :returns: The IRI as string
+
+
+.. py:function:: owl_expression_to_manchester(o: owlapy.owl_object.OWLObject) -> str
+
+.. py:class:: OWLAPIAdaptor(path: str)
+
+   .. py:method:: __enter__()
+
+      Initialization via the `with` statement
+
+
+
+   .. py:method:: convert_to_owlapi(ce: owlapy.class_expression.OWLClassExpression)
+
+      Converts an owlapy ce to an owlapi ce.
+
+      :param ce: class expression in owlapy format to be converted.
+      :type ce: OWLClassExpression
+
+      :returns: Class expression in owlapi format.
+
+
+
+   .. py:method:: convert_from_owlapi(ce, namespace: str) -> owlapy.class_expression.OWLClassExpression
+
+      Converts an owlapi ce to an owlapy ce.
+
+      :param ce: Class expression in owlapi format.
+      :param namespace: Ontology's namespace where class expression belongs.
+
+      :returns: Class expression in owlapy format.
+
+
+
+   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression)
+
+      Get the instances for a given class expression using HermiT.
+      :param ce: Class expression in owlapy format.
+
+      :returns: Individuals which are classified by the given class expression.
+
+
+
+   .. py:method:: has_consistent_ontology() -> bool
+
+      Check if the used ontology is consistent.
+
+
+
+   .. py:method:: __exit__(exc_type, exc_val, exc_tb)
+
+      Shuts down the java virtual machine hosted by jpype.
+
+
+
