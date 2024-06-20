@@ -10,8 +10,10 @@ from owlapy.render import owl_expression_to_manchester
 
 class OWLAPIAdaptor:
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, reasoner: str = "HermiT"):
         self.path = path
+        assert reasoner in ["HermiT"], f"{reasoner} is not implemented. Please use HermiT"
+        self.reasoner = reasoner
 
     def __enter__(self):
         """Initialization via the `with` statement"""
@@ -27,7 +29,11 @@ class OWLAPIAdaptor:
         # Import Java classes
         from org.semanticweb.owlapi.apibinding import OWLManager
         from java.io import File
-        from org.semanticweb.HermiT import ReasonerFactory
+        if self.reasoner == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+        else:
+            raise NotImplementedError("Not implemented")
+
         from org.semanticweb.owlapi.manchestersyntax.parser import ManchesterOWLSyntaxClassExpressionParser
         from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
         from org.semanticweb.owlapi.expression import ShortFormEntityChecker
@@ -99,4 +105,3 @@ class OWLAPIAdaptor:
         """Shuts down the java virtual machine hosted by jpype."""
         if jpype.isJVMStarted() and not jpype.isThreadAttachedToJVM():
             jpype.shutdownJVM()
-
