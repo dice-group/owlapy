@@ -6,15 +6,69 @@ from owlapy.class_expression import OWLClassExpression
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.render import owl_expression_to_manchester
-
+from typing import List
 
 class OWLAPIAdaptor:
+    """
+    A class to interface with the OWL API using the HermiT reasoner, enabling ontology management,
+    reasoning, and parsing class expressions in Manchester OWL Syntax.
 
-    def __init__(self, path: str):
+    Attributes:
+        path (str): The file path to the ontology.
+        name_reasoner (str): The reasoner to be used, default is "HermiT".
+        manager: The OWL ontology manager.
+        ontology: The loaded OWL ontology.
+        reasoner: The HermiT reasoner for the ontology.
+        parser: The Manchester OWL Syntax parser.
+        renderer: The Manchester OWL Syntax renderer.
+        __is_open (bool): Flag to check if the JVM is open.
+    """
+    def __init__(self, path: str, name_reasoner: str = "HermiT"):
+        """
+        Initialize the OWLAPIAdaptor with a path to an ontology and a reasoner name.
+
+        Args:
+            path (str): The file path to the ontology.
+            name_reasoner (str, optional): The reasoner to be used. Defaults to "HermiT".
+
+        Raises:
+            AssertionError: If the provided reasoner name is not implemented.
+        """
         self.path = path
+        assert name_reasoner in ["HermiT"], f"{name_reasoner} is not implemented. Please use HermiT"
+        self.name_reasoner = name_reasoner
+        # Attributes are initialized as JVMStarted is started
+        # () Manager is needed to load an ontology
+        self.manager = None
+        # () Load a local ontology using the manager
+        self.ontology = None
+        # () Create a HermiT reasoner for the loaded ontology
+        self.reasoner = None
+        self.parser = None
+        # () A manchester renderer to render owlapi ce to manchester syntax
+        self.renderer = None
+        self.open()
+        self.__is_open = True
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Shuts down the java virtual machine hosted by jpype."""
+        self.close()
 
     def __enter__(self):
-        """Initialization via the `with` statement"""
+        """
+        Initialization via the `with` statement.
+
+        Returns:
+            OWLAPIAdaptor: The current instance.
+        """
+        if not self.__is_open:
+            self.open()
+        return self
+
+    def open(self):
+        """
+        Start the JVM with jar dependencies, import necessary OWL API dependencies, and initialize attributes.
+        """
         if not jpype.isJVMStarted():
             # Start a java virtual machine using the dependencies in the respective folder:
             if os.getcwd()[-6:] == "owlapy":
@@ -22,81 +76,88 @@ class OWLAPIAdaptor:
             else:
                 jar_folder = "../jar_dependencies"
             jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
+            # Starting JVM.
             jpype.startJVM(classpath=jar_files)
 
         # Import Java classes
         from org.semanticweb.owlapi.apibinding import OWLManager
         from java.io import File
-        from org.semanticweb.HermiT import ReasonerFactory
+        if self.name_reasoner == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+        else:
+            raise NotImplementedError("Not implemented")
+
         from org.semanticweb.owlapi.manchestersyntax.parser import ManchesterOWLSyntaxClassExpressionParser
         from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
         from org.semanticweb.owlapi.expression import ShortFormEntityChecker
         from java.util import HashSet
         from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
 
-        # Manager is needed to load an ontology
+        # () Manager is needed to load an ontology
         self.manager = OWLManager.createOWLOntologyManager()
-        # Load a local ontology using the manager
-        file = File(self.path)
-        self.ontology = self.manager.loadOntologyFromOntologyDocument(file)
+        # () Load a local ontology using the manager
+        self.ontology = self.manager.loadOntologyFromOntologyDocument(File(self.path))
+        # () Create a HermiT reasoner for the loaded ontology
+        self.reasoner = ReasonerFactory().createReasoner(self.ontology)
 
-        # Create a HermiT reasoner for the loaded ontology
-        reasoner_factory = ReasonerFactory()
-        self.reasoner = reasoner_factory.createReasoner(self.ontology)
-
-        # Create a manchester parser and all the necessary attributes for parsing manchester syntax string to owlapi ce
-        short_form_provider = SimpleShortFormProvider()
+        # () Create a manchester parser and all the necessary attributes for parsing manchester syntax string to owlapi ce
         ontology_set = HashSet()
         ontology_set.add(self.ontology)
-        bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, short_form_provider)
+        bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
         entity_checker = ShortFormEntityChecker(bidi_provider)
         self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
-
         # A manchester renderer to render owlapi ce to manchester syntax
         self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
 
-        return self
+    def close(self, *args, **kwargs) -> None:
+        """Shuts down the java virtual machine hosted by jpype."""
+        if jpype.isJVMStarted() and not jpype.isThreadAttachedToJVM():
+            jpype.shutdownJVM()
+        self.__is_open = False
 
     def convert_to_owlapi(self, ce: OWLClassExpression):
-        """ Converts an owlapy ce to an owlapi ce.
+        """
+        Converts an OWLAPY class expression to an OWLAPI class expression.
 
-            Args:
-                ce (OWLClassExpression): class expression in owlapy format to be converted.
+        Args:
+            ce (OWLClassExpression): The class expression in OWLAPY format to be converted.
 
-            Return:
-                Class expression in owlapi format.
+        Returns:
+            The class expression in OWLAPI format.
         """
         return self.parser.parse(owl_expression_to_manchester(ce))
 
     def convert_from_owlapi(self, ce, namespace: str) -> OWLClassExpression:
-        """Converts an owlapi ce to an owlapy ce.
+        """
+        Converts an OWLAPI class expression to an OWLAPY class expression.
 
-            Args:
-                ce: Class expression in owlapi format.
-                namespace: Ontology's namespace where class expression belongs.
+        Args:
+            ce: The class expression in OWLAPI format.
+            namespace (str): The ontology's namespace where the class expression belongs.
 
-            Return:
-                Class expression in owlapy format.
+        Returns:
+            OWLClassExpression: The class expression in OWLAPY format.
         """
         return manchester_to_owl_expression(str(self.renderer.render(ce)), namespace)
 
-    def instances(self, ce: OWLClassExpression):
-        """ Get the instances for a given class expression using HermiT.
-            Args:
-                ce: Class expression in owlapy format.
+    def instances(self, ce: OWLClassExpression)->List[OWLNamedIndividual]:
+        """
+        Get the instances for a given class expression using HermiT.
 
-            Return:
-                Individuals which are classified by the given class expression.
+        Args:
+            ce (OWLClassExpression): The class expression in OWLAPY format.
+
+        Returns:
+            list: A list of individuals classified by the given class expression.
         """
         inds = self.reasoner.getInstances(self.convert_to_owlapi(ce), False).getFlattened()
         return [OWLNamedIndividual(IRI.create(str(ind)[1:-1])) for ind in inds]
 
     def has_consistent_ontology(self) -> bool:
-        """ Check if the used ontology is consistent."""
+        """
+        Check if the used ontology is consistent.
+
+        Returns:
+            bool: True if the ontology is consistent, False otherwise.
+        """
         return self.reasoner.isConsistent()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Shuts down the java virtual machine hosted by jpype."""
-        if jpype.isJVMStarted() and not jpype.isThreadAttachedToJVM():
-            jpype.shutdownJVM()
-
