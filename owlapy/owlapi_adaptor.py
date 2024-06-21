@@ -8,8 +8,8 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.render import owl_expression_to_manchester
 
 
+# TODO:What are the downsides of start() close() fashion ?:
 class OWLAPIAdaptor:
-    """ TODO:CD: Using OWLAPIAdaptor without the context manager would be good for the ease usage."""
 
     def __init__(self, path: str, reasoner: str = "HermiT"):
         self.path = path
@@ -103,3 +103,62 @@ class OWLAPIAdaptor:
     def has_consistent_ontology(self) -> bool:
         """ Check if the used ontology is consistent."""
         return self.reasoner.isConsistent()
+
+
+class DemoOWLAPIAdaptor(OWLAPIAdaptor):
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+        self.__start()
+
+    @staticmethod
+    def close(*args, **kwargs):
+        """Shuts down the java virtual machine hosted by jpype."""
+        if jpype.isJVMStarted() and not jpype.isThreadAttachedToJVM():
+            jpype.shutdownJVM()
+
+    def __start(self):
+        """Initialization via the `with` statement"""
+        if not jpype.isJVMStarted():
+            # Start a java virtual machine using the dependencies in the respective folder:
+            if os.getcwd()[-6:] == "owlapy":
+                jar_folder = "jar_dependencies"
+            else:
+                jar_folder = "../jar_dependencies"
+            jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
+            # Starting JVM.
+            jpype.startJVM(classpath=jar_files)
+
+        # Import Java classes
+        from org.semanticweb.owlapi.apibinding import OWLManager
+        from java.io import File
+        if self.reasoner == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+        else:
+            raise NotImplementedError("Not implemented")
+
+        from org.semanticweb.owlapi.manchestersyntax.parser import ManchesterOWLSyntaxClassExpressionParser
+        from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
+        from org.semanticweb.owlapi.expression import ShortFormEntityChecker
+        from java.util import HashSet
+        from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
+
+        # () Manager is needed to load an ontology
+        self.manager = OWLManager.createOWLOntologyManager()
+        # () Load a local ontology using the manager
+        self.ontology = self.manager.loadOntologyFromOntologyDocument(File(self.path))
+        # () Create a HermiT reasoner for the loaded ontology
+        self.reasoner = ReasonerFactory().createReasoner(self.ontology)
+
+        # () Create a manchester parser and all the necessary attributes for parsing manchester syntax string to owlapi ce
+        ontology_set = HashSet()
+        ontology_set.add(self.ontology)
+        bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
+        entity_checker = ShortFormEntityChecker(bidi_provider)
+        self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
+
+        # A manchester renderer to render owlapi ce to manchester syntax
+        self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
+
+        return self
