@@ -9,11 +9,17 @@ from owlapy.render import owl_expression_to_manchester
 
 
 class OWLAPIAdaptor:
+    """ TODO:CD: Using OWLAPIAdaptor without the context manager would be good for the ease usage."""
 
     def __init__(self, path: str, reasoner: str = "HermiT"):
         self.path = path
         assert reasoner in ["HermiT"], f"{reasoner} is not implemented. Please use HermiT"
         self.reasoner = reasoner
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Shuts down the java virtual machine hosted by jpype."""
+        if jpype.isJVMStarted() and not jpype.isThreadAttachedToJVM():
+            jpype.shutdownJVM()
 
     def __enter__(self):
         """Initialization via the `with` statement"""
@@ -24,6 +30,7 @@ class OWLAPIAdaptor:
             else:
                 jar_folder = "../jar_dependencies"
             jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
+            # Starting JVM.
             jpype.startJVM(classpath=jar_files)
 
         # Import Java classes
@@ -40,21 +47,17 @@ class OWLAPIAdaptor:
         from java.util import HashSet
         from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
 
-        # Manager is needed to load an ontology
+        # () Manager is needed to load an ontology
         self.manager = OWLManager.createOWLOntologyManager()
-        # Load a local ontology using the manager
-        file = File(self.path)
-        self.ontology = self.manager.loadOntologyFromOntologyDocument(file)
+        # () Load a local ontology using the manager
+        self.ontology = self.manager.loadOntologyFromOntologyDocument(File(self.path))
+        # () Create a HermiT reasoner for the loaded ontology
+        self.reasoner = ReasonerFactory().createReasoner(self.ontology)
 
-        # Create a HermiT reasoner for the loaded ontology
-        reasoner_factory = ReasonerFactory()
-        self.reasoner = reasoner_factory.createReasoner(self.ontology)
-
-        # Create a manchester parser and all the necessary attributes for parsing manchester syntax string to owlapi ce
-        short_form_provider = SimpleShortFormProvider()
+        # () Create a manchester parser and all the necessary attributes for parsing manchester syntax string to owlapi ce
         ontology_set = HashSet()
         ontology_set.add(self.ontology)
-        bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, short_form_provider)
+        bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
         entity_checker = ShortFormEntityChecker(bidi_provider)
         self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
 
@@ -100,8 +103,3 @@ class OWLAPIAdaptor:
     def has_consistent_ontology(self) -> bool:
         """ Check if the used ontology is consistent."""
         return self.reasoner.isConsistent()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Shuts down the java virtual machine hosted by jpype."""
-        if jpype.isJVMStarted() and not jpype.isThreadAttachedToJVM():
-            jpype.shutdownJVM()
