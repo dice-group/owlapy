@@ -14,91 +14,11 @@ Classes
 
 .. autoapisummary::
 
-   owlapy.iri.OWLAnnotationSubject
-   owlapy.iri.OWLAnnotationValue
-   owlapy.iri.Namespaces
    owlapy.iri.IRI
 
 
 Module Contents
 ---------------
-
-.. py:class:: OWLAnnotationSubject
-
-   Bases: :py:obj:`OWLAnnotationObject`
-
-
-   A marker interface for annotation subjects, which can either be IRIs or anonymous individuals
-
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-
-
-.. py:class:: OWLAnnotationValue
-
-   Bases: :py:obj:`OWLAnnotationObject`
-
-
-   A marker interface for annotation values, which can either be an IRI (URI), Literal or Anonymous Individual.
-
-
-   .. py:attribute:: __slots__
-      :value: ()
-
-
-
-   .. py:method:: is_literal() -> bool
-
-      :returns: true if the annotation value is a literal
-
-
-
-   .. py:method:: as_literal() -> Optional[OWLLiteral]
-
-      :returns: if the value is a literal, returns it. Return None otherwise
-
-
-
-.. py:class:: Namespaces(prefix: str, ns: str)
-
-   Namespaces provide a simple method for qualifying element and attribute names used in Extensible Markup
-   Language documents by associating them with namespaces identified by URI references
-
-
-   .. py:attribute:: __slots__
-      :value: ('_prefix', '_ns')
-
-
-
-   .. py:property:: ns
-      :type: str
-
-
-
-   .. py:property:: prefix
-      :type: str
-
-
-
-   .. py:method:: __repr__()
-
-      Return repr(self).
-
-
-
-   .. py:method:: __hash__()
-
-      Return hash(self).
-
-
-
-   .. py:method:: __eq__(other)
-
-      Return self==value.
-
-
 
 .. py:class:: IRI(namespace: Union[str, owlapy.namespaces.Namespaces], remainder: str)
 
