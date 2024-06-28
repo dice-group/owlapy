@@ -8,6 +8,7 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.render import owl_expression_to_manchester
 from typing import List
 
+
 class OWLAPIAdaptor:
     """
     A class to interface with the OWL API using the HermiT reasoner, enabling ontology management,
@@ -29,20 +30,22 @@ class OWLAPIAdaptor:
 
         Args:
             path (str): The file path to the ontology.
-            name_reasoner (str, optional): The reasoner to be used. Defaults to "HermiT".
+            name_reasoner (str, optional): The reasoner to be used.
+                    Available options are: ['HermiT' (default), 'Pellet', 'JFact', 'Openllet'].
 
         Raises:
             AssertionError: If the provided reasoner name is not implemented.
         """
         self.path = path
-        assert name_reasoner in ["HermiT"], f"{name_reasoner} is not implemented. Please use HermiT"
+        assert name_reasoner in ["HermiT", "Pellet", "JFact", "Openllet"], \
+            f"'{name_reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet']"
         self.name_reasoner = name_reasoner
         # Attributes are initialized as JVMStarted is started
         # () Manager is needed to load an ontology
         self.manager = None
         # () Load a local ontology using the manager
         self.ontology = None
-        # () Create a HermiT reasoner for the loaded ontology
+        # () Create a reasoner for the loaded ontology
         self.reasoner = None
         self.parser = None
         # () A manchester renderer to render owlapi ce to manchester syntax
@@ -84,6 +87,12 @@ class OWLAPIAdaptor:
         from java.io import File
         if self.name_reasoner == "HermiT":
             from org.semanticweb.HermiT import ReasonerFactory
+        elif  self.name_reasoner == "Pellet":
+            from openllet.owlapi import PelletReasonerFactory
+        elif self.name_reasoner == "JFact":
+            from uk.ac.manchester.cs.jfact import JFactFactory
+        elif self.name_reasoner == "Openllet":
+            from openllet.owlapi import OpenlletReasonerFactory
         else:
             raise NotImplementedError("Not implemented")
 
@@ -97,8 +106,15 @@ class OWLAPIAdaptor:
         self.manager = OWLManager.createOWLOntologyManager()
         # () Load a local ontology using the manager
         self.ontology = self.manager.loadOntologyFromOntologyDocument(File(self.path))
-        # () Create a HermiT reasoner for the loaded ontology
-        self.reasoner = ReasonerFactory().createReasoner(self.ontology)
+        # () Create a reasoner for the loaded ontology
+        if self.name_reasoner == "HermiT":
+            self.reasoner = ReasonerFactory().createReasoner(self.ontology)
+        elif self.name_reasoner == "JFact":
+            self.reasoner = JFactFactory().createReasoner(self.ontology)
+        elif self.name_reasoner == "Pellet":
+            self.reasoner = PelletReasonerFactory().createReasoner(self.ontology)
+        elif self.name_reasoner == "Openllet":
+            self.reasoner = OpenlletReasonerFactory().getInstance().createReasoner(self.ontology)
 
         # () Create a manchester parser and all the necessary attributes for parsing manchester syntax string to owlapi ce
         ontology_set = HashSet()
