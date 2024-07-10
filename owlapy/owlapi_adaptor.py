@@ -1,5 +1,6 @@
 import jpype.imports
 import os
+import pkg_resources
 
 from owlapy import manchester_to_owl_expression
 from owlapy.class_expression import OWLClassExpression
@@ -74,10 +75,7 @@ class OWLAPIAdaptor:
         """
         if not jpype.isJVMStarted():
             # Start a java virtual machine using the dependencies in the respective folder:
-            if os.getcwd()[-6:] == "owlapy":
-                jar_folder = "jar_dependencies"
-            else:
-                jar_folder = "../jar_dependencies"
+            jar_folder = pkg_resources.resource_filename('owlapy', 'jar_dependencies')
             jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
             # Starting JVM.
             jpype.startJVM(classpath=jar_files)
