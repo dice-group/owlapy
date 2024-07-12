@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Owlapi Adaptor &mdash; OWLAPY 0.1.2 documentation</title>
+  <title>Owlapi Adaptor &mdash; OWLAPY 1.1.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8775fe07" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
@@ -19,7 +19,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../_static/documentation_options.js?v=58fbf978"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -103,15 +103,19 @@ Java code via jpype, one needs to start the java virtual machine (JVM).
 This is automatically done when initializing a <code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor</span></code> object.</p>
 <section id="initialization">
 <h2>Initialization<a class="headerlink" href="#initialization" title="Link to this heading"></a></h2>
-<p>To use the adaptor you have to initialize using the <code class="docutils literal notranslate"><span class="pre">with</span></code> statement in python.
-This way you will know where the JVM session starts and when it closes:</p>
+<p>To use the adaptor you have to start the JVM via jpype, which is done automatically
+when you create an <em>OWLAPIAdaptor</em> object. After you are finished you can stop
+the JVM by either using <code class="docutils literal notranslate"><span class="pre">jpype.shutdownJVM()</span></code> or the static method from the
+adaptor <code class="docutils literal notranslate"><span class="pre">stopJVM()</span></code>. This will free the resources used by JPype and the java
+packages.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.owlapi_adaptor</span> <span class="kn">import</span> <span class="n">OWLAPIAdaptor</span>
 
-<span class="k">with</span> <span class="n">OWLAPIAdaptor</span><span class="p">(</span><span class="s2">&quot;KGs/Family/father.owl&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">adaptor</span><span class="p">:</span>
-    <span class="c1">#  Use the adaptor</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is the ontology consistent? </span><span class="si">{</span><span class="n">adaptor</span><span class="o">.</span><span class="n">has_consistent_ontology</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">adaptor</span> <span class="o">=</span> <span class="n">OWLAPIAdaptor</span><span class="p">(</span><span class="s2">&quot;KGs/Family/father.owl&quot;</span><span class="p">)</span>
+<span class="c1">#  Use the adaptor</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is the ontology consistent? </span><span class="si">{</span><span class="n">adaptor</span><span class="o">.</span><span class="n">has_consistent_ontology</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="c1">#  The JVM will shut down when the thread is no longer used.</span>
+<span class="c1">#  Stop the JVM</span>
+<span class="n">adaptor</span><span class="o">.</span><span class="n">stopJVM</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>In the above code snipped, we created an adaptor for the father ontology
@@ -123,10 +127,11 @@ the ontology is consistent or not.</p>
 <p>An important note is that when initialising the adaptor you are basically
 starting a JVM in the background, and therefore you are able to import and
 use java classes as you would do in python. That means that you can
-play around with owlapi code in python. Isn’t that awesome!</p>
-<p><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor</span></code> uses HermiT reasoner for methods that require reasoning,
-such as <code class="docutils literal notranslate"><span class="pre">instances</span></code>, which returns all individuals belonging to a class
-expression.</p>
+play around with owlapi code in python as long as your JVM is started.
+Isn’t that awesome!</p>
+<p><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor</span></code> uses HermiT reasoner by default. You can choose between:
+“HermiT”, “Pellet”, “JFact” and “Openllet”.</p>
+<p><em><strong>owlapi version</strong>: 5.1.9</em></p>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>

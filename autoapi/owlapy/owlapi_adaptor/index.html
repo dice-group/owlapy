@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owlapi_adaptor &mdash; OWLAPY 0.1.2 documentation</title>
+  <title>owlapy.owlapi_adaptor &mdash; OWLAPY 1.1.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
@@ -19,7 +19,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../../_static/documentation_options.js?v=58fbf978"></script>
         <script src="../../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -86,11 +86,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.reasoner"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.reasoner</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.parser"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.parser</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.renderer"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.renderer</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.__is_open"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.__is_open</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.__exit__"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.__exit__()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.__enter__"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.__enter__()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.open"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.open()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.close"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.close()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.stopJVM"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.stopJVM()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.convert_to_owlapi"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.convert_to_owlapi()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.convert_from_owlapi"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.convert_from_owlapi()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.instances"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.instances()</span></code></a></li>
@@ -197,7 +193,7 @@ reasoning, and parsing class expressions in Manchester OWL Syntax.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.reasoner">
 <span class="sig-name descname"><span class="pre">reasoner</span></span><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.reasoner" title="Link to this definition"></a></dt>
-<dd><p>The HermiT reasoner for the ontology.</p>
+<dd><p>Choose from (case-sensitive): [“HermiT”, “Pellet”, “JFact”, “Openllet”]. Default: “HermiT”.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -212,47 +208,10 @@ reasoning, and parsing class expressions in Manchester OWL Syntax.</p>
 <dd><p>The Manchester OWL Syntax renderer.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.__is_open">
-<span class="sig-name descname"><span class="pre">__is_open</span></span><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.__is_open" title="Link to this definition"></a></dt>
-<dd><p>Flag to check if the JVM is open.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.__exit__">
-<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_tb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owlapi_adaptor.html#OWLAPIAdaptor.__exit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.__exit__" title="Link to this definition"></a></dt>
-<dd><p>Shuts down the java virtual machine hosted by jpype.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.__enter__">
-<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owlapi_adaptor.html#OWLAPIAdaptor.__enter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.__enter__" title="Link to this definition"></a></dt>
-<dd><p>Initialization via the <cite>with</cite> statement.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The current instance.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor" title="owlapy.owlapi_adaptor.OWLAPIAdaptor">OWLAPIAdaptor</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.open">
-<span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owlapi_adaptor.html#OWLAPIAdaptor.open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.open" title="Link to this definition"></a></dt>
-<dd><p>Start the JVM with jar dependencies, import necessary OWL API dependencies, and initialize attributes.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.close">
-<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owlapi_adaptor.html#OWLAPIAdaptor.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.close" title="Link to this definition"></a></dt>
-<dd><p>Shuts down the java virtual machine hosted by jpype.</p>
+<dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.stopJVM">
+<span class="sig-name descname"><span class="pre">stopJVM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owlapi_adaptor.html#OWLAPIAdaptor.stopJVM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.stopJVM" title="Link to this definition"></a></dt>
+<dd><p>Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype.</p>
 </dd></dl>
 
 <dl class="py method">

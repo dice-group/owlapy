@@ -16,17 +16,21 @@ This is automatically done when initializing a `OWLAPIAdaptor` object.
 
 ## Initialization
 
-To use the adaptor you have to initialize using the `with` statement in python.
-This way you will know where the JVM session starts and when it closes:
+To use the adaptor you have to start the JVM via jpype, which is done automatically 
+when you create an _OWLAPIAdaptor_ object. After you are finished you can stop
+the JVM by either using `jpype.shutdownJVM()` or the static method from the 
+adaptor `stopJVM()`. This will free the resources used by JPype and the java 
+packages.
 
 ```python
 from owlapy.owlapi_adaptor import OWLAPIAdaptor
 
-with OWLAPIAdaptor("KGs/Family/father.owl") as adaptor:
-    #  Use the adaptor
-    print(f"Is the ontology consistent? {adaptor.has_consistent_ontology()}")
+adaptor = OWLAPIAdaptor("KGs/Family/father.owl")
+#  Use the adaptor
+print(f"Is the ontology consistent? {adaptor.has_consistent_ontology()}")
 
-#  The JVM will shut down when the thread is no longer used.
+#  Stop the JVM
+adaptor.stopJVM()
 ```
 
 In the above code snipped, we created an adaptor for the father ontology 
@@ -38,11 +42,13 @@ the ontology is consistent or not.
 An important note is that when initialising the adaptor you are basically
 starting a JVM in the background, and therefore you are able to import and 
 use java classes as you would do in python. That means that you can 
-play around with owlapi code in python. Isn't that awesome!
+play around with owlapi code in python as long as your JVM is started.
+Isn't that awesome!
 
-`OWLAPIAdaptor` uses HermiT reasoner for methods that require reasoning,
-such as `instances`, which returns all individuals belonging to a class
-expression.
+`OWLAPIAdaptor` uses HermiT reasoner by default. You can choose between:
+"HermiT", "Pellet", "JFact" and "Openllet".
+
+_**owlapi version**: 5.1.9_
 
 ## Examples
 

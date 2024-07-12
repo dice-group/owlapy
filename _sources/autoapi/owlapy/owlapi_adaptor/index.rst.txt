@@ -42,7 +42,7 @@ Module Contents
 
    .. attribute:: reasoner
 
-      The HermiT reasoner for the ontology.
+      Choose from (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"]. Default: "HermiT".
 
    .. attribute:: parser
 
@@ -52,37 +52,10 @@ Module Contents
 
       The Manchester OWL Syntax renderer.
 
-   .. attribute:: __is_open
 
-      Flag to check if the JVM is open.
+   .. py:method:: stopJVM(*args, **kwargs) -> None
 
-      :type: bool
-
-
-   .. py:method:: __exit__(exc_type, exc_val, exc_tb)
-
-      Shuts down the java virtual machine hosted by jpype.
-
-
-
-   .. py:method:: __enter__()
-
-      Initialization via the `with` statement.
-
-      :returns: The current instance.
-      :rtype: OWLAPIAdaptor
-
-
-
-   .. py:method:: open()
-
-      Start the JVM with jar dependencies, import necessary OWL API dependencies, and initialize attributes.
-
-
-
-   .. py:method:: close(*args, **kwargs) -> None
-
-      Shuts down the java virtual machine hosted by jpype.
+      Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype.
 
 
 

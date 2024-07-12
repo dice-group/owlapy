@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owlapi_adaptor &mdash; OWLAPY 0.1.2 documentation</title>
+  <title>owlapy.owlapi_adaptor &mdash; OWLAPY 1.1.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
@@ -18,7 +18,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=92734c54"></script>
+        <script src="../../_static/documentation_options.js?v=58fbf978"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -83,6 +83,7 @@
   <h1>Source code for owlapy.owlapi_adaptor</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">jpype.imports</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pkg_resources</span>
 
 <span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">manchester_to_owl_expression</span>
 <span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span>
@@ -90,6 +91,7 @@
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.render</span> <span class="kn">import</span> <span class="n">owl_expression_to_manchester</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
 
 <div class="viewcode-block" id="OWLAPIAdaptor">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor">[docs]</a>
@@ -103,10 +105,9 @@
 <span class="sd">        name_reasoner (str): The reasoner to be used, default is &quot;HermiT&quot;.</span>
 <span class="sd">        manager: The OWL ontology manager.</span>
 <span class="sd">        ontology: The loaded OWL ontology.</span>
-<span class="sd">        reasoner: The HermiT reasoner for the ontology.</span>
+<span class="sd">        reasoner: Choose from (case-sensitive): [&quot;HermiT&quot;, &quot;Pellet&quot;, &quot;JFact&quot;, &quot;Openllet&quot;]. Default: &quot;HermiT&quot;.</span>
 <span class="sd">        parser: The Manchester OWL Syntax parser.</span>
 <span class="sd">        renderer: The Manchester OWL Syntax renderer.</span>
-<span class="sd">        __is_open (bool): Flag to check if the JVM is open.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name_reasoner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -114,69 +115,65 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            path (str): The file path to the ontology.</span>
-<span class="sd">            name_reasoner (str, optional): The reasoner to be used. Defaults to &quot;HermiT&quot;.</span>
+<span class="sd">            name_reasoner (str, optional): The reasoner to be used.</span>
+<span class="sd">                    Available options are: [&#39;HermiT&#39; (default), &#39;Pellet&#39;, &#39;JFact&#39;, &#39;Openllet&#39;].</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            AssertionError: If the provided reasoner name is not implemented.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
-        <span class="k">assert</span> <span class="n">name_reasoner</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HermiT&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_reasoner</span><span class="si">}</span><span class="s2"> is not implemented. Please use HermiT&quot;</span>
+        <span class="k">assert</span> <span class="n">name_reasoner</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HermiT&quot;</span><span class="p">,</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">,</span> <span class="s2">&quot;JFact&quot;</span><span class="p">,</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">],</span> \
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">name_reasoner</span><span class="si">}</span><span class="s2">&#39; is not implemented. Available reasoners: [&#39;HermiT&#39;, &#39;Pellet&#39;, &#39;JFact&#39;, &#39;Openllet&#39;]&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">=</span> <span class="n">name_reasoner</span>
-        <span class="c1"># Attributes are initialized as JVMStarted is started</span>
+        <span class="c1"># Attributes are initialized as JVM is started</span>
         <span class="c1"># () Manager is needed to load an ontology</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># () Load a local ontology using the manager</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="c1"># () Create a HermiT reasoner for the loaded ontology</span>
+        <span class="c1"># () Create a reasoner for the loaded ontology</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># () A manchester renderer to render owlapi ce to manchester syntax</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__is_open</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># () Set up the necessary attributes by making use of the java packages</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup</span><span class="p">()</span>
 
-<div class="viewcode-block" id="OWLAPIAdaptor.__exit__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.__exit__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shuts down the java virtual machine hosted by jpype.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+    <span class="k">def</span> <span class="nf">_startJVM</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the JVM with jar dependencies. This method is called automatically on object initialization, if the</span>
+<span class="sd">        JVM is not started yet.&quot;&quot;&quot;</span>
+        <span class="c1"># Start a java virtual machine using the dependencies in the respective folder:</span>
+        <span class="n">jar_folder</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="s1">&#39;owlapy&#39;</span><span class="p">,</span> <span class="s1">&#39;jar_dependencies&#39;</span><span class="p">)</span>
+        <span class="n">jar_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.jar&#39;</span><span class="p">)]</span>
+        <span class="c1"># Starting JVM.</span>
+        <span class="n">jpype</span><span class="o">.</span><span class="n">startJVM</span><span class="p">(</span><span class="n">classpath</span><span class="o">=</span><span class="n">jar_files</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OWLAPIAdaptor.stopJVM">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.stopJVM">[docs]</a>
+    <span class="k">def</span> <span class="nf">stopJVM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isJVMStarted</span><span class="p">():</span>
+            <span class="n">jpype</span><span class="o">.</span><span class="n">detachThreadFromJVM</span><span class="p">()</span>
+            <span class="n">jpype</span><span class="o">.</span><span class="n">shutdownJVM</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="OWLAPIAdaptor.__enter__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.__enter__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialization via the `with` statement.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            OWLAPIAdaptor: The current instance.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_open</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
-
-
-<div class="viewcode-block" id="OWLAPIAdaptor.open">
-<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.open">[docs]</a>
-    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Start the JVM with jar dependencies, import necessary OWL API dependencies, and initialize attributes.</span>
+<span class="sd">        Start the JVM if not already, import necessary OWL API dependencies, and initialize attributes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isJVMStarted</span><span class="p">():</span>
-            <span class="c1"># Start a java virtual machine using the dependencies in the respective folder:</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()[</span><span class="o">-</span><span class="mi">6</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;owlapy&quot;</span><span class="p">:</span>
-                <span class="n">jar_folder</span> <span class="o">=</span> <span class="s2">&quot;jar_dependencies&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">jar_folder</span> <span class="o">=</span> <span class="s2">&quot;../jar_dependencies&quot;</span>
-            <span class="n">jar_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.jar&#39;</span><span class="p">)]</span>
-            <span class="c1"># Starting JVM.</span>
-            <span class="n">jpype</span><span class="o">.</span><span class="n">startJVM</span><span class="p">(</span><span class="n">classpath</span><span class="o">=</span><span class="n">jar_files</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_startJVM</span><span class="p">()</span>
 
         <span class="c1"># Import Java classes</span>
         <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.apibinding</span> <span class="kn">import</span> <span class="n">OWLManager</span>
         <span class="kn">from</span> <span class="nn">java.io</span> <span class="kn">import</span> <span class="n">File</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">org.semanticweb.HermiT</span> <span class="kn">import</span> <span class="n">ReasonerFactory</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">openllet.owlapi</span> <span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">uk.ac.manchester.cs.jfact</span> <span class="kn">import</span> <span class="n">JFactFactory</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">openllet.owlapi</span> <span class="kn">import</span> <span class="n">OpenlletReasonerFactory</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
 
@@ -190,27 +187,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">OWLManager</span><span class="o">.</span><span class="n">createOWLOntologyManager</span><span class="p">()</span>
         <span class="c1"># () Load a local ontology using the manager</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loadOntologyFromOntologyDocument</span><span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
-        <span class="c1"># () Create a HermiT reasoner for the loaded ontology</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="c1"># () Create a reasoner for the loaded ontology</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="n">OpenlletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
 
-        <span class="c1"># () Create a manchester parser and all the necessary attributes for parsing manchester syntax string to owlapi ce</span>
+        <span class="c1"># () Create a manchester parser and all the necessary attributes for parsing a manchester string to owlapi ce</span>
         <span class="n">ontology_set</span> <span class="o">=</span> <span class="n">HashSet</span><span class="p">()</span>
         <span class="n">ontology_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
         <span class="n">bidi_provider</span> <span class="o">=</span> <span class="n">BidirectionalShortFormProviderAdapter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span> <span class="n">ontology_set</span><span class="p">,</span> <span class="n">SimpleShortFormProvider</span><span class="p">())</span>
         <span class="n">entity_checker</span> <span class="o">=</span> <span class="n">ShortFormEntityChecker</span><span class="p">(</span><span class="n">bidi_provider</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxClassExpressionParser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">(),</span> <span class="n">entity_checker</span><span class="p">)</span>
         <span class="c1"># A manchester renderer to render owlapi ce to manchester syntax</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxOWLObjectRendererImpl</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="OWLAPIAdaptor.close">
-<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.close">[docs]</a>
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shuts down the java virtual machine hosted by jpype.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isJVMStarted</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isThreadAttachedToJVM</span><span class="p">():</span>
-            <span class="n">jpype</span><span class="o">.</span><span class="n">shutdownJVM</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__is_open</span> <span class="o">=</span> <span class="kc">False</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxOWLObjectRendererImpl</span><span class="p">()</span>
 
 <div class="viewcode-block" id="OWLAPIAdaptor.convert_to_owlapi">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.convert_to_owlapi">[docs]</a>
