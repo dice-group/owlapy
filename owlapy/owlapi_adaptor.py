@@ -1,5 +1,6 @@
 import jpype.imports
 import os
+import pkg_resources
 
 from owlapy import manchester_to_owl_expression
 from owlapy.class_expression import OWLClassExpression
@@ -7,6 +8,7 @@ from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.render import owl_expression_to_manchester
 from typing import List
+
 
 class OWLAPIAdaptor:
     """
@@ -18,10 +20,9 @@ class OWLAPIAdaptor:
         name_reasoner (str): The reasoner to be used, default is "HermiT".
         manager: The OWL ontology manager.
         ontology: The loaded OWL ontology.
-        reasoner: The HermiT reasoner for the ontology.
+        reasoner: Choose from (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"]. Default: "HermiT".
         parser: The Manchester OWL Syntax parser.
         renderer: The Manchester OWL Syntax renderer.
-        __is_open (bool): Flag to check if the JVM is open.
     """
     def __init__(self, path: str, name_reasoner: str = "HermiT"):
         """
@@ -29,61 +30,62 @@ class OWLAPIAdaptor:
 
         Args:
             path (str): The file path to the ontology.
-            name_reasoner (str, optional): The reasoner to be used. Defaults to "HermiT".
+            name_reasoner (str, optional): The reasoner to be used.
+                    Available options are: ['HermiT' (default), 'Pellet', 'JFact', 'Openllet'].
 
         Raises:
             AssertionError: If the provided reasoner name is not implemented.
         """
         self.path = path
-        assert name_reasoner in ["HermiT"], f"{name_reasoner} is not implemented. Please use HermiT"
+        assert name_reasoner in ["HermiT", "Pellet", "JFact", "Openllet"], \
+            f"'{name_reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet']"
         self.name_reasoner = name_reasoner
-        # Attributes are initialized as JVMStarted is started
+        # Attributes are initialized as JVM is started
         # () Manager is needed to load an ontology
         self.manager = None
         # () Load a local ontology using the manager
         self.ontology = None
-        # () Create a HermiT reasoner for the loaded ontology
+        # () Create a reasoner for the loaded ontology
         self.reasoner = None
         self.parser = None
         # () A manchester renderer to render owlapi ce to manchester syntax
         self.renderer = None
-        self.open()
-        self.__is_open = True
+        # () Set up the necessary attributes by making use of the java packages
+        self._setup()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Shuts down the java virtual machine hosted by jpype."""
-        self.close()
+    def _startJVM(self):
+        """Start the JVM with jar dependencies. This method is called automatically on object initialization, if the
+        JVM is not started yet."""
+        # Start a java virtual machine using the dependencies in the respective folder:
+        jar_folder = pkg_resources.resource_filename('owlapy', 'jar_dependencies')
+        jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
+        # Starting JVM.
+        jpype.startJVM(classpath=jar_files)
 
-    def __enter__(self):
+    def stopJVM(self, *args, **kwargs) -> None:
+        """Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype."""
+        if jpype.isJVMStarted():
+            jpype.detachThreadFromJVM()
+            jpype.shutdownJVM()
+
+    def _setup(self):
         """
-        Initialization via the `with` statement.
-
-        Returns:
-            OWLAPIAdaptor: The current instance.
-        """
-        if not self.__is_open:
-            self.open()
-        return self
-
-    def open(self):
-        """
-        Start the JVM with jar dependencies, import necessary OWL API dependencies, and initialize attributes.
+        Start the JVM if not already, import necessary OWL API dependencies, and initialize attributes.
         """
         if not jpype.isJVMStarted():
-            # Start a java virtual machine using the dependencies in the respective folder:
-            if os.getcwd()[-6:] == "owlapy":
-                jar_folder = "jar_dependencies"
-            else:
-                jar_folder = "../jar_dependencies"
-            jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
-            # Starting JVM.
-            jpype.startJVM(classpath=jar_files)
+            self._startJVM()
 
         # Import Java classes
         from org.semanticweb.owlapi.apibinding import OWLManager
         from java.io import File
         if self.name_reasoner == "HermiT":
             from org.semanticweb.HermiT import ReasonerFactory
+        elif self.name_reasoner == "Pellet":
+            from openllet.owlapi import PelletReasonerFactory
+        elif self.name_reasoner == "JFact":
+            from uk.ac.manchester.cs.jfact import JFactFactory
+        elif self.name_reasoner == "Openllet":
+            from openllet.owlapi import OpenlletReasonerFactory
         else:
             raise NotImplementedError("Not implemented")
 
@@ -97,10 +99,17 @@ class OWLAPIAdaptor:
         self.manager = OWLManager.createOWLOntologyManager()
         # () Load a local ontology using the manager
         self.ontology = self.manager.loadOntologyFromOntologyDocument(File(self.path))
-        # () Create a HermiT reasoner for the loaded ontology
-        self.reasoner = ReasonerFactory().createReasoner(self.ontology)
+        # () Create a reasoner for the loaded ontology
+        if self.name_reasoner == "HermiT":
+            self.reasoner = ReasonerFactory().createReasoner(self.ontology)
+        elif self.name_reasoner == "JFact":
+            self.reasoner = JFactFactory().createReasoner(self.ontology)
+        elif self.name_reasoner == "Pellet":
+            self.reasoner = PelletReasonerFactory().createReasoner(self.ontology)
+        elif self.name_reasoner == "Openllet":
+            self.reasoner = OpenlletReasonerFactory().getInstance().createReasoner(self.ontology)
 
-        # () Create a manchester parser and all the necessary attributes for parsing manchester syntax string to owlapi ce
+        # () Create a manchester parser and all the necessary attributes for parsing a manchester string to owlapi ce
         ontology_set = HashSet()
         ontology_set.add(self.ontology)
         bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
@@ -108,12 +117,6 @@ class OWLAPIAdaptor:
         self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
         # A manchester renderer to render owlapi ce to manchester syntax
         self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
-
-    def close(self, *args, **kwargs) -> None:
-        """Shuts down the java virtual machine hosted by jpype."""
-        if jpype.isJVMStarted() and not jpype.isThreadAttachedToJVM():
-            jpype.shutdownJVM()
-        self.__is_open = False
 
     def convert_to_owlapi(self, ce: OWLClassExpression):
         """
