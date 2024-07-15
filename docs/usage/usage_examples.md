@@ -1,4 +1,4 @@
-# Usage
+# Basic Usage
 
 The main usage for owlapy is to use it for class expression construction. Class 
 expression learning algorithms require such basic structure to work upon. Let's walk 
@@ -123,4 +123,5 @@ print(manchester_to_owl_expression("female and (hasChild max 2 person)", namespa
 ```
 
 In these examples we showed a fraction of **owlapy**. You can explore the
-[api documentation](owlapy) to learn more about all classes in owlapy.
+[api documentation](owlapy) to learn more about all classes in owlapy and check more 
+examples in the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) directory.

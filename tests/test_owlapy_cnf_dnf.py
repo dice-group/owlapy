@@ -7,7 +7,7 @@ from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.providers import owl_datatype_min_exclusive_restriction
-from owlapy.util import TopLevelCNF, TopLevelDNF
+from owlapy.utils import TopLevelCNF, TopLevelDNF
 
 
 class TopLevelNFTest(unittest.TestCase):

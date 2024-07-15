@@ -85,7 +85,7 @@ class VariablesMapping:
 class Owl2SparqlConverter:
     """Convert owl (owlapy model class expressions) to SPARQL."""
     __slots__ = 'ce', 'sparql', 'variables', 'parent', 'parent_var', 'properties', 'variable_entities', 'cnt', \
-                'mapping', 'grouping_vars', 'having_conditions', '_intersection'
+                'mapping', 'grouping_vars', 'having_conditions', 'for_all_de_morgan', 'named_individuals', '_intersection'
     # @TODO:CD: We need to document this class. The computation behind the mapping is not clear.
 
     ce: OWLClassExpression
@@ -100,8 +100,13 @@ class Owl2SparqlConverter:
     grouping_vars: Dict[OWLClassExpression, Set[str]]
     having_conditions: Dict[OWLClassExpression, Set[str]]
     cnt: int
+    for_all_de_morgan: bool
+    named_individuals: bool
 
-    def convert(self, root_variable: str, ce: OWLClassExpression, named_individuals: bool = False):
+    def convert(self, root_variable: str,
+                ce: OWLClassExpression,
+                for_all_de_morgan: bool = True,
+                named_individuals: bool = False):
         """Used to convert owl class expression to SPARQL syntax.
 
         Args:
@@ -124,9 +129,11 @@ class Owl2SparqlConverter:
         self.mapping = VariablesMapping()
         self.grouping_vars = defaultdict(set)
         self.having_conditions = defaultdict(set)
-        # if named_individuals is True, we return only entities that are instances of owl:NamedIndividual
-        if named_individuals:
-            self.append_triple(root_variable, 'a', f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
+        self.for_all_de_morgan = for_all_de_morgan
+        self.named_individuals = named_individuals
+        # # if named_individuals is True, we return only entities that are instances of owl:NamedIndividual
+        # if named_individuals:
+        #     self.append_triple(root_variable, 'a', f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
         with self.stack_variable(root_variable):
             with self.stack_parent(ce):
                 self.process(ce)
@@ -255,7 +262,19 @@ class Owl2SparqlConverter:
     @process.register
     def _(self, ce: OWLObjectComplementOf):
         subject = self.current_variable
-        self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
+        # the conversion was trying here to optimize the query
+        # but the proposed optimization alters the semantics of some queries
+        # example: ( A ⊓ ( B ⊔ ( ¬C ) ) )
+        # with the proposed optimization, the group graph pattern for (¬C) will be { FILTER NOT EXISTS { ?x a C } }
+        # however, the expected pattern is { ?x ?p ?o . FILTER NOT EXISTS { ?x a C } }
+        # the exclusion of "?x ?p ?o" results in the group graph pattern to just return true or false (not bindings)
+        # as a result, we need to comment out the if-clause of the following line
+        # if not self.in_intersection and self.modal_depth == 1:
+        # if namedIndividual is set to True, do not use variables --> restrict the subject to instances of NamedIndividual
+        if self.named_individuals:
+            self.append_triple(subject, "a", f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
+        else:
+            self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
 
         self.append("FILTER NOT EXISTS { ")
         # process the concept after the ¬
@@ -280,11 +299,17 @@ class Owl2SparqlConverter:
         with self.stack_variable(object_variable):
             self.process(filler)
 
+    @process.register
+    def _(self, ce: OWLObjectAllValuesFrom):
+        if self.for_all_de_morgan is True:
+            self.forAllDeMorgan(ce)
+        else:
+            self.forAll(ce)
+
     # an overload of process function
     # this overload is responsible for handling the forAll operator (e.g., ∀hasChild.Male)
     # general case: ∀r.C
-    @process.register
-    def _(self, ce: OWLObjectAllValuesFrom):
+    def forAll(self, ce: OWLObjectAllValuesFrom):
         subject = self.current_variable
         object_variable = self.mapping.new_individual_variable()
         # property expression holds the role of the class expression (hasChild in our example)
@@ -332,6 +357,34 @@ class Owl2SparqlConverter:
         else:
             self.append_triple(self.current_variable, predicate, self.mapping.new_individual_variable())
         self.append(" } }")
+
+    # an overload of process function
+    # this overload is responsible for handling the forAll operator but as if the DeMorgan law was applied
+    # (e.g., ∀hasChild.Male == ¬(∃hasChild.¬Male))
+    # general case: ∀r.C == ¬(∃r.¬C)
+    def forAllDeMorgan(self, ce: OWLObjectAllValuesFrom):
+        subject = self.current_variable
+        # here, we need to apply the complement rule twice
+        # the first filter not exists covers the outer ¬
+        self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
+        self.append("FILTER NOT EXISTS { ")
+        object_variable = self.mapping.new_individual_variable()
+        # property expression holds the role of the class expression (hasChild in our example)
+        property_expression = ce.get_property()
+        if property_expression.is_anonymous():
+            # property expression is inverse of a property
+            self.append_triple(object_variable, property_expression.get_named_property(), self.current_variable)
+        else:
+            self.append_triple(self.current_variable, property_expression.get_named_property(), object_variable)
+
+        # the second filter not exists covers the inner ¬
+        # filler holds the concept of the expression (Male in our example) and is processed recursively
+        self.append("FILTER NOT EXISTS { ")
+        filler = ce.get_filler()
+        with self.stack_variable(object_variable):
+            self.process(filler)
+        self.append(" }")
+        self.append(" }")
 
     # an overload of process function
     # this overload is responsible for handling the exists operator combined with an individual (e.g., ∃hasChild.{john})
@@ -550,21 +603,19 @@ class Owl2SparqlConverter:
     def as_query(self,
                  root_variable: str,
                  ce: OWLClassExpression,
+                 for_all_de_morgan: bool = True,
                  count: bool = False,
                  values: Optional[Iterable[OWLNamedIndividual]] = None,
-                 named_individuals: bool = False)->str:
-        """
-        root variable: the variable that will be projected
-        ce: the class expression to be transformed to a SPARQL query
-        count: True, counts the results ; False, projects the individuals
-        values: positive or negative examples from a class expression problem
-        named_individuals: if set to True, the generated SPARQL query will return only entities that are instances
-        of owl:NamedIndividual
-
-        """
-
+                 named_individuals: bool = False) -> str:
+        # root variable: the variable that will be projected
+        # ce: the class expression to be transformed to a SPARQL query
+        # for_all_de_morgan: true -> ¬(∃r.¬C), false -> (∀r.C)
+        # count: True, counts the results ; False, projects the individuals
+        # values: positive or negative examples from a class expression problem
+        # named_individuals: if set to True, the generated SPARQL query will return only entities that are instances
+        #                    of owl:NamedIndividual
         qs = ["SELECT"]
-        tp = self.convert(root_variable, ce, named_individuals)
+        tp = self.convert(root_variable, ce, for_all_de_morgan=for_all_de_morgan, named_individuals=named_individuals)
         if count:
             qs.append(f" ( COUNT ( DISTINCT {root_variable} ) AS ?cnt ) WHERE {{ ")
         else:
@@ -590,14 +641,18 @@ converter = Owl2SparqlConverter()
 def owl_expression_to_sparql(expression: OWLClassExpression = None,
                              root_variable: str = "?x",
                              values: Optional[Iterable[OWLNamedIndividual]] = None,
+                             for_all_de_morgan: bool = True,
                              named_individuals: bool = False) -> str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
      root variable: the variable that will be projected
      expression: the class expression to be transformed to a SPARQL query
 
      values: positive or negative examples from a class expression problem. Unclear
+     for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS
+     patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
      named_individuals: if set to True, the generated SPARQL query will return only entities
      that are instances of owl:NamedIndividual
     """
     assert expression is not None, "expression cannot be None"
-    return converter.as_query(root_variable, expression, False, values, named_individuals)
+    return converter.as_query(root_variable, expression, count=False, values=values,
+                              named_individuals=named_individuals, for_all_de_morgan=for_all_de_morgan)

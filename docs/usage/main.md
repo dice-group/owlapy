@@ -1,6 +1,6 @@
 # About owlapy
 
-**Version:** owlapy 1.0.1
+**Version:** owlapy 1.1.1
 
 **GitHub repository:** [https://github.com/dice-group/owlapy](https://github.com/dice-group/owlapy)
 
@@ -8,7 +8,7 @@
 
 **Contact**: [onto-learn@lists.uni-paderborn.de](mailto:onto-learn@lists.uni-paderborn.de)
 
-**License:** GNU Affero General Public License v3 or later (AGPLv3+)
+**License:** MIT License
 
 --------------------------------------------------------------------------------------------
 ## What is owlapy?
@@ -16,7 +16,7 @@ Owlapy is an open-source software library in python that is used to represent en
 in OWL 2 Web Ontology Language.
 
 We identified the gap of having a library that will serve as a base structure 
-for representing OWL entities in python and like that, owlapy was created. Owlapy 
+for representing OWL entities and for manipulating OWL Ontologies in python, and like that, owlapy was created. Owlapy 
 is loosely based on its java-counterpart, _owlapi_. Owlapy is currently utilized 
 by powerful libraries such as [Ontolearn](https://github.com/dice-group/Ontolearn)
 and [OntoSample](https://github.com/alkidbaci/OntoSample). 
@@ -27,7 +27,9 @@ focus on knowledge graphs and class expression learnings.
 ---------------------------------------
 
 ## What does owlapy have to offer?
-
+- Create, manipulate and save Ontologies.
+- Retrieving information from the signature of the ontology.
+- Reasoning over ontology.
 - Represent every notation in 
 [OWL 2 Structural Specification and Functional-Style Syntax](https://www.w3.org/TR/owl2-syntax/)
 including: 
