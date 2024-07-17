@@ -1,3 +1,8 @@
+"""
+Owlapi Adaptor
+
+Part of the docstrings are taken directly from owlapi
+"""
 import jpype.imports
 import os
 import pkg_resources
@@ -23,6 +28,7 @@ class OWLAPIAdaptor:
         reasoner: Choose from (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"]. Default: "HermiT".
         parser: The Manchester OWL Syntax parser.
         renderer: The Manchester OWL Syntax renderer.
+        namespace: Namespace(IRI) of the OWL ontology.
     """
     def __init__(self, path: str, name_reasoner: str = "HermiT"):
         """
@@ -38,7 +44,8 @@ class OWLAPIAdaptor:
         """
         self.path = path
         assert name_reasoner in ["HermiT", "Pellet", "JFact", "Openllet"], \
-            f"'{name_reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet']"
+            (f"'{name_reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet']. "
+             f"This field is case sensitive.")
         self.name_reasoner = name_reasoner
         # Attributes are initialized as JVM is started
         # () Manager is needed to load an ontology
@@ -50,6 +57,7 @@ class OWLAPIAdaptor:
         self.parser = None
         # () A manchester renderer to render owlapi ce to manchester syntax
         self.renderer = None
+        self.namespace = None
         # () Set up the necessary attributes by making use of the java packages
         self._setup()
 
@@ -99,6 +107,15 @@ class OWLAPIAdaptor:
         self.manager = OWLManager.createOWLOntologyManager()
         # () Load a local ontology using the manager
         self.ontology = self.manager.loadOntologyFromOntologyDocument(File(self.path))
+        self.namespace = self.ontology.getOntologyID().getOntologyIRI().orElse(None)
+        # () getting the namespace of the ontology
+        if self.namespace is not None:
+            self.namespace = str(self.namespace)
+            if self.namespace[-1] not in ["/", "#", ":"]:
+                self.namespace += "#"
+        else:
+            self.namespace = "http://www.anonymous.org/anonymous#"
+
         # () Create a reasoner for the loaded ontology
         if self.name_reasoner == "HermiT":
             self.reasoner = ReasonerFactory().createReasoner(self.ontology)
@@ -130,31 +147,89 @@ class OWLAPIAdaptor:
         """
         return self.parser.parse(owl_expression_to_manchester(ce))
 
-    def convert_from_owlapi(self, ce, namespace: str) -> OWLClassExpression:
+    def convert_from_owlapi(self, ce) -> OWLClassExpression:
         """
         Converts an OWLAPI class expression to an OWLAPY class expression.
 
         Args:
             ce: The class expression in OWLAPI format.
-            namespace (str): The ontology's namespace where the class expression belongs.
 
         Returns:
             OWLClassExpression: The class expression in OWLAPY format.
         """
-        return manchester_to_owl_expression(str(self.renderer.render(ce)), namespace)
+        return manchester_to_owl_expression(str(self.renderer.render(ce)), self.namespace)
 
-    def instances(self, ce: OWLClassExpression)->List[OWLNamedIndividual]:
+    def instances(self, ce: OWLClassExpression, direct=False) -> List[OWLNamedIndividual]:
         """
         Get the instances for a given class expression using HermiT.
 
         Args:
             ce (OWLClassExpression): The class expression in OWLAPY format.
+            direct (bool): Whether to get direct instances or not. Defaults to False.
 
         Returns:
             list: A list of individuals classified by the given class expression.
         """
-        inds = self.reasoner.getInstances(self.convert_to_owlapi(ce), False).getFlattened()
+        inds = self.reasoner.getInstances(self.convert_to_owlapi(ce), direct).getFlattened()
         return [OWLNamedIndividual(IRI.create(str(ind)[1:-1])) for ind in inds]
+
+    def equivalent_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
+        """
+        Gets the set of named classes that are equivalent to the specified class expression with
+        respect to the set of reasoner axioms.
+
+        Args:
+            ce (OWLClassExpression): The class expression whose equivalent classes are to be retrieved.
+
+        Returns:
+            Equivalent classes of the given class expression.
+        """
+        classes = self.reasoner.getEquivalentClasses(self.convert_to_owlapi(ce)).getEntities()
+        yield from [self.convert_from_owlapi(cls) for cls in classes]
+
+    def disjoint_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
+        """
+        Gets the classes that are disjoint with the specified class expression.
+
+        Args:
+            ce (OWLClassExpression): The class expression whose disjoint classes are to be retrieved.
+
+        Returns:
+            Disjoint classes of the given class expression.
+        """
+        classes = self.reasoner.getDisjointClasses(self.convert_to_owlapi(ce)).getFlattened()
+        yield from [self.convert_from_owlapi(cls) for cls in classes]
+
+    def sub_classes(self, ce: OWLClassExpression, direct=False) -> List[OWLClassExpression]:
+        """
+         Gets the set of named classes that are the strict (potentially direct) subclasses of the
+         specified class expression with respect to the reasoner axioms.
+
+         Args:
+             ce (OWLClassExpression): The class expression whose strict (direct) subclasses are to be retrieved.
+             direct (bool, optional): Specifies if the direct subclasses should be retrieved (True) or if
+                all subclasses (descendant) classes should be retrieved (False). Defaults to False.
+        Returns:
+            The subclasses of the given class expression depending on `direct` field.
+        """
+        classes = self.reasoner.getSubClasses(self.convert_to_owlapi(ce), direct).getFlattened()
+        yield from [self.convert_from_owlapi(cls) for cls in classes]
+
+    def super_classes(self, ce: OWLClassExpression, direct=False) -> List[OWLClassExpression]:
+        """
+        Gets the stream of named classes that are the strict (potentially direct) super classes of
+        the specified class expression with respect to the imports closure of the root ontology.
+
+        Args:
+             ce (OWLClassExpression): The class expression whose strict (direct) subclasses are to be retrieved.
+             direct (bool, optional): Specifies if the direct superclasses should be retrieved (True) or if
+                all superclasses (descendant) classes should be retrieved (False). Defaults to False.
+
+        Returns:
+            The subclasses of the given class expression depending on `direct` field.
+        """
+        classes = self.reasoner.getSuperClasses(self.convert_to_owlapi(ce), direct).getFlattened()
+        yield from [self.convert_from_owlapi(cls) for cls in classes]
 
     def has_consistent_ontology(self) -> bool:
         """
