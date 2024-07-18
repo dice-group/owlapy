@@ -49,7 +49,7 @@ _DL_SYNTAX = types.SimpleNamespace(
 
 def _simple_short_form_provider(e: OWLEntity) -> str:
     iri: IRI = e.iri
-    sf = iri.get_short_form()
+    sf = iri.reminder
     for ns in [namespaces.XSD, namespaces.OWL, namespaces.RDFS, namespaces.RDF]:
         if iri.get_namespace() == ns:
             return "%s:%s" % (ns.prefix, sf)

@@ -156,14 +156,6 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         Returns:
             The string corresponding to the reminder of the IRI.
         """
-        return self.reminder()
-
-    def get_short_form(self) -> str:
-        """Gets the short form.
-
-        Returns:
-            A string that represents the short form.
-        """
         return self._remainder
 
     def get_namespace(self) -> str:
