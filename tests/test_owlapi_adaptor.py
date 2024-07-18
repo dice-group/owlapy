@@ -82,8 +82,8 @@ class TestOwlapiAdaptor(unittest.TestCase):
         self.assertEqual(class_expression, ce_converted)
 
         # convert back to owlapy and check for equality
-        ce_1 = self.adaptor.convert_from_owlapi(class_expression, self.ns)
-        ce_2 = self.adaptor.convert_from_owlapi(ce_converted, self.ns)
+        ce_1 = self.adaptor.convert_from_owlapi(class_expression)
+        ce_2 = self.adaptor.convert_from_owlapi(ce_converted)
 
         self.assertEqual(ce_1, ce_2)
         self.assertEqual(ce_1, self.ce)
