@@ -122,7 +122,42 @@ class OWLAPIAdaptor:
         # A manchester renderer to render owlapi ce to manchester syntax
         self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
 
-    def generate_inferred_class_assertion_axioms(self, output="temp.ttl", format:str=None):
+    def infer_and_save(self, output_path:str=None, output_format:str=None, inference_types:list[str]=None):
+        from java.io import File, FileOutputStream
+        from java.util import ArrayList
+        from org.semanticweb.owlapi.util import InferredSubClassAxiomGenerator, InferredClassAssertionAxiomGenerator
+        from org.semanticweb.owlapi.util import InferredOntologyGenerator, InferredEquivalentClassAxiomGenerator,InferredInverseObjectPropertiesAxiomGenerator
+        from org.semanticweb.owlapi.util import InferredDisjointClassesAxiomGenerator
+        from org.semanticweb.owlapi.formats import TurtleDocumentFormat, RDFXMLDocumentFormat, OWLXMLDocumentFormat
+
+        if output_format == "ttl" or output_format == "turtle":
+            document_format = TurtleDocumentFormat()
+        elif output_format == "rdf/xml":
+            document_format = RDFXMLDocumentFormat()
+        elif output_format == "owl/xml":
+            document_format = OWLXMLDocumentFormat()
+        else:
+            document_format = self.manager.getOntologyFormat(self.ontology)
+        generators = ArrayList()
+        inference_types_mapping = {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
+                                   "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
+                                   "InferredDisjointClassesAxiomGenerator":InferredDisjointClassesAxiomGenerator(),
+                                   "InferredEquivalentClassAxiomGenerator":InferredEquivalentClassAxiomGenerator(),
+                                   "InferredInverseObjectPropertiesAxiomGenerator":InferredInverseObjectPropertiesAxiomGenerator(),
+                                   "InferredEquivalentClassAxiomGenerator":InferredEquivalentClassAxiomGenerator()}
+        for i in inference_types:
+            if java_object := inference_types_mapping.get(i, None):
+                generators.add(java_object)
+
+        iog = InferredOntologyGenerator(self.reasoner, generators)
+        inferredAxiomsOntology = self.manager.createOntology()
+        iog.fillOntology(self.manager.getOWLDataFactory(), inferredAxiomsOntology);
+        inferredOntologyFile = File(output_path)
+        inferredOntologyFile = inferredOntologyFile.getAbsoluteFile()
+        outputStream = FileOutputStream(inferredOntologyFile)
+        self.manager.saveOntology(inferredAxiomsOntology, document_format, outputStream);
+
+    def generate_inferred_class_assertion_axioms(self, output="temp.ttl", output_format: str = None):
         """
         Generates inferred class assertion axioms for the ontology managed by this instance's reasoner and saves them to a file.
 
@@ -134,7 +169,7 @@ class OWLAPIAdaptor:
         output : str, optional
             The name of the file where the inferred axioms will be saved. Default is "temp.ttl".
 
-        format : str, optional
+        output_format : str, optional
             The format in which to save the inferred axioms. Supported formats are:
             - "ttl" or "turtle" for Turtle format
             - "rdf/xml" for RDF/XML format
@@ -173,6 +208,7 @@ class OWLAPIAdaptor:
 
         # generators.add(InferredSubClassAxiomGenerator())
         generators.add(InferredClassAssertionAxiomGenerator())
+
         iog = InferredOntologyGenerator(self.reasoner, generators)
         inferredAxiomsOntology = self.manager.createOntology()
         iog.fillOntology(self.manager.getOWLDataFactory(), inferredAxiomsOntology);
