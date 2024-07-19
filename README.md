@@ -17,6 +17,12 @@ pip3 install owlapy
 ```
 
 
+```shell
+# To download RDF knowledge graphs
+wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
+pytest -p no:warnings -x # Running 103 tests takes ~ 30 mins
+```
+
 ## Usage
 
 In this example we start with a simple atomic class expression and move to some more complex 
@@ -56,6 +62,15 @@ class. In the above examples we have introduced 3 types of class expressions:
 
 Like we showed in this example, you can create all kinds of class expressions using the 
 OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/index.html).
+
+Missing class assertions can be easily inferred 
+```python
+from owlapy.owlapi_adaptor import OWLAPIAdaptor
+adaptor = OWLAPIAdaptor(path="..", name_reasoner="HermiT")
+# Infer missing class assertions
+adaptor.generate_inferred_class_assertion_axioms(output="...")
+adaptor.stopJVM()
+```
 
 Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) folder.
 

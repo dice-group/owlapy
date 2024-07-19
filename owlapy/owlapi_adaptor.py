@@ -24,6 +24,7 @@ class OWLAPIAdaptor:
         parser: The Manchester OWL Syntax parser.
         renderer: The Manchester OWL Syntax renderer.
     """
+
     def __init__(self, path: str, name_reasoner: str = "HermiT"):
         """
         Initialize the OWLAPIAdaptor with a path to an ontology and a reasoner name.
@@ -90,9 +91,11 @@ class OWLAPIAdaptor:
             raise NotImplementedError("Not implemented")
 
         from org.semanticweb.owlapi.manchestersyntax.parser import ManchesterOWLSyntaxClassExpressionParser
-        from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
+        from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider, \
+            InferredSubClassAxiomGenerator, InferredClassAssertionAxiomGenerator
+
         from org.semanticweb.owlapi.expression import ShortFormEntityChecker
-        from java.util import HashSet
+        from java.util import HashSet, ArrayList
         from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
 
         # () Manager is needed to load an ontology
@@ -102,6 +105,7 @@ class OWLAPIAdaptor:
         # () Create a reasoner for the loaded ontology
         if self.name_reasoner == "HermiT":
             self.reasoner = ReasonerFactory().createReasoner(self.ontology)
+            assert self.reasoner.getReasonerName() == "HermiT"
         elif self.name_reasoner == "JFact":
             self.reasoner = JFactFactory().createReasoner(self.ontology)
         elif self.name_reasoner == "Pellet":
@@ -117,6 +121,65 @@ class OWLAPIAdaptor:
         self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
         # A manchester renderer to render owlapi ce to manchester syntax
         self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
+
+    def generate_inferred_class_assertion_axioms(self, output="temp.ttl", format:str=None):
+        """
+        Generates inferred class assertion axioms for the ontology managed by this instance's reasoner and saves them to a file.
+
+        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner
+        associated with this instance. The inferred axioms are saved to the specified output file in the desired format.
+
+        Parameters:
+        -----------
+        output : str, optional
+            The name of the file where the inferred axioms will be saved. Default is "temp.ttl".
+
+        format : str, optional
+            The format in which to save the inferred axioms. Supported formats are:
+            - "ttl" or "turtle" for Turtle format
+            - "rdf/xml" for RDF/XML format
+            - "owl/xml" for OWL/XML format
+            If not specified, the format of the original ontology is used.
+
+        Notes:
+        ------
+        - The function supports saving in multiple formats: Turtle, RDF/XML, and OWL/XML.
+        - The inferred axioms are generated using the reasoner associated with this instance and the OWL API's
+          InferredClassAssertionAxiomGenerator.
+        - The inferred axioms are added to a new ontology which is then saved in the specified format.
+
+        Example:
+        --------
+        >>> instance.generate_inferred_class_assertion_axioms(output="inferred_axioms.ttl", format="ttl")
+
+        This will save the inferred class assertion axioms to the file "inferred_axioms.ttl" in Turtle format.
+
+        """
+        from java.io import File, FileOutputStream
+        from java.util import ArrayList
+        from org.semanticweb.owlapi.util import InferredSubClassAxiomGenerator, InferredClassAssertionAxiomGenerator
+        from org.semanticweb.owlapi.util import InferredOntologyGenerator
+        from org.semanticweb.owlapi.formats import TurtleDocumentFormat, RDFXMLDocumentFormat, OWLXMLDocumentFormat
+        if format == "ttl" or format == "turtle":
+            document_format = TurtleDocumentFormat()
+        elif format == "rdf/xml":
+            document_format = RDFXMLDocumentFormat()
+        elif format == "owl/xml":
+            document_format = OWLXMLDocumentFormat()
+        else:
+            document_format = self.manager.getOntologyFormat(self.ontology)
+
+        generators = ArrayList()
+
+        # generators.add(InferredSubClassAxiomGenerator())
+        generators.add(InferredClassAssertionAxiomGenerator())
+        iog = InferredOntologyGenerator(self.reasoner, generators)
+        inferredAxiomsOntology = self.manager.createOntology()
+        iog.fillOntology(self.manager.getOWLDataFactory(), inferredAxiomsOntology);
+        inferredOntologyFile = File(output)
+        inferredOntologyFile = inferredOntologyFile.getAbsoluteFile()
+        outputStream = FileOutputStream(inferredOntologyFile)
+        self.manager.saveOntology(inferredAxiomsOntology, document_format, outputStream);
 
     def convert_to_owlapi(self, ce: OWLClassExpression):
         """
@@ -143,7 +206,7 @@ class OWLAPIAdaptor:
         """
         return manchester_to_owl_expression(str(self.renderer.render(ce)), namespace)
 
-    def instances(self, ce: OWLClassExpression)->List[OWLNamedIndividual]:
+    def instances(self, ce: OWLClassExpression) -> List[OWLNamedIndividual]:
         """
         Get the instances for a given class expression using HermiT.
 
