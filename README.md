@@ -63,12 +63,21 @@ class. In the above examples we have introduced 3 types of class expressions:
 Like we showed in this example, you can create all kinds of class expressions using the 
 OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/index.html).
 
-Missing class assertions can be easily inferred 
+Many axioms can automatically inferred with a selected reasoner
 ```python
 from owlapy.owlapi_adaptor import OWLAPIAdaptor
-adaptor = OWLAPIAdaptor(path="..", name_reasoner="HermiT")
+
+adaptor = OWLAPIAdaptor(path="KGs/Family/family-benchmark_rich_background.owl", name_reasoner="Pellet")
 # Infer missing class assertions
-adaptor.generate_inferred_class_assertion_axioms(output="...")
+adaptor.infer_and_save(output_path="KGs/Family/inferred_family-benchmark_rich_background.ttl",
+                       output_format="ttl",
+                       inference_types=[
+                           "InferredClassAssertionAxiomGenerator",
+                           "InferredEquivalentClassAxiomGenerator",
+                           "InferredDisjointClassesAxiomGenerator",
+                                        "InferredSubClassAxiomGenerator",
+                                        "InferredInverseObjectPropertiesAxiomGenerator",
+                                        "InferredEquivalentClassAxiomGenerator"])
 adaptor.stopJVM()
 ```
 
