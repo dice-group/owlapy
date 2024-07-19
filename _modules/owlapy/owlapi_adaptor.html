@@ -109,6 +109,7 @@
 <span class="sd">        parser: The Manchester OWL Syntax parser.</span>
 <span class="sd">        renderer: The Manchester OWL Syntax renderer.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name_reasoner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the OWLAPIAdaptor with a path to an ontology and a reasoner name.</span>
@@ -178,9 +179,11 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
 
         <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.manchestersyntax.parser</span> <span class="kn">import</span> <span class="n">ManchesterOWLSyntaxClassExpressionParser</span>
-        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">BidirectionalShortFormProviderAdapter</span><span class="p">,</span> <span class="n">SimpleShortFormProvider</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">BidirectionalShortFormProviderAdapter</span><span class="p">,</span> <span class="n">SimpleShortFormProvider</span><span class="p">,</span> \
+            <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span> <span class="n">InferredClassAssertionAxiomGenerator</span>
+
         <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.expression</span> <span class="kn">import</span> <span class="n">ShortFormEntityChecker</span>
-        <span class="kn">from</span> <span class="nn">java.util</span> <span class="kn">import</span> <span class="n">HashSet</span>
+        <span class="kn">from</span> <span class="nn">java.util</span> <span class="kn">import</span> <span class="n">HashSet</span><span class="p">,</span> <span class="n">ArrayList</span>
         <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.manchestersyntax.renderer</span> <span class="kn">import</span> <span class="n">ManchesterOWLSyntaxOWLObjectRendererImpl</span>
 
         <span class="c1"># () Manager is needed to load an ontology</span>
@@ -190,6 +193,7 @@
         <span class="c1"># () Create a reasoner for the loaded ontology</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="o">.</span><span class="n">getReasonerName</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
@@ -205,6 +209,68 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxClassExpressionParser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">(),</span> <span class="n">entity_checker</span><span class="p">)</span>
         <span class="c1"># A manchester renderer to render owlapi ce to manchester syntax</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxOWLObjectRendererImpl</span><span class="p">()</span>
+
+<div class="viewcode-block" id="OWLAPIAdaptor.generate_inferred_class_assertion_axioms">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.generate_inferred_class_assertion_axioms">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_inferred_class_assertion_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;temp.ttl&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates inferred class assertion axioms for the ontology managed by this instance&#39;s reasoner and saves them to a file.</span>
+
+<span class="sd">        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner</span>
+<span class="sd">        associated with this instance. The inferred axioms are saved to the specified output file in the desired format.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        output : str, optional</span>
+<span class="sd">            The name of the file where the inferred axioms will be saved. Default is &quot;temp.ttl&quot;.</span>
+
+<span class="sd">        format : str, optional</span>
+<span class="sd">            The format in which to save the inferred axioms. Supported formats are:</span>
+<span class="sd">            - &quot;ttl&quot; or &quot;turtle&quot; for Turtle format</span>
+<span class="sd">            - &quot;rdf/xml&quot; for RDF/XML format</span>
+<span class="sd">            - &quot;owl/xml&quot; for OWL/XML format</span>
+<span class="sd">            If not specified, the format of the original ontology is used.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">        ------</span>
+<span class="sd">        - The function supports saving in multiple formats: Turtle, RDF/XML, and OWL/XML.</span>
+<span class="sd">        - The inferred axioms are generated using the reasoner associated with this instance and the OWL API&#39;s</span>
+<span class="sd">          InferredClassAssertionAxiomGenerator.</span>
+<span class="sd">        - The inferred axioms are added to a new ontology which is then saved in the specified format.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; instance.generate_inferred_class_assertion_axioms(output=&quot;inferred_axioms.ttl&quot;, format=&quot;ttl&quot;)</span>
+
+<span class="sd">        This will save the inferred class assertion axioms to the file &quot;inferred_axioms.ttl&quot; in Turtle format.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">java.io</span> <span class="kn">import</span> <span class="n">File</span><span class="p">,</span> <span class="n">FileOutputStream</span>
+        <span class="kn">from</span> <span class="nn">java.util</span> <span class="kn">import</span> <span class="n">ArrayList</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span> <span class="n">InferredClassAssertionAxiomGenerator</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">InferredOntologyGenerator</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.formats</span> <span class="kn">import</span> <span class="n">TurtleDocumentFormat</span><span class="p">,</span> <span class="n">RDFXMLDocumentFormat</span><span class="p">,</span> <span class="n">OWLXMLDocumentFormat</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;ttl&quot;</span> <span class="ow">or</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;turtle&quot;</span><span class="p">:</span>
+            <span class="n">document_format</span> <span class="o">=</span> <span class="n">TurtleDocumentFormat</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;rdf/xml&quot;</span><span class="p">:</span>
+            <span class="n">document_format</span> <span class="o">=</span> <span class="n">RDFXMLDocumentFormat</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;owl/xml&quot;</span><span class="p">:</span>
+            <span class="n">document_format</span> <span class="o">=</span> <span class="n">OWLXMLDocumentFormat</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">document_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOntologyFormat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+
+        <span class="n">generators</span> <span class="o">=</span> <span class="n">ArrayList</span><span class="p">()</span>
+
+        <span class="c1"># generators.add(InferredSubClassAxiomGenerator())</span>
+        <span class="n">generators</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">())</span>
+        <span class="n">iog</span> <span class="o">=</span> <span class="n">InferredOntologyGenerator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="p">,</span> <span class="n">generators</span><span class="p">)</span>
+        <span class="n">inferredAxiomsOntology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">createOntology</span><span class="p">()</span>
+        <span class="n">iog</span><span class="o">.</span><span class="n">fillOntology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">(),</span> <span class="n">inferredAxiomsOntology</span><span class="p">);</span>
+        <span class="n">inferredOntologyFile</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">inferredOntologyFile</span> <span class="o">=</span> <span class="n">inferredOntologyFile</span><span class="o">.</span><span class="n">getAbsoluteFile</span><span class="p">()</span>
+        <span class="n">outputStream</span> <span class="o">=</span> <span class="n">FileOutputStream</span><span class="p">(</span><span class="n">inferredOntologyFile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">saveOntology</span><span class="p">(</span><span class="n">inferredAxiomsOntology</span><span class="p">,</span> <span class="n">document_format</span><span class="p">,</span> <span class="n">outputStream</span><span class="p">);</span></div>
+
 
 <div class="viewcode-block" id="OWLAPIAdaptor.convert_to_owlapi">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.convert_to_owlapi">[docs]</a>
@@ -239,7 +305,7 @@
 
 <div class="viewcode-block" id="OWLAPIAdaptor.instances">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.instances">[docs]</a>
-    <span class="k">def</span> <span class="nf">instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the instances for a given class expression using HermiT.</span>
 

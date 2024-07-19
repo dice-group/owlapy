@@ -87,6 +87,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.parser"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.parser</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.renderer"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.renderer</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.stopJVM"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.stopJVM()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.generate_inferred_class_assertion_axioms"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.generate_inferred_class_assertion_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.convert_to_owlapi"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.convert_to_owlapi()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.convert_from_owlapi"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.convert_from_owlapi()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.instances"><code class="docutils literal notranslate"><span class="pre">OWLAPIAdaptor.instances()</span></code></a></li>
@@ -212,6 +213,43 @@ reasoning, and parsing class expressions in Manchester OWL Syntax.</p>
 <dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.stopJVM">
 <span class="sig-name descname"><span class="pre">stopJVM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owlapi_adaptor.html#OWLAPIAdaptor.stopJVM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.stopJVM" title="Link to this definition"></a></dt>
 <dd><p>Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owlapi_adaptor.OWLAPIAdaptor.generate_inferred_class_assertion_axioms">
+<span class="sig-name descname"><span class="pre">generate_inferred_class_assertion_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'temp.ttl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owlapi_adaptor.html#OWLAPIAdaptor.generate_inferred_class_assertion_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_adaptor.OWLAPIAdaptor.generate_inferred_class_assertion_axioms" title="Link to this definition"></a></dt>
+<dd><p>Generates inferred class assertion axioms for the ontology managed by this instance’s reasoner and saves them to a file.</p>
+<p>This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner
+associated with this instance. The inferred axioms are saved to the specified output file in the desired format.</p>
+<section id="parameters">
+<h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>output<span class="classifier">str, optional</span></dt><dd><p>The name of the file where the inferred axioms will be saved. Default is “temp.ttl”.</p>
+</dd>
+<dt>format<span class="classifier">str, optional</span></dt><dd><p>The format in which to save the inferred axioms. Supported formats are:
+- “ttl” or “turtle” for Turtle format
+- “rdf/xml” for RDF/XML format
+- “owl/xml” for OWL/XML format
+If not specified, the format of the original ontology is used.</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h3>Notes:<a class="headerlink" href="#notes" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The function supports saving in multiple formats: Turtle, RDF/XML, and OWL/XML.</p></li>
+<li><p>The inferred axioms are generated using the reasoner associated with this instance and the OWL API’s
+InferredClassAssertionAxiomGenerator.</p></li>
+<li><p>The inferred axioms are added to a new ontology which is then saved in the specified format.</p></li>
+</ul>
+</section>
+<section id="example">
+<h3>Example:<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">generate_inferred_class_assertion_axioms</span><span class="p">(</span><span class="n">output</span><span class="o">=</span><span class="s2">&quot;inferred_axioms.ttl&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;ttl&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will save the inferred class assertion axioms to the file “inferred_axioms.ttl” in Turtle format.</p>
+</section>
 </dd></dl>
 
 <dl class="py method">
