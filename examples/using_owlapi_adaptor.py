@@ -24,7 +24,7 @@ print("Individuals that are brother and father at the same time:")
 py_to_pi = adaptor.convert_to_owlapi(brother_and_father)
 
 # Convert from owlapi to owlapy
-pi_to_py = adaptor.convert_from_owlapi(py_to_pi, "http://www.benchmark.org/family#")
+pi_to_py = adaptor.convert_from_owlapi(py_to_pi)
 print("----------------------")
 print(f"Owlapy ce: {pi_to_py}")
 
