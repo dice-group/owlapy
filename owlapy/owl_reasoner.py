@@ -29,6 +29,7 @@ from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OW
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
+from owlapy.owlapi_adaptor import OWLAPIAdaptor
 from owlapy.utils import LRUCache
 
 logger = logging.getLogger(__name__)
@@ -1687,7 +1688,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
 
 class SyncReasoner(OntologyReasoner):
     __slots__ = '_cnt', '_conv', '_base_reasoner'
-
+    # TODO: Deprecated
     _conv: ToOwlready2
     _base_reasoner: BaseReasoner
 
@@ -1766,3 +1767,24 @@ class SyncReasoner(OntologyReasoner):
                 os.remove(file_path)
             except OSError as e:
                 logger.warning(f"Error deleting {file_path}: {e}")
+
+
+# WIP
+# class SyncReasoner_replacement(OntologyReasoner):
+#
+#     def __init__(self, ontology_path: str, isolate: bool = False, reasoner="HermiT"):
+#         """
+#         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
+#
+#         Args:
+#             ontology_path: Path of ontology that should be used by the reasoner.
+#             isolate: Whether to isolate the reasoner in a new world + copy of the original ontology.
+#                      Useful if you create multiple reasoner instances in the same script.
+#         """
+#         self.manager = OntologyManager()
+#         self.ontology = self.manager.load_ontology(IRI.create("file://" + ontology_path))
+#         super().__init__(self.ontology, isolate)
+#         self.adaptor = OWLAPIAdaptor(ontology_path,reasoner)
+#
+#     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+#         yield from self.adaptor.instances(ce, direct)
