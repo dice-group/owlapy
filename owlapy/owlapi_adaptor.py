@@ -267,12 +267,11 @@ class OWLAPIAdaptor:
             if java_object := inference_types_mapping.get(i, None):
                 generators.add(java_object)
         iog = InferredOntologyGenerator(self.reasoner, generators)
-        inferredAxiomsOntology = self.manager.createOntology()
-        iog.fillOntology(self.manager.getOWLDataFactory(), inferredAxiomsOntology)
-        inferredOntologyFile = File(output_path)
-        inferredOntologyFile = inferredOntologyFile.getAbsoluteFile()
-        outputStream = FileOutputStream(inferredOntologyFile)
-        self.manager.saveOntology(inferredAxiomsOntology, document_format, outputStream)
+        inferred_axioms_ontology = self.manager.createOntology()
+        iog.fillOntology(self.manager.getOWLDataFactory(), inferred_axioms_ontology)
+        inferred_ontology_file = File(output_path).getAbsoluteFile()
+        output_stream = FileOutputStream(inferred_ontology_file)
+        self.manager.saveOntology(inferred_axioms_ontology, document_format, output_stream)
 
     def generate_inferred_class_assertion_axioms(self, output="temp.ttl", output_format: str = None):
         """
