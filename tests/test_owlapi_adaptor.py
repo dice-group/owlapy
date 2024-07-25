@@ -76,14 +76,14 @@ class TestOwlapiAdaptor(unittest.TestCase):
         class_expression = data_factory.getOWLObjectIntersectionOf(nitrogen_class, some_values_from)
 
         # compare them with the adaptor converted expression
-        ce_converted = self.adaptor.convert_to_owlapi(self.ce)
+        ce_converted = self.adaptor.mapper.map_(self.ce)
         print(ce_converted)
         print(class_expression)
         self.assertEqual(class_expression, ce_converted)
 
         # convert back to owlapy and check for equality
-        ce_1 = self.adaptor.convert_from_owlapi(class_expression)
-        ce_2 = self.adaptor.convert_from_owlapi(ce_converted)
+        ce_1 = self.adaptor.mapper.map_(class_expression)
+        ce_2 = self.adaptor.mapper.map_(ce_converted)
 
         self.assertEqual(ce_1, ce_2)
         self.assertEqual(ce_1, self.ce)
