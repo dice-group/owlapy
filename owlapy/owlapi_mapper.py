@@ -5,6 +5,7 @@ from owlapy import owl_expression_to_manchester, manchester_to_owl_expression
 from owlapy.class_expression import OWLClassExpression
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 
 if jpype.isJVMStarted():
@@ -28,7 +29,8 @@ if jpype.isJVMStarted():
                                                 OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl,
                                                 OWLObjectUnionOfImpl, OWLQuantifiedDataRestrictionImpl,
                                                 OWLQuantifiedObjectRestrictionImpl, OWLQuantifiedRestrictionImpl,
-                                                OWLValueRestrictionImpl)
+                                                OWLValueRestrictionImpl, OWLLiteralImplBoolean, OWLLiteralImplString,
+                                                OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger)
 else:
     raise ImportError("Jpype JVM is not started! Tip: Import OWLAPIMapper after JVM has started")
 
@@ -63,7 +65,7 @@ class OWLAPIMapper:
         Args:
             e: OWL entity/expression.
         """
-        pass
+        raise NotImplementedError()
 
     @map_.register
     def _(self, e: OWLObjectProperty):
@@ -125,3 +127,23 @@ class OWLAPIMapper:
         # Cant recognize the classes as implementation of org.semanticweb.owlapi.model.OWLClassExpression, so we
         # have to register all possible implementations
         return manchester_to_owl_expression(str(self.renderer.render(e)), self.namespace)
+
+    @map_.register(OWLLiteralImplBoolean)
+    def _(self, e):
+        raw_value = str(e.getLiteral())
+        if raw_value.lower() == "true":
+            return OWLLiteral(True)
+        return OWLLiteral(False)
+
+    @map_.register(OWLLiteralImplDouble)
+    @map_.register(OWLLiteralImplFloat)
+    def _(self, e):
+        return OWLLiteral(float(str(e.getLiteral())))
+
+    @map_.register(OWLLiteralImplString)
+    def _(self, e):
+        return OWLLiteral(str(e.getLiteral()))
+
+    @map_.register(OWLLiteralImplInteger)
+    def _(self, e):
+        return OWLLiteral(int(str(e.getLiteral())))
