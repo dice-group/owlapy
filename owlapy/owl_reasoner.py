@@ -1078,25 +1078,26 @@ class OntologyReasoner(OWLReasonerEx):
                     yield OWLClass(IRI.create(c.iri))
                 # Anonymous classes are ignored
 
-    def _sync_reasoner(self, other_reasoner: BaseReasoner = None,
-                       infer_property_values: bool = True,
-                       infer_data_property_values: bool = True, debug: bool = False) -> None:
-        """Call Owlready2's sync_reasoner method, which spawns a Java process on a temp file to infer more.
-
-        Args:
-            other_reasoner: Set to BaseReasoner.PELLET (default) or BaseReasoner.HERMIT.
-            infer_property_values: Whether to infer property values.
-            infer_data_property_values: Whether to infer data property values (only for PELLET).
-        """
-        assert other_reasoner is None or isinstance(other_reasoner, BaseReasoner)
-        with self.get_root_ontology()._onto:
-            if other_reasoner == BaseReasoner.HERMIT:
-                owlready2.sync_reasoner_hermit(self._world, infer_property_values=infer_property_values, debug=debug)
-            else:
-                owlready2.sync_reasoner_pellet(self._world,
-                                               infer_property_values=infer_property_values,
-                                               infer_data_property_values=infer_data_property_values,
-                                               debug=debug)
+    # Deprecated
+    # def _sync_reasoner(self, other_reasoner: BaseReasoner = None,
+    #                    infer_property_values: bool = True,
+    #                    infer_data_property_values: bool = True, debug: bool = False) -> None:
+    #     """Call Owlready2's sync_reasoner method, which spawns a Java process on a temp file to infer more.
+    #
+    #     Args:
+    #         other_reasoner: Set to BaseReasoner.PELLET (default) or BaseReasoner.HERMIT.
+    #         infer_property_values: Whether to infer property values.
+    #         infer_data_property_values: Whether to infer data property values (only for PELLET).
+    #     """
+    #     assert other_reasoner is None or isinstance(other_reasoner, BaseReasoner)
+    #     with self.get_root_ontology()._onto:
+    #         if other_reasoner == BaseReasoner.HERMIT:
+    #             owlready2.sync_reasoner_hermit(self._world, infer_property_values=infer_property_values, debug=debug)
+    #         else:
+    #             owlready2.sync_reasoner_pellet(self._world,
+    #                                            infer_property_values=infer_property_values,
+    #                                            infer_data_property_values=infer_data_property_values,
+    #                                            debug=debug)
 
     def get_root_ontology(self) -> OWLOntology:
         return self._ontology
@@ -1687,104 +1688,86 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
 
 
 class SyncReasoner(OntologyReasoner):
-    __slots__ = '_cnt', '_conv', '_base_reasoner'
-    # TODO: Deprecated
-    _conv: ToOwlready2
-    _base_reasoner: BaseReasoner
 
-    def __init__(self, ontology: Ontology, base_reasoner: Optional[BaseReasoner] = None,
-                 infer_property_values: bool = True, infer_data_property_values: bool = True, isolate: bool = False):
+    def __init__(self, ontology_path: str, isolate: bool = False, reasoner="HermiT"):
         """
-        OWL Reasoner with support for Complex Class Expression Instances + sync_reasoner.
+        OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
 
         Args:
-            ontology: The ontology that should be used by the reasoner.
-            base_reasoner: Set to BaseReasoner.PELLET (default) or BaseReasoner.HERMIT.
-            infer_property_values: Whether to infer property values.
-            infer_data_property_values: Whether to infer data property values (only for PELLET).
+            ontology_path: Path of ontology that should be used by the reasoner.
             isolate: Whether to isolate the reasoner in a new world + copy of the original ontology.
                      Useful if you create multiple reasoner instances in the same script.
         """
-
-        super().__init__(ontology, isolate)
-        if isolate:
-            new_manager = OntologyManager()
-            self.reference_ontology = new_manager.load_ontology(ontology.get_original_iri())
-            self.reference_iri = IRI.create(f'file:/isolated_ontology_{id(self.reference_ontology)}.owl')
-            new_manager.save_ontology(self.reference_ontology, self.reference_iri)
-
-        self._cnt = 1
-        self._conv = ToOwlready2(world=self._world)
-        self._base_reasoner = base_reasoner
-        self._sync_reasoner(self._base_reasoner, infer_property_values, infer_data_property_values)
-        self.infer_property_values = infer_property_values
-        self.infer_data_property_values = infer_data_property_values
-
-    def update_isolated_ontology(self, axioms_to_add: List[OWLAxiom] = None,
-                                 axioms_to_remove: List[OWLAxiom] = None):
-        if self._isolated:
-            if axioms_to_add is None and axioms_to_remove is None:
-                raise ValueError(f"At least one argument should be specified in method: "
-                                 f"{self.update_isolated_ontology.__name__}")
-            self._ontology = self.reference_ontology
-            super().update_isolated_ontology(axioms_to_add, axioms_to_remove)
-            self.reference_ontology.get_owl_ontology_manager().save_ontology(self._ontology, self.reference_iri)
-            new_manager = OntologyManager()
-            self._ontology = new_manager.load_ontology(IRI.create(f'file://isolated_ontology_'
-                                                                  f'{id(self.reference_ontology)}.owl'))
-            self._world = new_manager._world
-            self._sync_reasoner(self._base_reasoner, self.infer_property_values, self.infer_data_property_values)
-        else:
-            raise AssertionError(f"Misuse of method '{self.update_isolated_ontology.__name__}'. The reasoner is not "
-                                 f"using an isolated ontology.")
+        self.manager = OntologyManager()
+        self.ontology = self.manager.load_ontology(IRI.create("file://" + ontology_path))
+        super().__init__(self.ontology, isolate)
+        self.adaptor = OWLAPIAdaptor(ontology_path, reasoner)
 
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
-        if direct:
-            logging.warning("direct not implemented")
-        with self._world.get_ontology("http://temp.classes/"):
-            temp_pred = cast(owlready2.ThingClass, types.new_class("TempCls%d" % self._cnt, (owlready2.owl.Thing,)))
-            temp_pred.equivalent_to = [self._conv.map_concept(ce)]
-            if self._base_reasoner == BaseReasoner.HERMIT:
-                owlready2.sync_reasoner_hermit(self._world.get_ontology("http://temp.classes/"),
-                                               self.infer_property_values)
-            else:
-                owlready2.sync_reasoner_pellet(self._world.get_ontology("http://temp.classes/"),
-                                               self.infer_property_values, self.infer_data_property_values)
-        instances = list(temp_pred.instances(world=self._world))
-        temp_pred.equivalent_to = []
-        try:
-            owlready2.destroy_entity(temp_pred)
-        except AttributeError as e:
-            logger.info(f"AttributeError: {e} Source: {__file__} (you can ignore this)")
-        self._cnt += 1
-        for i in instances:
-            yield OWLNamedIndividual(IRI.create(i.iri))
+        yield from self.adaptor.instances(ce, direct)
 
-    def __del__(self):
-        if self._isolated:
-            file_path = f"isolated_ontology_{id(self.reference_ontology)}.owl"
-            try:
-                os.remove(file_path)
-            except OSError as e:
-                logger.warning(f"Error deleting {file_path}: {e}")
+    def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        yield from self.adaptor.data_property_domains(pe, direct)
 
+    def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        yield from self.adaptor.object_property_domains(pe, direct)
 
-# WIP
-# class SyncReasoner_replacement(OntologyReasoner):
-#
-#     def __init__(self, ontology_path: str, isolate: bool = False, reasoner="HermiT"):
-#         """
-#         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
-#
-#         Args:
-#             ontology_path: Path of ontology that should be used by the reasoner.
-#             isolate: Whether to isolate the reasoner in a new world + copy of the original ontology.
-#                      Useful if you create multiple reasoner instances in the same script.
-#         """
-#         self.manager = OntologyManager()
-#         self.ontology = self.manager.load_ontology(IRI.create("file://" + ontology_path))
-#         super().__init__(self.ontology, isolate)
-#         self.adaptor = OWLAPIAdaptor(ontology_path,reasoner)
-#
-#     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
-#         yield from self.adaptor.instances(ce, direct)
+    def object_property_ranges(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        yield from self.adaptor.object_property_ranges(pe, direct)
+
+    def equivalent_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
+        yield from self.adaptor.equivalent_classes(ce)
+
+    def disjoint_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
+        yield from self.adaptor.disjoint_classes(ce)
+
+    def different_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
+        yield from self.adaptor.different_individuals(ind)
+
+    def same_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
+        yield from self.adaptor.same_individuals(ind)
+
+    def data_property_values(self, ind: OWLNamedIndividual, pe: OWLDataProperty, direct: bool = True) -> Iterable[
+        OWLLiteral]:
+        yield from self.adaptor.data_property_values(ind, pe)
+
+    def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = False) -> \
+            Iterable[OWLNamedIndividual]:
+        yield from self.adaptor.object_property_values(ind, pe)
+
+    def sub_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[
+        OWLClassExpression]:
+        yield from self.adaptor.sub_classes(ce, direct)
+
+    def super_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[
+        OWLClassExpression]:
+        yield from self.adaptor.super_classes(ce, direct)
+
+    def equivalent_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
+        yield from self.adaptor.equivalent_object_properties(op)
+
+    def equivalent_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
+        yield from self.adaptor.equivalent_data_properties(dp)
+
+    def disjoint_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
+        yield from self.adaptor.disjoint_object_properties(op)
+
+    def disjoint_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
+        yield from self.adaptor.disjoint_data_properties(dp)
+
+    def super_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
+        yield from self.adaptor.super_data_properties(dp, direct)
+
+    def sub_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
+        yield from self.adaptor.sub_data_properties(dp, direct)
+
+    def super_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) -> Iterable[
+        OWLObjectPropertyExpression]:
+        yield from self.adaptor.super_object_properties(op, direct)
+
+    def sub_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) -> Iterable[
+        OWLObjectPropertyExpression]:
+        yield from self.adaptor.sub_object_properties(op, direct)
+
+    def types(self, ind: OWLNamedIndividual, direct: bool = False) -> Iterable[OWLClass]:
+        yield from self.adaptor.types(ind, direct)
