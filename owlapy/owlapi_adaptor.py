@@ -201,7 +201,7 @@ class OWLAPIAdaptor:
            imports closure of the root ontology.
 
         Args:
-            pe: The property expression whose domains are to be retrieved.
+            p: The property expression whose domains are to be retrieved.
             direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved
                 (False).
 
@@ -220,7 +220,7 @@ class OWLAPIAdaptor:
            imports closure of the root ontology.
 
         Args:
-            pe: The property expression whose domains are to be retrieved.
+            p: The property expression whose domains are to be retrieved.
             direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved
                 (False).
 
@@ -238,7 +238,7 @@ class OWLAPIAdaptor:
            imports closure of the root ontology.
 
         Args:
-            pe: The property expression whose ranges are to be retrieved.
+            p: The property expression whose ranges are to be retrieved.
             direct: Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved
                 (False).
 
@@ -258,7 +258,7 @@ class OWLAPIAdaptor:
         ontology.
 
         Args:
-            op: The object property expression whose strict (direct) subproperties are to be retrieved.
+            p: The object property expression whose strict (direct) subproperties are to be retrieved.
             direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
                 (descendants) should be retrieved (False).
 
@@ -277,7 +277,7 @@ class OWLAPIAdaptor:
          specified object property with respect to the imports closure of the root ontology.
 
          Args:
-             op (OWLObjectPropertyExpression): The object property expression whose super properties are to be
+             p (OWLObjectPropertyExpression): The object property expression whose super properties are to be
                                                 retrieved.
              direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all
                             super properties (ancestors) should be retrieved (False).
@@ -293,7 +293,7 @@ class OWLAPIAdaptor:
         specified data property expression with respect to the imports closure of the root ontology.
 
         Args:
-            dp: The data property whose strict (direct) subproperties are to be retrieved.
+            p: The data property whose strict (direct) subproperties are to be retrieved.
             direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
                 (descendants) should be retrieved (False).
 
@@ -311,7 +311,7 @@ class OWLAPIAdaptor:
          specified data property with respect to the imports closure of the root ontology.
 
          Args:
-             dp (OWLDataProperty): The data property whose super properties are to be retrieved.
+             p (OWLDataProperty): The data property whose super properties are to be retrieved.
              direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all
                             super properties (ancestors) should be retrieved (False).
 
@@ -326,7 +326,7 @@ class OWLAPIAdaptor:
         reasoner axioms.
 
         Args:
-            ind: The individual whose different individuals are to be retrieved.
+            i: The individual whose different individuals are to be retrieved.
 
         Returns:
             All individuals x where the set of reasoner axioms entails DifferentIndividuals(ind x).
@@ -339,7 +339,7 @@ class OWLAPIAdaptor:
         reasoner axioms.
 
         Args:
-            ind: The individual whose same individuals are to be retrieved.
+            i: The individual whose same individuals are to be retrieved.
 
         Returns:
             All individuals x where the root ontology imports closure entails SameIndividual(ind x).
@@ -352,7 +352,7 @@ class OWLAPIAdaptor:
         to the set of reasoner axioms.
 
         Args:
-            op: The object property whose equivalent object properties are to be retrieved.
+            p: The object property whose equivalent object properties are to be retrieved.
 
         Returns:
             All simplified object properties e where the root ontology imports closure entails
@@ -367,7 +367,7 @@ class OWLAPIAdaptor:
         reasoner axioms.
 
         Args:
-            dp: The data property whose equivalent data properties are to be retrieved.
+            p: The data property whose equivalent data properties are to be retrieved.
 
         Returns:
             All data properties e where the root ontology imports closure entails EquivalentDataProperties(dp e).
@@ -381,10 +381,8 @@ class OWLAPIAdaptor:
         """Gets the object property values for the specified individual and object property expression.
 
         Args:
-            ind: The individual that is the subject of the object property values.
-            pe: The object property expression whose values are to be retrieved for the specified individual.
-            direct: Specifies if the direct values should be retrieved (True), or if all values should be retrieved
-                (False), so that sub properties are taken into account.
+            i: The individual that is the subject of the object property values.
+            p: The object property expression whose values are to be retrieved for the specified individual.
 
         Returns:
             The named individuals such that for each individual j, the set of reasoner axioms entails
@@ -393,12 +391,26 @@ class OWLAPIAdaptor:
         yield from [self.mapper.map_(ind) for ind in
                     self.reasoner.getObjectPropertyValues(self.mapper.map_(i), self.mapper.map_(p)).getFlattened()]
 
+    def data_property_values(self, i: OWLNamedIndividual, p: OWLDataProperty):
+        """Gets the data property values for the specified individual and data property expression.
+
+        Args:
+            i: The individual that is the subject of the data property values.
+            p: The data property expression whose values are to be retrieved for the specified individual.
+
+        Returns:
+            A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+            axioms entails DataPropertyAssertion(pe ind l).
+        """
+        yield from [self.mapper.map_(literal) for literal in
+                    to_list(self.reasoner.dataPropertyValues(self.mapper.map_(i), self.mapper.map_(p)))]
+
     def disjoint_object_properties(self, p: OWLObjectProperty):
         """Gets the simplified object properties that are disjoint with the specified object property with respect
         to the set of reasoner axioms.
 
         Args:
-            op: The object property whose disjoint object properties are to be retrieved.
+            p: The object property whose disjoint object properties are to be retrieved.
 
         Returns:
             All simplified object properties e where the root ontology imports closure entails
@@ -413,7 +425,7 @@ class OWLAPIAdaptor:
         to the set of reasoner axioms.
 
         Args:
-            dp: The data property whose disjoint data properties are to be retrieved.
+            p: The data property whose disjoint data properties are to be retrieved.
 
         Returns:
             All data properties e where the root ontology imports closure entails
@@ -427,7 +439,7 @@ class OWLAPIAdaptor:
         """Gets the named classes which are (potentially direct) types of the specified named individual.
 
         Args:
-            ind: The individual whose types are to be retrieved.
+            i: The individual whose types are to be retrieved.
             direct: Specifies if the direct types should be retrieved (True), or if all types should be retrieved
                 (False).
 
