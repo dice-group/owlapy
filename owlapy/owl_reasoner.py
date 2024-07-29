@@ -1,7 +1,5 @@
 """OWL Reasoner"""
 import operator
-import os
-import types
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from enum import Enum, auto
@@ -223,12 +221,6 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def flush(self) -> None:
-        """Flushes any changes stored in the buffer, which causes the reasoner to take into consideration the changes
-        the current root ontology specified by the changes."""
-        pass
-
-    @abstractmethod
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
         """Gets the individuals which are instances of the specified class expression.
 
@@ -388,11 +380,6 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def is_isolated(self):
-        """Return True if this reasoner is using an isolated ontology."""
-        pass
-
-    @abstractmethod
     def super_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
             -> Iterable[OWLClassExpression]:
         """Gets the stream of named classes that are the strict (potentially direct) super classes of the specified
@@ -412,15 +399,16 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
 
-class BaseReasoner(Enum):
-    """Enumeration class for base reasoner when calling sync_reasoner.
-
-    Attributes:
-        PELLET: Pellet base reasoner.
-        HERMIT: HermiT base reasoner.
-    """
-    PELLET = auto()
-    HERMIT = auto()
+# Deprecated
+# class BaseReasoner(Enum):
+#     """Enumeration class for base reasoner when calling sync_reasoner.
+#
+#     Attributes:
+#         PELLET: Pellet base reasoner.
+#         HERMIT: HermiT base reasoner.
+#     """
+#     PELLET = auto()
+#     HERMIT = auto()
 
 
 class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
@@ -511,57 +499,18 @@ class OntologyReasoner(OWLReasonerEx):
     _ontology: Ontology
     _world: owlready2.World
 
-    def __init__(self, ontology: Ontology, isolate: bool = False):
+    def __init__(self, ontology: Ontology):
         """
         Base reasoner in Ontolearn, used to reason in the given ontology.
 
         Args:
             ontology: The ontology that should be used by the reasoner.
-            isolate: Whether to isolate the reasoner in a new world + copy of the original ontology.
-                     Useful if you create multiple reasoner instances in the same script.
         """
         super().__init__(ontology)
         assert isinstance(ontology, Ontology)
-
-        if isolate:
-            self._isolated = True
-            new_manager = OntologyManager()
-            self._ontology = new_manager.load_ontology(ontology.get_original_iri())
-            self._world = new_manager._world
-            print("INFO  OWLReasoner    :: Using isolated ontology\n"
-                  "INFO  OWLReasoner    :: Changes you make in the original ontology won't be reflected to the isolated"
-                  " ontology\n"
-                  "INFO  OWLReasoner    :: To make changes on the isolated ontology use the method "
-                  "`update_isolated_ontology()`")
-
-        else:
-            self._isolated = False
-            self._ontology = ontology
-            self._world = ontology._world
-
-    def update_isolated_ontology(self, axioms_to_add: List[OWLAxiom] = None,
-                                 axioms_to_remove: List[OWLAxiom] = None):
-        """
-        Add or remove axioms to the isolated ontology that the reasoner is using.
-
-        Args:
-            axioms_to_add (List[OWLAxiom]): Axioms to add to the isolated ontology.
-            axioms_to_remove (List[OWLAxiom]): Axioms to remove from the isolated ontology.
-        """
-        if self._isolated:
-            if axioms_to_add is None and axioms_to_remove is None:
-                raise ValueError(f"At least one argument should be specified in method: "
-                                 f"{self.update_isolated_ontology.__name__}")
-            manager = self._ontology.get_owl_ontology_manager()
-            if axioms_to_add is not None:
-                for axiom in axioms_to_add:
-                    manager.add_axiom(self._ontology, axiom)
-            if axioms_to_remove is not None:
-                for axiom in axioms_to_remove:
-                    manager.remove_axiom(self._ontology, axiom)
-        else:
-            raise AssertionError(f"Misuse of method '{self.update_isolated_ontology.__name__}'. The reasoner is not "
-                                 f"using an isolated ontology.")
+        self._isolated = False
+        self._ontology = ontology
+        self._world = ontology._world
 
     def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         domains = {d.get_domain() for d in self.get_root_ontology().data_property_domain_axioms(pe)}
@@ -706,9 +655,6 @@ class OntologyReasoner(OWLReasonerEx):
                     yield OWLNamedIndividual(IRI.create(val.iri))
         else:
             raise NotImplementedError(pe)
-
-    def flush(self) -> None:
-        pass
 
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
         if direct:
@@ -982,17 +928,6 @@ class OntologyReasoner(OWLReasonerEx):
             yield from self._sup_or_sub_data_properties_recursive(dp, seen_set, super_or_sub)
 
     def super_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
-        """Gets the stream of data properties that are the strict (potentially direct) super properties of the
-         specified data property with respect to the imports closure of the root ontology.
-
-         Args:
-             dp (OWLDataProperty): The data property whose super properties are to be retrieved.
-             direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all
-                            super properties (ancestors) should be retrieved (False).
-
-         Returns:
-             Iterable of super properties.
-         """
         yield from self._sup_or_sub_data_properties(dp, direct, "super")
 
     def sub_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
@@ -1102,12 +1037,9 @@ class OntologyReasoner(OWLReasonerEx):
     def get_root_ontology(self) -> OWLOntology:
         return self._ontology
 
-    def is_isolated(self):
-        """Return True if this reasoner is using an isolated ontology."""
-        return self._isolated
-
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
+
 
 class FastInstanceCheckerReasoner(OWLReasonerEx):
     """Tries to check instances fast (but maybe incomplete)."""
@@ -1154,10 +1086,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
                 :func:`OWLReasoner_FastInstanceChecker.instances` retrieval.
             """
         super().__init__(ontology)
-        if base_reasoner.is_isolated():
-            self._ontology = base_reasoner.get_root_ontology()
-        else:
-            self._ontology = ontology
+        self._ontology = ontology
         self._base_reasoner = base_reasoner
         self._property_cache = property_cache
         self._negation_default = negation_default
@@ -1186,13 +1115,6 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
     def reset(self):
         """The reset method shall reset any cached state."""
         self._init()
-
-    def is_isolated(self):
-        return self._base_reasoner.is_isolated()
-
-    def is_using_triplestore(self):
-        # TODO: Deprecated! Remove after it is removed from OWLReasoner in owlapy
-        pass
 
     def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         yield from self._base_reasoner.data_property_domains(pe, direct=direct)
@@ -1228,9 +1150,6 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
     def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = True) \
             -> Iterable[OWLNamedIndividual]:
         yield from self._base_reasoner.object_property_values(ind, pe, direct)
-
-    def flush(self) -> None:
-        self._base_reasoner.flush()
 
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
         if direct:
@@ -1687,20 +1606,19 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
         yield from relations
 
 
-class SyncReasoner(OntologyReasoner):
+class SyncReasoner(OWLReasonerEx):
 
-    def __init__(self, ontology_path: str, isolate: bool = False, reasoner="HermiT"):
+    def __init__(self, ontology_path: str, reasoner="HermiT"):
         """
         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
 
         Args:
             ontology_path: Path of ontology that should be used by the reasoner.
-            isolate: Whether to isolate the reasoner in a new world + copy of the original ontology.
-                     Useful if you create multiple reasoner instances in the same script.
+            reasoner: Choose from (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"]. Default: "HermiT".
         """
         self.manager = OntologyManager()
         self.ontology = self.manager.load_ontology(IRI.create("file://" + ontology_path))
-        super().__init__(self.ontology, isolate)
+        super().__init__(self.ontology)
         self.adaptor = OWLAPIAdaptor(ontology_path, reasoner)
 
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
@@ -1771,3 +1689,6 @@ class SyncReasoner(OntologyReasoner):
 
     def types(self, ind: OWLNamedIndividual, direct: bool = False) -> Iterable[OWLClass]:
         yield from self.adaptor.types(ind, direct)
+
+    def get_root_ontology(self) -> OWLOntology:
+        return self.ontology
