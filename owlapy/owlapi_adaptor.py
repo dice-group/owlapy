@@ -29,6 +29,7 @@ class OWLAPIAdaptor:
         ontology: The loaded OWL ontology.
         reasoner: Choose from (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"]. Default: "HermiT".
     """
+
     def __init__(self, path: str, name_reasoner: str = "HermiT"):
         """
         Initialize the OWLAPIAdaptor with a path to an ontology and a reasoner name.
