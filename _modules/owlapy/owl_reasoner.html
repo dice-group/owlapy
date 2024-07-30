@@ -51,7 +51,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../usage/reasoning_details.html">Reasoning Details</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_adaptor.html">Owlapi Adaptor</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
 </ul>
@@ -83,8 +82,6 @@
   <h1>Source code for owlapy.owl_reasoner</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;OWL Reasoner&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">operator</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">types</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
@@ -112,6 +109,7 @@
     <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="kn">from</span> <span class="nn">owlapy.owlapi_adaptor</span> <span class="kn">import</span> <span class="n">OWLAPIAdaptor</span>
 <span class="kn">from</span> <span class="nn">owlapy.utils</span> <span class="kn">import</span> <span class="n">LRUCache</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -339,15 +337,6 @@
         <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="OWLReasoner.flush">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.flush">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flushes any changes stored in the buffer, which causes the reasoner to take into consideration the changes</span>
-<span class="sd">        the current root ontology specified by the changes.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
 <div class="viewcode-block" id="OWLReasoner.instances">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.instances">[docs]</a>
     <span class="nd">@abstractmethod</span>
@@ -537,14 +526,6 @@
         <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="OWLReasoner.is_isolated">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.is_isolated">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">is_isolated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True if this reasoner is using an isolated ontology.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
 <div class="viewcode-block" id="OWLReasoner.super_classes">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.super_classes">[docs]</a>
     <span class="nd">@abstractmethod</span>
@@ -569,18 +550,16 @@
 
 
 
-<div class="viewcode-block" id="BaseReasoner">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.BaseReasoner">[docs]</a>
-<span class="k">class</span> <span class="nc">BaseReasoner</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumeration class for base reasoner when calling sync_reasoner.</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        PELLET: Pellet base reasoner.</span>
-<span class="sd">        HERMIT: HermiT base reasoner.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">PELLET</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
-    <span class="n">HERMIT</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span></div>
-
+<span class="c1"># Deprecated</span>
+<span class="c1"># class BaseReasoner(Enum):</span>
+<span class="c1">#     &quot;&quot;&quot;Enumeration class for base reasoner when calling sync_reasoner.</span>
+<span class="c1">#</span>
+<span class="c1">#     Attributes:</span>
+<span class="c1">#         PELLET: Pellet base reasoner.</span>
+<span class="c1">#         HERMIT: HermiT base reasoner.</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     PELLET = auto()</span>
+<span class="c1">#     HERMIT = auto()</span>
 
 
 <div class="viewcode-block" id="OWLReasonerEx">
@@ -688,60 +667,18 @@
     <span class="n">_ontology</span><span class="p">:</span> <span class="n">Ontology</span>
     <span class="n">_world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">isolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Ontology</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Base reasoner in Ontolearn, used to reason in the given ontology.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ontology: The ontology that should be used by the reasoner.</span>
-<span class="sd">            isolate: Whether to isolate the reasoner in a new world + copy of the original ontology.</span>
-<span class="sd">                     Useful if you create multiple reasoner instances in the same script.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">isolate</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_isolated</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">new_manager</span> <span class="o">=</span> <span class="n">OntologyManager</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="n">new_manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="o">.</span><span class="n">get_original_iri</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">new_manager</span><span class="o">.</span><span class="n">_world</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INFO  OWLReasoner    :: Using isolated ontology</span><span class="se">\n</span><span class="s2">&quot;</span>
-                  <span class="s2">&quot;INFO  OWLReasoner    :: Changes you make in the original ontology won&#39;t be reflected to the isolated&quot;</span>
-                  <span class="s2">&quot; ontology</span><span class="se">\n</span><span class="s2">&quot;</span>
-                  <span class="s2">&quot;INFO  OWLReasoner    :: To make changes on the isolated ontology use the method &quot;</span>
-                  <span class="s2">&quot;`update_isolated_ontology()`&quot;</span><span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_isolated</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="n">ontology</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_world</span>
-
-<div class="viewcode-block" id="OntologyReasoner.update_isolated_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner.update_isolated_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_isolated_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axioms_to_add</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">axioms_to_remove</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add or remove axioms to the isolated ontology that the reasoner is using.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            axioms_to_add (List[OWLAxiom]): Axioms to add to the isolated ontology.</span>
-<span class="sd">            axioms_to_remove (List[OWLAxiom]): Axioms to remove from the isolated ontology.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isolated</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">axioms_to_add</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axioms_to_remove</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;At least one argument should be specified in method: &quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">update_isolated_ontology</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">get_owl_ontology_manager</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">axioms_to_add</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axioms_to_add</span><span class="p">:</span>
-                    <span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="n">axiom</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">axioms_to_remove</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axioms_to_remove</span><span class="p">:</span>
-                    <span class="n">manager</span><span class="o">.</span><span class="n">remove_axiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="n">axiom</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Misuse of method &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">update_isolated_ontology</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39;. The reasoner is not &quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot;using an isolated ontology.&quot;</span><span class="p">)</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_isolated</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="n">ontology</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_world</span>
 
 <div class="viewcode-block" id="OntologyReasoner.data_property_domains">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner.data_property_domains">[docs]</a>
@@ -915,12 +852,6 @@
                     <span class="k">yield</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="OntologyReasoner.flush">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner.flush">[docs]</a>
-    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="OntologyReasoner.instances">
@@ -1218,17 +1149,6 @@
 <div class="viewcode-block" id="OntologyReasoner.super_data_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner.super_data_properties">[docs]</a>
     <span class="k">def</span> <span class="nf">super_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the stream of data properties that are the strict (potentially direct) super properties of the</span>
-<span class="sd">         specified data property with respect to the imports closure of the root ontology.</span>
-
-<span class="sd">         Args:</span>
-<span class="sd">             dp (OWLDataProperty): The data property whose super properties are to be retrieved.</span>
-<span class="sd">             direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all</span>
-<span class="sd">                            super properties (ancestors) should be retrieved (False).</span>
-
-<span class="sd">         Returns:</span>
-<span class="sd">             Iterable of super properties.</span>
-<span class="sd">         &quot;&quot;&quot;</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sup_or_sub_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">direct</span><span class="p">,</span> <span class="s2">&quot;super&quot;</span><span class="p">)</span></div>
 
 
@@ -1327,42 +1247,37 @@
 
                 <span class="c1"># Anonymous classes are ignored</span>
 
-    <span class="k">def</span> <span class="nf">_sync_reasoner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_reasoner</span><span class="p">:</span> <span class="n">BaseReasoner</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">infer_property_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                       <span class="n">infer_data_property_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call Owlready2&#39;s sync_reasoner method, which spawns a Java process on a temp file to infer more.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            other_reasoner: Set to BaseReasoner.PELLET (default) or BaseReasoner.HERMIT.</span>
-<span class="sd">            infer_property_values: Whether to infer property values.</span>
-<span class="sd">            infer_data_property_values: Whether to infer data property values (only for PELLET).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">other_reasoner</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other_reasoner</span><span class="p">,</span> <span class="n">BaseReasoner</span><span class="p">)</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span><span class="o">.</span><span class="n">_onto</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">other_reasoner</span> <span class="o">==</span> <span class="n">BaseReasoner</span><span class="o">.</span><span class="n">HERMIT</span><span class="p">:</span>
-                <span class="n">owlready2</span><span class="o">.</span><span class="n">sync_reasoner_hermit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">,</span> <span class="n">infer_property_values</span><span class="o">=</span><span class="n">infer_property_values</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">owlready2</span><span class="o">.</span><span class="n">sync_reasoner_pellet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">,</span>
-                                               <span class="n">infer_property_values</span><span class="o">=</span><span class="n">infer_property_values</span><span class="p">,</span>
-                                               <span class="n">infer_data_property_values</span><span class="o">=</span><span class="n">infer_data_property_values</span><span class="p">,</span>
-                                               <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+    <span class="c1"># Deprecated</span>
+    <span class="c1"># def _sync_reasoner(self, other_reasoner: BaseReasoner = None,</span>
+    <span class="c1">#                    infer_property_values: bool = True,</span>
+    <span class="c1">#                    infer_data_property_values: bool = True, debug: bool = False) -&gt; None:</span>
+    <span class="c1">#     &quot;&quot;&quot;Call Owlready2&#39;s sync_reasoner method, which spawns a Java process on a temp file to infer more.</span>
+    <span class="c1">#</span>
+    <span class="c1">#     Args:</span>
+    <span class="c1">#         other_reasoner: Set to BaseReasoner.PELLET (default) or BaseReasoner.HERMIT.</span>
+    <span class="c1">#         infer_property_values: Whether to infer property values.</span>
+    <span class="c1">#         infer_data_property_values: Whether to infer data property values (only for PELLET).</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     assert other_reasoner is None or isinstance(other_reasoner, BaseReasoner)</span>
+    <span class="c1">#     with self.get_root_ontology()._onto:</span>
+    <span class="c1">#         if other_reasoner == BaseReasoner.HERMIT:</span>
+    <span class="c1">#             owlready2.sync_reasoner_hermit(self._world, infer_property_values=infer_property_values, debug=debug)</span>
+    <span class="c1">#         else:</span>
+    <span class="c1">#             owlready2.sync_reasoner_pellet(self._world,</span>
+    <span class="c1">#                                            infer_property_values=infer_property_values,</span>
+    <span class="c1">#                                            infer_data_property_values=infer_data_property_values,</span>
+    <span class="c1">#                                            debug=debug)</span>
 
 <div class="viewcode-block" id="OntologyReasoner.get_root_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner.get_root_ontology">[docs]</a>
     <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span></div>
-
-
-<div class="viewcode-block" id="OntologyReasoner.is_isolated">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner.is_isolated">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_isolated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True if this reasoner is using an isolated ontology.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isolated</span></div>
 </div>
 
 
 
 <span class="n">_P</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_P&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">OWLPropertyExpression</span><span class="p">)</span>
+
 
 <div class="viewcode-block" id="FastInstanceCheckerReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner">[docs]</a>
@@ -1411,10 +1326,7 @@
 <span class="sd">                :func:`OWLReasoner_FastInstanceChecker.instances` retrieval.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">base_reasoner</span><span class="o">.</span><span class="n">is_isolated</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="n">base_reasoner</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="n">ontology</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="n">ontology</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span> <span class="o">=</span> <span class="n">base_reasoner</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache</span> <span class="o">=</span> <span class="n">property_cache</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_negation_default</span> <span class="o">=</span> <span class="n">negation_default</span>
@@ -1445,19 +1357,6 @@
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The reset method shall reset any cached state.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="FastInstanceCheckerReasoner.is_isolated">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner.is_isolated">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_isolated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span><span class="o">.</span><span class="n">is_isolated</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="FastInstanceCheckerReasoner.is_using_triplestore">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner.is_using_triplestore">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_using_triplestore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># TODO: Deprecated! Remove after it is removed from OWLReasoner in owlapy</span>
-        <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="FastInstanceCheckerReasoner.data_property_domains">
@@ -1526,12 +1425,6 @@
     <span class="k">def</span> <span class="nf">object_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
             <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="FastInstanceCheckerReasoner.flush">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner.flush">[docs]</a>
-    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="FastInstanceCheckerReasoner.instances">
@@ -2031,95 +1924,157 @@
 
 <div class="viewcode-block" id="SyncReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner">[docs]</a>
-<span class="k">class</span> <span class="nc">SyncReasoner</span><span class="p">(</span><span class="n">OntologyReasoner</span><span class="p">):</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_cnt&#39;</span><span class="p">,</span> <span class="s1">&#39;_conv&#39;</span><span class="p">,</span> <span class="s1">&#39;_base_reasoner&#39;</span>
+<span class="k">class</span> <span class="nc">SyncReasoner</span><span class="p">(</span><span class="n">OWLReasonerEx</span><span class="p">):</span>
 
-    <span class="n">_conv</span><span class="p">:</span> <span class="n">ToOwlready2</span>
-    <span class="n">_base_reasoner</span><span class="p">:</span> <span class="n">BaseReasoner</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">base_reasoner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseReasoner</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">infer_property_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">infer_data_property_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">isolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reasoner</span><span class="o">=</span><span class="s2">&quot;HermiT&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        OWL Reasoner with support for Complex Class Expression Instances + sync_reasoner.</span>
+<span class="sd">        OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            ontology: The ontology that should be used by the reasoner.</span>
-<span class="sd">            base_reasoner: Set to BaseReasoner.PELLET (default) or BaseReasoner.HERMIT.</span>
-<span class="sd">            infer_property_values: Whether to infer property values.</span>
-<span class="sd">            infer_data_property_values: Whether to infer data property values (only for PELLET).</span>
-<span class="sd">            isolate: Whether to isolate the reasoner in a new world + copy of the original ontology.</span>
-<span class="sd">                     Useful if you create multiple reasoner instances in the same script.</span>
+<span class="sd">            ontology_path: Path of ontology that should be used by the reasoner.</span>
+<span class="sd">            reasoner: Choose from (case-sensitive): [&quot;HermiT&quot;, &quot;Pellet&quot;, &quot;JFact&quot;, &quot;Openllet&quot;]. Default: &quot;HermiT&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">isolate</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">isolate</span><span class="p">:</span>
-            <span class="n">new_manager</span> <span class="o">=</span> <span class="n">OntologyManager</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reference_ontology</span> <span class="o">=</span> <span class="n">new_manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="o">.</span><span class="n">get_original_iri</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reference_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;file:/isolated_ontology_</span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_ontology</span><span class="p">)</span><span class="si">}</span><span class="s1">.owl&#39;</span><span class="p">)</span>
-            <span class="n">new_manager</span><span class="o">.</span><span class="n">save_ontology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_ontology</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_iri</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cnt</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_conv</span> <span class="o">=</span> <span class="n">ToOwlready2</span><span class="p">(</span><span class="n">world</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span> <span class="o">=</span> <span class="n">base_reasoner</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sync_reasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span><span class="p">,</span> <span class="n">infer_property_values</span><span class="p">,</span> <span class="n">infer_data_property_values</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">infer_property_values</span> <span class="o">=</span> <span class="n">infer_property_values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">infer_data_property_values</span> <span class="o">=</span> <span class="n">infer_data_property_values</span>
-
-<div class="viewcode-block" id="SyncReasoner.update_isolated_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.update_isolated_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_isolated_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axioms_to_add</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                                 <span class="n">axioms_to_remove</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isolated</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">axioms_to_add</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axioms_to_remove</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;At least one argument should be specified in method: &quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">update_isolated_ontology</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_ontology</span>
-            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_isolated_ontology</span><span class="p">(</span><span class="n">axioms_to_add</span><span class="p">,</span> <span class="n">axioms_to_remove</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reference_ontology</span><span class="o">.</span><span class="n">get_owl_ontology_manager</span><span class="p">()</span><span class="o">.</span><span class="n">save_ontology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_iri</span><span class="p">)</span>
-            <span class="n">new_manager</span> <span class="o">=</span> <span class="n">OntologyManager</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="n">new_manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;file://isolated_ontology_&#39;</span>
-                                                                  <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_ontology</span><span class="p">)</span><span class="si">}</span><span class="s1">.owl&#39;</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">new_manager</span><span class="o">.</span><span class="n">_world</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_sync_reasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_property_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_data_property_values</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Misuse of method &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">update_isolated_ontology</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39;. The reasoner is not &quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot;using an isolated ontology.&quot;</span><span class="p">)</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">OntologyManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;file://&quot;</span> <span class="o">+</span> <span class="n">ontology_path</span><span class="p">))</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span> <span class="o">=</span> <span class="n">OWLAPIAdaptor</span><span class="p">(</span><span class="n">ontology_path</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SyncReasoner.instances">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.instances">[docs]</a>
     <span class="k">def</span> <span class="nf">instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;direct not implemented&quot;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="s2">&quot;http://temp.classes/&quot;</span><span class="p">):</span>
-            <span class="n">temp_pred</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">owlready2</span><span class="o">.</span><span class="n">ThingClass</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">new_class</span><span class="p">(</span><span class="s2">&quot;TempCls</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cnt</span><span class="p">,</span> <span class="p">(</span><span class="n">owlready2</span><span class="o">.</span><span class="n">owl</span><span class="o">.</span><span class="n">Thing</span><span class="p">,)))</span>
-            <span class="n">temp_pred</span><span class="o">.</span><span class="n">equivalent_to</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_conv</span><span class="o">.</span><span class="n">map_concept</span><span class="p">(</span><span class="n">ce</span><span class="p">)]</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span> <span class="o">==</span> <span class="n">BaseReasoner</span><span class="o">.</span><span class="n">HERMIT</span><span class="p">:</span>
-                <span class="n">owlready2</span><span class="o">.</span><span class="n">sync_reasoner_hermit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="s2">&quot;http://temp.classes/&quot;</span><span class="p">),</span>
-                                               <span class="bp">self</span><span class="o">.</span><span class="n">infer_property_values</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">owlready2</span><span class="o">.</span><span class="n">sync_reasoner_pellet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="s2">&quot;http://temp.classes/&quot;</span><span class="p">),</span>
-                                               <span class="bp">self</span><span class="o">.</span><span class="n">infer_property_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_data_property_values</span><span class="p">)</span>
-        <span class="n">instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">temp_pred</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">world</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">))</span>
-        <span class="n">temp_pred</span><span class="o">.</span><span class="n">equivalent_to</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">owlready2</span><span class="o">.</span><span class="n">destroy_entity</span><span class="p">(</span><span class="n">temp_pred</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AttributeError: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> Source: </span><span class="si">{</span><span class="vm">__file__</span><span class="si">}</span><span class="s2"> (you can ignore this)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span></div>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SyncReasoner.__del__">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.__del__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isolated</span><span class="p">:</span>
-            <span class="n">file_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;isolated_ontology_</span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_ontology</span><span class="p">)</span><span class="si">}</span><span class="s2">.owl&quot;</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error deleting </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+<div class="viewcode-block" id="SyncReasoner.data_property_domains">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.data_property_domains">[docs]</a>
+    <span class="k">def</span> <span class="nf">data_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">data_property_domains</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.object_property_domains">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.object_property_domains">[docs]</a>
+    <span class="k">def</span> <span class="nf">object_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">object_property_domains</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.object_property_ranges">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.object_property_ranges">[docs]</a>
+    <span class="k">def</span> <span class="nf">object_property_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">object_property_ranges</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.equivalent_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.equivalent_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">equivalent_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">equivalent_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.disjoint_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.disjoint_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">disjoint_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">disjoint_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.different_individuals">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.different_individuals">[docs]</a>
+    <span class="k">def</span> <span class="nf">different_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">different_individuals</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.same_individuals">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.same_individuals">[docs]</a>
+    <span class="k">def</span> <span class="nf">same_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">same_individuals</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.data_property_values">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.data_property_values">[docs]</a>
+    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span>
+        <span class="n">OWLLiteral</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.object_property_values">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.object_property_values">[docs]</a>
+    <span class="k">def</span> <span class="nf">object_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> \
+            <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.sub_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.sub_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">sub_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span>
+        <span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.super_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.super_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">super_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span>
+        <span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.equivalent_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.equivalent_object_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">equivalent_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">equivalent_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.equivalent_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.equivalent_data_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">equivalent_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">equivalent_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.disjoint_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.disjoint_object_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">disjoint_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">disjoint_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.disjoint_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.disjoint_data_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">disjoint_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">disjoint_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.super_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.super_data_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">super_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">super_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.sub_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.sub_data_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">sub_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">sub_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.super_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.super_object_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">super_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span>
+        <span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">super_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.sub_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.sub_object_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">sub_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span>
+        <span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">sub_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.types">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.types">[docs]</a>
+    <span class="k">def</span> <span class="nf">types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">types</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.get_root_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.get_root_ontology">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span></div>
 </div>
 
 </pre></div>

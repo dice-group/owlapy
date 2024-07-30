@@ -51,7 +51,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../usage/reasoning_details.html">Reasoning Details</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_adaptor.html">Owlapi Adaptor</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
 </ul>
@@ -132,7 +131,7 @@
 
 <span class="k">def</span> <span class="nf">_simple_short_form_provider</span><span class="p">(</span><span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">iri</span>
-    <span class="n">sf</span> <span class="o">=</span> <span class="n">iri</span><span class="o">.</span><span class="n">get_short_form</span><span class="p">()</span>
+    <span class="n">sf</span> <span class="o">=</span> <span class="n">iri</span><span class="o">.</span><span class="n">reminder</span>
     <span class="k">for</span> <span class="n">ns</span> <span class="ow">in</span> <span class="p">[</span><span class="n">namespaces</span><span class="o">.</span><span class="n">XSD</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">RDFS</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">.</span><span class="n">RDF</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">iri</span><span class="o">.</span><span class="n">get_namespace</span><span class="p">()</span> <span class="o">==</span> <span class="n">ns</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">sf</span><span class="p">)</span>

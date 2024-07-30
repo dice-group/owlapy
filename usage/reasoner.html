@@ -25,7 +25,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Reasoning Details" href="reasoning_details.html" />
+    <link rel="next" title="Owlapi Adaptor" href="owlapi_adaptor.html" />
     <link rel="prev" title="Ontologies" href="ontologies.html" /> 
 </head>
 
@@ -60,7 +60,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#find-instances">Find Instances</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reasoning_details.html">Reasoning Details</a></li>
 <li class="toctree-l1"><a class="reference internal" href="owlapi_adaptor.html">Owlapi Adaptor</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../autoapi/owlapy/index.html">owlapy</a></li>
 </ul>
@@ -101,38 +100,37 @@ component is required.</p>
 </pre></div>
 </div>
 <p>In our Owlapy library, we provide several <strong>reasoners</strong> to choose
-from. Currently, there are the following reasoners available:</p>
+from:</p>
 <ul>
 <li><p><a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner" title="owlapy.owl_reasoner.OntologyReasoner"><span class="xref myst py py-class"><strong>OntologyReasoner</strong></span></a></p>
 <p>Or differently Structural Reasoner, is the base reasoner in Owlapy. The functionalities
 of this reasoner are limited. It does not provide full reasoning in <em>ALCH</em>. Furthermore,
 it has no support for instances of complex class expressions, which is covered by the
-other reasoners (SyncReasoner and FIC). We recommend to use the other reasoners for any heavy reasoning tasks.</p>
+other reasoners (SyncReasoner and FIC). This reasoner is used as
+a base reasoner for FIC which overwrites the <code class="docutils literal notranslate"><span class="pre">instances</span></code> method.
+We recommend using the other reasoners for any reasoning tasks.</p>
 <p><strong>Initialization:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.owl_reasoner</span> <span class="kn">import</span> <span class="n">OntologyReasoner</span>
 
 <span class="n">structural_reasoner</span> <span class="o">=</span> <span class="n">OntologyReasoner</span><span class="p">(</span><span class="n">onto</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The structural reasoner requires an ontology (<a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="xref myst py py-class">OWLOntology</span></a>).
-The second argument is <code class="docutils literal notranslate"><span class="pre">isolate</span></code> argument which isolates the world (therefore the ontology) where the reasoner is
-performing the reasoning. More on that on <em><a class="reference internal" href="reasoning_details.html#isolated-world"><span class="std std-ref">Reasoning Details</span></a></em>.</p>
+<p>The structural reasoner requires an ontology (<a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="xref myst py py-class">OWLOntology</span></a>).</p>
 </li>
 <li><p><a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class"><strong>SyncReasoner</strong></span></a></p>
-<p>Can perform full reasoning in <em>ALCH</em> due to the use of HermiT/Pellet and provides support for
-complex class expression instances (when using the method <code class="docutils literal notranslate"><span class="pre">instances</span></code>). SyncReasoner is more useful when
-your main goal is reasoning over the ontology.</p>
+<p>Can perform full reasoning in <em>ALCH</em> due to the use of reasoners from
+owlapi like HermiT, Pellet, etc. and provides support for
+complex class expression instances (when using the method <code class="docutils literal notranslate"><span class="pre">instances</span></code>).
+SyncReasoner is more useful when your main goal is reasoning over the ontology,
+and you are familiarized with the java reasoners (HermiT, Pellet, …).</p>
 <p><strong>Initialization:</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.owl_reasoner</span> <span class="kn">import</span> <span class="n">SyncReasoner</span><span class="p">,</span> <span class="n">BaseReasoner</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">owlapy.owl_reasoner</span> <span class="kn">import</span> <span class="n">SyncReasoner</span>
 
-<span class="n">sync_reasoner</span> <span class="o">=</span> <span class="n">SyncReasoner</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">BaseReasoner</span><span class="o">.</span><span class="n">HERMIT</span><span class="p">,</span> <span class="n">infer_property_values</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">sync_reasoner</span> <span class="o">=</span> <span class="n">SyncReasoner</span><span class="p">(</span><span class="n">ontology_path</span><span class="o">=</span><span class="s2">&quot;KGs/Mutagenesis/mutagenesis.owl&quot;</span><span class="p">,</span> <span class="n">reasoner</span><span class="o">=</span><span class="s2">&quot;HermiT&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Sync Reasoner requires an ontology and a base reasoner of type <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.BaseReasoner" title="owlapy.owl_reasoner.BaseReasoner"><span class="xref myst py py-class">BaseReasoner</span></a>
-which is just an enumeration with two possible values: <code class="docutils literal notranslate"><span class="pre">BaseReasoner.HERMIT</span></code> and <code class="docutils literal notranslate"><span class="pre">BaseReasoner.PELLET</span></code>.
-You can set the <code class="docutils literal notranslate"><span class="pre">infer_property_values</span></code> argument to <code class="docutils literal notranslate"><span class="pre">True</span></code> if you want the reasoner to infer
-property values. <code class="docutils literal notranslate"><span class="pre">infer_data_property_values</span></code> is an additional argument when the base reasoner is set to
-<code class="docutils literal notranslate"><span class="pre">BaseReasoner.PELLET</span></code>. The argument <code class="docutils literal notranslate"><span class="pre">isolated</span></code> is inherited from the base class</p>
+<p>Sync Reasoner is made available by <a class="reference internal" href="owlapi_adaptor.html"><span class="std std-doc">owlapi adaptor</span></a> and requires the ontology path
+together with a reasoner name from the possible set of reasoners: <code class="docutils literal notranslate"><span class="pre">&quot;Hermit&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Pellet&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;JFact&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Openllet&quot;</span></code>.</p>
 </li>
 <li><p><a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner" title="owlapy.owl_reasoner.FastInstanceCheckerReasoner"><span class="xref myst py py-class"><strong>FastInstanceCheckerReasoner</strong></span></a> <strong>(FIC)</strong></p>
 <p>FIC also provides support for complex class expression but the rest of the methods are the same as in
@@ -148,7 +146,8 @@ feature, FIC is more appropriate to be used in concept learning.</p>
 </div>
 <p>Besides the ontology, FIC requires a base reasoner to delegate any reasoning tasks not covered by it.
 This base reasoner
-can be any other reasoner in Owlapy. <code class="docutils literal notranslate"><span class="pre">property_cache</span></code> specifies whether to cache property values. This
+can be any other reasoner in Owlapy (usually it’s <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner" title="owlapy.owl_reasoner.OntologyReasoner"><span class="xref myst py py-class">OntologyReasoner</span></a>).
+<code class="docutils literal notranslate"><span class="pre">property_cache</span></code> specifies whether to cache property values. This
 requires more memory, but it speeds up the reasoning processes. If <code class="docutils literal notranslate"><span class="pre">negation_default</span></code> argument is set
 to <code class="docutils literal notranslate"><span class="pre">True</span></code> the missing facts in the ontology means false. The argument
 <code class="docutils literal notranslate"><span class="pre">sub_properties</span></code> is another boolean argument to specify whether you want to take sub properties in consideration
@@ -159,14 +158,10 @@ for <code class="docutils literal notranslate"><span class="pre">instances()</sp
 <h2>Usage of the Reasoner<a class="headerlink" href="#usage-of-the-reasoner" title="Link to this heading"></a></h2>
 <p>All the reasoners available in the Owlapy library inherit from the
 class: <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasonerEx" title="owlapy.owl_reasoner.OWLReasonerEx"><span class="xref myst py py-class">OWLReasonerEx</span></a>. This class provides some
-extra convenient methods compared to its base class <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner" title="owlapy.owl_reasoner.OWLReasoner"><span class="xref myst py py-class">OWLReasoner</span></a>, which is an
-abstract class.
-Further on, in this guide, we use
-<a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">SyncReasoner</span></a>.
+extra convenient methods compared to its base abstract class <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner" title="owlapy.owl_reasoner.OWLReasoner"><span class="xref myst py py-class">OWLReasoner</span></a>.
+Further on, in this guide, we use <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner" title="owlapy.owl_reasoner.FastInstanceCheckerReasoner"><span class="xref myst py py-class">FastInstanceCheckerReasoner</span></a>
 to show the capabilities of a reasoner in Owlapy.</p>
-<p>To give examples we consider the <em>father</em> dataset.
-If you are not already familiar with this small dataset,
-you can find an overview of it <a class="reference internal" href="ontologies.html"><span class="std std-doc">here</span></a>.</p>
+<p>As mentioned earlier we will use the <em>father</em> dataset to give examples.</p>
 </section>
 <section id="class-reasoning">
 <h2>Class Reasoning<a class="headerlink" href="#class-reasoning" title="Link to this heading"></a></h2>
@@ -180,9 +175,9 @@ equivalent classes of a class in the ontology:</p>
 <span class="n">namespace</span> <span class="o">=</span> <span class="s2">&quot;http://example.com/father#&quot;</span>
 <span class="n">male</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="s2">&quot;male&quot;</span><span class="p">))</span>
 
-<span class="n">male_super_classes</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
-<span class="n">male_sub_classes</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
-<span class="n">male_equivalent_classes</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">equivalent_classes</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
+<span class="n">male_super_classes</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
+<span class="n">male_sub_classes</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
+<span class="n">male_equivalent_classes</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">equivalent_classes</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We define the <em>male</em> class by creating an <a class="reference internal" href="../autoapi/owlapy/class_expression/owl_class/index.html#owlapy.class_expression.owl_class.OWLClass" title="owlapy.class_expression.owl_class.OWLClass"><span class="xref myst py py-class">OWLClass</span></a> object. The
@@ -198,11 +193,16 @@ means that it will return only the named classes.</p>
 <div><p><strong>NOTE</strong>: The extra arguments <code class="docutils literal notranslate"><span class="pre">direct</span></code> and <code class="docutils literal notranslate"><span class="pre">only_named</span></code> are also used in other methods that reason
 upon the class, object property, or data property hierarchy.</p>
 </div></blockquote>
+<blockquote>
+<div><p><strong>NOTE</strong>: SyncReasoner implements OWLReasoner where we can specify the <code class="docutils literal notranslate"><span class="pre">only_named</span></code> argument
+in some methods but in java reasoners there is no use for such argument and therefore this
+argument is trivial when used in SyncReasoner’s methods.</p>
+</div></blockquote>
 <p>You can get all the types of a certain individual using <code class="docutils literal notranslate"><span class="pre">types</span></code> method:</p>
 <!--pytest-codeblocks:cont-->
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">anna</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">onto</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
-<span class="n">anna_types</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">types</span><span class="p">(</span><span class="n">anna</span><span class="p">)</span>
+<span class="n">anna_types</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">types</span><span class="p">(</span><span class="n">anna</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We retrieve <em>anna</em> as the first individual on the list of individuals
@@ -212,13 +212,13 @@ of the ‘Father’ ontology. The <code class="docutils literal notranslate"><sp
 <h2>Object Properties and Data Properties Reasoning<a class="headerlink" href="#object-properties-and-data-properties-reasoning" title="Link to this heading"></a></h2>
 <p>Owlapy reasoners offers some convenient methods for working with object properties and
 data properties. Below we show some of them, but you can always check all the methods in the
-<a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">SyncReasoner</span></a>
+<a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner" title="owlapy.owl_reasoner.OWLReasoner"><span class="xref myst py py-class">OWLReasoner</span></a>
 class documentation.</p>
 <p>You can get all the object properties that an individual has by using the
 following method:</p>
 <!--pytest-codeblocks:cont-->
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">anna</span> <span class="o">=</span> <span class="n">individuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> 
-<span class="n">object_properties</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">ind_object_properties</span><span class="p">(</span><span class="n">anna</span><span class="p">)</span>
+<span class="n">object_properties</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">ind_object_properties</span><span class="p">(</span><span class="n">anna</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In this example, <code class="docutils literal notranslate"><span class="pre">object_properties</span></code> contains all the object properties
@@ -226,7 +226,7 @@ that <em>anna</em> has, which in our case would only be <em>hasChild</em>.
 Now we can get the individuals of this object property for <em>anna</em>.</p>
 <!--pytest-codeblocks:cont-->
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">object_properties</span><span class="p">:</span>
-    <span class="n">object_properties_values</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">anna</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+    <span class="n">object_properties_values</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">anna</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">individual</span> <span class="ow">in</span> <span class="n">object_properties_values</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">individual</span><span class="p">)</span>
 </pre></div>
@@ -251,14 +251,14 @@ specified individual.</p>
 
 <span class="n">hasChild</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="s2">&quot;hasChild&quot;</span><span class="p">))</span>
 
-<span class="n">equivalent_to_hasChild</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">equivalent_object_properties</span><span class="p">(</span><span class="n">hasChild</span><span class="p">)</span>
-<span class="n">hasChild_sub_properties</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">sub_object_properties</span><span class="p">(</span><span class="n">hasChild</span><span class="p">)</span>
+<span class="n">equivalent_to_hasChild</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">equivalent_object_properties</span><span class="p">(</span><span class="n">hasChild</span><span class="p">)</span>
+<span class="n">hasChild_sub_properties</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">sub_object_properties</span><span class="p">(</span><span class="n">hasChild</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In case you want to get the domains and ranges of an object property use the following:</p>
 <!--pytest-codeblocks:cont-->
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hasChild_domains</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">object_property_domains</span><span class="p">(</span><span class="n">hasChild</span><span class="p">)</span>
-<span class="n">hasChild_ranges</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">object_property_ranges</span><span class="p">(</span><span class="n">hasChild</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hasChild_domains</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">object_property_domains</span><span class="p">(</span><span class="n">hasChild</span><span class="p">)</span>
+<span class="n">hasChild_ranges</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">object_property_ranges</span><span class="p">(</span><span class="n">hasChild</span><span class="p">)</span>
 </pre></div>
 </div>
 <blockquote>
@@ -274,14 +274,14 @@ we have implemented a Python class for each type of class expression.
 The argument is of type <a class="reference internal" href="../autoapi/owlapy/class_expression/class_expression/index.html#owlapy.class_expression.class_expression.OWLClassExpression" title="owlapy.class_expression.class_expression.OWLClassExpression"><span class="xref myst py py-class">OWLClassExpression</span></a>.</p>
 <p>Let us now show a simple example by finding the instances of the class <em>male</em> and printing them:</p>
 <!--pytest-codeblocks:cont-->
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">male_individuals</span> <span class="o">=</span> <span class="n">sync_reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">male_individuals</span> <span class="o">=</span> <span class="n">fic_reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">male_individuals</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
 </pre></div>
 </div>
 <hr class="docutils" />
-<p>In this guide we covered the main functionalities of the reasoners in Owlapy. More
-details are provided in the next guide.</p>
+<p>In this guide we covered the main functionalities of the reasoners in Owlapy.
+In the next one, we speak about owlapi adaptor and how can make use of owlapi in owlapy.</p>
 </section>
 </section>
 
@@ -290,7 +290,7 @@ details are provided in the next guide.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="ontologies.html" class="btn btn-neutral float-left" title="Ontologies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="reasoning_details.html" class="btn btn-neutral float-right" title="Reasoning Details" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="owlapi_adaptor.html" class="btn btn-neutral float-right" title="Owlapi Adaptor" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

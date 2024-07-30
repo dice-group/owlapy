@@ -54,7 +54,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoning_details.html">Reasoning Details</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_adaptor.html">Owlapi Adaptor</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">owlapy</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
@@ -76,6 +75,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_adaptor/index.html">owlapy.owlapi_adaptor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
@@ -169,6 +169,13 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.KEY"><code class="docutils literal notranslate"><span class="pre">LRUCache.KEY</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.RESULT"><code class="docutils literal notranslate"><span class="pre">LRUCache.RESULT</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">LRUCache.sentinel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.full"><code class="docutils literal notranslate"><span class="pre">LRUCache.full</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_get"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_get</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_len"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_len</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.lock"><code class="docutils literal notranslate"><span class="pre">LRUCache.lock</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.root"><code class="docutils literal notranslate"><span class="pre">LRUCache.root</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.maxsize"><code class="docutils literal notranslate"><span class="pre">LRUCache.maxsize</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__contains__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__contains__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__getitem__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__getitem__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__setitem__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__setitem__()</span></code></a></li>
@@ -717,6 +724,41 @@ Operands will be sorted.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="id1">
 <span class="sig-name descname"><span class="pre">sentinel</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache">
+<span class="sig-name descname"><span class="pre">cache</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.full">
+<span class="sig-name descname"><span class="pre">full</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#owlapy.utils.LRUCache.full" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_get">
+<span class="sig-name descname"><span class="pre">cache_get</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache_get" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_len">
+<span class="sig-name descname"><span class="pre">cache_len</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache_len" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.lock">
+<span class="sig-name descname"><span class="pre">lock</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.lock" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.root">
+<span class="sig-name descname"><span class="pre">root</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#owlapy.utils.LRUCache.root" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.maxsize">
+<span class="sig-name descname"><span class="pre">maxsize</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.maxsize" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

@@ -26,7 +26,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="owlapy.providers" href="../providers/index.html" />
-    <link rel="prev" title="owlapy.owlapi_adaptor" href="../owlapi_adaptor/index.html" /> 
+    <link rel="prev" title="owlapy.owlapi_mapper" href="../owlapi_mapper/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,7 +54,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoning_details.html">Reasoning Details</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_adaptor.html">Owlapi Adaptor</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">owlapy</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
@@ -76,6 +75,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_adaptor/index.html">owlapy.owlapi_adaptor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.parser</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#attributes">Attributes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
@@ -85,6 +85,7 @@
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.parser.ManchesterOWLSyntaxParser"><code class="docutils literal notranslate"><span class="pre">ManchesterOWLSyntaxParser</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.ManchesterOWLSyntaxParser.slots"><code class="docutils literal notranslate"><span class="pre">ManchesterOWLSyntaxParser.slots</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.ManchesterOWLSyntaxParser.ns"><code class="docutils literal notranslate"><span class="pre">ManchesterOWLSyntaxParser.ns</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.ManchesterOWLSyntaxParser.grammar"><code class="docutils literal notranslate"><span class="pre">ManchesterOWLSyntaxParser.grammar</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.ManchesterOWLSyntaxParser.parse_expression"><code class="docutils literal notranslate"><span class="pre">ManchesterOWLSyntaxParser.parse_expression()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.ManchesterOWLSyntaxParser.visit_union"><code class="docutils literal notranslate"><span class="pre">ManchesterOWLSyntaxParser.visit_union()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.ManchesterOWLSyntaxParser.visit_intersection"><code class="docutils literal notranslate"><span class="pre">ManchesterOWLSyntaxParser.visit_intersection()</span></code></a></li>
@@ -139,6 +140,7 @@
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.parser.DLSyntaxParser"><code class="docutils literal notranslate"><span class="pre">DLSyntaxParser</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.DLSyntaxParser.slots"><code class="docutils literal notranslate"><span class="pre">DLSyntaxParser.slots</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.DLSyntaxParser.ns"><code class="docutils literal notranslate"><span class="pre">DLSyntaxParser.ns</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.DLSyntaxParser.grammar"><code class="docutils literal notranslate"><span class="pre">DLSyntaxParser.grammar</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.DLSyntaxParser.parse_expression"><code class="docutils literal notranslate"><span class="pre">DLSyntaxParser.parse_expression()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.DLSyntaxParser.visit_union"><code class="docutils literal notranslate"><span class="pre">DLSyntaxParser.visit_union()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.parser.DLSyntaxParser.visit_intersection"><code class="docutils literal notranslate"><span class="pre">DLSyntaxParser.visit_intersection()</span></code></a></li>
@@ -305,6 +307,11 @@ Following: <a class="reference external" href="https://www.w3.org/TR/owl2-manche
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.parser.ManchesterOWLSyntaxParser.ns">
 <span class="sig-name descname"><span class="pre">ns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../namespaces/index.html#owlapy.namespaces.Namespaces" title="owlapy.namespaces.Namespaces"><span class="pre">owlapy.namespaces.Namespaces</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#owlapy.parser.ManchesterOWLSyntaxParser.ns" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.parser.ManchesterOWLSyntaxParser.grammar">
+<span class="sig-name descname"><span class="pre">grammar</span></span><a class="headerlink" href="#owlapy.parser.ManchesterOWLSyntaxParser.grammar" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -589,6 +596,11 @@ for now.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.parser.DLSyntaxParser.ns">
 <span class="sig-name descname"><span class="pre">ns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../namespaces/index.html#owlapy.namespaces.Namespaces" title="owlapy.namespaces.Namespaces"><span class="pre">owlapy.namespaces.Namespaces</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#owlapy.parser.DLSyntaxParser.ns" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.parser.DLSyntaxParser.grammar">
+<span class="sig-name descname"><span class="pre">grammar</span></span><a class="headerlink" href="#owlapy.parser.DLSyntaxParser.grammar" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -882,7 +894,7 @@ for now.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../owlapi_adaptor/index.html" class="btn btn-neutral float-left" title="owlapy.owlapi_adaptor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../owlapi_mapper/index.html" class="btn btn-neutral float-left" title="owlapy.owlapi_mapper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../providers/index.html" class="btn btn-neutral float-right" title="owlapy.providers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
