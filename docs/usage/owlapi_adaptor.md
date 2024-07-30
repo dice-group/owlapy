@@ -48,6 +48,10 @@ Isn't that awesome!
 `OWLAPIAdaptor` uses HermiT reasoner by default. You can choose between:
 "HermiT", "Pellet", "JFact" and "Openllet".
 
+You can use the reasoning method directly from the adaptor but 
+for classes that require an [OWLReasoner](owlapi.owl_reasoner.OWLReasoner)
+you can use [SyncReasoner](https://dice-group.github.io/owlapy/autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner).
+
 _**owlapi version**: 5.1.9_
 
 ## Examples
