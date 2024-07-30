@@ -28,9 +28,6 @@ class OWLAPIAdaptor:
         manager: The OWL ontology manager.
         ontology: The loaded OWL ontology.
         reasoner: Choose from (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"]. Default: "HermiT".
-        parser: The Manchester OWL Syntax parser.
-        renderer: The Manchester OWL Syntax renderer.
-        namespace: Namespace(IRI) of the OWL ontology.
     """
     def __init__(self, path: str, name_reasoner: str = "HermiT"):
         """
