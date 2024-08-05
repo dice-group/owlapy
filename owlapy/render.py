@@ -21,7 +21,6 @@ from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnion
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .owl_datatype import OWLDatatype
 
-
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
     EQUIVALENT_TO="≡",
@@ -55,6 +54,40 @@ def _simple_short_form_provider(e: OWLEntity) -> str:
             return "%s:%s" % (ns.prefix, sf)
     else:
         return sf
+
+
+from typing import Dict
+
+
+def owl_to_sentence_via_triple_store(e: OWLEntity, triplestore, rules: Dict[str:str] = None) -> str:
+    """
+    e:
+    rules: A mapping from OWLEntity to predicates,
+
+    Keys in rules can be  OWLNamedIndividual, OWLClass, e.g.,
+    IRI to IRI s.t. the second IRI must be a predicate leading to literal
+
+
+    triplestore: or  KnowledgeBase
+
+    """
+    iri: IRI = e.iri
+    sf = iri.reminder
+
+    if rules is None:
+        # TODO: Generate a SPARQL query!
+        # Endpoint: https://dbpedia.org/sparql select ?o where { <http://dbpedia.org/resource/Albert_Einstein>
+        # <http://www.w3.org/2000/01/rdf-schema#label> ?o}
+        sparql = f"""select ?o where {{ <{e.str}> <http://www.w3.org/2000/01/rdf-schema#label> ?o}}"""
+        # TODO:CD: Extract results from binding (Note: there could be multiple results)
+        # TODO:CD: Select only one or concat the results
+    else:
+        str_type = str(type(e))
+        if selected_predicate := rules.get(str_type, None):
+            sparql = f"""select ?o where {{ <{e.str}> <{selected_predicate}> ?o}}"""
+        else:
+            pass
+    return triplestore.query(sparql)
 
 
 class DLSyntaxObjectRenderer(OWLObjectRenderer):
@@ -226,7 +259,7 @@ class DLSyntaxObjectRenderer(OWLObjectRenderer):
 
     def _render_nested(self, c: OWLClassExpression) -> str:
         if isinstance(c, OWLBooleanClassExpression) or isinstance(c, OWLRestriction) \
-                                                    or isinstance(c, OWLNaryDataRange):
+                or isinstance(c, OWLNaryDataRange):
             return "(%s)" % self.render(c)
         else:
             return self.render(c)
@@ -420,7 +453,7 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
 
     def _render_nested(self, c: OWLClassExpression) -> str:
         if isinstance(c, OWLBooleanClassExpression) or isinstance(c, OWLRestriction) \
-                                                    or isinstance(c, OWLNaryDataRange):
+                or isinstance(c, OWLNaryDataRange):
             return "(%s)" % self.render(c)
         else:
             return self.render(c)
