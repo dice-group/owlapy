@@ -77,7 +77,7 @@ def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str]
 
     def get_label(entity, r, predicate=label_iri):
         if isinstance(r, OWLReasoner):
-            values = list(r.data_property_values(OWLNamedIndividual(e.iri), OWLDataProperty(label_iri)))
+            values = list(r.data_property_values(e.iri, OWLDataProperty(label_iri)))
             if values:
                 return str(values[0].get_literal())
             else:
