@@ -7,10 +7,10 @@ from typing import List, Callable
 
 from owlapy import namespaces
 from .iri import IRI
-from .owl_individual import OWLNamedIndividual
+from .owl_individual import OWLNamedIndividual, OWLIndividual
 from .owl_literal import OWLLiteral
 from .owl_object import OWLObjectRenderer, OWLEntity, OWLObject
-from .owl_property import OWLObjectInverseOf, OWLPropertyExpression
+from .owl_property import OWLObjectInverseOf, OWLPropertyExpression, OWLDataProperty, OWLObjectProperty
 from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWLClass, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectMinCardinality, \
     OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
@@ -20,6 +20,7 @@ from owlapy.vocab import OWLFacet
 from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .owl_datatype import OWLDatatype
+from .owl_reasoner import OWLReasoner
 
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
@@ -56,38 +57,58 @@ def _simple_short_form_provider(e: OWLEntity) -> str:
         return sf
 
 
-from typing import Dict
+mapper = {
+    'OWLNamedIndividual': "http://www.w3.org/2002/07/owl#NamedIndividual",
+    'OWLObjectProperty': "http://www.w3.org/2002/07/owl#ObjectProperty",
+    'OWLDataProperty': "http://www.w3.org/2002/07/owl#DatatypeProperty",
+    'OWLClass': "http://www.w3.org/2002/07/owl#Class"
+}
 
 
-def owl_to_sentence_via_triple_store(e: OWLEntity, triplestore, rules: Dict[str:str] = None) -> str:
+def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str] = None) -> str:
     """
-    e:
+    e: entity.
+    reasoner: OWLReasoner or Triplestore(from Ontolearn)
     rules: A mapping from OWLEntity to predicates,
-
-    Keys in rules can be  OWLNamedIndividual, OWLClass, e.g.,
-    IRI to IRI s.t. the second IRI must be a predicate leading to literal
-
-
-    triplestore: or  KnowledgeBase
-
+        Keys in rules can be  general or specific iris, e.g.,
+        IRI to IRI s.t. the second IRI must be a predicate leading to literal
     """
-    iri: IRI = e.iri
-    sf = iri.reminder
+    label_iri = "http://www.w3.org/2000/01/rdf-schema#label"
+
+    def get_label(entity, r, predicate=label_iri):
+        if isinstance(r, OWLReasoner):
+            values = list(r.data_property_values(OWLNamedIndividual(e.iri), OWLDataProperty(label_iri)))
+            if values:
+                return str(values[0].get_literal())
+            else:
+                return _simple_short_form_provider(entity)
+        else:
+            # else we have a TripleStore
+            sparql = f"""select ?o where {{ <{entity.str}> <{predicate}> ?o}}"""
+            if results := list(r.query(sparql)):
+                return str(results[0])
+            else:
+                return _simple_short_form_provider(entity)
 
     if rules is None:
-        # TODO: Generate a SPARQL query!
-        # Endpoint: https://dbpedia.org/sparql select ?o where { <http://dbpedia.org/resource/Albert_Einstein>
-        # <http://www.w3.org/2000/01/rdf-schema#label> ?o}
-        sparql = f"""select ?o where {{ <{e.str}> <http://www.w3.org/2000/01/rdf-schema#label> ?o}}"""
-        # TODO:CD: Extract results from binding (Note: there could be multiple results)
-        # TODO:CD: Select only one or concat the results
+        return get_label(e, reasoner)
     else:
-        str_type = str(type(e))
-        if selected_predicate := rules.get(str_type, None):
-            sparql = f"""select ?o where {{ <{e.str}> <{selected_predicate}> ?o}}"""
+        # Check if a predicate is set for a specific IRI:
+        # (e.g "http://www.example.org/SomeSpecificClass":"http://www.example.org/SomePredicate")
+        # WARNING: This will only replace the specified class not individuals belonging to this class.
+        # This is to avoid confusion, because entity can also be a property and properties does not classify individual.
+        # So to avoid confusion, the specified predicate in the rules will only be used to 'label' the specified entity
+        # iri.
+        if specific_predicate := rules.get(e.str, None):
+            return get_label(e, reasoner, specific_predicate)
+        # Check if a predicate is set for a general IRI:
+        # (e.g "http://www.w3.org/2002/07/owl#NamedIndividual":"http://www.example.org/SomePredicate")
+        # then it will label any entity of that type using the given predicate.
+        elif general_predicate := rules.get(mapper[str(type(e))], None):
+            return get_label(e, reasoner, general_predicate)
+        # No specific rule set, use http://www.w3.org/2000/01/rdf-schema#label (by default)
         else:
-            pass
-    return triplestore.query(sparql)
+            return get_label(e, reasoner)
 
 
 class DLSyntaxObjectRenderer(OWLObjectRenderer):
