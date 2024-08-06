@@ -21,6 +21,7 @@ from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
 from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from owlapy.owl_datatype import OWLDatatype
+from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import OWLOntology, Ontology, _parse_concept_to_owlapy, ToOwlready2
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
@@ -187,15 +188,18 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def data_property_values(self, ind: OWLNamedIndividual, pe: OWLDataProperty, direct: bool = True) \
+    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty, direct: bool = True) \
             -> Iterable['OWLLiteral']:
-        """Gets the data property values for the specified individual and data property expression.
+        """Gets the data property values for the specified entity and data property expression.
 
         Args:
-            ind: The individual that is the subject of the data property values.
-            pe: The data property expression whose values are to be retrieved for the specified individual.
+            e: The owl entity (usually an individual) that is the subject of the data property values.
+            pe: The data property expression whose values are to be retrieved for the specified entity.
             direct: Specifies if the direct values should be retrieved (True), or if all values should be retrieved
                 (False), so that sub properties are taken into account.
+
+        Note: Can be used to get values, for example, of 'label' property of owl entities such as classes and properties
+        too (not only individuals).
 
         Returns:
             A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
@@ -610,9 +614,9 @@ class OntologyReasoner(OWLReasonerEx):
         yield from (OWLNamedIndividual(IRI.create(d_i.iri)) for d_i in i.equivalent_to
                     if isinstance(d_i, owlready2.Thing))
 
-    def data_property_values(self, ind: OWLNamedIndividual, pe: OWLDataProperty, direct: bool = True) \
+    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty, direct: bool = True) \
             -> Iterable[OWLLiteral]:
-        i: owlready2.Thing = self._world[ind.str]
+        i: owlready2.Thing = self._world[e.str]
         p: owlready2.DataPropertyClass = self._world[pe.str]
         retrieval_func = p._get_values_for_individual if direct else p._get_indirect_values_for_individual
         for val in retrieval_func(i):
@@ -1140,9 +1144,9 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
     def same_individuals(self, ce: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
         yield from self._base_reasoner.same_individuals(ce)
 
-    def data_property_values(self, ind: OWLNamedIndividual, pe: OWLDataProperty, direct: bool = True) \
+    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty, direct: bool = True) \
             -> Iterable[OWLLiteral]:
-        yield from self._base_reasoner.data_property_values(ind, pe, direct)
+        yield from self._base_reasoner.data_property_values(e, pe, direct)
 
     def all_data_property_values(self, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
         yield from self._base_reasoner.all_data_property_values(pe, direct)
@@ -1645,9 +1649,8 @@ class SyncReasoner(OWLReasonerEx):
     def same_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
         yield from self.adaptor.same_individuals(ind)
 
-    def data_property_values(self, ind: OWLNamedIndividual, pe: OWLDataProperty, direct: bool = True) -> Iterable[
-        OWLLiteral]:
-        yield from self.adaptor.data_property_values(ind, pe)
+    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
+        yield from self.adaptor.data_property_values(e, pe)
 
     def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = False) -> \
             Iterable[OWLNamedIndividual]:
