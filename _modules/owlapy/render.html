@@ -164,7 +164,7 @@
 
     <span class="k">def</span> <span class="nf">get_label</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">label_iri</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">OWLReasoner</span><span class="p">):</span>
-            <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">label_iri</span><span class="p">)))</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">predicate</span><span class="p">)))</span>
             <span class="k">if</span> <span class="n">values</span><span class="p">:</span>
                 <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_literal</span><span class="p">())</span>
             <span class="k">else</span><span class="p">:</span>
@@ -191,7 +191,7 @@
         <span class="c1"># Check if a rule exist for a general IRI:</span>
         <span class="c1"># (e.g &quot;http://www.w3.org/2002/07/owl#NamedIndividual&quot;:&quot;http://www.example.org/SomePredicate&quot;)</span>
         <span class="c1"># then it will label any entity of that type using the value retrieved from the given predicate.</span>
-        <span class="k">elif</span> <span class="n">general_predicate</span> <span class="o">:=</span> <span class="n">rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mapper</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">))],</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">general_predicate</span> <span class="o">:=</span> <span class="n">rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mapper</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">],</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">get_label</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">,</span> <span class="n">general_predicate</span><span class="p">)</span>
         <span class="c1"># No specific rule set, use http://www.w3.org/2000/01/rdf-schema#label (by default)</span>
         <span class="k">else</span><span class="p">:</span>
