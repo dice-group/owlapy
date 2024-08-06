@@ -103,6 +103,7 @@
 <span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">OWLSubClassOfAxiom</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_data_ranges</span> <span class="kn">import</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_datatype</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_object</span> <span class="kn">import</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">ToOwlready2</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_ontology_manager</span> <span class="kn">import</span> <span class="n">OntologyManager</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> \
@@ -300,15 +301,18 @@
 <div class="viewcode-block" id="OWLReasoner.data_property_values">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.data_property_values">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
+    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
             <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLLiteral&#39;</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data property values for the specified individual and data property expression.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data property values for the specified entity and data property expression.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            ind: The individual that is the subject of the data property values.</span>
-<span class="sd">            pe: The data property expression whose values are to be retrieved for the specified individual.</span>
+<span class="sd">            e: The owl entity (usually an individual) that is the subject of the data property values.</span>
+<span class="sd">            pe: The data property expression whose values are to be retrieved for the specified entity.</span>
 <span class="sd">            direct: Specifies if the direct values should be retrieved (True), or if all values should be retrieved</span>
 <span class="sd">                (False), so that sub properties are taken into account.</span>
+
+<span class="sd">        Note: Can be used to get values, for example, of &#39;label&#39; property of owl entities such as classes and properties</span>
+<span class="sd">        too (not only individuals).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner</span>
@@ -801,9 +805,9 @@
 
 <div class="viewcode-block" id="OntologyReasoner.data_property_values">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner.data_property_values">[docs]</a>
-    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
+    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
             <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
-        <span class="n">i</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">Thing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">[</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">]</span>
+        <span class="n">i</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">Thing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">str</span><span class="p">]</span>
         <span class="n">p</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">DataPropertyClass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">[</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">]</span>
         <span class="n">retrieval_func</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">_get_values_for_individual</span> <span class="k">if</span> <span class="n">direct</span> <span class="k">else</span> <span class="n">p</span><span class="o">.</span><span class="n">_get_indirect_values_for_individual</span>
         <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">retrieval_func</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
@@ -1409,9 +1413,9 @@
 
 <div class="viewcode-block" id="FastInstanceCheckerReasoner.data_property_values">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner.data_property_values">[docs]</a>
-    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
+    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
             <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_reasoner</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="FastInstanceCheckerReasoner.all_data_property_values">
@@ -1989,9 +1993,8 @@
 
 <div class="viewcode-block" id="SyncReasoner.data_property_values">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.data_property_values">[docs]</a>
-    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span>
-        <span class="n">OWLLiteral</span><span class="p">]:</span>
-        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptor</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.object_property_values">

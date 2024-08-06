@@ -14,6 +14,7 @@ Attributes
 
 .. autoapisummary::
 
+   owlapy.render.mapper
    owlapy.render.DLrenderer
    owlapy.render.ManchesterRenderer
 
@@ -32,12 +33,32 @@ Functions
 
 .. autoapisummary::
 
+   owlapy.render.translating_short_form_provider
+   owlapy.render.translating_short_form_endpoint
    owlapy.render.owl_expression_to_dl
    owlapy.render.owl_expression_to_manchester
 
 
 Module Contents
 ---------------
+
+.. py:data:: mapper
+
+.. py:function:: translating_short_form_provider(e: owlapy.owl_object.OWLEntity, reasoner, rules: dict[str:str] = None) -> str
+
+   e: entity.
+   reasoner: OWLReasoner or Triplestore(from Ontolearn)
+   rules: A mapping from OWLEntity to predicates,
+       Keys in rules can be  general or specific iris, e.g.,
+       IRI to IRI s.t. the second IRI must be a predicate leading to literal
+
+
+.. py:function:: translating_short_form_endpoint(e: owlapy.owl_object.OWLEntity, endpoint: str, rules: dict[abc.ABCMeta:str] = None) -> str
+
+   e: entity.
+   reasoner: OWLReasoner or a string representing an endpoint of a triple store
+   rules: A mapping from python classes to string IRI leading to a literal
+
 
 .. py:class:: DLSyntaxObjectRenderer(short_form_provider: Callable[[owlapy.owl_object.OWLEntity], str] = _simple_short_form_provider)
 

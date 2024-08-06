@@ -89,10 +89,10 @@
 
 <span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">namespaces</span>
 <span class="kn">from</span> <span class="nn">.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span> <span class="nn">.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span> <span class="nn">.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">OWLIndividual</span>
 <span class="kn">from</span> <span class="nn">.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span> <span class="nn">.owl_object</span> <span class="kn">import</span> <span class="n">OWLObjectRenderer</span><span class="p">,</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">OWLObject</span>
-<span class="kn">from</span> <span class="nn">.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">OWLPropertyExpression</span>
+<span class="kn">from</span> <span class="nn">.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
 <span class="kn">from</span> <span class="nn">.class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> \
     <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> \
     <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> \
@@ -102,8 +102,11 @@
 <span class="kn">from</span> <span class="nn">.owl_data_ranges</span> <span class="kn">import</span> <span class="n">OWLNaryDataRange</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span>
 <span class="kn">from</span> <span class="nn">.class_expression</span> <span class="kn">import</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span>
 <span class="kn">from</span> <span class="nn">.owl_datatype</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
-
-
+<span class="kn">from</span> <span class="nn">.owl_reasoner</span> <span class="kn">import</span> <span class="n">OWLReasoner</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">abc</span>
 <span class="n">_DL_SYNTAX</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">SimpleNamespace</span><span class="p">(</span>
     <span class="n">SUBCLASS</span><span class="o">=</span><span class="s2">&quot;⊑&quot;</span><span class="p">,</span>
     <span class="n">EQUIVALENT_TO</span><span class="o">=</span><span class="s2">&quot;≡&quot;</span><span class="p">,</span>
@@ -137,6 +140,92 @@
             <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">sf</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">sf</span>
+
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;OWLNamedIndividual&#39;</span><span class="p">:</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#NamedIndividual&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;OWLObjectProperty&#39;</span><span class="p">:</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#ObjectProperty&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;OWLDataProperty&#39;</span><span class="p">:</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#DatatypeProperty&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;OWLClass&#39;</span><span class="p">:</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#Class&quot;</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="translating_short_form_provider">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.translating_short_form_provider">[docs]</a>
+<span class="k">def</span> <span class="nf">translating_short_form_provider</span><span class="p">(</span><span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">,</span> <span class="n">rules</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">:</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    e: entity.</span>
+<span class="sd">    reasoner: OWLReasoner or Triplestore(from Ontolearn)</span>
+<span class="sd">    rules: A mapping from OWLEntity to predicates,</span>
+<span class="sd">        Keys in rules can be  general or specific iris, e.g.,</span>
+<span class="sd">        IRI to IRI s.t. the second IRI must be a predicate leading to literal</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">label_iri</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2000/01/rdf-schema#label&quot;</span>
+
+    <span class="k">def</span> <span class="nf">get_label</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">label_iri</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">OWLReasoner</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">label_iri</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_literal</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_simple_short_form_provider</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># else we have a TripleStore</span>
+            <span class="n">sparql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;select ?o where </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">&gt; &lt;</span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s2">&gt; ?o</span><span class="se">}}</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">results</span> <span class="o">:=</span> <span class="nb">list</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">sparql</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_simple_short_form_provider</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rules</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">get_label</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Check if a rule exist for a specific IRI:</span>
+        <span class="c1"># (e.g &quot;http://www.example.org/SomeSpecificClass&quot;:&quot;http://www.example.org/SomePredicate&quot;)</span>
+        <span class="c1"># WARNING: If the entity is an OWLClass, the rule specified for that class will only be used to replace the</span>
+        <span class="c1"># class itself not individuals belonging to that class. The reason for that is that the entity can also be a</span>
+        <span class="c1"># property and properties does not classify individuals. So to avoid confusion, the specified predicate in the</span>
+        <span class="c1"># rules will only be used to &#39;label&#39; the specified entity.</span>
+        <span class="k">if</span> <span class="n">specific_predicate</span> <span class="o">:=</span> <span class="n">rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">get_label</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">,</span> <span class="n">specific_predicate</span><span class="p">)</span>
+        <span class="c1"># Check if a rule exist for a general IRI:</span>
+        <span class="c1"># (e.g &quot;http://www.w3.org/2002/07/owl#NamedIndividual&quot;:&quot;http://www.example.org/SomePredicate&quot;)</span>
+        <span class="c1"># then it will label any entity of that type using the value retrieved from the given predicate.</span>
+        <span class="k">elif</span> <span class="n">general_predicate</span> <span class="o">:=</span> <span class="n">rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mapper</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">))],</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">get_label</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">,</span> <span class="n">general_predicate</span><span class="p">)</span>
+        <span class="c1"># No specific rule set, use http://www.w3.org/2000/01/rdf-schema#label (by default)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">get_label</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="translating_short_form_endpoint">
+<a class="viewcode-back" href="../../autoapi/owlapy/render/index.html#owlapy.translating_short_form_endpoint">[docs]</a>
+<span class="k">def</span> <span class="nf">translating_short_form_endpoint</span><span class="p">(</span><span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                    <span class="n">rules</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">:</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    e: entity.</span>
+<span class="sd">    reasoner: OWLReasoner or a string representing an endpoint of a triple store</span>
+<span class="sd">    rules: A mapping from python classes to string IRI leading to a literal</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># () Iterate over rules</span>
+    <span class="k">for</span> <span class="n">owlapy_class</span><span class="p">,</span> <span class="n">str_predicate</span> <span class="ow">in</span> <span class="n">rules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># () Check whether an OWL entity is an instance of specified class</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">owlapy_class</span><span class="p">):</span>
+            <span class="n">sparql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;select ?o where </span><span class="se">{{</span><span class="s2"> &lt;</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">&gt; &lt;</span><span class="si">{</span><span class="n">str_predicate</span><span class="si">}</span><span class="s2">&gt; ?o</span><span class="se">}}</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">sparql</span><span class="p">})</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;results&quot;</span><span class="p">][</span><span class="s2">&quot;bindings&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;o&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">sparql</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No literal found</span><span class="se">\n</span><span class="si">{</span><span class="n">sparql</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No matching rules for OWL Entity:</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
+    <span class="c1"># No mathing rule found</span>
+    <span class="k">return</span> <span class="n">_simple_short_form_provider</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="DLSyntaxObjectRenderer">
@@ -316,7 +405,7 @@
 
     <span class="k">def</span> <span class="nf">_render_nested</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLRestriction</span><span class="p">)</span> \
-                                                    <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">):</span>
+                <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">):</span>
             <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
@@ -519,7 +608,7 @@
 
     <span class="k">def</span> <span class="nf">_render_nested</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLBooleanClassExpression</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLRestriction</span><span class="p">)</span> \
-                                                    <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">):</span>
+                <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">):</span>
             <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>

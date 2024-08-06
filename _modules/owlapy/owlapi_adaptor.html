@@ -90,6 +90,7 @@
 
 <span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_object</span> <span class="kn">import</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
@@ -535,11 +536,11 @@
 
 <div class="viewcode-block" id="OWLAPIAdaptor.data_property_values">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.data_property_values">[docs]</a>
-    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data property values for the specified individual and data property expression.</span>
+    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data property values for the specified entity and data property expression.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            i: The individual that is the subject of the data property values.</span>
+<span class="sd">            e: The entity (usually an individual) that is the subject of the data property values.</span>
 <span class="sd">            p: The data property expression whose values are to be retrieved for the specified individual.</span>
 
 <span class="sd">        Returns:</span>
@@ -547,7 +548,7 @@
 <span class="sd">            axioms entails DataPropertyAssertion(pe ind l).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">literal</span><span class="p">)</span> <span class="k">for</span> <span class="n">literal</span> <span class="ow">in</span>
-                    <span class="n">to_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="o">.</span><span class="n">dataPropertyValues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">)))]</span></div>
+                    <span class="n">to_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="o">.</span><span class="n">dataPropertyValues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">)))]</span></div>
 
 
 <div class="viewcode-block" id="OWLAPIAdaptor.disjoint_object_properties">

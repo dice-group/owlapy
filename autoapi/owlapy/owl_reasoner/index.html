@@ -473,19 +473,23 @@ be returned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.OWLReasoner.data_property_values">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#OWLReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.OWLReasoner.data_property_values" title="Link to this definition"></a></dt>
-<dd><p>Gets the data property values for the specified individual and data property expression.</p>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#OWLReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.OWLReasoner.data_property_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the data property values for the specified entity and data property expression.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ind</strong> – The individual that is the subject of the data property values.</p></li>
-<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified individual.</p></li>
+<li><p><strong>e</strong> – The owl entity (usually an individual) that is the subject of the data property values.</p></li>
+<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified entity.</p></li>
 <li><p><strong>direct</strong> – Specifies if the direct values should be retrieved (True), or if all values should be retrieved
 (False), so that sub properties are taken into account.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+</dl>
+<p>Note: Can be used to get values, for example, of ‘label’ property of owl entities such as classes and properties
+too (not only individuals).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
 axioms entails DataPropertyAssertion(pe ind l).</p>
 </dd>
 </dl>
@@ -961,19 +965,23 @@ reasoner axioms.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.OntologyReasoner.data_property_values">
-<span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#OntologyReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.OntologyReasoner.data_property_values" title="Link to this definition"></a></dt>
-<dd><p>Gets the data property values for the specified individual and data property expression.</p>
+<span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#OntologyReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.OntologyReasoner.data_property_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the data property values for the specified entity and data property expression.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ind</strong> – The individual that is the subject of the data property values.</p></li>
-<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified individual.</p></li>
+<li><p><strong>e</strong> – The owl entity (usually an individual) that is the subject of the data property values.</p></li>
+<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified entity.</p></li>
 <li><p><strong>direct</strong> – Specifies if the direct values should be retrieved (True), or if all values should be retrieved
 (False), so that sub properties are taken into account.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+</dl>
+<p>Note: Can be used to get values, for example, of ‘label’ property of owl entities such as classes and properties
+too (not only individuals).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
 axioms entails DataPropertyAssertion(pe ind l).</p>
 </dd>
 </dl>
@@ -1444,19 +1452,23 @@ reasoner axioms.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.FastInstanceCheckerReasoner.data_property_values">
-<span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#FastInstanceCheckerReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.FastInstanceCheckerReasoner.data_property_values" title="Link to this definition"></a></dt>
-<dd><p>Gets the data property values for the specified individual and data property expression.</p>
+<span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#FastInstanceCheckerReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.FastInstanceCheckerReasoner.data_property_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the data property values for the specified entity and data property expression.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ind</strong> – The individual that is the subject of the data property values.</p></li>
-<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified individual.</p></li>
+<li><p><strong>e</strong> – The owl entity (usually an individual) that is the subject of the data property values.</p></li>
+<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified entity.</p></li>
 <li><p><strong>direct</strong> – Specifies if the direct values should be retrieved (True), or if all values should be retrieved
 (False), so that sub properties are taken into account.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+</dl>
+<p>Note: Can be used to get values, for example, of ‘label’ property of owl entities such as classes and properties
+too (not only individuals).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
 axioms entails DataPropertyAssertion(pe ind l).</p>
 </dd>
 </dl>
@@ -1935,19 +1947,23 @@ reasoner axioms.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.data_property_values">
-<span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.data_property_values" title="Link to this definition"></a></dt>
-<dd><p>Gets the data property values for the specified individual and data property expression.</p>
+<span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.data_property_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the data property values for the specified entity and data property expression.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ind</strong> – The individual that is the subject of the data property values.</p></li>
-<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified individual.</p></li>
+<li><p><strong>e</strong> – The owl entity (usually an individual) that is the subject of the data property values.</p></li>
+<li><p><strong>pe</strong> – The data property expression whose values are to be retrieved for the specified entity.</p></li>
 <li><p><strong>direct</strong> – Specifies if the direct values should be retrieved (True), or if all values should be retrieved
 (False), so that sub properties are taken into account.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+</dl>
+<p>Note: Can be used to get values, for example, of ‘label’ property of owl entities such as classes and properties
+too (not only individuals).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
 axioms entails DataPropertyAssertion(pe ind l).</p>
 </dd>
 </dl>
