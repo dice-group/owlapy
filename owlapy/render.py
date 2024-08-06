@@ -117,9 +117,27 @@ def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str]
 def translating_short_form_endpoint(e: OWLEntity, endpoint: str,
                                     rules: dict[abc.ABCMeta:str] = None) -> str:
     """
-    e: entity.
-    reasoner: OWLReasoner or a string representing an endpoint of a triple store
-    rules: A mapping from python classes to string IRI leading to a literal
+       Translates an OWLEntity to a short form string using provided rules and an endpoint.
+
+    Parameters:
+    e (OWLEntity): The OWL entity to be translated.
+    endpoint (str): The endpoint of a triple store to query against.
+    rules (dict[abc.ABCMeta:str], optional): A dictionary mapping OWL classes to string IRIs leading to a literal.
+
+    Returns:
+    str: The translated short form of the OWL entity. If no matching rules are found, a simple short form is returned.
+
+    This function iterates over the provided rules to check if the given OWL entity is an instance of any specified class.
+    If a match is found, it constructs a SPARQL query to retrieve the literal value associated with the entity and predicate.
+    If a literal is found, it is returned as the short form. If no literals are found, the SPARQL query and entity information
+    are printed for debugging purposes. If no matching rules are found, a warning is issued and a simple short form is returned.
+
+
+    Example:
+    >>> e = OWLEntity("http://example.org/entity")
+    >>> endpoint = "http://example.org/sparql"
+    >>> rules = {SomeOWLClass: "http://example.org/predicate"}
+    >>> translating_short_form_endpoint(e, endpoint, rules)
     """
     # () Iterate over rules
     for owlapy_class, str_predicate in rules.items():
