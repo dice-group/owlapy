@@ -24,6 +24,7 @@ from .owl_reasoner import OWLReasoner
 from typing import Union, Tuple
 import requests
 import warnings
+import abc
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
     EQUIVALENT_TO="≡",
@@ -59,8 +60,62 @@ def _simple_short_form_provider(e: OWLEntity) -> str:
         return sf
 
 
-def translating_short_form_provider(e: OWLEntity, reasoner: Union[Tuple[OWLReasoner, str]],
-                                    rules: dict[str:str] = None) -> str:
+mapper = {
+    'OWLNamedIndividual': "http://www.w3.org/2002/07/owl#NamedIndividual",
+    'OWLObjectProperty': "http://www.w3.org/2002/07/owl#ObjectProperty",
+    'OWLDataProperty': "http://www.w3.org/2002/07/owl#DatatypeProperty",
+    'OWLClass': "http://www.w3.org/2002/07/owl#Class"
+}
+
+
+def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str] = None) -> str:
+    """
+    e: entity.
+    reasoner: OWLReasoner or Triplestore(from Ontolearn)
+    rules: A mapping from OWLEntity to predicates,
+        Keys in rules can be  general or specific iris, e.g.,
+        IRI to IRI s.t. the second IRI must be a predicate leading to literal
+    """
+    label_iri = "http://www.w3.org/2000/01/rdf-schema#label"
+
+    def get_label(entity, r, predicate=label_iri):
+        if isinstance(r, OWLReasoner):
+            values = list(r.data_property_values(entity, OWLDataProperty(label_iri)))
+            if values:
+                return str(values[0].get_literal())
+            else:
+                return _simple_short_form_provider(entity)
+        else:
+            # else we have a TripleStore
+            sparql = f"""select ?o where {{ <{entity.str}> <{predicate}> ?o}}"""
+            if results := list(r.query(sparql)):
+                return str(results[0])
+            else:
+                return _simple_short_form_provider(entity)
+
+    if rules is None:
+        return get_label(e, reasoner)
+    else:
+        # Check if a rule exist for a specific IRI:
+        # (e.g "http://www.example.org/SomeSpecificClass":"http://www.example.org/SomePredicate")
+        # WARNING: If the entity is an OWLClass, the rule specified for that class will only be used to replace the
+        # class itself not individuals belonging to that class. The reason for that is that the entity can also be a
+        # property and properties does not classify individuals. So to avoid confusion, the specified predicate in the
+        # rules will only be used to 'label' the specified entity.
+        if specific_predicate := rules.get(e.str, None):
+            return get_label(e, reasoner, specific_predicate)
+        # Check if a rule exist for a general IRI:
+        # (e.g "http://www.w3.org/2002/07/owl#NamedIndividual":"http://www.example.org/SomePredicate")
+        # then it will label any entity of that type using the value retrieved from the given predicate.
+        elif general_predicate := rules.get(mapper[str(type(e))], None):
+            return get_label(e, reasoner, general_predicate)
+        # No specific rule set, use http://www.w3.org/2000/01/rdf-schema#label (by default)
+        else:
+            return get_label(e, reasoner)
+
+
+def translating_short_form_endpoint(e: OWLEntity, endpoint: str,
+                                    rules: dict[abc.ABCMeta:str] = None) -> str:
     """
     e: entity.
     reasoner: OWLReasoner or a string representing an endpoint of a triple store
@@ -71,7 +126,7 @@ def translating_short_form_provider(e: OWLEntity, reasoner: Union[Tuple[OWLReaso
         # () Check whether an OWL entity is an instance of specified class
         if isinstance(e, owlapy_class):
             sparql = f"""select ?o where {{ <{e.str}> <{str_predicate}> ?o}}"""
-            response = requests.post(url=reasoner, data={"query": sparql})
+            response = requests.post(url=endpoint, data={"query": sparql})
             results = response.json()["results"]["bindings"]
             if len(results) > 0:
                 return results[0]["o"]["value"]

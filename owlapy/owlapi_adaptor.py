@@ -8,6 +8,7 @@ import pkg_resources
 
 from owlapy.class_expression import OWLClassExpression
 from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_object import OWLEntity
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from typing import List
 
@@ -389,11 +390,11 @@ class OWLAPIAdaptor:
         yield from [self.mapper.map_(ind) for ind in
                     self.reasoner.getObjectPropertyValues(self.mapper.map_(i), self.mapper.map_(p)).getFlattened()]
 
-    def data_property_values(self, i: OWLNamedIndividual, p: OWLDataProperty):
-        """Gets the data property values for the specified individual and data property expression.
+    def data_property_values(self, e: OWLEntity, p: OWLDataProperty):
+        """Gets the data property values for the specified entity and data property expression.
 
         Args:
-            i: The individual that is the subject of the data property values.
+            e: The entity (usually an individual) that is the subject of the data property values.
             p: The data property expression whose values are to be retrieved for the specified individual.
 
         Returns:
@@ -401,7 +402,7 @@ class OWLAPIAdaptor:
             axioms entails DataPropertyAssertion(pe ind l).
         """
         yield from [self.mapper.map_(literal) for literal in
-                    to_list(self.reasoner.dataPropertyValues(self.mapper.map_(i), self.mapper.map_(p)))]
+                    to_list(self.reasoner.dataPropertyValues(self.mapper.map_(e), self.mapper.map_(p)))]
 
     def disjoint_object_properties(self, p: OWLObjectProperty):
         """Gets the simplified object properties that are disjoint with the specified object property with respect
