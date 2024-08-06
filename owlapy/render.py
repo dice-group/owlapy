@@ -80,7 +80,7 @@ def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str]
 
     def get_label(entity, r, predicate=label_iri):
         if isinstance(r, OWLReasoner):
-            values = list(r.data_property_values(entity, OWLDataProperty(label_iri)))
+            values = list(r.data_property_values(entity, OWLDataProperty(predicate)))
             if values:
                 return str(values[0].get_literal())
             else:
@@ -107,7 +107,7 @@ def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str]
         # Check if a rule exist for a general IRI:
         # (e.g "http://www.w3.org/2002/07/owl#NamedIndividual":"http://www.example.org/SomePredicate")
         # then it will label any entity of that type using the value retrieved from the given predicate.
-        elif general_predicate := rules.get(mapper[str(type(e))], None):
+        elif general_predicate := rules.get(mapper[e.__class__.__name__], None):
             return get_label(e, reasoner, general_predicate)
         # No specific rule set, use http://www.w3.org/2000/01/rdf-schema#label (by default)
         else:
