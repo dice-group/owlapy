@@ -7,10 +7,10 @@ from typing import List, Callable
 
 from owlapy import namespaces
 from .iri import IRI
-from .owl_individual import OWLNamedIndividual
+from .owl_individual import OWLNamedIndividual, OWLIndividual
 from .owl_literal import OWLLiteral
 from .owl_object import OWLObjectRenderer, OWLEntity, OWLObject
-from .owl_property import OWLObjectInverseOf, OWLPropertyExpression
+from .owl_property import OWLObjectInverseOf, OWLPropertyExpression, OWLDataProperty, OWLObjectProperty
 from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWLClass, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectMinCardinality, \
     OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
@@ -20,8 +20,11 @@ from owlapy.vocab import OWLFacet
 from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .owl_datatype import OWLDatatype
-
-
+from .owl_reasoner import OWLReasoner
+from typing import Union, Tuple
+import requests
+import warnings
+import abc
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
     EQUIVALENT_TO="≡",
@@ -55,6 +58,104 @@ def _simple_short_form_provider(e: OWLEntity) -> str:
             return "%s:%s" % (ns.prefix, sf)
     else:
         return sf
+
+
+mapper = {
+    'OWLNamedIndividual': "http://www.w3.org/2002/07/owl#NamedIndividual",
+    'OWLObjectProperty': "http://www.w3.org/2002/07/owl#ObjectProperty",
+    'OWLDataProperty': "http://www.w3.org/2002/07/owl#DatatypeProperty",
+    'OWLClass': "http://www.w3.org/2002/07/owl#Class"
+}
+
+
+def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str] = None) -> str:
+    """
+    e: entity.
+    reasoner: OWLReasoner or Triplestore(from Ontolearn)
+    rules: A mapping from OWLEntity to predicates,
+        Keys in rules can be  general or specific iris, e.g.,
+        IRI to IRI s.t. the second IRI must be a predicate leading to literal
+    """
+    label_iri = "http://www.w3.org/2000/01/rdf-schema#label"
+
+    def get_label(entity, r, predicate=label_iri):
+        if isinstance(r, OWLReasoner):
+            values = list(r.data_property_values(entity, OWLDataProperty(predicate)))
+            if values:
+                return str(values[0].get_literal())
+            else:
+                return _simple_short_form_provider(entity)
+        else:
+            # else we have a TripleStore
+            sparql = f"""select ?o where {{ <{entity.str}> <{predicate}> ?o}}"""
+            if results := list(r.query(sparql)):
+                return str(results[0])
+            else:
+                return _simple_short_form_provider(entity)
+
+    if rules is None:
+        return get_label(e, reasoner)
+    else:
+        # Check if a rule exist for a specific IRI:
+        # (e.g "http://www.example.org/SomeSpecificClass":"http://www.example.org/SomePredicate")
+        # WARNING: If the entity is an OWLClass, the rule specified for that class will only be used to replace the
+        # class itself not individuals belonging to that class. The reason for that is that the entity can also be a
+        # property and properties does not classify individuals. So to avoid confusion, the specified predicate in the
+        # rules will only be used to 'label' the specified entity.
+        if specific_predicate := rules.get(e.str, None):
+            return get_label(e, reasoner, specific_predicate)
+        # Check if a rule exist for a general IRI:
+        # (e.g "http://www.w3.org/2002/07/owl#NamedIndividual":"http://www.example.org/SomePredicate")
+        # then it will label any entity of that type using the value retrieved from the given predicate.
+        elif general_predicate := rules.get(mapper[e.__class__.__name__], None):
+            return get_label(e, reasoner, general_predicate)
+        # No specific rule set, use http://www.w3.org/2000/01/rdf-schema#label (by default)
+        else:
+            return get_label(e, reasoner)
+
+
+def translating_short_form_endpoint(e: OWLEntity, endpoint: str,
+                                    rules: dict[abc.ABCMeta:str] = None) -> str:
+    """
+       Translates an OWLEntity to a short form string using provided rules and an endpoint.
+
+    Parameters:
+    e (OWLEntity): The OWL entity to be translated.
+    endpoint (str): The endpoint of a triple store to query against.
+    rules (dict[abc.ABCMeta:str], optional): A dictionary mapping OWL classes to string IRIs leading to a literal.
+
+    Returns:
+    str: The translated short form of the OWL entity. If no matching rules are found, a simple short form is returned.
+
+    This function iterates over the provided rules to check if the given OWL entity is an instance of any specified class.
+    If a match is found, it constructs a SPARQL query to retrieve the literal value associated with the entity and predicate.
+    If a literal is found, it is returned as the short form. If no literals are found, the SPARQL query and entity information
+    are printed for debugging purposes. If no matching rules are found, a warning is issued and a simple short form is returned.
+
+
+    Example:
+    >>> e = OWLEntity("http://example.org/entity")
+    >>> endpoint = "http://example.org/sparql"
+    >>> rules = {SomeOWLClass: "http://example.org/predicate"}
+    >>> translating_short_form_endpoint(e, endpoint, rules)
+    """
+    # () Iterate over rules
+    for owlapy_class, str_predicate in rules.items():
+        # () Check whether an OWL entity is an instance of specified class
+        if isinstance(e, owlapy_class):
+            sparql = f"""select ?o where {{ <{e.str}> <{str_predicate}> ?o}}"""
+            response = requests.post(url=endpoint, data={"query": sparql})
+            results = response.json()["results"]["bindings"]
+            if len(results) > 0:
+                return results[0]["o"]["value"]
+            else:
+                print(sparql)
+                print(f"No literal found\n{sparql}\n{e}")
+                continue
+
+    warnings.warn(f"No matching rules for OWL Entity:{e}!")
+    # No mathing rule found
+    return _simple_short_form_provider(e)
 
 
 class DLSyntaxObjectRenderer(OWLObjectRenderer):
@@ -226,7 +327,7 @@ class DLSyntaxObjectRenderer(OWLObjectRenderer):
 
     def _render_nested(self, c: OWLClassExpression) -> str:
         if isinstance(c, OWLBooleanClassExpression) or isinstance(c, OWLRestriction) \
-                                                    or isinstance(c, OWLNaryDataRange):
+                or isinstance(c, OWLNaryDataRange):
             return "(%s)" % self.render(c)
         else:
             return self.render(c)
@@ -420,7 +521,7 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
 
     def _render_nested(self, c: OWLClassExpression) -> str:
         if isinstance(c, OWLBooleanClassExpression) or isinstance(c, OWLRestriction) \
-                                                    or isinstance(c, OWLNaryDataRange):
+                or isinstance(c, OWLNaryDataRange):
             return "(%s)" % self.render(c)
         else:
             return self.render(c)
