@@ -93,17 +93,17 @@ def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str]
     if rules is None:
         return get_label(e, reasoner)
     else:
-        # Check if a predicate is set for a specific IRI:
+        # Check if a rule exist for a specific IRI:
         # (e.g "http://www.example.org/SomeSpecificClass":"http://www.example.org/SomePredicate")
-        # WARNING: This will only replace the specified class not individuals belonging to this class.
-        # This is to avoid confusion, because entity can also be a property and properties does not classify individual.
-        # So to avoid confusion, the specified predicate in the rules will only be used to 'label' the specified entity
-        # iri.
+        # WARNING: If the entity is an OWLClass, the rule specified for that class will only be used to replace the
+        # class itself not individuals belonging to that class. The reason for that is that the entity can also be a
+        # property and properties does not classify individuals. So to avoid confusion, the specified predicate in the
+        # rules will only be used to 'label' the specified entity.
         if specific_predicate := rules.get(e.str, None):
             return get_label(e, reasoner, specific_predicate)
-        # Check if a predicate is set for a general IRI:
+        # Check if a rule exist for a general IRI:
         # (e.g "http://www.w3.org/2002/07/owl#NamedIndividual":"http://www.example.org/SomePredicate")
-        # then it will label any entity of that type using the given predicate.
+        # then it will label any entity of that type using the value retrieved from the given predicate.
         elif general_predicate := rules.get(mapper[str(type(e))], None):
             return get_label(e, reasoner, general_predicate)
         # No specific rule set, use http://www.w3.org/2000/01/rdf-schema#label (by default)
