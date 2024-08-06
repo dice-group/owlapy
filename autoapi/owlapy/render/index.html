@@ -183,7 +183,7 @@
 <td><p>e: entity.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.render.translating_short_form_endpoint" title="owlapy.render.translating_short_form_endpoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translating_short_form_endpoint</span></code></a>(→ str)</p></td>
-<td><p>e: entity.</p></td>
+<td><p>Translates an OWLEntity to a short form string using provided rules and an endpoint.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.render.owl_expression_to_dl" title="owlapy.render.owl_expression_to_dl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owl_expression_to_dl</span></code></a>(→ str)</p></td>
 <td><p></p></td>
@@ -216,9 +216,24 @@ IRI to IRI s.t. the second IRI must be a predicate leading to literal</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="owlapy.render.translating_short_form_endpoint">
 <span class="sig-prename descclassname"><span class="pre">owlapy.render.</span></span><span class="sig-name descname"><span class="pre">translating_short_form_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rules</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict[abc.ABCMeta:str]</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/owlapy/render.html#translating_short_form_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.render.translating_short_form_endpoint" title="Link to this definition"></a></dt>
-<dd><p>e: entity.
-reasoner: OWLReasoner or a string representing an endpoint of a triple store
-rules: A mapping from python classes to string IRI leading to a literal</p>
+<dd><blockquote>
+<div><p>Translates an OWLEntity to a short form string using provided rules and an endpoint.</p>
+</div></blockquote>
+<p>Parameters:
+e (OWLEntity): The OWL entity to be translated.
+endpoint (str): The endpoint of a triple store to query against.
+rules (dict[abc.ABCMeta:str], optional): A dictionary mapping OWL classes to string IRIs leading to a literal.</p>
+<p>Returns:
+str: The translated short form of the OWL entity. If no matching rules are found, a simple short form is returned.</p>
+<p>This function iterates over the provided rules to check if the given OWL entity is an instance of any specified class.
+If a match is found, it constructs a SPARQL query to retrieve the literal value associated with the entity and predicate.
+If a literal is found, it is returned as the short form. If no literals are found, the SPARQL query and entity information
+are printed for debugging purposes. If no matching rules are found, a warning is issued and a simple short form is returned.</p>
+<p>Example:
+&gt;&gt;&gt; e = OWLEntity(”<a class="reference external" href="http://example.org/entity">http://example.org/entity</a>”)
+&gt;&gt;&gt; endpoint = “<a class="reference external" href="http://example.org/sparql">http://example.org/sparql</a>”
+&gt;&gt;&gt; rules = {SomeOWLClass: “<a class="reference external" href="http://example.org/predicate">http://example.org/predicate</a>”}
+&gt;&gt;&gt; translating_short_form_endpoint(e, endpoint, rules)</p>
 </dd></dl>
 
 <dl class="py class">
