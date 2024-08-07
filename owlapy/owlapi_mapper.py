@@ -1,9 +1,11 @@
 from functools import singledispatchmethod
+
 import jpype.imports
 
 from owlapy import owl_expression_to_manchester, manchester_to_owl_expression
 from owlapy.class_expression import OWLClassExpression
 from owlapy.iri import IRI
+from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationProperty, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
@@ -15,7 +17,8 @@ if jpype.isJVMStarted():
     from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
     from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
     from org.semanticweb.owlapi.expression import ShortFormEntityChecker
-    from java.util import HashSet
+    from java.util import HashSet, ArrayList, List
+    from java.util.stream import Stream
     from uk.ac.manchester.cs.owl.owlapi import (OWLAnonymousClassExpressionImpl, OWLCardinalityRestrictionImpl,
                                                 OWLClassExpressionImpl, OWLClassImpl, OWLDataAllValuesFromImpl,
                                                 OWLDataCardinalityRestrictionImpl, OWLDataExactCardinalityImpl,
@@ -30,7 +33,11 @@ if jpype.isJVMStarted():
                                                 OWLObjectUnionOfImpl, OWLQuantifiedDataRestrictionImpl,
                                                 OWLQuantifiedObjectRestrictionImpl, OWLQuantifiedRestrictionImpl,
                                                 OWLValueRestrictionImpl, OWLLiteralImplBoolean, OWLLiteralImplString,
-                                                OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger)
+                                                OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger,
+                                                OWLDisjointClassesAxiomImpl, OWLDeclarationAxiomImpl, OWLAnnotationImpl,
+                                                OWLAnnotationPropertyImpl, OWLClassAssertionAxiomImpl,
+                                                )
+
 else:
     raise ImportError("Jpype JVM is not started! Tip: Import OWLAPIMapper after JVM has started")
 
@@ -65,31 +72,39 @@ class OWLAPIMapper:
         Args:
             e: OWL entity/expression.
         """
-        raise NotImplementedError()
+        raise NotImplementedError(f"Not implemented type: {e}")
+
+    @map_.register
+    def _(self, e: IRI):
+        return owlapi_IRI.create(e.str)
+
+    @map_.register
+    def _(self, e: owlapi_IRI):
+        return IRI.create(str(e.getIRIString()))
 
     @map_.register
     def _(self, e: OWLObjectProperty):
-        return OWLObjectPropertyImpl(owlapi_IRI.create(e.str))
+        return OWLObjectPropertyImpl(self.map_(e.iri))
 
     @map_.register
     def _(self, e: OWLObjectPropertyImpl):
-        return OWLObjectProperty(IRI.create(str(e.getIRI().getIRIString())))
+        return OWLObjectProperty(self.map_(e.getIRI()))
 
     @map_.register
     def _(self, e: OWLDataProperty):
-        return OWLDataPropertyImpl(owlapi_IRI.create(e.str))
+        return OWLDataPropertyImpl(self.map_(e.iri))
 
     @map_.register
     def _(self, e: OWLDataPropertyImpl):
-        return OWLDataProperty(IRI.create(str(e.getIRI().getIRIString())))
+        return OWLDataProperty(self.map_(e.getIRI()))
 
     @map_.register
     def _(self, e: OWLNamedIndividual):
-        return OWLNamedIndividualImpl(owlapi_IRI.create(e.str))
+        return OWLNamedIndividualImpl(self.map_(e.iri))
 
     @map_.register
     def _(self, e: OWLNamedIndividualImpl):
-        return OWLNamedIndividual(IRI.create(str(e.getIRI().getIRIString())))
+        return OWLNamedIndividual(self.map_(e.getIRI()))
 
     @map_.register
     def _(self, e: OWLClassExpression):
@@ -128,6 +143,11 @@ class OWLAPIMapper:
         # have to register all possible implementations
         return manchester_to_owl_expression(str(self.renderer.render(e)), self.namespace)
 
+    @map_.register
+    def _(self, e: OWLLiteral):
+        if e.is_string():
+            return OWLLiteralImplString(e.get_literal())
+
     @map_.register(OWLLiteralImplBoolean)
     def _(self, e):
         raw_value = str(e.getLiteral())
@@ -144,6 +164,57 @@ class OWLAPIMapper:
     def _(self, e):
         return OWLLiteral(str(e.getLiteral()))
 
-    @map_.register(OWLLiteralImplInteger)
-    def _(self, e):
+    @map_.register
+    def _(self, e: OWLLiteralImplInteger):
         return OWLLiteral(int(str(e.getLiteral())))
+
+    @map_.register
+    def _(self, e: OWLAnnotation):
+        return OWLAnnotationImpl(self.map_(e.get_property()), self.map_(e.get_value()), Stream.empty())
+
+    @map_.register
+    def _(self, e: OWLAnnotationImpl):
+        return OWLAnnotation(self.map_(e.getProperty()), self.map_(e.getValue()))
+
+    @map_.register
+    def _(self, e: OWLAnnotationProperty):
+        return OWLAnnotationPropertyImpl(self.map_(e.iri))
+
+    @map_.register
+    def _(self, e: OWLAnnotationPropertyImpl):
+        return OWLAnnotationProperty(self.map_(e.getIRI()))
+
+    @map_.register(OWLDeclarationAxiom)
+    def _(self, e):
+        return OWLDeclarationAxiomImpl(self.map_(e.get_entity()), self.map_(e.annotations()))
+
+    @map_.register(OWLDeclarationAxiomImpl)
+    def _(self, e):
+        return OWLDeclarationAxiom(self.map_(e.getEntity()), self.map_(e.annotationsAsList()))
+
+    @map_.register
+    def _(self, e: OWLClassAssertionAxiom):
+        return OWLClassAssertionAxiomImpl(self.map_(e.get_individual()), self.map_(e.get_class_expression()),
+                                          self.map_(e.annotations()))
+
+    @map_.register(OWLClassAssertionAxiomImpl)
+    def _(self, e):
+        return OWLClassAssertionAxiom(self.map_(e.getIndividual()), self.map_(e.getClassExpression()),
+                                      self.map_(e.annotationsAsList()))
+
+    @map_.register(List)
+    def _(self, e):
+        python_list = list()
+        casted_list = list(e)
+        if e and len(casted_list) > 0:
+            for obj in list(e):
+                python_list.append(self.map_(obj))
+        return python_list
+
+    @map_.register
+    def _(self, e: list):
+        java_list = ArrayList()
+        if e is not None and len(e) > 0:
+            for item in e:
+                java_list.add(self.map_(item))
+        return java_list
