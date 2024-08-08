@@ -24,9 +24,7 @@
         <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="owlapy.entities" href="../../entities/index.html" />
-    <link rel="prev" title="owlapy.class_expression.owl_class" href="../owl_class/index.html" /> 
+    <link rel="search" title="Search" href="../../../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,44 +46,215 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../../../usage/main.html">About owlapy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../usage/usage_examples.html">Basic Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../usage/ontologies.html">Ontologies</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../usage/reasoner.html">Reasoners</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../usage/owlapi_adaptor.html">Owlapi Adaptor</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">owlapy</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="../index.html">owlapy.class_expression</a><ul class="current">
-<li class="toctree-l4 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
-<li class="toctree-l5"><a class="reference internal" href="../class_expression/index.html">owlapy.class_expression.class_expression</a></li>
-<li class="toctree-l5"><a class="reference internal" href="../nary_boolean_expression/index.html">owlapy.class_expression.nary_boolean_expression</a></li>
-<li class="toctree-l5"><a class="reference internal" href="../owl_class/index.html">owlapy.class_expression.owl_class</a></li>
-<li class="toctree-l5 current"><a class="current reference internal" href="#">owlapy.class_expression.restriction</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#attributes">Attributes</a></li>
-<li class="toctree-l6"><a class="reference internal" href="#classes">Classes</a></li>
-<li class="toctree-l6"><a class="reference internal" href="#module-contents">Module Contents</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">owlapy.class_expression.restriction</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.Literals"><code class="docutils literal notranslate"><span class="pre">Literals</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLRestriction"><code class="docutils literal notranslate"><span class="pre">OWLRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLRestriction.get_property"><code class="docutils literal notranslate"><span class="pre">OWLRestriction.get_property()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLRestriction.is_data_restriction"><code class="docutils literal notranslate"><span class="pre">OWLRestriction.is_data_restriction()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLRestriction.is_object_restriction"><code class="docutils literal notranslate"><span class="pre">OWLRestriction.is_object_restriction()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLHasValueRestriction"><code class="docutils literal notranslate"><span class="pre">OWLHasValueRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLHasValueRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLHasValueRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLHasValueRestriction.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLHasValueRestriction.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLHasValueRestriction.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLHasValueRestriction.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLHasValueRestriction.get_filler"><code class="docutils literal notranslate"><span class="pre">OWLHasValueRestriction.get_filler()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectRestriction"><code class="docutils literal notranslate"><span class="pre">OWLObjectRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectRestriction.is_object_restriction"><code class="docutils literal notranslate"><span class="pre">OWLObjectRestriction.is_object_restriction()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectRestriction.get_property"><code class="docutils literal notranslate"><span class="pre">OWLObjectRestriction.get_property()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLQuantifiedRestriction"><code class="docutils literal notranslate"><span class="pre">OWLQuantifiedRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLQuantifiedRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLQuantifiedRestriction.__slots__</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLCardinalityRestriction"><code class="docutils literal notranslate"><span class="pre">OWLCardinalityRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLCardinalityRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLCardinalityRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLCardinalityRestriction.get_cardinality"><code class="docutils literal notranslate"><span class="pre">OWLCardinalityRestriction.get_cardinality()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLCardinalityRestriction.get_filler"><code class="docutils literal notranslate"><span class="pre">OWLCardinalityRestriction.get_filler()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLQuantifiedObjectRestriction"><code class="docutils literal notranslate"><span class="pre">OWLQuantifiedObjectRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLQuantifiedObjectRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLQuantifiedObjectRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLQuantifiedObjectRestriction.get_filler"><code class="docutils literal notranslate"><span class="pre">OWLQuantifiedObjectRestriction.get_filler()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectCardinalityRestriction"><code class="docutils literal notranslate"><span class="pre">OWLObjectCardinalityRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectCardinalityRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectCardinalityRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectCardinalityRestriction.get_property"><code class="docutils literal notranslate"><span class="pre">OWLObjectCardinalityRestriction.get_property()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectCardinalityRestriction.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLObjectCardinalityRestriction.__repr__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectCardinalityRestriction.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLObjectCardinalityRestriction.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectCardinalityRestriction.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLObjectCardinalityRestriction.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectMinCardinality"><code class="docutils literal notranslate"><span class="pre">OWLObjectMinCardinality</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectMinCardinality.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectMinCardinality.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectMinCardinality.type_index"><code class="docutils literal notranslate"><span class="pre">OWLObjectMinCardinality.type_index</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectMaxCardinality"><code class="docutils literal notranslate"><span class="pre">OWLObjectMaxCardinality</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectMaxCardinality.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectMaxCardinality.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectMaxCardinality.type_index"><code class="docutils literal notranslate"><span class="pre">OWLObjectMaxCardinality.type_index</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectExactCardinality"><code class="docutils literal notranslate"><span class="pre">OWLObjectExactCardinality</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectExactCardinality.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectExactCardinality.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectExactCardinality.type_index"><code class="docutils literal notranslate"><span class="pre">OWLObjectExactCardinality.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectExactCardinality.as_intersection_of_min_max"><code class="docutils literal notranslate"><span class="pre">OWLObjectExactCardinality.as_intersection_of_min_max()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectSomeValuesFrom"><code class="docutils literal notranslate"><span class="pre">OWLObjectSomeValuesFrom</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectSomeValuesFrom.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectSomeValuesFrom.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectSomeValuesFrom.type_index"><code class="docutils literal notranslate"><span class="pre">OWLObjectSomeValuesFrom.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectSomeValuesFrom.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLObjectSomeValuesFrom.__repr__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectSomeValuesFrom.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLObjectSomeValuesFrom.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectSomeValuesFrom.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLObjectSomeValuesFrom.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectSomeValuesFrom.get_property"><code class="docutils literal notranslate"><span class="pre">OWLObjectSomeValuesFrom.get_property()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectAllValuesFrom"><code class="docutils literal notranslate"><span class="pre">OWLObjectAllValuesFrom</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectAllValuesFrom.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectAllValuesFrom.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectAllValuesFrom.type_index"><code class="docutils literal notranslate"><span class="pre">OWLObjectAllValuesFrom.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectAllValuesFrom.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLObjectAllValuesFrom.__repr__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectAllValuesFrom.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLObjectAllValuesFrom.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectAllValuesFrom.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLObjectAllValuesFrom.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectAllValuesFrom.get_property"><code class="docutils literal notranslate"><span class="pre">OWLObjectAllValuesFrom.get_property()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasSelf"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasSelf</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasSelf.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasSelf.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasSelf.type_index"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasSelf.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasSelf.get_property"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasSelf.get_property()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasSelf.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasSelf.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasSelf.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasSelf.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasSelf.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasSelf.__repr__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasValue"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasValue</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasValue.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasValue.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasValue.type_index"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasValue.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasValue.get_property"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasValue.get_property()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasValue.as_some_values_from"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasValue.as_some_values_from()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectHasValue.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLObjectHasValue.__repr__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf.type_index"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf.individuals"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf.individuals()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf.operands"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf.operands()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf.as_object_union_of"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf.as_object_union_of()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLObjectOneOf.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLObjectOneOf.__repr__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataRestriction"><code class="docutils literal notranslate"><span class="pre">OWLDataRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataRestriction.is_data_restriction"><code class="docutils literal notranslate"><span class="pre">OWLDataRestriction.is_data_restriction()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLQuantifiedDataRestriction"><code class="docutils literal notranslate"><span class="pre">OWLQuantifiedDataRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLQuantifiedDataRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLQuantifiedDataRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLQuantifiedDataRestriction.get_filler"><code class="docutils literal notranslate"><span class="pre">OWLQuantifiedDataRestriction.get_filler()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataCardinalityRestriction"><code class="docutils literal notranslate"><span class="pre">OWLDataCardinalityRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataCardinalityRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataCardinalityRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataCardinalityRestriction.get_property"><code class="docutils literal notranslate"><span class="pre">OWLDataCardinalityRestriction.get_property()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataCardinalityRestriction.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLDataCardinalityRestriction.__repr__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataCardinalityRestriction.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLDataCardinalityRestriction.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataCardinalityRestriction.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLDataCardinalityRestriction.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataMinCardinality"><code class="docutils literal notranslate"><span class="pre">OWLDataMinCardinality</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataMinCardinality.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataMinCardinality.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataMinCardinality.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDataMinCardinality.type_index</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataMaxCardinality"><code class="docutils literal notranslate"><span class="pre">OWLDataMaxCardinality</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataMaxCardinality.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataMaxCardinality.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataMaxCardinality.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDataMaxCardinality.type_index</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataExactCardinality"><code class="docutils literal notranslate"><span class="pre">OWLDataExactCardinality</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataExactCardinality.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataExactCardinality.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataExactCardinality.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDataExactCardinality.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataExactCardinality.as_intersection_of_min_max"><code class="docutils literal notranslate"><span class="pre">OWLDataExactCardinality.as_intersection_of_min_max()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataSomeValuesFrom"><code class="docutils literal notranslate"><span class="pre">OWLDataSomeValuesFrom</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataSomeValuesFrom.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataSomeValuesFrom.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataSomeValuesFrom.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDataSomeValuesFrom.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataSomeValuesFrom.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLDataSomeValuesFrom.__repr__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataSomeValuesFrom.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLDataSomeValuesFrom.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataSomeValuesFrom.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLDataSomeValuesFrom.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataSomeValuesFrom.get_property"><code class="docutils literal notranslate"><span class="pre">OWLDataSomeValuesFrom.get_property()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataAllValuesFrom"><code class="docutils literal notranslate"><span class="pre">OWLDataAllValuesFrom</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataAllValuesFrom.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataAllValuesFrom.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataAllValuesFrom.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDataAllValuesFrom.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataAllValuesFrom.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLDataAllValuesFrom.__repr__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataAllValuesFrom.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLDataAllValuesFrom.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataAllValuesFrom.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLDataAllValuesFrom.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataAllValuesFrom.get_property"><code class="docutils literal notranslate"><span class="pre">OWLDataAllValuesFrom.get_property()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataHasValue"><code class="docutils literal notranslate"><span class="pre">OWLDataHasValue</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataHasValue.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataHasValue.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataHasValue.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDataHasValue.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataHasValue.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLDataHasValue.__repr__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataHasValue.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLDataHasValue.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataHasValue.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLDataHasValue.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataHasValue.as_some_values_from"><code class="docutils literal notranslate"><span class="pre">OWLDataHasValue.as_some_values_from()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataHasValue.get_property"><code class="docutils literal notranslate"><span class="pre">OWLDataHasValue.get_property()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataOneOf"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataOneOf.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataOneOf.values"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.values()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataOneOf.operands"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.operands()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataOneOf.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataOneOf.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDataOneOf.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.__repr__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDatatypeRestriction"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDatatypeRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDatatypeRestriction.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeRestriction.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDatatypeRestriction.get_datatype"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeRestriction.get_datatype()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDatatypeRestriction.get_facet_restrictions"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeRestriction.get_facet_restrictions()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDatatypeRestriction.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeRestriction.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDatatypeRestriction.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeRestriction.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLDatatypeRestriction.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLDatatypeRestriction.__repr__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLFacetRestriction"><code class="docutils literal notranslate"><span class="pre">OWLFacetRestriction</span></code></a><ul>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLFacetRestriction.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLFacetRestriction.__slots__</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLFacetRestriction.type_index"><code class="docutils literal notranslate"><span class="pre">OWLFacetRestriction.type_index</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLFacetRestriction.get_facet"><code class="docutils literal notranslate"><span class="pre">OWLFacetRestriction.get_facet()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLFacetRestriction.get_facet_value"><code class="docutils literal notranslate"><span class="pre">OWLFacetRestriction.get_facet_value()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLFacetRestriction.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLFacetRestriction.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLFacetRestriction.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLFacetRestriction.__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#owlapy.class_expression.restriction.OWLFacetRestriction.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLFacetRestriction.__repr__()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l4"><a class="reference internal" href="../index.html#attributes">Attributes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../index.html#classes">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../entities/index.html">owlapy.entities</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../index.html#attributes">Attributes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
 </ul>
 </li>
 </ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -100,8 +269,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">owlapy</a></li>
-          <li class="breadcrumb-item"><a href="../index.html">owlapy.class_expression</a></li>
       <li class="breadcrumb-item active">owlapy.class_expression.restriction</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../../_sources/autoapi/owlapy/class_expression/restriction/index.rst.txt" rel="nofollow"> View page source</a>
@@ -1275,10 +1442,7 @@ the literals lti.
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../owl_class/index.html" class="btn btn-neutral float-left" title="owlapy.class_expression.owl_class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../../entities/index.html" class="btn btn-neutral float-right" title="owlapy.entities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

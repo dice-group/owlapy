@@ -8,6 +8,7 @@ Welcome to OWLAPY!
 
 .. toctree::
    :maxdepth: 2
+    .. image:: _static/images/owlapy_logo.png
    :caption: Contents:
 
    usage/main
@@ -15,4 +16,5 @@ Welcome to OWLAPY!
    usage/ontologies
    usage/reasoner
    usage/owlapi_adaptor
+   usage/further_resources
    autoapi/owlapy/index
