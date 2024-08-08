@@ -1,4 +1,9 @@
 # OWLAPY
+[![Coverage](https://img.shields.io/badge/coverage-82%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
+[![Pypi](https://img.shields.io/badge/pypi-1.2.0-blue)](https://pypi.org/project/owlapy/1.2.0/)
+[![Docs](https://img.shields.io/badge/documentation-1.2.0-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+
+![OWLAPY](docs/_static/images/owlapy_logo.png)
 
 OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.
 
