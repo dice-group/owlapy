@@ -24,3 +24,9 @@ jobs:
           wget https://files.dice-research.org/projects/Ontolearn/KGs.zip
           unzip KGs.zip
           python -m pytest -p no:warnings -x
+
+      - name: Coverage report
+        run: |
+          pip install coverage
+          coverage run -m pytest
+          coverage report -m
