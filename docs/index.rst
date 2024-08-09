@@ -15,4 +15,5 @@ Welcome to OWLAPY!
    usage/ontologies
    usage/reasoner
    usage/owlapi_adaptor
+   usage/further_resources
    autoapi/owlapy/index
