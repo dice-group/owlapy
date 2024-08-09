@@ -66,6 +66,10 @@ html_theme_options = {
 
 html_static_path = ['_static']
 
+html_logo = '_static/images/owlapy_logo.png'
+
+html_favicon = '_static/images/favicon.ico'
+
 if stanford_theme_mod:
     html_theme = 'sphinx_rtd_theme'
 
