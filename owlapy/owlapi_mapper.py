@@ -1,10 +1,10 @@
 from functools import singledispatchmethod
-from typing import Generator
+from typing import Iterable
 
 import jpype.imports
 
 from owlapy import owl_expression_to_manchester, manchester_to_owl_expression
-from owlapy.class_expression import OWLClassExpression
+from owlapy.class_expression import OWLClassExpression, OWLDataOneOf, OWLFacetRestriction, OWLDatatypeRestriction
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationProperty, OWLClassAssertionAxiom, \
     OWLDataPropertyAssertionAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, \
@@ -18,13 +18,16 @@ from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationPr
     OWLNegativeObjectPropertyAssertionAxiom, OWLSameIndividualAxiom, OWLSymmetricObjectPropertyAxiom, \
     OWLTransitiveObjectPropertyAxiom, OWLAnnotationAssertionAxiom, OWLAnnotationPropertyDomainAxiom, \
     OWLAnnotationPropertyRangeAxiom, OWLSubAnnotationPropertyOfAxiom
+from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf, OWLNaryDataRange
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
+from owlapy.vocab import OWLFacet
 
 if jpype.isJVMStarted():
     from org.semanticweb.owlapi.model import IRI as owlapi_IRI
+    from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
     from org.semanticweb.owlapi.manchestersyntax.parser import ManchesterOWLSyntaxClassExpressionParser
     from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
     from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
@@ -34,14 +37,14 @@ if jpype.isJVMStarted():
     from uk.ac.manchester.cs.owl.owlapi import (OWLAnonymousClassExpressionImpl, OWLCardinalityRestrictionImpl,
                                                 OWLClassExpressionImpl, OWLClassImpl, OWLDataAllValuesFromImpl,
                                                 OWLDataCardinalityRestrictionImpl, OWLDataExactCardinalityImpl,
-                                                OWLDataHasValueImpl, OWLDataMaxCardinalityImpl,
+                                                OWLDataHasValueImpl, OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
                                                 OWLDataMinCardinalityImpl, OWLDataSomeValuesFromImpl,
                                                 OWLNaryBooleanClassExpressionImpl, OWLObjectAllValuesFromImpl,
                                                 OWLObjectCardinalityRestrictionImpl, OWLObjectComplementOfImpl,
                                                 OWLObjectExactCardinalityImpl, OWLObjectHasSelfImpl,
                                                 OWLObjectHasValueImpl, OWLObjectIntersectionOfImpl,
                                                 OWLObjectMaxCardinalityImpl, OWLObjectMinCardinalityImpl,
-                                                OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl,
+                                                OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl, OWLNaryDataRangeImpl,
                                                 OWLObjectUnionOfImpl, OWLQuantifiedDataRestrictionImpl,
                                                 OWLQuantifiedObjectRestrictionImpl, OWLQuantifiedRestrictionImpl,
                                                 OWLValueRestrictionImpl, OWLLiteralImplBoolean, OWLLiteralImplString,
@@ -50,8 +53,8 @@ if jpype.isJVMStarted():
                                                 OWLAnnotationPropertyImpl, OWLClassAssertionAxiomImpl,
                                                 OWLDataPropertyAssertionAxiomImpl, OWLDataPropertyDomainAxiomImpl,
                                                 OWLDataPropertyRangeAxiomImpl, OWLEquivalentClassesAxiomImpl,
-                                                OWLEquivalentDataPropertiesAxiomImpl,
-                                                OWLEquivalentObjectPropertiesAxiomImpl,
+                                                OWLEquivalentDataPropertiesAxiomImpl, OWLDataIntersectionOfImpl,
+                                                OWLEquivalentObjectPropertiesAxiomImpl, OWLDataOneOfImpl,
                                                 OWLObjectPropertyDomainAxiomImpl, OWLObjectPropertyRangeAxiomImpl,
                                                 OWLObjectPropertyAssertionAxiomImpl, OWLDisjointDataPropertiesAxiomImpl,
                                                 OWLDisjointObjectPropertiesAxiomImpl, OWLHasKeyAxiomImpl,
@@ -61,13 +64,13 @@ if jpype.isJVMStarted():
                                                 OWLDataPropertyImpl, OWLNamedIndividualImpl, OWLDisjointUnionAxiomImpl,
                                                 OWLDifferentIndividualsAxiomImpl, OWLFunctionalDataPropertyAxiomImpl,
                                                 OWLFunctionalObjectPropertyAxiomImpl, OWLSameIndividualAxiomImpl,
-                                                OWLInverseFunctionalObjectPropertyAxiomImpl,
+                                                OWLInverseFunctionalObjectPropertyAxiomImpl, OWLDataComplementOfImpl,
                                                 OWLInverseObjectPropertiesAxiomImpl,OWLReflexiveObjectPropertyAxiomImpl,
-                                                OWLIrreflexiveObjectPropertyAxiomImpl,
-                                                OWLNegativeDataPropertyAssertionAxiomImpl,
-                                                OWLNegativeObjectPropertyAssertionAxiomImpl,
+                                                OWLIrreflexiveObjectPropertyAxiomImpl, OWLAnnotationAssertionAxiomImpl,
+                                                OWLNegativeDataPropertyAssertionAxiomImpl, OWLFacetRestrictionImpl,
+                                                OWLNegativeObjectPropertyAssertionAxiomImpl, OWLDatatypeRestrictionImpl,
                                                 OWLSymmetricObjectPropertyAxiomImpl,
-                                                OWLTransitiveObjectPropertyAxiomImpl, OWLAnnotationAssertionAxiomImpl,
+                                                OWLTransitiveObjectPropertyAxiomImpl,
                                                 OWLAnnotationPropertyDomainAxiomImpl,
                                                 OWLAnnotationPropertyRangeAxiomImpl,
                                                 OWLSubAnnotationPropertyOfAxiomImpl
@@ -108,7 +111,6 @@ class OWLAPIMapper:
         self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
         self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
 
-    # TODO AB: Implement mapping for DataRanges
     @singledispatchmethod
     def map_(self, e):
         """ (owlapy <--> owlapi) entity mapping.
@@ -116,7 +118,7 @@ class OWLAPIMapper:
         Args:
             e: OWL entity/expression.
         """
-        if isinstance(e, Generator):
+        if isinstance(e, Iterable):
             return self.map_(list(e))
 
         raise NotImplementedError(f"Not implemented type: {e}")
@@ -186,6 +188,14 @@ class OWLAPIMapper:
     def _(self, e: OWLLiteral):
         if e.is_string():
             return OWLLiteralImplString(e.get_literal())
+        elif e.is_boolean():
+            return OWLLiteralImplBoolean(e.parse_boolean())
+        elif e.is_integer():
+            return OWLLiteralImplInteger(e.parse_integer())
+        elif e.is_double():
+            return OWLLiteralImplDouble(e.parse_double())
+        else:
+            raise NotImplementedError(f"Type of this literal: {e} cannot be mapped!")
 
     @map_.register(OWLLiteralImplBoolean)
     def _(self, e):
@@ -206,6 +216,52 @@ class OWLAPIMapper:
     @map_.register
     def _(self, e: OWLLiteralImplInteger):
         return OWLLiteral(int(str(e.getLiteral())))
+
+    @map_.register(OWLDataIntersectionOf)
+    @map_.register(OWLDataOneOf)
+    @map_.register(OWLDataUnionOf)
+    @map_.register(OWLNaryDataRange)
+    def _(self, e):
+        return init(e)(self.map_(e.operands()))
+
+    @map_.register(OWLDataIntersectionOfImpl)
+    @map_.register(OWLDataOneOfImpl)
+    @map_.register(OWLDataUnionOfImpl)
+    @map_.register(OWLNaryDataRangeImpl)
+    def _(self, e):
+        return init(e)(self.map_(e.getOperandsAsList()))
+
+    @map_.register(OWLDataComplementOfImpl)
+    def _(self, e):
+        return OWLDataComplementOf(self.map_(e.getDataRange()))
+
+    @map_.register(OWLDataComplementOf)
+    def _(self, e):
+        return OWLDataComplementOfImpl(self.map_(e.get_data_range()))
+
+    @map_.register(OWLFacet)
+    def _(self, e):
+        return owlapi_OWLFacet.getFacetBySymbolicName(e.symbolic_form)
+
+    @map_.register(owlapi_OWLFacet)
+    def _(self, e):
+        return OWLFacet.from_str(str(e.getSymbolicForm()))
+
+    @map_.register(OWLFacetRestriction)
+    def _(self, e):
+        return OWLFacetRestrictionImpl(self.map_(e.get_facet()), self.map_(e.get_facet_value()))
+
+    @map_.register(OWLFacetRestrictionImpl)
+    def _(self, e):
+        return OWLFacetRestriction(self.map_(e.getFacet()), self.map_(e.getFacetValue()))
+
+    @map_.register(OWLDatatypeRestriction)
+    def _(self, e):
+        return OWLDatatypeRestrictionImpl(self.map_(e.get_datatype()), self.map_(e.get_facet_restrictions()))
+
+    @map_.register(OWLDatatypeRestrictionImpl)
+    def _(self, e):
+        return OWLDatatypeRestriction(self.map_(e.getDatatype()), self.map_(e.facetRestrictionsAsList()))
 
     @map_.register
     def _(self, e: OWLAnnotation):
