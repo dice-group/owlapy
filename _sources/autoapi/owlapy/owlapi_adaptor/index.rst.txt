@@ -398,10 +398,50 @@ Module Contents
 
 
 
-   .. py:method:: infer_and_save(output_path: str = None, output_format: str = None, inference_types: list[str] = None)
+   .. py:method:: infer_axioms(inference_types: list[str]) -> Iterable[owlapy.owl_axiom.OWLAxiom]
+
+      Infer the specified inference type of axioms for the ontology managed by this instance's reasoner and
+      return them.
+
+      :param inference_types: Axiom inference types: Avaliable options (can set more than 1):
+                              ["InferredClassAssertionAxiomGenerator", "InferredSubClassAxiomGenerator",
+                              "InferredDisjointClassesAxiomGenerator", "InferredEquivalentClassAxiomGenerator",
+                              "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
+                              "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
+                              "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
+                              "InferredObjectPropertyCharacteristicAxiomGenerator"
+                              ]
+
+      :returns: Iterable of inferred axioms.
 
 
-   .. py:method:: generate_inferred_class_assertion_axioms(output='temp.ttl', output_format: str = None)
+
+   .. py:method:: infer_axioms_and_save(output_path: str = None, output_format: str = None, inference_types: list[str] = None)
+
+      Generates inferred axioms for the ontology managed by this instance's reasoner and saves them to a file.
+      This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner
+      associated with this instance. The inferred axioms are saved to the specified output file in the desired format.
+
+      :param output_path: The name of the file where the inferred axioms will be saved.
+      :param output_format: The format in which to save the inferred axioms. Supported formats are:
+                            - "ttl" or "turtle" for Turtle format
+                            - "rdf/xml" for RDF/XML format
+                            - "owl/xml" for OWL/XML format
+                            If not specified, the format of the original ontology is used.
+      :param inference_types: Axiom inference types: Avaliable options (can set more than 1):
+                              ["InferredClassAssertionAxiomGenerator", "InferredSubClassAxiomGenerator",
+                              "InferredDisjointClassesAxiomGenerator", "InferredEquivalentClassAxiomGenerator",
+                              "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
+                              "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
+                              "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
+                              "InferredObjectPropertyCharacteristicAxiomGenerator"
+                              ]
+
+      :returns: None (the file is saved to the specified directory)
+
+
+
+   .. py:method:: generate_and_save_inferred_class_assertion_axioms(output='temp.ttl', output_format: str = None)
 
       Generates inferred class assertion axioms for the ontology managed by this instance's reasoner and saves them to a file.
       This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner

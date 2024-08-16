@@ -1095,7 +1095,8 @@
     <span class="n">_subject</span><span class="p">:</span> <span class="n">OWLAnnotationSubject</span>
     <span class="n">_annotation</span><span class="p">:</span> <span class="n">OWLAnnotation</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">OWLAnnotation</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">OWLAnnotation</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get an annotation assertion axiom - with annotations.</span>
 
 <span class="sd">        Args:</span>
@@ -1104,7 +1105,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">OWLAnnotationSubject</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">OWLAnnotation</span><span class="p">)</span>
-
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_subject</span> <span class="o">=</span> <span class="n">subject</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span> <span class="o">=</span> <span class="n">annotation</span>
 
@@ -1158,7 +1159,7 @@
 <div class="viewcode-block" id="OWLAnnotationAssertionAxiom.__repr__">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLAnnotationAssertionAxiom.__repr__">[docs]</a>
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLAnnotationAssertionAxiom(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_subject</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLAnnotationAssertionAxiom(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_subject</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotation</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">annotations</span><span class="p">()</span><span class="si">}</span><span class="s1">)&#39;</span></div>
 </div>
 
 <div class="viewcode-block" id="OWLSubAnnotationPropertyOfAxiom">

@@ -92,10 +92,11 @@
 <span class="kn">import</span> <span class="nn">pkg_resources</span>
 
 <span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLAxiom</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_object</span> <span class="kn">import</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Iterable</span>
 
 
 <div class="viewcode-block" id="to_list">
@@ -179,6 +180,30 @@
         <span class="kn">from</span> <span class="nn">owlapy.owlapi_mapper</span> <span class="kn">import</span> <span class="n">OWLAPIMapper</span>
         <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.apibinding</span> <span class="kn">import</span> <span class="n">OWLManager</span>
         <span class="kn">from</span> <span class="nn">java.io</span> <span class="kn">import</span> <span class="n">File</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">,</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">,</span>
+                                                 <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inference_types_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredSubClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredDisjointClassesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredEquivalentClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredInverseObjectPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredEquivalentDataPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredEquivalentObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredSubDataPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredSubObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="s2">&quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
+                                        <span class="p">}</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">org.semanticweb.HermiT</span> <span class="kn">import</span> <span class="n">ReasonerFactory</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_reasoner</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
@@ -609,14 +634,70 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="o">.</span><span class="n">getTypes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
 
-<div class="viewcode-block" id="OWLAPIAdaptor.infer_and_save">
-<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.infer_and_save">[docs]</a>
-    <span class="k">def</span> <span class="nf">infer_and_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inference_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="OWLAPIAdaptor.infer_axioms">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.infer_axioms">[docs]</a>
+    <span class="k">def</span> <span class="nf">infer_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inference_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Infer the specified inference type of axioms for the ontology managed by this instance&#39;s reasoner and</span>
+<span class="sd">        return them.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inference_types: Axiom inference types: Avaliable options (can set more than 1):</span>
+<span class="sd">             [&quot;InferredClassAssertionAxiomGenerator&quot;, &quot;InferredSubClassAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredDisjointClassesAxiomGenerator&quot;, &quot;InferredEquivalentClassAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredEquivalentDataPropertiesAxiomGenerator&quot;,&quot;InferredEquivalentObjectPropertyAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredInverseObjectPropertiesAxiomGenerator&quot;,&quot;InferredSubDataPropertyAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredSubObjectPropertyAxiomGenerator&quot;,&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span>
+<span class="sd">             ]</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Iterable of inferred axioms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">java.util</span> <span class="kn">import</span> <span class="n">ArrayList</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">InferredOntologyGenerator</span>
+
+        <span class="n">generators</span> <span class="o">=</span> <span class="n">ArrayList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inference_types</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">java_object</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_types_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">generators</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">java_object</span><span class="p">)</span>
+        <span class="n">iog</span> <span class="o">=</span> <span class="n">InferredOntologyGenerator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="p">,</span> <span class="n">generators</span><span class="p">)</span>
+        <span class="n">inferred_axioms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">iog</span><span class="o">.</span><span class="n">getAxiomGenerators</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">ia</span> <span class="ow">in</span> <span class="n">inferred_axioms</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">ia</span><span class="o">.</span><span class="n">createAxioms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OWLAPIAdaptor.infer_axioms_and_save">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.infer_axioms_and_save">[docs]</a>
+    <span class="k">def</span> <span class="nf">infer_axioms_and_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inference_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates inferred axioms for the ontology managed by this instance&#39;s reasoner and saves them to a file.</span>
+<span class="sd">        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner</span>
+<span class="sd">        associated with this instance. The inferred axioms are saved to the specified output file in the desired format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_path : The name of the file where the inferred axioms will be saved.</span>
+<span class="sd">            output_format : The format in which to save the inferred axioms. Supported formats are:</span>
+<span class="sd">                - &quot;ttl&quot; or &quot;turtle&quot; for Turtle format</span>
+<span class="sd">                - &quot;rdf/xml&quot; for RDF/XML format</span>
+<span class="sd">                - &quot;owl/xml&quot; for OWL/XML format</span>
+<span class="sd">                If not specified, the format of the original ontology is used.</span>
+<span class="sd">            inference_types: Axiom inference types: Avaliable options (can set more than 1):</span>
+<span class="sd">             [&quot;InferredClassAssertionAxiomGenerator&quot;, &quot;InferredSubClassAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredDisjointClassesAxiomGenerator&quot;, &quot;InferredEquivalentClassAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredEquivalentDataPropertiesAxiomGenerator&quot;,&quot;InferredEquivalentObjectPropertyAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredInverseObjectPropertiesAxiomGenerator&quot;,&quot;InferredSubDataPropertyAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredSubObjectPropertyAxiomGenerator&quot;,&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;,</span>
+<span class="sd">             &quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span>
+<span class="sd">             ]</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None (the file is saved to the specified directory)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">java.io</span> <span class="kn">import</span> <span class="n">File</span><span class="p">,</span> <span class="n">FileOutputStream</span>
         <span class="kn">from</span> <span class="nn">java.util</span> <span class="kn">import</span> <span class="n">ArrayList</span>
-        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span> <span class="n">InferredClassAssertionAxiomGenerator</span>
-        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">InferredOntologyGenerator</span><span class="p">,</span> <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">,</span><span class="n">InferredInverseObjectPropertiesAxiomGenerator</span>
-        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">InferredDisjointClassesAxiomGenerator</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">InferredOntologyGenerator</span>
         <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.formats</span> <span class="kn">import</span> <span class="n">TurtleDocumentFormat</span><span class="p">,</span> <span class="n">RDFXMLDocumentFormat</span><span class="p">,</span> <span class="n">OWLXMLDocumentFormat</span>
         <span class="k">if</span> <span class="n">output_format</span> <span class="o">==</span> <span class="s2">&quot;ttl&quot;</span> <span class="ow">or</span> <span class="n">output_format</span> <span class="o">==</span> <span class="s2">&quot;turtle&quot;</span><span class="p">:</span>
             <span class="n">document_format</span> <span class="o">=</span> <span class="n">TurtleDocumentFormat</span><span class="p">()</span>
@@ -627,14 +708,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">document_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOntologyFormat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
         <span class="n">generators</span> <span class="o">=</span> <span class="n">ArrayList</span><span class="p">()</span>
-        <span class="n">inference_types_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">(),</span>
-                                   <span class="s2">&quot;InferredSubClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">(),</span>
-                                   <span class="s2">&quot;InferredDisjointClassesAxiomGenerator&quot;</span><span class="p">:</span><span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">(),</span>
-                                   <span class="s2">&quot;InferredEquivalentClassAxiomGenerator&quot;</span><span class="p">:</span><span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">(),</span>
-                                   <span class="s2">&quot;InferredInverseObjectPropertiesAxiomGenerator&quot;</span><span class="p">:</span><span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">(),</span>
-                                   <span class="s2">&quot;InferredEquivalentClassAxiomGenerator&quot;</span><span class="p">:</span><span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">()}</span>
+
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inference_types</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">java_object</span> <span class="o">:=</span> <span class="n">inference_types_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">java_object</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_types_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="n">generators</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">java_object</span><span class="p">)</span>
         <span class="n">iog</span> <span class="o">=</span> <span class="n">InferredOntologyGenerator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="p">,</span> <span class="n">generators</span><span class="p">)</span>
         <span class="n">inferred_axioms_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">createOntology</span><span class="p">()</span>
@@ -644,9 +720,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">saveOntology</span><span class="p">(</span><span class="n">inferred_axioms_ontology</span><span class="p">,</span> <span class="n">document_format</span><span class="p">,</span> <span class="n">output_stream</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OWLAPIAdaptor.generate_inferred_class_assertion_axioms">
-<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.generate_inferred_class_assertion_axioms">[docs]</a>
-    <span class="k">def</span> <span class="nf">generate_inferred_class_assertion_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;temp.ttl&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="OWLAPIAdaptor.generate_and_save_inferred_class_assertion_axioms">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_adaptor/index.html#owlapy.owlapi_adaptor.OWLAPIAdaptor.generate_and_save_inferred_class_assertion_axioms">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_and_save_inferred_class_assertion_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;temp.ttl&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates inferred class assertion axioms for the ontology managed by this instance&#39;s reasoner and saves them to a file.</span>
 <span class="sd">        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner</span>
@@ -672,7 +748,7 @@
 <span class="sd">        &gt;&gt;&gt; instance.generate_inferred_class_assertion_axioms(output=&quot;inferred_axioms.ttl&quot;, format=&quot;ttl&quot;)</span>
 <span class="sd">        This will save the inferred class assertion axioms to the file &quot;inferred_axioms.ttl&quot; in Turtle format.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">infer_and_save</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">output_format</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infer_axioms_and_save</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">output_format</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">])</span></div>
 </div>
 
 </pre></div>
