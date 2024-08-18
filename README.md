@@ -74,7 +74,7 @@ from owlapy.owlapi_adaptor import OWLAPIAdaptor
 
 adaptor = OWLAPIAdaptor(path="KGs/Family/family-benchmark_rich_background.owl", name_reasoner="Pellet")
 # Infer missing class assertions
-adaptor.infer_and_save(output_path="KGs/Family/inferred_family-benchmark_rich_background.ttl",
+adaptor.infer_axioms_and_save(output_path="KGs/Family/inferred_family-benchmark_rich_background.ttl",
                        output_format="ttl",
                        inference_types=[
                            "InferredClassAssertionAxiomGenerator",
