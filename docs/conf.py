@@ -70,6 +70,8 @@ html_logo = '_static/images/owlapy_logo.png'
 
 html_favicon = '_static/images/favicon.ico'
 
+html_extra_path = ["googlec4c425077889c69c.html"]
+
 if stanford_theme_mod:
     html_theme = 'sphinx_rtd_theme'
 
