@@ -2,11 +2,10 @@
 import operator
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from enum import Enum, auto
 from functools import singledispatchmethod, reduce
 from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
-from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, List, cast
+from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, List, Union
 import logging
 
 import owlready2
@@ -23,12 +22,11 @@ from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUni
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import OWLOntology, Ontology, _parse_concept_to_owlapy, SyncOntology
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology_manager import SyncOntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.owlapi_adaptor import OWLAPIAdaptor
 from owlapy.utils import LRUCache
 
 logger = logging.getLogger(__name__)
@@ -1612,7 +1610,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
 
 class SyncReasoner:
 
-    def __init__(self, ontology: SyncOntology, reasoner="HermiT"):
+    def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
 
@@ -1624,12 +1622,17 @@ class SyncReasoner:
         assert reasoner in ["HermiT", "Pellet", "JFact", "Openllet"], \
             (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet']. "
              f"This field is case sensitive.")
-        self.manager = ontology.manager
-        self.ontology = ontology
+        if isinstance(ontology, SyncOntology):
+            self.manager = ontology.manager
+            self.ontology = ontology
+        elif isinstance(ontology, str):
+            self.manager = SyncOntologyManager()
+            self.ontology = self.manager.load_ontology(IRI.create(ontology))
+
         self._owlapi_manager = self.manager.get_owlapi_manager()
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
         # super().__init__(self.ontology)
-        self.mapper = ontology.mapper
+        self.mapper = self.ontology.mapper
         from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
                                                  InferredEquivalentClassAxiomGenerator,
                                                  InferredDisjointClassesAxiomGenerator,
