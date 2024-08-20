@@ -390,16 +390,19 @@ class Ontology(OWLOntology):
 
 class SyncOntology(OWLOntology):
 
-    def __init__(self, manager: _SM, iri: IRI, new: bool = False):
+    def __init__(self, manager: _SM, path: Union[IRI, str], new: bool = False):
         from owlapy.owlapi_mapper import OWLAPIMapper
         from java.io import File
         from java.util.stream import Stream
         self.manager = manager
-        self._iri = iri
+        if isinstance(path, IRI):
+            file_path = path.str
+        else:
+            file_path = path
         if new:  # create new ontology
-            self.owlapi_ontology = manager.createOntology(Stream.empty(), File(iri.str))
+            self.owlapi_ontology = manager.createOntology(Stream.empty(), File(file_path))
         else:  # means we are loading an existing ontology
-            self.owlapi_ontology = manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(iri.str))
+            self.owlapi_ontology = manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(file_path))
         self.mapper = OWLAPIMapper(self)
 
     def classes_in_signature(self) -> Iterable[OWLClass]:

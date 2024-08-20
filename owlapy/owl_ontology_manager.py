@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from functools import singledispatch
 from itertools import islice, combinations
 import types
-from typing import cast
+from typing import cast, Union
 
 import jpype
 import owlready2
@@ -901,8 +901,8 @@ class SyncOntologyManager:
     def create_ontology(self, iri: IRI) -> SyncOntology:
         return SyncOntology(self, iri, new=True)
 
-    def load_ontology(self, iri: IRI) -> SyncOntology:
-        return SyncOntology(self, iri, new=False)
+    def load_ontology(self, path: Union[IRI,str]) -> SyncOntology:
+        return SyncOntology(self, path, new=False)
 
     def get_owlapi_manager(self):
         return self.owlapi_manager

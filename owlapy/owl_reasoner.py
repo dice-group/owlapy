@@ -1627,7 +1627,7 @@ class SyncReasoner:
             self.ontology = ontology
         elif isinstance(ontology, str):
             self.manager = SyncOntologyManager()
-            self.ontology = self.manager.load_ontology(IRI.create(ontology))
+            self.ontology = self.manager.load_ontology(ontology)
 
         self._owlapi_manager = self.manager.get_owlapi_manager()
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
