@@ -4,6 +4,7 @@ from itertools import islice, combinations
 import types
 from typing import cast
 
+import jpype
 import owlready2
 
 from owlapy.iri import IRI
@@ -24,9 +25,10 @@ from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassO
     OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom
 from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
-from owlapy.owl_ontology import OWLOntology, Ontology, ToOwlready2
+from owlapy.owl_ontology import OWLOntology, Ontology, ToOwlready2, SyncOntology
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, \
     OWLProperty
+from owlapy.static_funcs import startJVM
 
 
 class OWLOntologyChange(metaclass=ABCMeta):
@@ -887,3 +889,20 @@ class OntologyManager(OWLOntologyManager):
         """
         self._world.save()
 
+
+class SyncOntologyManager:
+    # WARN: Do not move local imports to top of the module
+    def __init__(self):
+        if not jpype.isJVMStarted():
+            startJVM()
+        from org.semanticweb.owlapi.apibinding import OWLManager
+        self.owlapi_manager = OWLManager.createOWLOntologyManager()
+
+    def create_ontology(self, iri: IRI) -> SyncOntology:
+        return SyncOntology(self, iri, new=True)
+
+    def load_ontology(self, iri: IRI) -> SyncOntology:
+        return SyncOntology(self, iri, new=False)
+
+    def get_owlapi_manager(self):
+        return self.owlapi_manager

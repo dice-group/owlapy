@@ -46,6 +46,7 @@ _Datatype_map: Final = MappingProxyType({
 _VERSION_IRI: Final = IRI.create(namespaces.OWL, "versionIRI")
 
 _M = TypeVar('_M', bound='OWLOntologyManager')
+_SM = TypeVar('_SM', bound='SyncOntologyManager')
 
 
 class OWLOntologyID:
@@ -385,6 +386,71 @@ class Ontology(OWLOntology):
 
     def __repr__(self):
         return f'Ontology({IRI.create(self._onto.base_iri)}, {self._onto.loaded})'
+
+
+class SyncOntology(OWLOntology):
+
+    def __init__(self, manager: _SM, iri: IRI, new: bool = False):
+        from owlapy.owlapi_mapper import OWLAPIMapper
+        from java.io import File
+        from java.util.stream import Stream
+        self.manager = manager
+        self._iri = iri
+        if new:  # create new ontology
+            self.owlapi_ontology = manager.createOntology(Stream.empty(), File(iri.str))
+        else:  # means we are loading an existing ontology
+            self.owlapi_ontology = manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(iri.str))
+        self.mapper = OWLAPIMapper(self)
+
+    def classes_in_signature(self) -> Iterable[OWLClass]:
+        pass
+
+    def data_properties_in_signature(self) -> Iterable[OWLDataProperty]:
+        pass
+
+    def object_properties_in_signature(self) -> Iterable[OWLObjectProperty]:
+        pass
+
+    def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
+        pass
+
+    def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
+        pass
+
+    def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
+        pass
+
+    def data_property_domain_axioms(self, property: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
+        pass
+
+    def data_property_range_axioms(self, property: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]:
+        pass
+
+    def object_property_domain_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]:
+        pass
+
+    def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
+        pass
+
+    def get_owl_ontology_manager(self) -> _M:
+        pass
+
+    def get_owlapi_ontology(self):
+        return self.owlapi_ontology
+
+    def get_ontology_id(self) -> OWLOntologyID:
+        pass
+
+    def __eq__(self, other):
+        pass
+
+    def __hash__(self):
+        pass
+
+    def __repr__(self):
+        pass
+
+
 
 
 OWLREADY2_FACET_KEYS = MappingProxyType({
