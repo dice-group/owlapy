@@ -7,7 +7,7 @@ from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIn
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDisjointClassesAxiom, OWLDeclarationAxiom, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology_manager import OntologyManager, SyncOntologyManager
+from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLDataProperty
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.providers import owl_datatype_min_inclusive_restriction
@@ -20,9 +20,7 @@ class TestSyncReasoner(unittest.TestCase):
     charge = OWLDataProperty(IRI.create(ns, "charge"))
     has_charge_more_than_0_85 = OWLDataSomeValuesFrom(charge, owl_datatype_min_inclusive_restriction(0.85))
     ce = OWLObjectIntersectionOf([nitrogen38, has_charge_more_than_0_85])
-    manager = SyncOntologyManager()
-    onto = manager.load_ontology(IRI.create(ontology_path))
-    reasoner = SyncReasoner(onto)
+    reasoner = SyncReasoner(ontology_path)
 
     def test_consistency_check(self):
         self.assertEqual(self.reasoner.has_consistent_ontology(), True)
@@ -40,9 +38,7 @@ class TestSyncReasoner(unittest.TestCase):
         manager.add_axiom(onto, OWLClassAssertionAxiom(new_individual, carbon230))
 
         manager.save_ontology(onto, IRI.create("file:/test.owl"))
-        som = SyncOntologyManager()
-        onto2 = som.load_ontology(IRI.create("test.owl"))
-        reasoner = SyncReasoner(onto2)
+        reasoner = SyncReasoner("test.owl")
         self.assertEqual(reasoner.has_consistent_ontology(), False)
         os.remove("test.owl")
 
@@ -79,7 +75,7 @@ class TestSyncReasoner(unittest.TestCase):
 
         class_expression = data_factory.getOWLObjectIntersectionOf(nitrogen_class, some_values_from)
 
-        # compare them with the adaptor converted expression
+        # compare them with the converted expression
         ce_converted = self.reasoner.mapper.map_(self.ce)
         print(ce_converted)
         print(class_expression)
