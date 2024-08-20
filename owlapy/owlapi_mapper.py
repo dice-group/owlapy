@@ -1,6 +1,5 @@
 from functools import singledispatchmethod
-from typing import Iterable
-
+from typing import Iterable, TypeVar
 import jpype.imports
 
 from owlapy import owl_expression_to_manchester, manchester_to_owl_expression
@@ -23,61 +22,60 @@ from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
+from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
 
-if jpype.isJVMStarted():
-    from org.semanticweb.owlapi.model import IRI as owlapi_IRI
-    from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
-    from org.semanticweb.owlapi.manchestersyntax.parser import ManchesterOWLSyntaxClassExpressionParser
-    from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
-    from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
-    from org.semanticweb.owlapi.expression import ShortFormEntityChecker
-    from java.util import HashSet, ArrayList, List, Set
-    from java.util.stream import Stream
-    from uk.ac.manchester.cs.owl.owlapi import (OWLAnonymousClassExpressionImpl, OWLCardinalityRestrictionImpl,
-                                                OWLClassExpressionImpl, OWLClassImpl, OWLDataAllValuesFromImpl,
-                                                OWLDataCardinalityRestrictionImpl, OWLDataExactCardinalityImpl,
-                                                OWLDataHasValueImpl, OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
-                                                OWLDataMinCardinalityImpl, OWLDataSomeValuesFromImpl,
-                                                OWLNaryBooleanClassExpressionImpl, OWLObjectAllValuesFromImpl,
-                                                OWLObjectCardinalityRestrictionImpl, OWLObjectComplementOfImpl,
-                                                OWLObjectExactCardinalityImpl, OWLObjectHasSelfImpl,
-                                                OWLObjectHasValueImpl, OWLObjectIntersectionOfImpl,
-                                                OWLObjectMaxCardinalityImpl, OWLObjectMinCardinalityImpl,
-                                                OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl, OWLNaryDataRangeImpl,
-                                                OWLObjectUnionOfImpl, OWLQuantifiedDataRestrictionImpl,
-                                                OWLQuantifiedObjectRestrictionImpl, OWLQuantifiedRestrictionImpl,
-                                                OWLValueRestrictionImpl, OWLLiteralImplBoolean, OWLLiteralImplString,
-                                                OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger,
-                                                OWLDisjointClassesAxiomImpl, OWLDeclarationAxiomImpl, OWLAnnotationImpl,
-                                                OWLAnnotationPropertyImpl, OWLClassAssertionAxiomImpl,
-                                                OWLDataPropertyAssertionAxiomImpl, OWLDataPropertyDomainAxiomImpl,
-                                                OWLDataPropertyRangeAxiomImpl, OWLEquivalentClassesAxiomImpl,
-                                                OWLEquivalentDataPropertiesAxiomImpl, OWLDataIntersectionOfImpl,
-                                                OWLEquivalentObjectPropertiesAxiomImpl, OWLDataOneOfImpl,
-                                                OWLObjectPropertyDomainAxiomImpl, OWLObjectPropertyRangeAxiomImpl,
-                                                OWLObjectPropertyAssertionAxiomImpl, OWLDisjointDataPropertiesAxiomImpl,
-                                                OWLDisjointObjectPropertiesAxiomImpl, OWLHasKeyAxiomImpl,
-                                                OWLSubClassOfAxiomImpl, OWLSubDataPropertyOfAxiomImpl,
-                                                OWLSubObjectPropertyOfAxiomImpl, OWLAsymmetricObjectPropertyAxiomImpl,
-                                                OWLDatatypeDefinitionAxiomImpl, OWLDatatypeImpl, OWLObjectPropertyImpl,
-                                                OWLDataPropertyImpl, OWLNamedIndividualImpl, OWLDisjointUnionAxiomImpl,
-                                                OWLDifferentIndividualsAxiomImpl, OWLFunctionalDataPropertyAxiomImpl,
-                                                OWLFunctionalObjectPropertyAxiomImpl, OWLSameIndividualAxiomImpl,
-                                                OWLInverseFunctionalObjectPropertyAxiomImpl, OWLDataComplementOfImpl,
-                                                OWLInverseObjectPropertiesAxiomImpl,OWLReflexiveObjectPropertyAxiomImpl,
-                                                OWLIrreflexiveObjectPropertyAxiomImpl, OWLAnnotationAssertionAxiomImpl,
-                                                OWLNegativeDataPropertyAssertionAxiomImpl, OWLFacetRestrictionImpl,
-                                                OWLNegativeObjectPropertyAssertionAxiomImpl, OWLDatatypeRestrictionImpl,
-                                                OWLSymmetricObjectPropertyAxiomImpl,
-                                                OWLTransitiveObjectPropertyAxiomImpl,
-                                                OWLAnnotationPropertyDomainAxiomImpl,
-                                                OWLAnnotationPropertyRangeAxiomImpl,
-                                                OWLSubAnnotationPropertyOfAxiomImpl
-                                                )
-
-else:
-    raise ImportError("Jpype JVM is not started! Tip: Import OWLAPIMapper after JVM has started")
+if not jpype.isJVMStarted():
+    startJVM()
+from org.semanticweb.owlapi.model import IRI as owlapi_IRI
+from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
+from org.semanticweb.owlapi.manchestersyntax.parser import ManchesterOWLSyntaxClassExpressionParser
+from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
+from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
+from org.semanticweb.owlapi.expression import ShortFormEntityChecker
+from java.util import HashSet, ArrayList, List, Set
+from java.util.stream import Stream
+from uk.ac.manchester.cs.owl.owlapi import (OWLAnonymousClassExpressionImpl, OWLCardinalityRestrictionImpl,
+                                            OWLClassExpressionImpl, OWLClassImpl, OWLDataAllValuesFromImpl,
+                                            OWLDataCardinalityRestrictionImpl, OWLDataExactCardinalityImpl,
+                                            OWLDataHasValueImpl, OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
+                                            OWLDataMinCardinalityImpl, OWLDataSomeValuesFromImpl,
+                                            OWLNaryBooleanClassExpressionImpl, OWLObjectAllValuesFromImpl,
+                                            OWLObjectCardinalityRestrictionImpl, OWLObjectComplementOfImpl,
+                                            OWLObjectExactCardinalityImpl, OWLObjectHasSelfImpl,
+                                            OWLObjectHasValueImpl, OWLObjectIntersectionOfImpl,
+                                            OWLObjectMaxCardinalityImpl, OWLObjectMinCardinalityImpl,
+                                            OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl, OWLNaryDataRangeImpl,
+                                            OWLObjectUnionOfImpl, OWLQuantifiedDataRestrictionImpl,
+                                            OWLQuantifiedObjectRestrictionImpl, OWLQuantifiedRestrictionImpl,
+                                            OWLValueRestrictionImpl, OWLLiteralImplBoolean, OWLLiteralImplString,
+                                            OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger,
+                                            OWLDisjointClassesAxiomImpl, OWLDeclarationAxiomImpl, OWLAnnotationImpl,
+                                            OWLAnnotationPropertyImpl, OWLClassAssertionAxiomImpl,
+                                            OWLDataPropertyAssertionAxiomImpl, OWLDataPropertyDomainAxiomImpl,
+                                            OWLDataPropertyRangeAxiomImpl, OWLEquivalentClassesAxiomImpl,
+                                            OWLEquivalentDataPropertiesAxiomImpl, OWLDataIntersectionOfImpl,
+                                            OWLEquivalentObjectPropertiesAxiomImpl, OWLDataOneOfImpl,
+                                            OWLObjectPropertyDomainAxiomImpl, OWLObjectPropertyRangeAxiomImpl,
+                                            OWLObjectPropertyAssertionAxiomImpl, OWLDisjointDataPropertiesAxiomImpl,
+                                            OWLDisjointObjectPropertiesAxiomImpl, OWLHasKeyAxiomImpl,
+                                            OWLSubClassOfAxiomImpl, OWLSubDataPropertyOfAxiomImpl,
+                                            OWLSubObjectPropertyOfAxiomImpl, OWLAsymmetricObjectPropertyAxiomImpl,
+                                            OWLDatatypeDefinitionAxiomImpl, OWLDatatypeImpl, OWLObjectPropertyImpl,
+                                            OWLDataPropertyImpl, OWLNamedIndividualImpl, OWLDisjointUnionAxiomImpl,
+                                            OWLDifferentIndividualsAxiomImpl, OWLFunctionalDataPropertyAxiomImpl,
+                                            OWLFunctionalObjectPropertyAxiomImpl, OWLSameIndividualAxiomImpl,
+                                            OWLInverseFunctionalObjectPropertyAxiomImpl, OWLDataComplementOfImpl,
+                                            OWLInverseObjectPropertiesAxiomImpl,OWLReflexiveObjectPropertyAxiomImpl,
+                                            OWLIrreflexiveObjectPropertyAxiomImpl, OWLAnnotationAssertionAxiomImpl,
+                                            OWLNegativeDataPropertyAssertionAxiomImpl, OWLFacetRestrictionImpl,
+                                            OWLNegativeObjectPropertyAssertionAxiomImpl, OWLDatatypeRestrictionImpl,
+                                            OWLSymmetricObjectPropertyAxiomImpl, OWLOntologyManagerImpl,
+                                            OWLTransitiveObjectPropertyAxiomImpl, OWLOntologyImpl,
+                                            OWLAnnotationPropertyDomainAxiomImpl,
+                                            OWLAnnotationPropertyRangeAxiomImpl,
+                                            OWLSubAnnotationPropertyOfAxiomImpl
+                                            )
 
 
 def init(the_class):
@@ -88,13 +86,16 @@ def init(the_class):
         return globals().get(cls_name + "Impl")
 
 
+_SO = TypeVar('_SO', bound='SyncOntology')
+
+
 class OWLAPIMapper:
 
-    def __init__(self, ontology):
-        self.ontology = ontology
-        self.manager = ontology.getOWLOntologyManager()
+    def __init__(self, ontology: _SO):
+        self.manager = ontology.manager.get_owlapi_manager()
+        self.ontology = ontology.get_owlapi_ontology()
 
-        # () Get the name space.
+        # () Get the name space. (used for rendering class expressions)
         self.namespace = self.ontology.getOntologyID().getOntologyIRI().orElse(None)
         if self.namespace is not None:
             self.namespace = str(self.namespace)
@@ -103,7 +104,7 @@ class OWLAPIMapper:
         else:
             self.namespace = "http://www.anonymous.org/anonymous#"
 
-        # () Create a manchester parser and a renderer.
+        # () Create a manchester parser and a renderer using the given ontology.
         ontology_set = HashSet()
         ontology_set.add(self.ontology)
         bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
@@ -480,3 +481,8 @@ class OWLAPIMapper:
             for item in e:
                 java_list.add(self.map_(item))
         return java_list
+
+    @staticmethod
+    def to_list(stream_obj):
+        """Converts Java Stream object to Python list"""
+        return stream_obj.collect(jpype.JClass("java.util.stream.Collectors").toList())
