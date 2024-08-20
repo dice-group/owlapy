@@ -7,23 +7,25 @@ from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIn
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDisjointClassesAxiom, OWLDeclarationAxiom, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology_manager import OntologyManager, SyncOntologyManager
 from owlapy.owl_property import OWLDataProperty
-from owlapy.owlapi_adaptor import OWLAPIAdaptor
+from owlapy.owl_reasoner import SyncReasoner
 from owlapy.providers import owl_datatype_min_inclusive_restriction
 
 
-class TestOwlapiAdaptor(unittest.TestCase):
+class TestSyncReasoner(unittest.TestCase):
     ns = "http://dl-learner.org/mutagenesis#"
     ontology_path = "KGs/Mutagenesis/mutagenesis.owl"
     nitrogen38 = OWLClass(IRI.create(ns, "Nitrogen-38"))
     charge = OWLDataProperty(IRI.create(ns, "charge"))
     has_charge_more_than_0_85 = OWLDataSomeValuesFrom(charge, owl_datatype_min_inclusive_restriction(0.85))
     ce = OWLObjectIntersectionOf([nitrogen38, has_charge_more_than_0_85])
-    adaptor = OWLAPIAdaptor(ontology_path)
+    manager = SyncOntologyManager()
+    onto = manager.load_ontology(IRI.create(ontology_path))
+    reasoner = SyncReasoner(onto)
 
     def test_consistency_check(self):
-        self.assertEqual(self.adaptor.has_consistent_ontology(), True)
+        self.assertEqual(self.reasoner.has_consistent_ontology(), True)
 
     def test_inconsistency_check(self):
         manager = OntologyManager()
@@ -38,12 +40,14 @@ class TestOwlapiAdaptor(unittest.TestCase):
         manager.add_axiom(onto, OWLClassAssertionAxiom(new_individual, carbon230))
 
         manager.save_ontology(onto, IRI.create("file:/test.owl"))
-        adaptor1 = OWLAPIAdaptor("test.owl")
-        self.assertEqual(adaptor1.has_consistent_ontology(), False)
+        som = SyncOntologyManager()
+        onto2 = som.load_ontology(IRI.create("test.owl"))
+        reasoner = SyncReasoner(onto2)
+        self.assertEqual(reasoner.has_consistent_ontology(), False)
         os.remove("test.owl")
 
     def test_instances_retrieval(self):
-        instances = self.adaptor.instances(self.ce)
+        instances = self.reasoner.instances(self.ce)
         expected = [OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'd141_10')),
                     OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'd195_12')),
                     OWLNamedIndividual(IRI('http://dl-learner.org/mutagenesis#', 'd144_10')),
@@ -64,7 +68,7 @@ class TestOwlapiAdaptor(unittest.TestCase):
         nitrogenIRI = IRIowlapi.create(self.ns + "Nitrogen-38")
         charge_iri = IRIowlapi.create(self.ns + "charge")
 
-        data_factory = self.adaptor.manager.getOWLDataFactory()
+        data_factory = self.reasoner.manager.get_owlapi_manager().getOWLDataFactory()
         nitrogen_class = data_factory.getOWLClass(nitrogenIRI)
 
         charge_property = data_factory.getOWLDataProperty(charge_iri)
@@ -76,14 +80,14 @@ class TestOwlapiAdaptor(unittest.TestCase):
         class_expression = data_factory.getOWLObjectIntersectionOf(nitrogen_class, some_values_from)
 
         # compare them with the adaptor converted expression
-        ce_converted = self.adaptor.mapper.map_(self.ce)
+        ce_converted = self.reasoner.mapper.map_(self.ce)
         print(ce_converted)
         print(class_expression)
         self.assertEqual(class_expression, ce_converted)
 
         # convert back to owlapy and check for equality
-        ce_1 = self.adaptor.mapper.map_(class_expression)
-        ce_2 = self.adaptor.mapper.map_(ce_converted)
+        ce_1 = self.reasoner.mapper.map_(class_expression)
+        ce_2 = self.reasoner.mapper.map_(ce_converted)
 
         self.assertEqual(ce_1, ce_2)
         self.assertEqual(ce_1, self.ce)
