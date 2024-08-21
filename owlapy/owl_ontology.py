@@ -395,6 +395,8 @@ class SyncOntology(OWLOntology):
         from java.io import File
         from java.util.stream import Stream
         self.manager = manager
+        self.path = path
+        self.new = new
         if isinstance(path, IRI):
             file_path = path.str
         else:
@@ -406,54 +408,54 @@ class SyncOntology(OWLOntology):
         self.mapper = OWLAPIMapper(self)
 
     def classes_in_signature(self) -> Iterable[OWLClass]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getClassesInSignature())
 
     def data_properties_in_signature(self) -> Iterable[OWLDataProperty]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getDataPropertiesInSignature())
 
     def object_properties_in_signature(self) -> Iterable[OWLObjectProperty]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getObjectPropertiesInSignature())
 
     def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getIndividualsInSignature())
 
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getEquivalentClassesAxioms(self.mapper.map_(c)))
 
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getGeneralClassAxioms())
 
     def data_property_domain_axioms(self, property: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getDataPropertyDomainAxioms(self.mapper.map_(property)))
 
     def data_property_range_axioms(self, property: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getDataPropertyRangeAxioms(self.mapper.map_(property)))
 
     def object_property_domain_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getObjectPropertyDomainAxioms(self.mapper.map_(property)))
 
     def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getObjectPropertyRangeAxioms(self.mapper.map_(property)))
 
     def get_owl_ontology_manager(self) -> _M:
-        pass
+        return self.manager
 
     def get_owlapi_ontology(self):
         return self.owlapi_ontology
 
     def get_ontology_id(self) -> OWLOntologyID:
-        pass
+        return self.mapper.map_(self.owlapi_ontology.getOntologyID())
 
     def __eq__(self, other):
-        pass
+        if isinstance(other, SyncOntology):
+            return other.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
+        return False
 
     def __hash__(self):
-        pass
+        return int(self.owlapi_ontology.getOntologyID().hashCode())
 
     def __repr__(self):
-        pass
-
-
+        return f'SyncOntology({self.manager}, {self.path}, {self.new})'
 
 
 OWLREADY2_FACET_KEYS = MappingProxyType({
@@ -468,6 +470,7 @@ OWLREADY2_FACET_KEYS = MappingProxyType({
     OWLFacet.TOTAL_DIGITS: "total_digits",
     OWLFacet.FRACTION_DIGITS: "fraction_digits"
 })
+
 
 class ToOwlready2:
     __slots__ = '_world'
