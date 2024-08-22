@@ -43,7 +43,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         if isinstance(namespace, Namespaces):
             namespace = namespace.ns
         else:
-            assert namespace[-1] in ("/", ":", "#")
+            assert namespace[-1] in ("/", ":", "#"), "It should be a valid IRI based on /, :, and #"
         import sys
         self._namespace = sys.intern(namespace)
         self._remainder = remainder
@@ -155,14 +155,6 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
 
         Returns:
             The string corresponding to the reminder of the IRI.
-        """
-        return self.reminder()
-
-    def get_short_form(self) -> str:
-        """Gets the short form.
-
-        Returns:
-            A string that represents the short form.
         """
         return self._remainder
 

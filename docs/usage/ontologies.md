@@ -202,10 +202,10 @@ When an _OWLOntologyManager_ object is created, a new world is also created as a
 By calling the method `load_ontology(iri)` the ontology is loaded to this world. 
 
 It possible to create several isolated “worlds”, sometimes
-called “universe of speech”. This makes it possible in particular to load
+called “universe of speech”. This makes it possible, in particular, to load
 the same ontology several times, independently, that is to say, without
-the modifications made on one copy affecting the other copy. Sometimes the need to [isolate an ontology](reasoning_details.md#isolated-world) 
-arise. What that means is that you can have multiple reference of the same ontology in different
+the modifications made on one copy affecting the other copy. Sometimes the need to isolate 
+an ontology arise. What that means is that you can have multiple reference of the same ontology in different
 worlds.
 
 -------------------------------------------------------------------------------------

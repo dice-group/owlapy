@@ -723,7 +723,8 @@ class OWLAnnotationAssertionAxiom(OWLAnnotationAxiom):
     _subject: OWLAnnotationSubject
     _annotation: OWLAnnotation
 
-    def __init__(self, subject: OWLAnnotationSubject, annotation: OWLAnnotation):
+    def __init__(self, subject: OWLAnnotationSubject, annotation: OWLAnnotation,
+                 annotations: Optional[Iterable['OWLAnnotation']] = None):
         """Get an annotation assertion axiom - with annotations.
 
         Args:
@@ -732,7 +733,7 @@ class OWLAnnotationAssertionAxiom(OWLAnnotationAxiom):
         """
         assert isinstance(subject, OWLAnnotationSubject)
         assert isinstance(annotation, OWLAnnotation)
-
+        super().__init__(annotations)
         self._subject = subject
         self._annotation = annotation
 
@@ -769,7 +770,7 @@ class OWLAnnotationAssertionAxiom(OWLAnnotationAxiom):
         return hash((self._subject, self._annotation))
 
     def __repr__(self):
-        return f'OWLAnnotationAssertionAxiom({self._subject}, {self._annotation})'
+        return f'OWLAnnotationAssertionAxiom({self._subject}, {self._annotation}, {self.annotations()})'
 class OWLSubAnnotationPropertyOfAxiom(OWLAnnotationAxiom):
     """An annotation subproperty axiom SubAnnotationPropertyOf( AP1 AP2 ) states that the annotation property AP1 is
     a subproperty of the annotation property AP2.

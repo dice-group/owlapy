@@ -2,8 +2,7 @@ from datetime import date, datetime
 import unittest
 
 from pandas import Timedelta
-from owlapy.owl_reasoner import FastInstanceCheckerReasoner, OntologyReasoner, \
-    SyncReasoner
+from owlapy.owl_reasoner import FastInstanceCheckerReasoner, OntologyReasoner, SyncReasoner
 from owlapy.providers import owl_datatype_max_inclusive_restriction, owl_datatype_min_inclusive_restriction, \
                               owl_datatype_min_max_exclusive_restriction, owl_datatype_min_max_inclusive_restriction
 
@@ -20,7 +19,7 @@ from owlapy.owl_axiom import OWLSubDataPropertyOfAxiom, OWLInverseObjectProperti
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLDisjointDataPropertiesAxiom, \
     OWLDisjointObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, \
     OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLSubClassOfAxiom, OWLObjectPropertyDomainAxiom, \
-    OWLDataPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLDeclarationAxiom
+    OWLDataPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import DoubleOWLDatatype, OWLLiteral, DurationOWLDatatype, IntegerOWLDatatype, \
@@ -800,19 +799,16 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         self.assertEqual(owl_ce, from_owlready.map_concept(ce))
 
 
-class Owlapy_Owlready2_ComplexCEInstances_Test(unittest.TestCase):
+class Owlapy_Owlready2_SyncReasoner(unittest.TestCase):
     # noinspection DuplicatedCode
     def test_instances(self):
         ns = "http://example.com/father#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
 
         male = OWLClass(IRI.create(ns, 'male'))
         female = OWLClass(IRI.create(ns, 'female'))
         has_child = OWLObjectProperty(IRI(ns, 'hasChild'))
 
-        # reasoner = OWLReasoner_Owlready2(onto)
-        reasoner = SyncReasoner(onto)
+        reasoner = SyncReasoner("KGs/Family/father.owl")
 
         inst = frozenset(reasoner.instances(female))
         target_inst = frozenset({OWLNamedIndividual(IRI(ns, 'anna')),
@@ -828,34 +824,6 @@ class Owlapy_Owlready2_ComplexCEInstances_Test(unittest.TestCase):
             OWLObjectIntersectionOf((female, OWLObjectSomeValuesFrom(property=has_child, filler=OWLThing)))))
         target_inst = frozenset({OWLNamedIndividual(IRI(ns, 'anna'))})
         self.assertEqual(inst, target_inst)
-
-    def test_isolated_ontology(self):
-
-        ns = "http://example.com/father#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
-
-        reasoner1 = OntologyReasoner(onto)
-        ccei_reasoner = SyncReasoner(onto, isolate=True)
-
-        new_individual = OWLNamedIndividual(IRI(ns, 'bob'))
-        male_ce = OWLClass(IRI(ns, "male"))
-        axiom1 = OWLDeclarationAxiom(new_individual)
-        axiom2 = OWLClassAssertionAxiom(new_individual, male_ce)
-        mgr.add_axiom(onto, axiom1)
-        mgr.add_axiom(onto, axiom2)
-
-        self.assertIn(new_individual, reasoner1.instances(male_ce))
-        self.assertNotIn(new_individual, ccei_reasoner.instances(male_ce))
-
-        ccei_reasoner.update_isolated_ontology(axioms_to_add=[axiom1, axiom2])
-
-        self.assertIn(new_individual, ccei_reasoner.instances(male_ce))
-
-        ccei_reasoner.update_isolated_ontology(axioms_to_remove=[axiom2, axiom1])
-
-        self.assertIn(new_individual, reasoner1.instances(male_ce))
-        self.assertNotIn(new_individual, ccei_reasoner.instances(male_ce))
 
 
 if __name__ == '__main__':

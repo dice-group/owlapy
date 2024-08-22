@@ -20,11 +20,11 @@ print("----------------------")
 print("Individuals that are brother and father at the same time:")
 [print(_) for _ in instances]
 
-# Convert from owlapy to owlapi
-py_to_pi = adaptor.convert_to_owlapi(brother_and_father)
+# Map the class expression from owlapy to owlapi
+py_to_pi = adaptor.mapper.map_(brother_and_father)
 
-# Convert from owlapi to owlapy
-pi_to_py = adaptor.convert_from_owlapi(py_to_pi, "http://www.benchmark.org/family#")
+# Map the class expression from owlapi to owlapy
+pi_to_py = adaptor.mapper.map_(py_to_pi)
 print("----------------------")
 print(f"Owlapy ce: {pi_to_py}")
 

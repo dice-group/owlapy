@@ -27,7 +27,7 @@ from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
 from owlapy.owl_ontology import OWLOntology, Ontology, ToOwlready2
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, \
     OWLProperty
-
+from typing import Union
 
 class OWLOntologyChange(metaclass=ABCMeta):
     """Represents an ontology change."""
@@ -849,10 +849,18 @@ class OntologyManager(OWLOntologyManager):
         else:
             self._world = owlready2.World(filename=world_store)
 
-    def create_ontology(self, iri: IRI) -> 'Ontology':
+    def create_ontology(self, iri:Union[str,IRI]=None) -> 'Ontology':
+        if isinstance(iri, str):
+            iri=IRI.create(iri)
+        else:
+            assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
         return Ontology(self, iri, load=False)
 
-    def load_ontology(self, iri: IRI) -> 'Ontology':
+    def load_ontology(self, iri: Union[str,IRI]=None) -> 'Ontology':
+        if isinstance(iri, str):
+            iri=IRI.create(iri)
+        else:
+            assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
         return Ontology(self, iri, load=True)
 
     def apply_change(self, change: OWLOntologyChange):
@@ -879,8 +887,7 @@ class OntologyManager(OWLOntologyManager):
             filename = document_iri.as_str()[len('file:/'):]
             ont_x.save(file=filename)
         else:
-            # TODO XXX
-            raise NotImplementedError
+            raise NotImplementedError("Couldn't save because the namespace of document_iri does not start with **file:/**")
 
     def save_world(self):
         """Saves the actual state of the quadstore in the SQLite3 file.
