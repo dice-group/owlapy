@@ -87,11 +87,10 @@
 <span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">singledispatchmethod</span><span class="p">,</span> <span class="n">reduce</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">repeat</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MappingProxyType</span><span class="p">,</span> <span class="n">FunctionType</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">FrozenSet</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">import</span> <span class="nn">owlready2</span>
@@ -103,11 +102,11 @@
     <span class="n">OWLDataAllValuesFrom</span>
 <span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClass</span>
 <span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">OWLSubClassOfAxiom</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLSubClassOfAxiom</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_data_ranges</span> <span class="kn">import</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_datatype</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_object</span> <span class="kn">import</span> <span class="n">OWLEntity</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">ToOwlready2</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_ontology_manager</span> <span class="kn">import</span> <span class="n">OntologyManager</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> \
     <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span>
@@ -118,7 +117,12 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="n">_P</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_P&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">OWLPropertyExpression</span><span class="p">)</span>
 
+<span class="c1"># TODO:CD:The name of the classes defined with metaclass=ABCMeta should reflect that</span>
+<span class="c1"># TODO:CD: An instance cannot be created from those classes.</span>
+<span class="c1"># TODO:CD: We should move those Abstract Base Classes into a respective package, e.g.</span>
+<span class="c1"># TODO:CD: owlapy/abstract_owl_reasoner/abstract_owl_reasoner.py should contain OWLReasoner and OWLReasonerEx</span>
 <div class="viewcode-block" id="OWLReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLReasoner</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -555,20 +559,6 @@
         <span class="k">pass</span></div>
 </div>
 
-
-
-<span class="c1"># Deprecated</span>
-<span class="c1"># class BaseReasoner(Enum):</span>
-<span class="c1">#     &quot;&quot;&quot;Enumeration class for base reasoner when calling sync_reasoner.</span>
-<span class="c1">#</span>
-<span class="c1">#     Attributes:</span>
-<span class="c1">#         PELLET: Pellet base reasoner.</span>
-<span class="c1">#         HERMIT: HermiT base reasoner.</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     PELLET = auto()</span>
-<span class="c1">#     HERMIT = auto()</span>
-
-
 <div class="viewcode-block" id="OWLReasonerEx">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasonerEx">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLReasonerEx</span><span class="p">(</span><span class="n">OWLReasoner</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -665,12 +655,11 @@
 </div>
 
 
-
 <div class="viewcode-block" id="OntologyReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner">[docs]</a>
 <span class="k">class</span> <span class="nc">OntologyReasoner</span><span class="p">(</span><span class="n">OWLReasonerEx</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_ontology&#39;</span><span class="p">,</span> <span class="s1">&#39;_world&#39;</span>
-
+    <span class="c1"># TODO: CD: We will remove owlready2 from owlapy</span>
     <span class="n">_ontology</span><span class="p">:</span> <span class="n">Ontology</span>
     <span class="n">_world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span>
 
@@ -1281,9 +1270,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span></div>
 </div>
 
-
-
-<span class="n">_P</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_P&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">OWLPropertyExpression</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="FastInstanceCheckerReasoner">

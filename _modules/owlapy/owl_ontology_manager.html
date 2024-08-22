@@ -112,7 +112,7 @@
 <span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">ToOwlready2</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> \
     <span class="n">OWLProperty</span>
-
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
 <div class="viewcode-block" id="OWLOntologyChange">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyChange">[docs]</a>
@@ -974,13 +974,21 @@
 
 <div class="viewcode-block" id="OntologyManager.create_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OntologyManager.create_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">create_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Ontology&#39;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">create_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">IRI</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Ontology&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">iri</span><span class="o">=</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">IRI</span><span class="p">),</span> <span class="s2">&quot;iri either must be string or an instance of IRI Class&quot;</span>
         <span class="k">return</span> <span class="n">Ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OntologyManager.load_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OntologyManager.load_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Ontology&#39;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">load_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">IRI</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Ontology&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">iri</span><span class="o">=</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">IRI</span><span class="p">),</span> <span class="s2">&quot;iri either must be string or an instance of IRI Class&quot;</span>
         <span class="k">return</span> <span class="n">Ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
@@ -1019,8 +1027,7 @@
             <span class="n">filename</span> <span class="o">=</span> <span class="n">document_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">()[</span><span class="nb">len</span><span class="p">(</span><span class="s1">&#39;file:/&#39;</span><span class="p">):]</span>
             <span class="n">ont_x</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># TODO XXX</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t save because the namespace of document_iri does not start with **file:/**&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OntologyManager.save_world">
