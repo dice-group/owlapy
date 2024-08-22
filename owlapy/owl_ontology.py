@@ -394,6 +394,7 @@ class SyncOntology(OWLOntology):
         from owlapy.owlapi_mapper import OWLAPIMapper
         from java.io import File
         from java.util.stream import Stream
+        from org.semanticweb.owlapi.model import IRI as owlapi_IRI
         self.manager = manager
         self.path = path
         self.new = new
@@ -402,7 +403,11 @@ class SyncOntology(OWLOntology):
         else:
             file_path = path
         if new:  # create new ontology
-            self.owlapi_ontology = manager.createOntology(Stream.empty(), File(file_path))
+            if isinstance(path, IRI):
+                self.owlapi_ontology = manager.get_owlapi_manager().createOntology(Stream.empty(),
+                                                                                   owlapi_IRI.create(path.str))
+            else:
+                raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
         else:  # means we are loading an existing ontology
             self.owlapi_ontology = manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(file_path))
         self.mapper = OWLAPIMapper(self)
