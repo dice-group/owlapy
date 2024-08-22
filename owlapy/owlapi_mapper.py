@@ -3,6 +3,7 @@ from typing import Iterable
 
 import jpype.imports
 
+import owlapy.owl_ontology
 from owlapy import owl_expression_to_manchester, manchester_to_owl_expression
 from owlapy.class_expression import OWLClassExpression, OWLDataOneOf, OWLFacetRestriction, OWLDatatypeRestriction
 from owlapy.iri import IRI
@@ -90,7 +91,10 @@ def init(the_class):
 
 class OWLAPIMapper:
 
-    def __init__(self, ontology):
+    def __init__(self, ontology=None):
+        # TODO: CD: Please use class type of ontology
+        # TODO: CD: if ontology is None, then we should throw an exception with a useful information
+        # assert isinstance(ontology, OWLAPIMapper)
         self.ontology = ontology
         self.manager = ontology.getOWLOntologyManager()
 
