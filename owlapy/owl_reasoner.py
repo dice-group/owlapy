@@ -2,11 +2,10 @@
 import operator
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from enum import Enum, auto
 from functools import singledispatchmethod, reduce
 from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
-from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, List, cast
+from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet
 import logging
 
 import owlready2
@@ -18,11 +17,11 @@ from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom,
     OWLDataAllValuesFrom
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
+from owlapy.owl_axiom import OWLSubClassOfAxiom
 from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
-from owlapy.owl_ontology import OWLOntology, Ontology, _parse_concept_to_owlapy, ToOwlready2
+from owlapy.owl_ontology import OWLOntology, Ontology, _parse_concept_to_owlapy
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
@@ -33,7 +32,12 @@ from owlapy.utils import LRUCache
 
 logger = logging.getLogger(__name__)
 
+_P = TypeVar('_P', bound=OWLPropertyExpression)
 
+# TODO:CD:The name of the classes defined with metaclass=ABCMeta should reflect that
+# TODO:CD: An instance cannot be created from those classes.
+# TODO:CD: We should move those Abstract Base Classes into a respective package, e.g.
+# TODO:CD: owlapy/abstract_owl_reasoner/abstract_owl_reasoner.py should contain OWLReasoner and OWLReasonerEx
 class OWLReasoner(metaclass=ABCMeta):
     """An OWLReasoner reasons over a set of axioms (the set of reasoner axioms) that is based on the imports closure of
     a particular ontology - the "root" ontology."""
@@ -401,20 +405,6 @@ class OWLReasoner(metaclass=ABCMeta):
             If ce is equivalent to owl:Thing then nothing will be returned.
         """
         pass
-
-
-# Deprecated
-# class BaseReasoner(Enum):
-#     """Enumeration class for base reasoner when calling sync_reasoner.
-#
-#     Attributes:
-#         PELLET: Pellet base reasoner.
-#         HERMIT: HermiT base reasoner.
-#     """
-#     PELLET = auto()
-#     HERMIT = auto()
-
-
 class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
     """Extra convenience methods for OWL Reasoners"""
 
@@ -496,10 +486,9 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
             except StopIteration:
                 pass
 
-
 class OntologyReasoner(OWLReasonerEx):
     __slots__ = '_ontology', '_world'
-
+    # TODO: CD: We will remove owlready2 from owlapy
     _ontology: Ontology
     _world: owlready2.World
 
@@ -1040,9 +1029,6 @@ class OntologyReasoner(OWLReasonerEx):
 
     def get_root_ontology(self) -> OWLOntology:
         return self._ontology
-
-
-_P = TypeVar('_P', bound=OWLPropertyExpression)
 
 
 class FastInstanceCheckerReasoner(OWLReasonerEx):
