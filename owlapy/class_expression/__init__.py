@@ -43,7 +43,7 @@ __all__ = ['OWLClassExpression', 'OWLAnonymousClassExpression', 'OWLBooleanClass
            'OWLHasValueRestriction', 'OWLDataRestriction', 'OWLCardinalityRestriction', 'OWLFacetRestriction',
            'OWLObjectMinCardinality', 'OWLObjectMaxCardinality', 'OWLObjectExactCardinality', 'OWLDataSomeValuesFrom',
            'OWLDataAllValuesFrom', 'OWLDataHasValue', 'OWLClass', 'OWLDataMinCardinality', 'OWLDataMaxCardinality',
-           'OWLDataExactCardinality', 'OWLObjectOneOf']
+           'OWLDataExactCardinality', 'OWLObjectOneOf', 'OWLDataOneOf', 'OWLDataCardinalityRestriction']
 
 from typing import Final
 from ..vocab import OWLRDFVocabulary

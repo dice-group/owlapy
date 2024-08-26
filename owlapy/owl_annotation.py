@@ -1,7 +1,6 @@
 """OWL Annotations"""
 from abc import ABCMeta
 from .owl_object import OWLObject
-from typing import Optional
 
 
 class OWLAnnotationObject(OWLObject, metaclass=ABCMeta):
