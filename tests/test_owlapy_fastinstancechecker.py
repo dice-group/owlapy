@@ -242,7 +242,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
     def test_data_properties_time(self):
         NS = "http://example.com/father#"
         mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://../KGs/Family/father.owl"))
+        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
 
         with onto._onto:
             class birthDate(DataProperty):
