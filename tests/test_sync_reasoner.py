@@ -58,7 +58,7 @@ class TestSyncReasoner(unittest.TestCase):
 
     def test_conversion(self):
         # construct the class expression in owlapi
-        from org.semanticweb.owlapi.model import IRI as IRIowlapi, OWLClass, OWLObjectProperty
+        from org.semanticweb.owlapi.model import IRI as IRIowlapi
         from org.semanticweb.owlapi.vocab import OWLFacet
 
         nitrogenIRI = IRIowlapi.create(self.ns + "Nitrogen-38")

@@ -9,17 +9,15 @@ from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLSubDataPropertyOfAxiom, OWLInverseObjectPropertiesAxiom, OWLSubObjectPropertyOfAxiom
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import DoubleOWLDatatype, OWLLiteral, DurationOWLDatatype
+from owlapy.owl_literal import DoubleOWLDatatype, OWLLiteral
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
 from owlready2.prop import DataProperty
-from pandas import Timedelta
 
 from owlapy.owl_reasoner import FastInstanceCheckerReasoner, OntologyReasoner
 
-from owlapy.providers import owl_datatype_min_exclusive_restriction, \
-                            owl_datatype_min_max_inclusive_restriction, owl_datatype_min_max_exclusive_restriction, \
-                            owl_datatype_max_exclusive_restriction, owl_datatype_max_inclusive_restriction
+from owlapy.providers import owl_datatype_min_max_inclusive_restriction, owl_datatype_min_max_exclusive_restriction, \
+                             owl_datatype_max_inclusive_restriction
 
 
 class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
@@ -241,78 +239,63 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
                                  OWLNamedIndividual(IRI(NS, 'd180'))})
         self.assertEqual(inst, target_inst)
 
-    # def test_data_properties_time(self):
-    #     NS = "http://example.com/father#"
-    #     mgr = OWLOntologyManager_Owlready2()
-    #     onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
-    #
-    #     with onto._onto:
-    #         class birthDate(DataProperty):
-    #             range = [date]
-    #
-    #         class birthDateTime(DataProperty):
-    #             range = [datetime]
-    #
-    #         class age(DataProperty):
-    #             range = [Timedelta]
-    #
-    #     onto._onto.markus.birthDate = [date(year=1990, month=10, day=2)]
-    #     onto._onto.markus.birthDateTime = [datetime(year=1990, month=10, day=2, hour=10, minute=20, second=5)]
-    #     onto._onto.markus.age = [Timedelta(days=11315, hours=10, minutes=2)]
-    #
-    #     onto._onto.anna.birthDate = [date(year=1995, month=6, day=10)]
-    #     onto._onto.anna.birthDateTime = [datetime(year=1995, month=6, day=10, hour=2, minute=10)]
-    #     onto._onto.anna.age = [Timedelta(days=9490, hours=4)]
-    #
-    #     onto._onto.heinz.birthDate = [date(year=1986, month=6, day=10)]
-    #     onto._onto.heinz.birthDateTime = [datetime(year=1986, month=6, day=10, hour=10, second=10)]
-    #     onto._onto.heinz.age = [Timedelta(days=12775, hours=14, seconds=40)]
-    #
-    #     onto._onto.michelle.birthDate = [date(year=2000, month=1, day=4)]
-    #     onto._onto.michelle.birthDateTime = [datetime(year=2000, month=1, day=4, minute=4, second=10)]
-    #     onto._onto.michelle.age = [Timedelta(days=7665, hours=1, milliseconds=11)]
-    #
-    #     onto._onto.martin.birthDate = [date(year=1999, month=3, day=1)]
-    #     onto._onto.martin.birthDateTime = [datetime(year=1999, month=3, day=2, hour=20, minute=2, second=30)]
-    #     onto._onto.martin.age = [Timedelta(days=8030, minutes=2)]
-    #
-    #     birth_date = OWLDataProperty(IRI(NS, 'birthDate'))
-    #     birth_date_time = OWLDataProperty(IRI(NS, 'birthDateTime'))
-    #     age_ = OWLDataProperty(IRI(NS, 'age'))
-    #     markus = OWLNamedIndividual(IRI(NS, 'markus'))
-    #     anna = OWLNamedIndividual(IRI(NS, 'anna'))
-    #     heinz = OWLNamedIndividual(IRI(NS, 'heinz'))
-    #     michelle = OWLNamedIndividual(IRI(NS, 'michelle'))
-    #     martin = OWLNamedIndividual(IRI(NS, 'martin'))
-    #
-    #     base_reasoner = OWLReasoner_Owlready2(onto)
-    #     reasoner = OWLReasoner_FastInstanceChecker(onto, base_reasoner=base_reasoner)
-    #
-    #     restriction = owl_datatype_min_max_exclusive_restriction(date(year=1995, month=6, day=12),
-    #                                                         date(year=1999, month=3, day=2))
-    #     inst = frozenset(reasoner.instances(OWLDataSomeValuesFrom(property=birth_date,
-    #                                                               filler=restriction)))
-    #     target_inst = frozenset({martin})
-    #     self.assertEqual(inst, target_inst)
-    #
-    #     inst = frozenset(reasoner.instances(OWLDataSomeValuesFrom(property=birth_date,
-    #                                                               filler=OWLDataComplementOf(restriction))))
-    #     target_inst = frozenset({michelle, anna, heinz, markus})
-    #     self.assertEqual(inst, target_inst)
-    #
-    #     restriction = owl_datatype_max_inclusive_restriction(datetime(year=1990, month=10, day=2, hour=10,
-    #                                                               minute=20, second=5))
-    #     inst = frozenset(reasoner.instances(OWLDataSomeValuesFrom(property=birth_date_time,
-    #                                                               filler=restriction)))
-    #     target_inst = frozenset({markus, heinz})
-    #     self.assertEqual(inst, target_inst)
-    #
-    #     restriction_min = owl_datatype_min_exclusive_restriction(Timedelta(days=8030, minutes=1))
-    #     restriction_max = owl_datatype_max_exclusive_restriction(Timedelta(days=9490, hours=4, nanoseconds=1))
-    #     filler = OWLDataIntersectionOf([restriction_min, restriction_max, DurationOWLDatatype])
-    #     inst = frozenset(reasoner.instances(OWLDataSomeValuesFrom(property=age_, filler=filler)))
-    #     target_inst = frozenset({anna, martin})
-    #     self.assertEqual(inst, target_inst)
+    def test_data_properties_time(self):
+        NS = "http://example.com/father#"
+        mgr = OntologyManager()
+        onto = mgr.load_ontology(IRI.create("file://../KGs/Family/father.owl"))
+
+        with onto._onto:
+            class birthDate(DataProperty):
+                range = [date]
+
+            class birthDateTime(DataProperty):
+                range = [datetime]
+
+        onto._onto.markus.birthDate = [date(year=1990, month=10, day=2)]
+        onto._onto.markus.birthDateTime = [datetime(year=1990, month=10, day=2, hour=10, minute=20, second=5)]
+
+        onto._onto.anna.birthDate = [date(year=1995, month=6, day=10)]
+        onto._onto.anna.birthDateTime = [datetime(year=1995, month=6, day=10, hour=2, minute=10)]
+
+        onto._onto.heinz.birthDate = [date(year=1986, month=6, day=10)]
+        onto._onto.heinz.birthDateTime = [datetime(year=1986, month=6, day=10, hour=10, second=10)]
+
+        onto._onto.michelle.birthDate = [date(year=2000, month=1, day=4)]
+        onto._onto.michelle.birthDateTime = [datetime(year=2000, month=1, day=4, minute=4, second=10)]
+
+        onto._onto.martin.birthDate = [date(year=1999, month=3, day=1)]
+        onto._onto.martin.birthDateTime = [datetime(year=1999, month=3, day=2, hour=20, minute=2, second=30)]
+
+        birth_date = OWLDataProperty(IRI(NS, 'birthDate'))
+        birth_date_time = OWLDataProperty(IRI(NS, 'birthDateTime'))
+        markus = OWLNamedIndividual(IRI(NS, 'markus'))
+        anna = OWLNamedIndividual(IRI(NS, 'anna'))
+        heinz = OWLNamedIndividual(IRI(NS, 'heinz'))
+        michelle = OWLNamedIndividual(IRI(NS, 'michelle'))
+        martin = OWLNamedIndividual(IRI(NS, 'martin'))
+
+        base_reasoner = OntologyReasoner(onto)
+        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner)
+
+        restriction = owl_datatype_min_max_exclusive_restriction(date(year=1995, month=6, day=12),
+                                                            date(year=1999, month=3, day=2))
+        inst = frozenset(reasoner.instances(OWLDataSomeValuesFrom(property=birth_date,
+                                                                  filler=restriction)))
+        target_inst = frozenset({martin})
+        self.assertEqual(inst, target_inst)
+
+        inst = frozenset(reasoner.instances(OWLDataSomeValuesFrom(property=birth_date,
+                                                                  filler=OWLDataComplementOf(restriction))))
+        target_inst = frozenset({michelle, anna, heinz, markus})
+        self.assertEqual(inst, target_inst)
+
+        restriction = owl_datatype_max_inclusive_restriction(datetime(year=1990, month=10, day=2, hour=10,
+                                                                  minute=20, second=5))
+        inst = frozenset(reasoner.instances(OWLDataSomeValuesFrom(property=birth_date_time,
+                                                                  filler=restriction)))
+        target_inst = frozenset({markus, heinz})
+        self.assertEqual(inst, target_inst)
+
 
     def test_sub_property_inclusion(self):
         ns = "http://dl-learner.org/mutagenesis#"

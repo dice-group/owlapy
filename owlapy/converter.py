@@ -508,7 +508,7 @@ class Owl2SparqlConverter:
                 self.append(",")
             assert isinstance(ind, OWLNamedIndividual)
             self.append(f"<{ind.to_string_id()}>")
-        self.append(f" ) )")
+        self.append(" ) )")
 
     @process.register
     def _(self, ce: OWLDataSomeValuesFrom):
@@ -573,7 +573,7 @@ class Owl2SparqlConverter:
                 self.append(",")
             if value:
                 self.append(self.render(value))
-        self.append(f" ) ) ")
+        self.append(" ) ) ")
 
     @process.register
     def _(self, node: OWLDatatypeRestriction):
@@ -624,10 +624,10 @@ class Owl2SparqlConverter:
             q = [f"VALUES {root_variable} {{ "]
             for x in values:
                 q.append(f"<{x.to_string_id()}>")
-            q.append(f"}} . ")
+            q.append("}} . ")
             qs.extend(q)
         qs.extend(tp)
-        qs.append(f" }}")
+        qs.append(" }}")
 
 
         query = "\n".join(qs)

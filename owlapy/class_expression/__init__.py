@@ -34,8 +34,20 @@ from .restriction import (OWLRestriction, OWLQuantifiedRestriction, OWLQuantifie
                           OWLDataExactCardinality,
                           OWLObjectOneOf
                           )
+
+__all__ = ['OWLClassExpression', 'OWLAnonymousClassExpression', 'OWLBooleanClassExpression', 'OWLObjectComplementOf',
+           'OWLNaryBooleanClassExpression', 'OWLObjectUnionOf', 'OWLObjectIntersectionOf', 'OWLRestriction',
+           'OWLQuantifiedRestriction', 'OWLObjectCardinalityRestriction', 'OWLObjectHasSelf', 'OWLObjectHasValue',
+           'OWLQuantifiedDataRestriction', 'OWLObjectSomeValuesFrom', 'OWLObjectAllValuesFrom',
+           'OWLDatatypeRestriction', 'OWLFacet', 'OWLQuantifiedObjectRestriction', 'OWLObjectRestriction',
+           'OWLHasValueRestriction', 'OWLDataRestriction', 'OWLCardinalityRestriction', 'OWLFacetRestriction',
+           'OWLObjectMinCardinality', 'OWLObjectMaxCardinality', 'OWLObjectExactCardinality', 'OWLDataSomeValuesFrom',
+           'OWLDataAllValuesFrom', 'OWLDataHasValue', 'OWLClass', 'OWLDataMinCardinality', 'OWLDataMaxCardinality',
+           'OWLDataExactCardinality', 'OWLObjectOneOf']
+
 from typing import Final
 from ..vocab import OWLRDFVocabulary
 
 OWLThing: Final = OWLClass(OWLRDFVocabulary.OWL_THING.iri)  #: : :The OWL Class corresponding to owl:Thing
 OWLNothing: Final = OWLClass(OWLRDFVocabulary.OWL_NOTHING.iri)  #: : :The OWL Class corresponding to owl:Nothing
+

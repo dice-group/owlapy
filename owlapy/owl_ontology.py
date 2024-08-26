@@ -45,8 +45,9 @@ _Datatype_map: Final = MappingProxyType({
 
 _VERSION_IRI: Final = IRI.create(namespaces.OWL, "versionIRI")
 
-_M = TypeVar('_M', bound='OWLOntologyManager')
-_SM = TypeVar('_SM', bound='SyncOntologyManager')
+_M = TypeVar('_M', bound='OWLOntologyManager')  # noqa: F821
+_OM = TypeVar('_OM', bound='OntologyManager')  # noqa: F821
+_SM = TypeVar('_SM', bound='SyncOntologyManager')  # noqa: F821
 
 
 class OWLOntologyID:
@@ -253,11 +254,11 @@ class OWLOntology(OWLObject, metaclass=ABCMeta):
 class Ontology(OWLOntology):
     __slots__ = '_manager', '_iri', '_world', '_onto'
 
-    _manager: 'OntologyManager'
+    _manager: _OM
     _onto: owlready2.Ontology
     _world: owlready2.World
 
-    def __init__(self, manager: 'OntologyManager', ontology_iri: IRI, load: bool):
+    def __init__(self, manager: _OM, ontology_iri: IRI, load: bool):
         """Represents an Ontology in Ontolearn.
 
         Args:
@@ -301,7 +302,7 @@ class Ontology(OWLOntology):
             yield from (OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
                         for c in ca.is_a)
 
-    def get_owl_ontology_manager(self) -> 'OntologyManager':
+    def get_owl_ontology_manager(self) -> _OM:
         return self._manager
 
     def get_ontology_id(self) -> OWLOntologyID:
@@ -377,7 +378,7 @@ class Ontology(OWLOntology):
         return self._iri
 
     def __eq__(self, other):
-        if type(other) == type(self):
+        if type(other) is type(self):
             return self._onto.loaded == other._onto.loaded and self._onto.base_iri == other._onto.base_iri
         return NotImplemented
 
@@ -809,19 +810,19 @@ class FromOwlready2:
 
     @map_datarange.register
     def _(self, type_: type) -> OWLDatatype:
-        if type_ == bool:
+        if type_ is bool:
             return BooleanOWLDatatype
-        elif type_ == float:
+        elif type_ is float:
             return DoubleOWLDatatype
-        elif type_ == int:
+        elif type_ is int:
             return IntegerOWLDatatype
-        elif type_ == str:
+        elif type_ is str:
             return StringOWLDatatype
-        elif type_ == date:
+        elif type_ is date:
             return DateOWLDatatype
-        elif type_ == datetime:
+        elif type_ is datetime:
             return DateTimeOWLDatatype
-        elif type_ == Timedelta:
+        elif type_ is Timedelta:
             return DurationOWLDatatype
         else:
             raise ValueError(type_)

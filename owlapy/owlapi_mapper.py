@@ -71,8 +71,8 @@ from uk.ac.manchester.cs.owl.owlapi import (OWLAnonymousClassExpressionImpl, OWL
                                             OWLIrreflexiveObjectPropertyAxiomImpl, OWLAnnotationAssertionAxiomImpl,
                                             OWLNegativeDataPropertyAssertionAxiomImpl, OWLFacetRestrictionImpl,
                                             OWLNegativeObjectPropertyAssertionAxiomImpl, OWLDatatypeRestrictionImpl,
-                                            OWLSymmetricObjectPropertyAxiomImpl, OWLOntologyManagerImpl,
-                                            OWLTransitiveObjectPropertyAxiomImpl, OWLOntologyImpl,
+                                            OWLSymmetricObjectPropertyAxiomImpl,
+                                            OWLTransitiveObjectPropertyAxiomImpl,
                                             OWLAnnotationPropertyDomainAxiomImpl,
                                             OWLAnnotationPropertyRangeAxiomImpl,
                                             OWLSubAnnotationPropertyOfAxiomImpl
@@ -87,7 +87,7 @@ def init(the_class):
         return globals().get(cls_name + "Impl")
 
 
-_SO = TypeVar('_SO', bound='SyncOntology')
+_SO = TypeVar('_SO', bound='SyncOntology')  # noqa: F821
 
 
 class OWLAPIMapper:

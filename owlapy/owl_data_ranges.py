@@ -41,7 +41,7 @@ class OWLNaryDataRange(OWLDataRange, HasOperands[OWLDataRange]):
         return f'{type(self).__name__}({repr(self._operands)})'
 
     def __eq__(self, other):
-        if type(other) == type(self):
+        if type(other) is type(self):
             return self._operands == other._operands
         return NotImplemented
 

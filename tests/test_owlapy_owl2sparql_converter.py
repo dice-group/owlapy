@@ -8,11 +8,12 @@ from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLThing, \
 from owlapy.iri import IRI
 from owlapy.owl_property import OWLObjectProperty
 
-from owlapy.owl_ontology_manager import OntologyManager
-from owlapy.owl_reasoner import OntologyReasoner, FastInstanceCheckerReasoner
-from owlapy.parser import DLSyntaxParser
+# from owlapy.owl_ontology_manager import OntologyManager
+# from owlapy.owl_reasoner import OntologyReasoner, FastInstanceCheckerReasoner
+# from owlapy.parser import DLSyntaxParser
+# from rdflib import Graph
 from owlapy.converter import Owl2SparqlConverter
-from rdflib import Graph
+
 
 PATH_FAMILY = '../KGs/Family/family-benchmark_rich_background.owl'
 
@@ -99,7 +100,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "Brother"
@@ -143,7 +144,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "Brother ⊓ Father"
@@ -171,7 +172,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "Sister ⊔ Mother"
@@ -200,7 +201,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "¬Mother"
@@ -229,7 +230,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "∃hasChild.Male"
@@ -257,7 +258,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "∀hasChild.Male"
@@ -307,7 +308,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     ce_str = "∀hasChild.Male"
@@ -342,7 +343,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     concepts = [
@@ -373,7 +374,7 @@ FILTER NOT EXISTS {
     #     # knowledge base - using OWLReasoner
     #     mgr = OntologyManager()
     #     onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-    #     base_reasoner = Reasoner(onto)
+    #     base_reasoner = OntologyReasoner(onto)
     #     family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
     #
     #     concepts = [

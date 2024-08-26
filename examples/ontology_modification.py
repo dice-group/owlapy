@@ -1,5 +1,5 @@
 from owlapy.class_expression import OWLClass
-from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAxiom, OWLClassAssertionAxiom
+from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.iri import IRI
@@ -10,7 +10,7 @@ download_external_files("https://files.dice-research.org/projects/Ontolearn/KGs.
 
 # Load the 'father' ontology using a new ontology manager.
 manager = OntologyManager()
-onto = manager.load_ontology(IRI.create(f'file://../KGs/Family/father.owl'))
+onto = manager.load_ontology(IRI.create('file://../KGs/Family/father.owl'))
 
 # Let's see what classes does this ontology has
 [print(_) for _ in onto.classes_in_signature()]

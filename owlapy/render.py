@@ -7,10 +7,10 @@ from typing import List, Callable
 
 from owlapy import namespaces
 from .iri import IRI
-from .owl_individual import OWLNamedIndividual, OWLIndividual
+from .owl_individual import OWLNamedIndividual
 from .owl_literal import OWLLiteral
 from .owl_object import OWLObjectRenderer, OWLEntity, OWLObject
-from .owl_property import OWLObjectInverseOf, OWLPropertyExpression, OWLDataProperty, OWLObjectProperty
+from .owl_property import OWLObjectInverseOf, OWLPropertyExpression, OWLDataProperty
 from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWLClass, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectMinCardinality, \
     OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
@@ -21,7 +21,6 @@ from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnion
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .owl_datatype import OWLDatatype
 from .owl_reasoner import OWLReasoner
-from typing import Union, Tuple
 import requests
 import warnings
 import abc
