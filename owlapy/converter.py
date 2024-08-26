@@ -624,10 +624,10 @@ class Owl2SparqlConverter:
             q = [f"VALUES {root_variable} {{ "]
             for x in values:
                 q.append(f"<{x.to_string_id()}>")
-            q.append("}} . ")
+            q.append("} . ")
             qs.extend(q)
         qs.extend(tp)
-        qs.append(" }}")
+        qs.append(" }")
 
 
         query = "\n".join(qs)
