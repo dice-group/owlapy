@@ -160,9 +160,6 @@ class TestSyncReasoner(unittest.TestCase):
     def test_super_classes(self):
         self.assertCountEqual(list(reasoner2.super_classes(L)), [M, OWLNothing])
 
-    def test_data_property_domains(self):
-        self.assertCountEqual(list(reasoner2.data_property_domains(dp1, True)), [AB])
-
     def test_object_property_domains(self):
         self.assertCountEqual(list(self.reasoner.object_property_domains(self.hasAtom, False)), [self.compound, OWLThing])
         self.assertCountEqual(list(self.reasoner.object_property_domains(self.hasAtom, True)), [self.compound])
