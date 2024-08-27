@@ -2,22 +2,81 @@ import os
 import unittest
 
 from jpype import JDouble
-
-from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIntersectionOf
+from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIntersectionOf, OWLNothing, OWLThing
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLDisjointClassesAxiom, OWLDeclarationAxiom, OWLClassAssertionAxiom
+from owlapy.owl_axiom import OWLDisjointClassesAxiom, OWLDeclarationAxiom, OWLClassAssertionAxiom, OWLSubClassOfAxiom, \
+    OWLEquivalentClassesAxiom, OWLSubDataPropertyOfAxiom, OWLSubObjectPropertyOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLBottomObjectProperty, OWLTopObjectProperty, OWLBottomDataProperty, OWLTopDataProperty, \
+    OWLLiteral
 from owlapy.owl_ontology_manager import OntologyManager
-from owlapy.owl_property import OWLDataProperty
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.providers import owl_datatype_min_inclusive_restriction
 
+NS = 'http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#'
+
+a = OWLNamedIndividual(IRI(NS, "a"))
+b = OWLNamedIndividual(IRI(NS, "b"))
+c = OWLNamedIndividual(IRI(NS, "c"))
+d = OWLNamedIndividual(IRI(NS, "d"))
+e = OWLNamedIndividual(IRI(NS, "e"))
+g = OWLNamedIndividual(IRI(NS, "g"))
+m = OWLNamedIndividual(IRI(NS, "m"))
+l = OWLNamedIndividual(IRI(NS, "l"))  # noqa: E741
+n = OWLNamedIndividual(IRI(NS, "n"))
+o = OWLNamedIndividual(IRI(NS, "o"))
+p = OWLNamedIndividual(IRI(NS, "p"))
+q = OWLNamedIndividual(IRI(NS, "q"))
+r = OWLNamedIndividual(IRI(NS, "r"))
+s = OWLNamedIndividual(IRI(NS, "s"))
+ind1 = OWLNamedIndividual(IRI(NS, "ind1"))
+
+r1 = OWLObjectProperty(IRI(NS, "r1"))
+r2 = OWLObjectProperty(IRI(NS, "r2"))
+r3 = OWLObjectProperty(IRI(NS, "r3"))
+r4 = OWLObjectProperty(IRI(NS, "r4"))
+r5 = OWLObjectProperty(IRI(NS, "r5"))
+r6 = OWLObjectProperty(IRI(NS, "r6"))
+r7 = OWLObjectProperty(IRI(NS, "r7"))
+
+dp1 = OWLDataProperty(IRI(NS, "dp1"))
+dp2 = OWLDataProperty(IRI(NS, "dp2"))
+dp3 = OWLDataProperty(IRI(NS, "dp3"))
+
+A = OWLClass(IRI(NS, 'A'))
+B = OWLClass(IRI(NS, 'B'))
+C = OWLClass(IRI(NS, 'C'))
+AB = OWLClass(IRI(NS, 'AB'))
+D = OWLClass(IRI(NS, 'D'))
+E = OWLClass(IRI(NS, 'E'))
+F = OWLClass(IRI(NS, 'F'))
+G = OWLClass(IRI(NS, 'G'))
+J = OWLClass(IRI(NS, 'J'))
+K = OWLClass(IRI(NS, 'K'))
+H = OWLClass(IRI(NS, 'H'))
+I = OWLClass(IRI(NS, 'I'))  # noqa: E741
+L = OWLClass(IRI(NS, 'L'))
+M = OWLClass(IRI(NS, 'M'))
+N = OWLClass(IRI(NS, 'N'))
+O = OWLClass(IRI(NS, 'O'))  # noqa: E741
+P = OWLClass(IRI(NS, 'P'))
+Q = OWLClass(IRI(NS, 'Q'))
+R = OWLClass(IRI(NS, 'R'))
+S = OWLClass(IRI(NS, 'S'))
+T = OWLClass(IRI(NS, 'T'))
+U = OWLClass(IRI(NS, 'U'))
+reasoner2 = SyncReasoner("../KGs/Test/test_ontology.owl")
 
 class TestSyncReasoner(unittest.TestCase):
     ns = "http://dl-learner.org/mutagenesis#"
-    ontology_path = "KGs/Mutagenesis/mutagenesis.owl"
+    ontology_path = "../KGs/Mutagenesis/mutagenesis.owl"
     nitrogen38 = OWLClass(IRI.create(ns, "Nitrogen-38"))
+    compound = OWLClass(IRI.create(ns, "Compound"))
+    atom = OWLClass(IRI.create(ns, "Atom"))
     charge = OWLDataProperty(IRI.create(ns, "charge"))
+    hasAtom = OWLObjectProperty(IRI.create(ns, "hasAtom"))
+    d100_25 = OWLNamedIndividual(IRI.create(ns, "d100_25"))
     has_charge_more_than_0_85 = OWLDataSomeValuesFrom(charge, owl_datatype_min_inclusive_restriction(0.85))
     ce = OWLObjectIntersectionOf([nitrogen38, has_charge_more_than_0_85])
     reasoner = SyncReasoner(ontology_path)
@@ -88,3 +147,181 @@ class TestSyncReasoner(unittest.TestCase):
         self.assertEqual(ce_1, ce_2)
         self.assertEqual(ce_1, self.ce)
         self.assertEqual(ce_2, self.ce)
+
+    def test_equivalent_classes(self):
+        self.assertCountEqual(list(reasoner2.equivalent_classes(N)), [N, Q])
+
+    def test_disjoint_classes(self):
+        self.assertCountEqual(list(reasoner2.disjoint_classes(L)), [M, OWLNothing])
+
+    def test_sub_classes(self):
+        self.assertCountEqual(list(reasoner2.sub_classes(L)), [M, OWLNothing])
+
+    def test_super_classes(self):
+        self.assertCountEqual(list(reasoner2.super_classes(L)), [M, OWLNothing])
+
+    def test_data_property_domains(self):
+        self.assertCountEqual(list(reasoner2.data_property_domains(dp1, False)), [AB, A, B, C, OWLThing])
+        self.assertCountEqual(list(reasoner2.data_property_domains(dp1, True)), [AB])
+
+    def test_object_property_domains(self):
+        self.assertCountEqual(list(self.reasoner.object_property_domains(self.hasAtom, False)), [self.compound, OWLThing])
+        self.assertCountEqual(list(self.reasoner.object_property_domains(self.hasAtom, True)), [self.compound])
+
+    def test_object_property_ranges(self):
+        self.assertCountEqual(list(reasoner2.object_property_ranges(r1, False)), [OWLThing, G])
+        self.assertCountEqual(list(reasoner2.object_property_ranges(r1, True)), [G])
+
+    def test_sub_object_properties(self):
+        self.assertCountEqual(list(reasoner2.sub_object_properties(r1, False)), [r2, OWLBottomObjectProperty])
+        self.assertCountEqual(list(reasoner2.sub_object_properties(r1, True)), [r2])
+
+    def test_super_object_properties(self):
+        self.assertCountEqual(list(reasoner2.super_object_properties(r2, False)), [r1, OWLTopObjectProperty])
+        self.assertCountEqual(list(reasoner2.super_object_properties(r2, True)), [r1])
+
+    def test_sub_data_properties(self):
+        self.assertCountEqual(list(reasoner2.sub_data_properties(dp1, False)), [dp2, OWLBottomDataProperty])
+        self.assertCountEqual(list(reasoner2.sub_data_properties(dp1, True)), [dp2])
+
+    def test_super_data_properties(self):
+        self.assertCountEqual(list(reasoner2.super_data_properties(dp2, False)), [dp1, OWLTopDataProperty])
+        self.assertCountEqual(list(reasoner2.super_data_properties(dp2, True)), [dp1])
+
+    def test_different_individuals(self):
+        self.assertCountEqual(list(reasoner2.different_individuals(l)), [m])
+        self.assertCountEqual(list(reasoner2.different_individuals(m)), [l])
+
+    def test_object_property_values(self):
+        self.assertCountEqual(list(reasoner2.object_property_values(n, r3)), [q])
+        self.assertCountEqual(list(reasoner2.object_property_values(n, r4)), [l, q])
+
+    def test_data_property_values(self):
+        self.assertCountEqual(list(self.reasoner.data_property_values(self.d100_25, self.charge)), [OWLLiteral(0.332)])
+
+    def test_disjoint_object_properties(self):
+        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r5)), [r1, r2, OWLBottomObjectProperty])
+        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r1)), [r5, OWLBottomObjectProperty])
+        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r2)), [r5, OWLBottomObjectProperty])
+
+    def test_disjoint_data_properties(self):
+        self.assertCountEqual(list(reasoner2.disjoint_data_properties(dp1)), [dp3, OWLBottomDataProperty])
+        self.assertCountEqual(list(reasoner2.disjoint_data_properties(dp3)), [dp1,dp2, OWLBottomDataProperty])
+
+    def test_types(self):
+        self.assertCountEqual(list(reasoner2.types(c)), [I, J, K, OWLThing])
+
+    def test_infer_axiom(self):
+
+        self.assertCountEqual(list(reasoner2.infer_axioms(["InferredClassAssertionAxiomGenerator", "InferredSubClassAxiomGenerator",
+             "InferredDisjointClassesAxiomGenerator", "InferredEquivalentClassAxiomGenerator",
+             "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
+             "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
+             "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
+             "InferredObjectPropertyCharacteristicAxiomGenerator"
+             ])), [ OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','f')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','l')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','L')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','m')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','M')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','a')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','e')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','C')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','s')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','n')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','p')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','P')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','a')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','AB')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','q')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','Q')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','a')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','n')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','N')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','c')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','K')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','e')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','A')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','ind1')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','d')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','o')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','O')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','c')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','I')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','R')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','q')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','l')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','s')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','S')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','f')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','E')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','g')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','b')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','n')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','Q')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','e')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','a')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','C')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','o')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','o')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','P')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','ind1')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','H')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','a')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','A')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','e')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','ind1')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','F')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','s')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','T')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','e')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','AB')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','m')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','h')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','d')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','D')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','c')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','J')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','b')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','c')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','d')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','p')),class_expression=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','q')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','N')),annotations=[]),
+                    OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','g')),class_expression=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','G')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','AB')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','A')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','I')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','K')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','N')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','Q')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','A')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','D')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','AB')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','C')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','K')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','G')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','O')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','P')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','L')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','S')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','F')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','H')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','AB')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','E')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','J')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','U')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','I')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','J')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','T')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','P')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','C')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','H')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','M')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','R')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#','Thing')),annotations=[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','D')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','Q')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','J')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','E')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','K')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','L')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','R')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','AB')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','S')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','M')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','F')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','A')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','G')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','T')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','H')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','N')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','U')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','L')), OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','M'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','I')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','O')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','P')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLDisjointClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','C')), OWLClass(IRI('http://www.w3.org/2002/07/owl#','Nothing'))],[]),
+                    OWLEquivalentClassesAxiom([OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','N')), OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','Q'))],[]),
+                    OWLSubDataPropertyOfAxiom(sub_property=OWLDataProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','dp2')),super_property=OWLDataProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','dp1')),annotations=[]),
+                    OWLSubDataPropertyOfAxiom(sub_property=OWLDataProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','dp3')),super_property=OWLDataProperty(IRI('http://www.w3.org/2002/07/owl#','topDataProperty')),annotations=[]),
+                    OWLSubDataPropertyOfAxiom(sub_property=OWLDataProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','dp1')),super_property=OWLDataProperty(IRI('http://www.w3.org/2002/07/owl#','topDataProperty')),annotations=[]),
+                    OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r5')),super_property=OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#','topObjectProperty')),annotations=[]),
+                    OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r2')),super_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r1')),annotations=[]),
+                    OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r7')),super_property=OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#','topObjectProperty')),annotations=[]),
+                    OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r4')),super_property=OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#','topObjectProperty')),annotations=[]),
+                    OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r1')),super_property=OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#','topObjectProperty')),annotations=[]),
+                    OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r3')),super_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r4')),annotations=[]),
+                    OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r6')),super_property=OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#','topObjectProperty')),annotations=[])])
