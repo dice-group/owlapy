@@ -66,11 +66,11 @@ R = OWLClass(IRI(NS, 'R'))
 S = OWLClass(IRI(NS, 'S'))
 T = OWLClass(IRI(NS, 'T'))
 U = OWLClass(IRI(NS, 'U'))
-reasoner2 = SyncReasoner("../KGs/Test/test_ontology.owl")
+reasoner2 = SyncReasoner("KGs/Test/test_ontology.owl")
 
 class TestSyncReasoner(unittest.TestCase):
     ns = "http://dl-learner.org/mutagenesis#"
-    ontology_path = "../KGs/Mutagenesis/mutagenesis.owl"
+    ontology_path = "KGs/Mutagenesis/mutagenesis.owl"
     nitrogen38 = OWLClass(IRI.create(ns, "Nitrogen-38"))
     compound = OWLClass(IRI.create(ns, "Compound"))
     atom = OWLClass(IRI.create(ns, "Atom"))
