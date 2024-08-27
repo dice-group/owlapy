@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.owlapi_mapper &mdash; OWLAPY 1.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=6efca38a"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_adaptor.html">Owlapi Adaptor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.owlapi_mapper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.owlapi_mapper</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">singledispatchmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">import</span> <span class="nn">jpype.imports</span>
+
+<span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">owl_expression_to_manchester</span><span class="p">,</span> <span class="n">manchester_to_owl_expression</span>
+<span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span>
+<span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLDeclarationAxiom</span><span class="p">,</span> <span class="n">OWLAnnotation</span><span class="p">,</span> <span class="n">OWLAnnotationProperty</span><span class="p">,</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">,</span> \
+    <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyDomainAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyDomainAxiom</span><span class="p">,</span> \
+    <span class="n">OWLObjectPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLEquivalentClassesAxiom</span><span class="p">,</span> \
+    <span class="n">OWLEquivalentDataPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLEquivalentObjectPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLDisjointClassesAxiom</span><span class="p">,</span> \
+    <span class="n">OWLDisjointDataPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLDisjointObjectPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLHasKeyAxiom</span><span class="p">,</span> <span class="n">OWLSubDataPropertyOfAxiom</span><span class="p">,</span> \
+    <span class="n">OWLSubClassOfAxiom</span><span class="p">,</span> <span class="n">OWLSubObjectPropertyOfAxiom</span><span class="p">,</span> <span class="n">OWLAsymmetricObjectPropertyAxiom</span><span class="p">,</span> <span class="n">OWLDatatypeDefinitionAxiom</span><span class="p">,</span> \
+    <span class="n">OWLDifferentIndividualsAxiom</span><span class="p">,</span> <span class="n">OWLDisjointUnionAxiom</span><span class="p">,</span> <span class="n">OWLFunctionalDataPropertyAxiom</span><span class="p">,</span> \
+    <span class="n">OWLFunctionalObjectPropertyAxiom</span><span class="p">,</span> <span class="n">OWLInverseFunctionalObjectPropertyAxiom</span><span class="p">,</span> <span class="n">OWLInverseObjectPropertiesAxiom</span><span class="p">,</span> \
+    <span class="n">OWLIrreflexiveObjectPropertyAxiom</span><span class="p">,</span> <span class="n">OWLNegativeDataPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLReflexiveObjectPropertyAxiom</span><span class="p">,</span> \
+    <span class="n">OWLNegativeObjectPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLSameIndividualAxiom</span><span class="p">,</span> <span class="n">OWLSymmetricObjectPropertyAxiom</span><span class="p">,</span> \
+    <span class="n">OWLTransitiveObjectPropertyAxiom</span><span class="p">,</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">,</span> <span class="n">OWLAnnotationPropertyDomainAxiom</span><span class="p">,</span> \
+    <span class="n">OWLAnnotationPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLSubAnnotationPropertyOfAxiom</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_data_ranges</span> <span class="kn">import</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_datatype</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntologyID</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
+<span class="kn">from</span> <span class="nn">owlapy.static_funcs</span> <span class="kn">import</span> <span class="n">startJVM</span>
+<span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isJVMStarted</span><span class="p">():</span>
+    <span class="n">startJVM</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.model</span> <span class="kn">import</span> <span class="n">IRI</span> <span class="k">as</span> <span class="n">owlapi_IRI</span><span class="p">,</span> <span class="n">OWLOntologyID</span> <span class="k">as</span> <span class="n">owlapi_OWLOntologyID</span>
+<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span> <span class="k">as</span> <span class="n">owlapi_OWLFacet</span>
+<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.manchestersyntax.parser</span> <span class="kn">import</span> <span class="n">ManchesterOWLSyntaxClassExpressionParser</span>
+<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.manchestersyntax.renderer</span> <span class="kn">import</span> <span class="n">ManchesterOWLSyntaxOWLObjectRendererImpl</span>
+<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">BidirectionalShortFormProviderAdapter</span><span class="p">,</span> <span class="n">SimpleShortFormProvider</span>
+<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.expression</span> <span class="kn">import</span> <span class="n">ShortFormEntityChecker</span>
+<span class="kn">from</span> <span class="nn">java.util</span> <span class="kn">import</span> <span class="n">HashSet</span><span class="p">,</span> <span class="n">ArrayList</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">LinkedHashSet</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">java.util.stream</span> <span class="kn">import</span> <span class="n">Stream</span>
+<span class="kn">from</span> <span class="nn">uk.ac.manchester.cs.owl.owlapi</span> <span class="kn">import</span> <span class="p">(</span><span class="n">OWLAnonymousClassExpressionImpl</span><span class="p">,</span> <span class="n">OWLCardinalityRestrictionImpl</span><span class="p">,</span>
+                                            <span class="n">OWLClassExpressionImpl</span><span class="p">,</span> <span class="n">OWLClassImpl</span><span class="p">,</span> <span class="n">OWLDataAllValuesFromImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDataCardinalityRestrictionImpl</span><span class="p">,</span> <span class="n">OWLDataExactCardinalityImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDataHasValueImpl</span><span class="p">,</span> <span class="n">OWLDataMaxCardinalityImpl</span><span class="p">,</span> <span class="n">OWLDataUnionOfImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDataMinCardinalityImpl</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFromImpl</span><span class="p">,</span>
+                                            <span class="n">OWLNaryBooleanClassExpressionImpl</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFromImpl</span><span class="p">,</span>
+                                            <span class="n">OWLObjectCardinalityRestrictionImpl</span><span class="p">,</span> <span class="n">OWLObjectComplementOfImpl</span><span class="p">,</span>
+                                            <span class="n">OWLObjectExactCardinalityImpl</span><span class="p">,</span> <span class="n">OWLObjectHasSelfImpl</span><span class="p">,</span>
+                                            <span class="n">OWLObjectHasValueImpl</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOfImpl</span><span class="p">,</span>
+                                            <span class="n">OWLObjectMaxCardinalityImpl</span><span class="p">,</span> <span class="n">OWLObjectMinCardinalityImpl</span><span class="p">,</span>
+                                            <span class="n">OWLObjectOneOfImpl</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFromImpl</span><span class="p">,</span> <span class="n">OWLNaryDataRangeImpl</span><span class="p">,</span>
+                                            <span class="n">OWLObjectUnionOfImpl</span><span class="p">,</span> <span class="n">OWLQuantifiedDataRestrictionImpl</span><span class="p">,</span>
+                                            <span class="n">OWLQuantifiedObjectRestrictionImpl</span><span class="p">,</span> <span class="n">OWLQuantifiedRestrictionImpl</span><span class="p">,</span>
+                                            <span class="n">OWLValueRestrictionImpl</span><span class="p">,</span> <span class="n">OWLLiteralImplBoolean</span><span class="p">,</span> <span class="n">OWLLiteralImplString</span><span class="p">,</span>
+                                            <span class="n">OWLLiteralImplDouble</span><span class="p">,</span> <span class="n">OWLLiteralImplFloat</span><span class="p">,</span> <span class="n">OWLLiteralImplInteger</span><span class="p">,</span>
+                                            <span class="n">OWLDisjointClassesAxiomImpl</span><span class="p">,</span> <span class="n">OWLDeclarationAxiomImpl</span><span class="p">,</span> <span class="n">OWLAnnotationImpl</span><span class="p">,</span>
+                                            <span class="n">OWLAnnotationPropertyImpl</span><span class="p">,</span> <span class="n">OWLClassAssertionAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDataPropertyAssertionAxiomImpl</span><span class="p">,</span> <span class="n">OWLDataPropertyDomainAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDataPropertyRangeAxiomImpl</span><span class="p">,</span> <span class="n">OWLEquivalentClassesAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLEquivalentDataPropertiesAxiomImpl</span><span class="p">,</span> <span class="n">OWLDataIntersectionOfImpl</span><span class="p">,</span>
+                                            <span class="n">OWLEquivalentObjectPropertiesAxiomImpl</span><span class="p">,</span> <span class="n">OWLDataOneOfImpl</span><span class="p">,</span>
+                                            <span class="n">OWLObjectPropertyDomainAxiomImpl</span><span class="p">,</span> <span class="n">OWLObjectPropertyRangeAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLObjectPropertyAssertionAxiomImpl</span><span class="p">,</span> <span class="n">OWLDisjointDataPropertiesAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDisjointObjectPropertiesAxiomImpl</span><span class="p">,</span> <span class="n">OWLHasKeyAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLSubClassOfAxiomImpl</span><span class="p">,</span> <span class="n">OWLSubDataPropertyOfAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLSubObjectPropertyOfAxiomImpl</span><span class="p">,</span> <span class="n">OWLAsymmetricObjectPropertyAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDatatypeDefinitionAxiomImpl</span><span class="p">,</span> <span class="n">OWLDatatypeImpl</span><span class="p">,</span> <span class="n">OWLObjectPropertyImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDataPropertyImpl</span><span class="p">,</span> <span class="n">OWLNamedIndividualImpl</span><span class="p">,</span> <span class="n">OWLDisjointUnionAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDifferentIndividualsAxiomImpl</span><span class="p">,</span> <span class="n">OWLFunctionalDataPropertyAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLFunctionalObjectPropertyAxiomImpl</span><span class="p">,</span> <span class="n">OWLSameIndividualAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLInverseFunctionalObjectPropertyAxiomImpl</span><span class="p">,</span> <span class="n">OWLDataComplementOfImpl</span><span class="p">,</span>
+                                            <span class="n">OWLInverseObjectPropertiesAxiomImpl</span><span class="p">,</span><span class="n">OWLReflexiveObjectPropertyAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLIrreflexiveObjectPropertyAxiomImpl</span><span class="p">,</span> <span class="n">OWLAnnotationAssertionAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLNegativeDataPropertyAssertionAxiomImpl</span><span class="p">,</span> <span class="n">OWLFacetRestrictionImpl</span><span class="p">,</span>
+                                            <span class="n">OWLNegativeObjectPropertyAssertionAxiomImpl</span><span class="p">,</span> <span class="n">OWLDatatypeRestrictionImpl</span><span class="p">,</span>
+                                            <span class="n">OWLSymmetricObjectPropertyAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLTransitiveObjectPropertyAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLAnnotationPropertyDomainAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLAnnotationPropertyRangeAxiomImpl</span><span class="p">,</span>
+                                            <span class="n">OWLSubAnnotationPropertyOfAxiomImpl</span>
+                                            <span class="p">)</span>
+
+
+<div class="viewcode-block" id="init">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_mapper/index.html#owlapy.owlapi_mapper.init">[docs]</a>
+<span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">the_class</span><span class="p">):</span>
+    <span class="n">cls_name</span> <span class="o">=</span> <span class="n">the_class</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="k">if</span> <span class="s2">&quot;Impl&quot;</span> <span class="ow">in</span> <span class="n">cls_name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cls_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Impl&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cls_name</span> <span class="o">+</span> <span class="s2">&quot;Impl&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="n">_SO</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_SO&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;SyncOntology&#39;</span><span class="p">)</span>  <span class="c1"># noqa: F821</span>
+
+
+<div class="viewcode-block" id="OWLAPIMapper">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_mapper/index.html#owlapy.owlapi_mapper.OWLAPIMapper">[docs]</a>
+<span class="k">class</span> <span class="nc">OWLAPIMapper</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">_SO</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">get_owlapi_manager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">get_owlapi_ontology</span><span class="p">()</span>
+
+        <span class="c1"># () Get the name space. (used for rendering class expressions)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">getOntologyID</span><span class="p">()</span><span class="o">.</span><span class="n">getOntologyIRI</span><span class="p">()</span><span class="o">.</span><span class="n">orElse</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">namespace</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">+=</span> <span class="s2">&quot;#&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="s2">&quot;http://www.anonymous.org/anonymous#&quot;</span>
+
+        <span class="c1"># () Create a manchester parser and a renderer using the given ontology.</span>
+        <span class="n">ontology_set</span> <span class="o">=</span> <span class="n">HashSet</span><span class="p">()</span>
+        <span class="n">ontology_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="n">bidi_provider</span> <span class="o">=</span> <span class="n">BidirectionalShortFormProviderAdapter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span> <span class="n">ontology_set</span><span class="p">,</span> <span class="n">SimpleShortFormProvider</span><span class="p">())</span>
+        <span class="n">entity_checker</span> <span class="o">=</span> <span class="n">ShortFormEntityChecker</span><span class="p">(</span><span class="n">bidi_provider</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxClassExpressionParser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">(),</span> <span class="n">entity_checker</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxOWLObjectRendererImpl</span><span class="p">()</span>
+
+<div class="viewcode-block" id="OWLAPIMapper.map_">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_mapper/index.html#owlapy.owlapi_mapper.OWLAPIMapper.map_">[docs]</a>
+    <span class="nd">@singledispatchmethod</span>
+    <span class="k">def</span> <span class="nf">map_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; (owlapy &lt;--&gt; owlapi) entity mapping.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            e: OWL entity/expression.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not implemented type: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">IRI</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">owlapi_IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">str</span><span class="p">)</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">owlapi_IRI</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getIRIString</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNamedIndividual</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataProperty</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectProperty</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDatatype</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnnotationProperty</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNamedIndividualImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataPropertyImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectPropertyImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDatatypeImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnnotationPropertyImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getIRI</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">owl_expression_to_manchester</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnonymousClassExpressionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLCardinalityRestrictionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLClassExpressionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLClassImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataAllValuesFromImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataCardinalityRestrictionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataExactCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataHasValueImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataMaxCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataMinCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataSomeValuesFromImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpressionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectAllValuesFromImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectCardinalityRestrictionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectComplementOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectExactCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectHasSelfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectHasValueImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectIntersectionOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectMaxCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectMinCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectOneOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectSomeValuesFromImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectUnionOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLQuantifiedDataRestrictionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLQuantifiedObjectRestrictionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLQuantifiedRestrictionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLValueRestrictionImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="c1"># Cant recognize the classes as implementation of org.semanticweb.owlapi.model.OWLClassExpression, so we</span>
+        <span class="c1"># have to register all possible implementations</span>
+        <span class="k">return</span> <span class="n">manchester_to_owl_expression</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span><span class="p">)</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">is_string</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">OWLLiteralImplString</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_literal</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">is_boolean</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">OWLLiteralImplBoolean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">parse_boolean</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">OWLLiteralImplInteger</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">parse_integer</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">is_double</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">OWLLiteralImplDouble</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">parse_double</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type of this literal: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> cannot be mapped!&quot;</span><span class="p">)</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLLiteralImplBoolean</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="n">raw_value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getLiteral</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">raw_value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLLiteralImplDouble</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLLiteralImplFloat</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getLiteral</span><span class="p">())))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLLiteralImplString</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getLiteral</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLLiteralImplInteger</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getLiteral</span><span class="p">())))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataIntersectionOf</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataOneOf</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataUnionOf</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNaryDataRange</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataIntersectionOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataOneOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataUnionOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNaryDataRangeImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOperandsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataComplementOfImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDataComplementOf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getDataRange</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataComplementOf</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDataComplementOfImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_data_range</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLFacet</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">owlapi_OWLFacet</span><span class="o">.</span><span class="n">getFacetBySymbolicName</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">symbolic_form</span><span class="p">)</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">owlapi_OWLFacet</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getSymbolicForm</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLFacetRestriction</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLFacetRestrictionImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLFacetRestrictionImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLFacetRestriction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getFacet</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getFacetValue</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDatatypeRestriction</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDatatypeRestrictionImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDatatypeRestrictionImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getDatatype</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">facetRestrictionsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLAnnotation</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLAnnotationImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_value</span><span class="p">()),</span> <span class="n">Stream</span><span class="o">.</span><span class="n">empty</span><span class="p">())</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLAnnotationImpl</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLAnnotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getValue</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLAnnotationAssertionAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_subject</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_value</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLAnnotationAssertionAxiomImpl</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getSubject</span><span class="p">()),</span>
+                                           <span class="n">OWLAnnotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getValue</span><span class="p">())),</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDeclarationAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDeclarationAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_entity</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDeclarationAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getEntity</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLClassAssertionAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_individual</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_class_expression</span><span class="p">()),</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLClassAssertionAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getIndividual</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getClassExpression</span><span class="p">()),</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNegativeDataPropertyAssertionAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNegativeObjectPropertyAssertionAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_subject</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_object</span><span class="p">()),</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectPropertyAssertionAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataPropertyAssertionAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNegativeDataPropertyAssertionAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNegativeObjectPropertyAssertionAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getSubject</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getObject</span><span class="p">()),</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectPropertyDomainAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataPropertyDomainAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnnotationPropertyDomainAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnnotationPropertyRangeAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_domain</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectPropertyDomainAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataPropertyDomainAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnnotationPropertyDomainAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnnotationPropertyRangeAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getDomain</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectPropertyRangeAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataPropertyRangeAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_range</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectPropertyRangeAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataPropertyRangeAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getRange</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLEquivalentDataPropertiesAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLEquivalentObjectPropertiesAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">properties</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLEquivalentClassesAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLEquivalentDataPropertiesAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLEquivalentObjectPropertiesAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOperandsAsList</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLEquivalentClassesAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDisjointClassesAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">class_expressions</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDisjointDataPropertiesAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDisjointObjectPropertiesAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">properties</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDisjointClassesAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDisjointDataPropertiesAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDisjointObjectPropertiesAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOperandsAsList</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLHasKeyAxiom</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLHasKeyAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_class_expression</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property_expressions</span><span class="p">()),</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLHasKeyAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLHasKeyAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getClassExpression</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOperandsAsList</span><span class="p">()),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLSubClassOfAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_sub_class</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_super_class</span><span class="p">()),</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSubClassOfAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getSubClass</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getSuperClass</span><span class="p">()),</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSubDataPropertyOfAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSubObjectPropertyOfAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSubAnnotationPropertyOfAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_sub_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_super_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSubDataPropertyOfAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSubObjectPropertyOfAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSubAnnotationPropertyOfAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getSubProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getSuperProperty</span><span class="p">()),</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAsymmetricObjectPropertyAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLFunctionalDataPropertyAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLFunctionalObjectPropertyAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLInverseFunctionalObjectPropertyAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLIrreflexiveObjectPropertyAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLReflexiveObjectPropertyAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSymmetricObjectPropertyAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLTransitiveObjectPropertyAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAsymmetricObjectPropertyAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLFunctionalDataPropertyAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLFunctionalObjectPropertyAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLInverseFunctionalObjectPropertyAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLIrreflexiveObjectPropertyAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLReflexiveObjectPropertyAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSymmetricObjectPropertyAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLTransitiveObjectPropertyAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDatatypeDefinitionAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDatatypeDefinitionAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_datarange</span><span class="p">()),</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDatatypeDefinitionAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDatatypeDefinitionAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getDatatype</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getDataRange</span><span class="p">()),</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDifferentIndividualsAxiom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSameIndividualAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDifferentIndividualsAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">individuals</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDifferentIndividualsAxiomImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLSameIndividualAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDifferentIndividualsAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getIndividualsAsList</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDisjointUnionAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDisjointUnionAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_owl_class</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_class_expressions</span><span class="p">())</span><span class="o">.</span><span class="n">stream</span><span class="p">(),</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDisjointUnionAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLDisjointUnionAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOWLClass</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOperandsAsList</span><span class="p">()),</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLInverseObjectPropertiesAxiom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLInverseObjectPropertiesAxiomImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_first_property</span><span class="p">()),</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_second_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotations</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLInverseObjectPropertiesAxiomImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLInverseObjectPropertiesAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getFirstProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getSecondProperty</span><span class="p">()),</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">annotationsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLOntologyID</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">get_ontology_iri</span><span class="p">():</span>
+            <span class="n">i1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_ontology_iri</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i1</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">get_version_iri</span><span class="p">():</span>
+            <span class="n">i2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_version_iri</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i2</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">owlapi_OWLOntologyID</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">)</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">owlapi_OWLOntologyID</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OWLOntologyID</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOntologyIRI</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getVersionIRI</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Optional</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">isPresent</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">List</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Set</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">LinkedHashSet</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="n">python_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">casted_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">casted_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="n">python_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">python_list</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="n">java_list</span> <span class="o">=</span> <span class="n">ArrayList</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">e</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">java_list</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">java_list</span>
+
+<div class="viewcode-block" id="OWLAPIMapper.to_list">
+<a class="viewcode-back" href="../../autoapi/owlapy/owlapi_mapper/index.html#owlapy.owlapi_mapper.OWLAPIMapper.to_list">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">to_list</span><span class="p">(</span><span class="n">stream_obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts Java Stream object to Python list&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">stream_obj</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">jpype</span><span class="o">.</span><span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.util.stream.Collectors&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">toList</span><span class="p">())</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
