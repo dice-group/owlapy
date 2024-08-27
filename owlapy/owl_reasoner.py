@@ -31,7 +31,12 @@ from owlapy.utils import LRUCache
 
 logger = logging.getLogger(__name__)
 
+_P = TypeVar('_P', bound=OWLPropertyExpression)
 
+# TODO:CD:The name of the classes defined with metaclass=ABCMeta should reflect that
+# TODO:CD: An instance cannot be created from those classes.
+# TODO:CD: We should move those Abstract Base Classes into a respective package, e.g.
+# TODO:CD: owlapy/abstract_owl_reasoner/abstract_owl_reasoner.py should contain OWLReasoner and OWLReasonerEx
 class OWLReasoner(metaclass=ABCMeta):
     """An OWLReasoner reasons over a set of axioms (the set of reasoner axioms) that is based on the imports closure of
     a particular ontology - the "root" ontology."""
@@ -399,20 +404,6 @@ class OWLReasoner(metaclass=ABCMeta):
             If ce is equivalent to owl:Thing then nothing will be returned.
         """
         pass
-
-
-# Deprecated
-# class BaseReasoner(Enum):
-#     """Enumeration class for base reasoner when calling sync_reasoner.
-#
-#     Attributes:
-#         PELLET: Pellet base reasoner.
-#         HERMIT: HermiT base reasoner.
-#     """
-#     PELLET = auto()
-#     HERMIT = auto()
-
-
 class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
     """Extra convenience methods for OWL Reasoners"""
 
@@ -494,10 +485,9 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
             except StopIteration:
                 pass
 
-
 class OntologyReasoner(OWLReasonerEx):
     __slots__ = '_ontology', '_world'
-
+    # TODO: CD: We will remove owlready2 from owlapy
     _ontology: Ontology
     _world: owlready2.World
 
@@ -1038,9 +1028,6 @@ class OntologyReasoner(OWLReasonerEx):
 
     def get_root_ontology(self) -> OWLOntology:
         return self._ontology
-
-
-_P = TypeVar('_P', bound=OWLPropertyExpression)
 
 
 class FastInstanceCheckerReasoner(OWLReasonerEx):
