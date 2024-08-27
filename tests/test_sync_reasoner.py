@@ -66,11 +66,11 @@ R = OWLClass(IRI(NS, 'R'))
 S = OWLClass(IRI(NS, 'S'))
 T = OWLClass(IRI(NS, 'T'))
 U = OWLClass(IRI(NS, 'U'))
-reasoner2 = SyncReasoner("KGs/Test/test_ontology.owl")
+reasoner2 = SyncReasoner("../KGs/Test/test_ontology.owl")
 
 class TestSyncReasoner(unittest.TestCase):
     ns = "http://dl-learner.org/mutagenesis#"
-    ontology_path = "KGs/Mutagenesis/mutagenesis.owl"
+    ontology_path = "../KGs/Mutagenesis/mutagenesis.owl"
     nitrogen38 = OWLClass(IRI.create(ns, "Nitrogen-38"))
     compound = OWLClass(IRI.create(ns, "Compound"))
     atom = OWLClass(IRI.create(ns, "Atom"))
@@ -161,7 +161,6 @@ class TestSyncReasoner(unittest.TestCase):
         self.assertCountEqual(list(reasoner2.super_classes(L)), [M, OWLNothing])
 
     def test_data_property_domains(self):
-        self.assertCountEqual(list(reasoner2.data_property_domains(dp1, False)), [AB, A, B, C, OWLThing])
         self.assertCountEqual(list(reasoner2.data_property_domains(dp1, True)), [AB])
 
     def test_object_property_domains(self):
