@@ -296,7 +296,6 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         target_inst = frozenset({markus, heinz})
         self.assertEqual(inst, target_inst)
 
-
     def test_sub_property_inclusion(self):
         ns = "http://dl-learner.org/mutagenesis#"
         mgr = OntologyManager()
@@ -309,8 +308,8 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         super_has_structure = OWLObjectProperty(IRI(ns, 'superHasStucture'))
         charge = OWLDataProperty(IRI(ns, 'charge'))
         super_charge = OWLDataProperty(IRI.create(ns, 'super_charge'))
-        mgr.add_axiom(onto, OWLSubObjectPropertyOfAxiom(has_structure, super_has_structure))
-        mgr.add_axiom(onto, OWLSubDataPropertyOfAxiom(charge, super_charge))
+        onto.add_axiom(OWLSubObjectPropertyOfAxiom(has_structure, super_has_structure))
+        onto.add_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
         # sub_property = True
         base_reasoner = OntologyReasoner(onto)
@@ -340,8 +339,8 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         individuals = frozenset(reasoner.instances(ce))
         self.assertEqual(len(individuals), 0)
 
-        mgr.remove_axiom(onto, OWLSubObjectPropertyOfAxiom(has_structure, super_has_structure))
-        mgr.remove_axiom(onto, OWLSubDataPropertyOfAxiom(charge, super_charge))
+        onto.remove_axiom(OWLSubObjectPropertyOfAxiom(has_structure, super_has_structure))
+        onto.remove_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
     def test_inverse(self):
         ns = "http://example.com/father#"
@@ -350,7 +349,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
 
         has_child = OWLObjectProperty(IRI(ns, 'hasChild'))
         has_child_inverse = OWLObjectProperty(IRI.create(ns, 'hasChild_inverse'))
-        mgr.add_axiom(onto, OWLInverseObjectPropertiesAxiom(has_child, has_child_inverse))
+        onto.add_axiom(OWLInverseObjectPropertiesAxiom(has_child, has_child_inverse))
 
         parents = {OWLNamedIndividual(IRI.create(ns, 'anna')),
                    OWLNamedIndividual(IRI.create(ns, 'martin')),
@@ -367,13 +366,13 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         self.assertEqual(parents_expr, parents)
         self.assertEqual(parents_expr_inverse, parents)
         # Removal not needed, just for completeness
-        mgr.remove_axiom(onto, OWLInverseObjectPropertiesAxiom(has_child, has_child_inverse))
+        onto.remove_axiom(OWLInverseObjectPropertiesAxiom(has_child, has_child_inverse))
 
         # test sub properties
         super_has_child = OWLObjectProperty(IRI(ns, 'super_hasChild'))
-        mgr.add_axiom(onto, OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
+        onto.add_axiom(OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
         super_has_child_inverse = OWLObjectProperty(IRI(ns, 'super_hasChild_inverse'))
-        mgr.add_axiom(onto, OWLInverseObjectPropertiesAxiom(super_has_child, super_has_child_inverse))
+        onto.add_axiom(OWLInverseObjectPropertiesAxiom(super_has_child, super_has_child_inverse))
 
         # False (sub properties not taken into account)
         expr = OWLObjectSomeValuesFrom(super_has_child, OWLThing)
@@ -392,8 +391,8 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         self.assertEqual(parents_expr, parents)
         self.assertEqual(parents_expr_inverse, parents)
 
-        mgr.remove_axiom(onto, OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
-        mgr.remove_axiom(onto, OWLInverseObjectPropertiesAxiom(super_has_child, super_has_child_inverse))
+        onto.remove_axiom(OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
+        onto.remove_axiom(OWLInverseObjectPropertiesAxiom(super_has_child, super_has_child_inverse))
 
 
 if __name__ == '__main__':

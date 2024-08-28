@@ -18,8 +18,8 @@ onto = manager.load_ontology(IRI.create('file://../KGs/Family/father.owl'))
 # Create a new class
 new_class = OWLClass(IRI.create('http://example.com/father#child'))
 
-# Add a declaration axiom for this class using ontology manager
-manager.add_axiom(ontology=onto, axiom=OWLDeclarationAxiom(new_class))
+# Add a declaration axiom for this class
+onto.add_axiom(axiom=OWLDeclarationAxiom(new_class))
 
 # Check whether the new class is added in the signature of the ontology
 print("------------------------")
@@ -27,7 +27,7 @@ print("------------------------")
 
 # Add an individual of type child in the ontology
 new_ind = OWLNamedIndividual('http://example.com/father#lulu')
-manager.add_axiom(onto, OWLClassAssertionAxiom(new_ind, new_class))
+onto.add_axiom(OWLClassAssertionAxiom(new_ind, new_class))
 
 # Check if Lulu is added
 
@@ -35,7 +35,7 @@ print("----------------------")
 [print(_) for _ in onto.individuals_in_signature()]
 
 # Save the modified ontology locally (otherwise the changes will be lost)
-manager.save_ontology(ontology=onto, document_iri=IRI.create("file:/../KGs/Family/father_modified.owl"))
+onto.save(document_iri=IRI.create("file:/../KGs/Family/father_modified.owl"))
 # NOTE: using the same name will overwrite the current file with the new one.
 
 

@@ -90,13 +90,13 @@ class TestSyncReasoner(unittest.TestCase):
 
         carbon230 = OWLClass(IRI.create(self.ns, "Carbon-230"))
         axiom = OWLDisjointClassesAxiom([self.nitrogen38, carbon230])
-        manager.add_axiom(onto, axiom)
+        onto.add_axiom(axiom)
         new_individual = OWLNamedIndividual(IRI.create(self.ns, "testIndividual"))
-        manager.add_axiom(onto, OWLDeclarationAxiom(new_individual))
-        manager.add_axiom(onto, OWLClassAssertionAxiom(new_individual, self.nitrogen38))
-        manager.add_axiom(onto, OWLClassAssertionAxiom(new_individual, carbon230))
+        onto.add_axiom(OWLDeclarationAxiom(new_individual))
+        onto.add_axiom(OWLClassAssertionAxiom(new_individual, self.nitrogen38))
+        onto.add_axiom(OWLClassAssertionAxiom(new_individual, carbon230))
 
-        manager.save_ontology(onto, IRI.create("file:/test.owl"))
+        onto.save(IRI.create("file:/test.owl"))
         reasoner = SyncReasoner("test.owl")
         self.assertEqual(reasoner.has_consistent_ontology(), False)
         os.remove("test.owl")

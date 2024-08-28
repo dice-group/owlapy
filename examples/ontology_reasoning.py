@@ -119,12 +119,12 @@ r1T = OWLObjectSomeValuesFrom(property=r1, filler=OWLClass(IRI('http://www.w3.or
 manager = OntologyManager()
 onto = manager.load_ontology(IRI.create('file://' + data_file))
 
-manager.add_axiom(onto, OWLEquivalentObjectPropertiesAxiom([r6, r5]))
-manager.add_axiom(onto, OWLEquivalentObjectPropertiesAxiom([r5, r6]))
-manager.add_axiom(onto, OWLObjectPropertyDomainAxiom(r1, ST))
+onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([r6, r5]))
+onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([r5, r6]))
+onto.add_axiom(OWLObjectPropertyDomainAxiom(r1, ST))
 
-manager.add_axiom(onto, OWLSubClassOfAxiom(R, r5Q))
-manager.add_axiom(onto, OWLSubClassOfAxiom(ST, U))
+onto.add_axiom(OWLSubClassOfAxiom(R, r5Q))
+onto.add_axiom(OWLSubClassOfAxiom(ST, U))
 
 base_reasoner = OntologyReasoner(onto)
 
