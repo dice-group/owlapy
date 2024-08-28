@@ -155,10 +155,10 @@ class TestSyncReasoner(unittest.TestCase):
         self.assertCountEqual(list(reasoner2.disjoint_classes(L)), [M, OWLNothing])
 
     def test_sub_classes(self):
-        self.assertCountEqual(list(reasoner2.sub_classes(L)), [M, OWLNothing])
+        self.assertCountEqual(list(reasoner2.sub_classes(P)), [O, OWLNothing])
 
     def test_super_classes(self):
-        self.assertCountEqual(list(reasoner2.super_classes(L)), [M, OWLNothing])
+        self.assertCountEqual(list(reasoner2.super_classes(O)), [P, OWLThing])
 
     def test_object_property_domains(self):
         self.assertCountEqual(list(self.reasoner.object_property_domains(self.hasAtom, False)), [self.compound, OWLThing])
