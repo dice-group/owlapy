@@ -12,6 +12,10 @@ from owlapy.owl_property import OWLDataProperty
 from owlapy.owlapi_adaptor import OWLAPIAdaptor
 from owlapy.providers import owl_datatype_min_inclusive_restriction
 
+from owlapy.class_expression import OWLClassExpression
+from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owlapi_adaptor import OWLAPIAdaptor
+
 
 class TestOwlapiAdaptor(unittest.TestCase):
     ns = "http://dl-learner.org/mutagenesis#"
@@ -21,6 +25,36 @@ class TestOwlapiAdaptor(unittest.TestCase):
     has_charge_more_than_0_85 = OWLDataSomeValuesFrom(charge, owl_datatype_min_inclusive_restriction(0.85))
     ce = OWLObjectIntersectionOf([nitrogen38, has_charge_more_than_0_85])
     adaptor = OWLAPIAdaptor(ontology_path)
+
+    def test_named_concepts(self):
+
+        ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
+
+        # Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet'
+        owl_reasoners = dict()
+        owl_reasoners["HermiT"] = OWLAPIAdaptor(path=ontology_path, name_reasoner="HermiT")
+        owl_reasoners["Pellet"] = OWLAPIAdaptor(path=ontology_path, name_reasoner="Pellet")
+        owl_reasoners["JFact"] = OWLAPIAdaptor(path=ontology_path, name_reasoner="JFact")
+        owl_reasoners["Openllet"] = OWLAPIAdaptor(path=ontology_path, name_reasoner="Openllet")
+
+        onto = OntologyManager().load_ontology(ontology_path)
+
+        def compute_agreements(i: OWLClassExpression, verbose=False):
+            if verbose:
+                print(f"Computing agreements between Reasoners on {i}...")
+            retrieval_result = None
+            flag = False
+            for k, reasoner in owl_reasoners.items():
+                if retrieval_result:
+                    flag = retrieval_result == {_.str for _ in reasoner.instances(i)}
+                else:
+                    retrieval_result = {_.str for _ in reasoner.instances(i)}
+            return flag
+        # Agreement between instances over
+        for i in onto.classes_in_signature():
+            assert compute_agreements(i, True)
+        for k, reasoner in owl_reasoners.items():
+            reasoner.stopJVM()
 
     def test_consistency_check(self):
         self.assertEqual(self.adaptor.has_consistent_ontology(), True)
