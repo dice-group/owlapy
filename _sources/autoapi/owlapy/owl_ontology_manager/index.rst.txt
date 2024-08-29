@@ -14,7 +14,6 @@ Classes
    owlapy.owl_ontology_manager.OWLImportsDeclaration
    owlapy.owl_ontology_manager.AddImport
    owlapy.owl_ontology_manager.OntologyManager
-   owlapy.owl_ontology_manager.SyncOntologyManager
 
 
 Module Contents
@@ -82,6 +81,40 @@ Module Contents
       :param change: The change to be applied.
 
       :raises ChangeApplied.UNSUCCESSFULLY: if the change was not applied successfully.
+
+
+
+   .. py:method:: add_axiom(ontology: owlapy.owl_ontology.OWLOntology, axiom: owlapy.owl_axiom.OWLAxiom)
+      :abstractmethod:
+
+
+      A convenience method that adds a single axiom to an ontology.
+
+      :param ontology: The ontology to add the axiom to.
+      :param axiom: The axiom to be added.
+
+
+
+   .. py:method:: remove_axiom(ontology: owlapy.owl_ontology.OWLOntology, axiom: owlapy.owl_axiom.OWLAxiom)
+      :abstractmethod:
+
+
+      A convenience method that removes a single axiom from an ontology.
+
+      :param ontology: The ontology to remove the axiom from.
+      :param axiom: The axiom to be removed.
+
+
+
+   .. py:method:: save_ontology(ontology: owlapy.owl_ontology.OWLOntology, document_iri: owlapy.iri.IRI)
+      :abstractmethod:
+
+
+      Saves the specified ontology, using the specified document IRI to determine where/how the ontology should be
+      saved.
+
+      :param ontology: The ontology to be saved.
+      :param document_iri: The document IRI where the ontology should be saved to.
 
 
 
@@ -186,24 +219,38 @@ Module Contents
 
 
 
+   .. py:method:: add_axiom(ontology: owlapy.owl_ontology.OWLOntology, axiom: owlapy.owl_axiom.OWLAxiom)
+
+      A convenience method that adds a single axiom to an ontology.
+
+      :param ontology: The ontology to add the axiom to.
+      :param axiom: The axiom to be added.
+
+
+
+   .. py:method:: remove_axiom(ontology: owlapy.owl_ontology.OWLOntology, axiom: owlapy.owl_axiom.OWLAxiom)
+
+      A convenience method that removes a single axiom from an ontology.
+
+      :param ontology: The ontology to remove the axiom from.
+      :param axiom: The axiom to be removed.
+
+
+
+   .. py:method:: save_ontology(ontology: owlapy.owl_ontology.OWLOntology, document_iri: owlapy.iri.IRI)
+
+      Saves the specified ontology, using the specified document IRI to determine where/how the ontology should be
+      saved.
+
+      :param ontology: The ontology to be saved.
+      :param document_iri: The document IRI where the ontology should be saved to.
+
+
+
    .. py:method:: save_world()
 
       Saves the actual state of the quadstore in the SQLite3 file.
 
 
-
-
-.. py:class:: SyncOntologyManager
-
-   .. py:attribute:: owlapi_manager
-
-
-   .. py:method:: create_ontology(iri: owlapy.iri.IRI) -> owlapy.owl_ontology.SyncOntology
-
-
-   .. py:method:: load_ontology(path: Union[owlapy.iri.IRI, str]) -> owlapy.owl_ontology.SyncOntology
-
-
-   .. py:method:: get_owlapi_manager()
 
 

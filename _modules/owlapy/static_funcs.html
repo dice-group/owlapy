@@ -88,9 +88,6 @@
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">platform</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">jpype</span>
-<span class="kn">import</span> <span class="nn">jpype.imports</span>
-<span class="kn">import</span> <span class="nn">pkg_resources</span>
 
 <span class="c1"># NOTE: Static functions closely related with owl classes should be placed in utils.py not here</span>
 
@@ -130,29 +127,6 @@
             <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;unzip&#39;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">])</span>
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">file_name</span><span class="p">))</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">current_dir</span><span class="p">,</span> <span class="n">root_dir</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="startJVM">
-<a class="viewcode-back" href="../../autoapi/owlapy/static_funcs/index.html#owlapy.static_funcs.startJVM">[docs]</a>
-<span class="k">def</span> <span class="nf">startJVM</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the JVM with jar dependencies. This method is called automatically on object initialization, if the</span>
-<span class="sd">    JVM is not started yet.&quot;&quot;&quot;</span>
-    <span class="c1"># Start a java virtual machine using the dependencies in the respective folder:</span>
-    <span class="n">jar_folder</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="s1">&#39;owlapy&#39;</span><span class="p">,</span> <span class="s1">&#39;jar_dependencies&#39;</span><span class="p">)</span>
-    <span class="n">jar_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">jar_folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.jar&#39;</span><span class="p">)]</span>
-    <span class="c1"># Starting JVM</span>
-    <span class="n">jpype</span><span class="o">.</span><span class="n">startJVM</span><span class="p">(</span><span class="n">classpath</span><span class="o">=</span><span class="n">jar_files</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="stopJVM">
-<a class="viewcode-back" href="../../autoapi/owlapy/static_funcs/index.html#owlapy.static_funcs.stopJVM">[docs]</a>
-<span class="k">def</span> <span class="nf">stopJVM</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isJVMStarted</span><span class="p">():</span>
-        <span class="n">jpype</span><span class="o">.</span><span class="n">detachThreadFromJVM</span><span class="p">()</span>
-        <span class="n">jpype</span><span class="o">.</span><span class="n">shutdownJVM</span><span class="p">()</span></div>
 
 </pre></div>
 

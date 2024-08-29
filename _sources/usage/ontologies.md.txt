@@ -78,7 +78,7 @@ iri = IRI('http://example.com/father#', 'child')
 child_class = OWLClass(iri)
 child_class_declaration_axiom = OWLDeclarationAxiom(child_class)
 
-onto.add_axiom(child_class_declaration_axiom)
+manager.add_axiom(onto, child_class_declaration_axiom)
 ```
 In this example, we added the class 'child' to the _father.owl_ ontology.
 Firstly we create an instance of [OWLClass](owlapy.class_expression.owl_class.OWLClass) to represent the concept 
@@ -86,8 +86,9 @@ of 'child' by using an [IRI](owlapy.iri.IRI).
 On the other side, an instance of `IRI` is created by passing two arguments which are
 the namespace of the ontology and the remainder 'child'. To declare this new class we need
 an axiom of type `OWLDeclarationAxiom`. We simply pass the `child_class` to create an 
-instance of this axiom. The final step is to add this axiom to the ontology
-We use the `add_axiom` method to add into the ontology
+instance of this axiom. The final step is to add this axiom to the ontology using the 
+[OWLOntologyManager](owlapy.owl_ontology_manager.OWLOntologyManager). We use the `add_axiom` method
+of the `manager` to add into the ontology
 `onto` the axiom `child_class_declaration_axiom`.
 
 #### Add a new Object Property / Data Property
@@ -104,12 +105,12 @@ from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 # adding the object property 'hasParent'
 hasParent_op = OWLObjectProperty(IRI('http://example.com/father#', 'hasParent'))
 hasParent_op_declaration_axiom = OWLDeclarationAxiom(hasParent_op)
-onto.add_axiom(hasParent_op_declaration_axiom)
+manager.add_axiom(onto, hasParent_op_declaration_axiom)
 
 # adding the data property 'hasAge' 
 hasAge_dp = OWLDataProperty(IRI('http://example.com/father#', 'hasAge'))
 hasAge_dp_declaration_axiom = OWLDeclarationAxiom(hasAge_dp)
-onto.add_axiom(hasAge_dp_declaration_axiom)
+manager.add_axiom(onto, hasAge_dp_declaration_axiom)
 ```
 
 See the [owlapy](owlapy) for more OWL entities that you can add as a declaration axiom.
@@ -128,7 +129,7 @@ heinz = individuals[1]  # get the 2nd individual in the list which is 'heinz'
 
 class_assertion_axiom = OWLClassAssertionAxiom(heinz, child_class)
 
-onto.add_axiom(class_assertion_axiom)
+manager.add_axiom(onto, class_assertion_axiom)
 ```
 We have used the previous method `individuals_in_signature()` to get all the individuals 
 and converted them to a list, so we can access them by using indexes. In this example, we
@@ -136,7 +137,7 @@ want to assert a class axiom for the individual `heinz`.
 We have used the class `OWLClassAssertionAxiom`
 where the first argument is the 'individual' `heinz` and the second argument is 
 the 'class_expression'. As the class expression, we used the previously defined class 
-`child_Class`. Finally, add the axiom by using `add_axiom` method of the [OWLOntology](owlapy.owl_ontology.OWLOntology).
+`child_Class`. Finally, add the axiom by using `add_axiom` method of the [OWLOntologyManager](owlapy.owl_ontology_manager.OWLOntologyManager).
 
 Let's show one more example using a `OWLDataPropertyAssertionAxiom` to assign the age of 17 to
 heinz. 
@@ -150,7 +151,7 @@ from owlapy.owl_axiom import OWLDataPropertyAssertionAxiom
 literal_17 = OWLLiteral(17)
 dp_assertion_axiom = OWLDataPropertyAssertionAxiom(heinz, hasAge_dp, literal_17)
 
-onto.add_axiom(dp_assertion_axiom)
+manager.add_axiom(onto, dp_assertion_axiom)
 ```
 
 [OWLLiteral](owlapy.owl_literal.OWLLiteral) is a class that represents the literal values in
@@ -166,24 +167,26 @@ assertion axioms that you can use.
 
 #### Remove an Axiom
 
-To remove an axiom you can use the `remove_axiom` method as follows:
+To remove an axiom you can use the `remove_axiom` method of the ontology manager as follows:
 
 <!--pytest-codeblocks:cont-->
 ```python
-onto.remove_axiom(dp_assertion_axiom)
+manager.remove_axiom(onto,dp_assertion_axiom)
 ```
-The required argument is the axiom/axioms you want to remove.
+The first argument is the ontology you want to remove the axiom from and the second 
+argument is the axiom you want to remove.
 
 
 ## Save an Ontology
 
 If you modified an ontology, you may want to save it as a new file. To do this
-you can use the `save` method of the [OWLOntology](owlapy.owl_ontology.OWLOntology).
-It requires one argument, the IRI of the new ontology.
+you can use the `save_ontology` method of the [OWLOntologyManager](owlapy.owl_ontology_manager.OWLOntologyManager).
+It requires two arguments, the first is the ontology you want to save and The second
+is the IRI of the new ontology.
 
 <!--pytest-codeblocks:cont-->
 ```python
-onto.save(IRI.create('file:/' + 'test' + '.owl'))
+manager.save_ontology(onto, IRI.create('file:/' + 'test' + '.owl'))
 ```
  The above line of code will save the ontology `onto` in the file *test.owl* which will be
 created in the same directory as the file you are running this code.

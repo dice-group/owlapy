@@ -165,7 +165,7 @@ It can be done as follows:</p>
 <span class="n">child_class</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
 <span class="n">child_class_declaration_axiom</span> <span class="o">=</span> <span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="n">child_class</span><span class="p">)</span>
 
-<span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">child_class_declaration_axiom</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">child_class_declaration_axiom</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In this example, we added the class ‘child’ to the <em>father.owl</em> ontology.
@@ -174,8 +174,9 @@ of ‘child’ by using an <a class="reference internal" href="../autoapi/owlapy
 On the other side, an instance of <code class="docutils literal notranslate"><span class="pre">IRI</span></code> is created by passing two arguments which are
 the namespace of the ontology and the remainder ‘child’. To declare this new class we need
 an axiom of type <code class="docutils literal notranslate"><span class="pre">OWLDeclarationAxiom</span></code>. We simply pass the <code class="docutils literal notranslate"><span class="pre">child_class</span></code> to create an
-instance of this axiom. The final step is to add this axiom to the ontology
-We use the <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code> method to add into the ontology
+instance of this axiom. The final step is to add this axiom to the ontology using the
+<a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager" title="owlapy.owl_ontology_manager.OWLOntologyManager"><span class="xref myst py py-class">OWLOntologyManager</span></a>. We use the <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code> method
+of the <code class="docutils literal notranslate"><span class="pre">manager</span></code> to add into the ontology
 <code class="docutils literal notranslate"><span class="pre">onto</span></code> the axiom <code class="docutils literal notranslate"><span class="pre">child_class_declaration_axiom</span></code>.</p>
 </section>
 <section id="add-a-new-object-property-data-property">
@@ -189,12 +190,12 @@ properties you can use the class <a class="reference internal" href="../autoapi/
 <span class="c1"># adding the object property &#39;hasParent&#39;</span>
 <span class="n">hasParent_op</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s1">&#39;http://example.com/father#&#39;</span><span class="p">,</span> <span class="s1">&#39;hasParent&#39;</span><span class="p">))</span>
 <span class="n">hasParent_op_declaration_axiom</span> <span class="o">=</span> <span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="n">hasParent_op</span><span class="p">)</span>
-<span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">hasParent_op_declaration_axiom</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">hasParent_op_declaration_axiom</span><span class="p">)</span>
 
 <span class="c1"># adding the data property &#39;hasAge&#39; </span>
 <span class="n">hasAge_dp</span> <span class="o">=</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s1">&#39;http://example.com/father#&#39;</span><span class="p">,</span> <span class="s1">&#39;hasAge&#39;</span><span class="p">))</span>
 <span class="n">hasAge_dp_declaration_axiom</span> <span class="o">=</span> <span class="n">OWLDeclarationAxiom</span><span class="p">(</span><span class="n">hasAge_dp</span><span class="p">)</span>
-<span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">hasAge_dp_declaration_axiom</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">hasAge_dp_declaration_axiom</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>See the <a class="reference internal" href="../autoapi/owlapy/index.html#module-owlapy" title="owlapy"><span class="xref myst py py-mod">owlapy</span></a> for more OWL entities that you can add as a declaration axiom.</p>
@@ -210,7 +211,7 @@ properties you can use the class <a class="reference internal" href="../autoapi/
 
 <span class="n">class_assertion_axiom</span> <span class="o">=</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">(</span><span class="n">heinz</span><span class="p">,</span> <span class="n">child_class</span><span class="p">)</span>
 
-<span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">class_assertion_axiom</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">class_assertion_axiom</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We have used the previous method <code class="docutils literal notranslate"><span class="pre">individuals_in_signature()</span></code> to get all the individuals
@@ -219,7 +220,7 @@ want to assert a class axiom for the individual <code class="docutils literal no
 We have used the class <code class="docutils literal notranslate"><span class="pre">OWLClassAssertionAxiom</span></code>
 where the first argument is the ‘individual’ <code class="docutils literal notranslate"><span class="pre">heinz</span></code> and the second argument is
 the ‘class_expression’. As the class expression, we used the previously defined class
-<code class="docutils literal notranslate"><span class="pre">child_Class</span></code>. Finally, add the axiom by using <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code> method of the <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="xref myst py py-class">OWLOntology</span></a>.</p>
+<code class="docutils literal notranslate"><span class="pre">child_Class</span></code>. Finally, add the axiom by using <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code> method of the <a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager" title="owlapy.owl_ontology_manager.OWLOntologyManager"><span class="xref myst py py-class">OWLOntologyManager</span></a>.</p>
 <p>Let’s show one more example using a <code class="docutils literal notranslate"><span class="pre">OWLDataPropertyAssertionAxiom</span></code> to assign the age of 17 to
 heinz.</p>
 <!--pytest-codeblocks:cont-->
@@ -229,7 +230,7 @@ heinz.</p>
 <span class="n">literal_17</span> <span class="o">=</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="mi">17</span><span class="p">)</span>
 <span class="n">dp_assertion_axiom</span> <span class="o">=</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">(</span><span class="n">heinz</span><span class="p">,</span> <span class="n">hasAge_dp</span><span class="p">,</span> <span class="n">literal_17</span><span class="p">)</span>
 
-<span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">dp_assertion_axiom</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">dp_assertion_axiom</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="../autoapi/owlapy/owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="xref myst py py-class">OWLLiteral</span></a> is a class that represents the literal values in
@@ -243,21 +244,23 @@ assertion axioms that you can use.</p>
 </section>
 <section id="remove-an-axiom">
 <h3>Remove an Axiom<a class="headerlink" href="#remove-an-axiom" title="Link to this heading"></a></h3>
-<p>To remove an axiom you can use the <code class="docutils literal notranslate"><span class="pre">remove_axiom</span></code> method as follows:</p>
+<p>To remove an axiom you can use the <code class="docutils literal notranslate"><span class="pre">remove_axiom</span></code> method of the ontology manager as follows:</p>
 <!--pytest-codeblocks:cont-->
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">onto</span><span class="o">.</span><span class="n">remove_axiom</span><span class="p">(</span><span class="n">dp_assertion_axiom</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">remove_axiom</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span><span class="n">dp_assertion_axiom</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The required argument is the axiom/axioms you want to remove.</p>
+<p>The first argument is the ontology you want to remove the axiom from and the second
+argument is the axiom you want to remove.</p>
 </section>
 </section>
 <section id="save-an-ontology">
 <h2>Save an Ontology<a class="headerlink" href="#save-an-ontology" title="Link to this heading"></a></h2>
 <p>If you modified an ontology, you may want to save it as a new file. To do this
-you can use the <code class="docutils literal notranslate"><span class="pre">save</span></code> method of the <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="xref myst py py-class">OWLOntology</span></a>.
-It requires one argument, the IRI of the new ontology.</p>
+you can use the <code class="docutils literal notranslate"><span class="pre">save_ontology</span></code> method of the <a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager" title="owlapy.owl_ontology_manager.OWLOntologyManager"><span class="xref myst py py-class">OWLOntologyManager</span></a>.
+It requires two arguments, the first is the ontology you want to save and The second
+is the IRI of the new ontology.</p>
 <!--pytest-codeblocks:cont-->
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">onto</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;file:/&#39;</span> <span class="o">+</span> <span class="s1">&#39;test&#39;</span> <span class="o">+</span> <span class="s1">&#39;.owl&#39;</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">save_ontology</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;file:/&#39;</span> <span class="o">+</span> <span class="s1">&#39;test&#39;</span> <span class="o">+</span> <span class="s1">&#39;.owl&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The above line of code will save the ontology <code class="docutils literal notranslate"><span class="pre">onto</span></code> in the file <em>test.owl</em> which will be

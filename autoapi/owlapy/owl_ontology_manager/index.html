@@ -86,6 +86,9 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager.create_ontology"><code class="docutils literal notranslate"><span class="pre">OWLOntologyManager.create_ontology()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager.load_ontology"><code class="docutils literal notranslate"><span class="pre">OWLOntologyManager.load_ontology()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager.apply_change"><code class="docutils literal notranslate"><span class="pre">OWLOntologyManager.apply_change()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager.add_axiom"><code class="docutils literal notranslate"><span class="pre">OWLOntologyManager.add_axiom()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager.remove_axiom"><code class="docutils literal notranslate"><span class="pre">OWLOntologyManager.remove_axiom()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager.save_ontology"><code class="docutils literal notranslate"><span class="pre">OWLOntologyManager.save_ontology()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology_manager.OWLImportsDeclaration"><code class="docutils literal notranslate"><span class="pre">OWLImportsDeclaration</span></code></a><ul>
@@ -104,14 +107,10 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OntologyManager.create_ontology"><code class="docutils literal notranslate"><span class="pre">OntologyManager.create_ontology()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OntologyManager.load_ontology"><code class="docutils literal notranslate"><span class="pre">OntologyManager.load_ontology()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OntologyManager.apply_change"><code class="docutils literal notranslate"><span class="pre">OntologyManager.apply_change()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OntologyManager.add_axiom"><code class="docutils literal notranslate"><span class="pre">OntologyManager.add_axiom()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OntologyManager.remove_axiom"><code class="docutils literal notranslate"><span class="pre">OntologyManager.remove_axiom()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OntologyManager.save_ontology"><code class="docutils literal notranslate"><span class="pre">OntologyManager.save_ontology()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.OntologyManager.save_world"><code class="docutils literal notranslate"><span class="pre">OntologyManager.save_world()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology_manager.SyncOntologyManager"><code class="docutils literal notranslate"><span class="pre">SyncOntologyManager</span></code></a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.SyncOntologyManager.owlapi_manager"><code class="docutils literal notranslate"><span class="pre">SyncOntologyManager.owlapi_manager</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.SyncOntologyManager.create_ontology"><code class="docutils literal notranslate"><span class="pre">SyncOntologyManager.create_ontology()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.SyncOntologyManager.load_ontology"><code class="docutils literal notranslate"><span class="pre">SyncOntologyManager.load_ontology()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.SyncOntologyManager.get_owlapi_manager"><code class="docutils literal notranslate"><span class="pre">SyncOntologyManager.get_owlapi_manager()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -120,6 +119,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_adaptor/index.html">owlapy.owlapi_adaptor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
@@ -181,9 +181,6 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_ontology_manager.OntologyManager" title="owlapy.owl_ontology_manager.OntologyManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OntologyManager</span></code></a></p></td>
 <td><p>An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_ontology_manager.SyncOntologyManager" title="owlapy.owl_ontology_manager.SyncOntologyManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SyncOntologyManager</span></code></a></p></td>
-<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -260,6 +257,49 @@ get_owl_ontology_manager() call.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ChangeApplied.UNSUCCESSFULLY</strong> – if the change was not applied successfully.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.add_axiom">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.add_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.add_axiom" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that adds a single axiom to an ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to add the axiom to.</p></li>
+<li><p><strong>axiom</strong> – The axiom to be added.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.remove_axiom">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.remove_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.remove_axiom" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that removes a single axiom from an ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to remove the axiom from.</p></li>
+<li><p><strong>axiom</strong> – The axiom to be removed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OWLOntologyManager.save_ontology">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OWLOntologyManager.save_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OWLOntologyManager.save_ontology" title="Link to this definition"></a></dt>
+<dd><p>Saves the specified ontology, using the specified document IRI to determine where/how the ontology should be
+saved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to be saved.</p></li>
+<li><p><strong>document_iri</strong> – The document IRI where the ontology should be saved to.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -384,35 +424,53 @@ get_owl_ontology_manager() call.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OntologyManager.add_axiom">
+<span class="sig-name descname"><span class="pre">add_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OntologyManager.add_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OntologyManager.add_axiom" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that adds a single axiom to an ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to add the axiom to.</p></li>
+<li><p><strong>axiom</strong> – The axiom to be added.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OntologyManager.remove_axiom">
+<span class="sig-name descname"><span class="pre">remove_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OntologyManager.remove_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OntologyManager.remove_axiom" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that removes a single axiom from an ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to remove the axiom from.</p></li>
+<li><p><strong>axiom</strong> – The axiom to be removed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OntologyManager.save_ontology">
+<span class="sig-name descname"><span class="pre">save_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.OWLOntology" title="owlapy.owl_ontology.OWLOntology"><span class="pre">owlapy.owl_ontology.OWLOntology</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OntologyManager.save_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OntologyManager.save_ontology" title="Link to this definition"></a></dt>
+<dd><p>Saves the specified ontology, using the specified document IRI to determine where/how the ontology should be
+saved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology</strong> – The ontology to be saved.</p></li>
+<li><p><strong>document_iri</strong> – The document IRI where the ontology should be saved to.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology_manager.OntologyManager.save_world">
 <span class="sig-name descname"><span class="pre">save_world</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#OntologyManager.save_world"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.OntologyManager.save_world" title="Link to this definition"></a></dt>
 <dd><p>Saves the actual state of the quadstore in the SQLite3 file.</p>
 </dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.SyncOntologyManager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology_manager.</span></span><span class="sig-name descname"><span class="pre">SyncOntologyManager</span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#SyncOntologyManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.SyncOntologyManager" title="Link to this definition"></a></dt>
-<dd><dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.SyncOntologyManager.owlapi_manager">
-<span class="sig-name descname"><span class="pre">owlapi_manager</span></span><a class="headerlink" href="#owlapy.owl_ontology_manager.SyncOntologyManager.owlapi_manager" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.SyncOntologyManager.create_ontology">
-<span class="sig-name descname"><span class="pre">create_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.SyncOntology" title="owlapy.owl_ontology.SyncOntology"><span class="pre">owlapy.owl_ontology.SyncOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#SyncOntologyManager.create_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.SyncOntologyManager.create_ontology" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.SyncOntologyManager.load_ontology">
-<span class="sig-name descname"><span class="pre">load_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.SyncOntology" title="owlapy.owl_ontology.SyncOntology"><span class="pre">owlapy.owl_ontology.SyncOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#SyncOntologyManager.load_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.SyncOntologyManager.load_ontology" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.SyncOntologyManager.get_owlapi_manager">
-<span class="sig-name descname"><span class="pre">get_owlapi_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#SyncOntologyManager.get_owlapi_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.SyncOntologyManager.get_owlapi_manager" title="Link to this definition"></a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
