@@ -99,11 +99,71 @@
     <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> \
     <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> \
     <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> \
-    <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span>
+    <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span>
 <span class="kn">from</span> <span class="nn">.owl_data_ranges</span> <span class="kn">import</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">,</span> \
     <span class="n">OWLPropertyRange</span>
 <span class="kn">from</span> <span class="nn">.owl_object</span> <span class="kn">import</span> <span class="n">OWLObject</span>
 <span class="kn">from</span> <span class="nn">.owl_datatype</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
+
+<div class="viewcode-block" id="concept_reducer">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.concept_reducer">[docs]</a>
+<span class="k">def</span> <span class="nf">concept_reducer</span><span class="p">(</span><span class="n">concepts</span><span class="p">:</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">opt</span><span class="p">:</span><span class="n">Callable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reduces a set of concepts by applying a binary operation to each pair of concepts.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        concepts (set): A set of concepts to be reduced.</span>
+<span class="sd">        opt (function): A binary function that takes a pair of concepts and returns a single concept.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        set: A set containing the results of applying the binary operation to each pair of concepts.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; concepts = {1, 2, 3}</span>
+<span class="sd">        &gt;&gt;&gt; opt = lambda x: x[0] + x[1]</span>
+<span class="sd">        &gt;&gt;&gt; concept_reducer(concepts, opt)</span>
+<span class="sd">        {2, 3, 4, 5, 6}</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The operation `opt` should be commutative and associative to ensure meaningful reduction in the context of set operations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">concepts</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">concepts</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">opt</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="concept_reducer_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.concept_reducer_properties">[docs]</a>
+<span class="k">def</span> <span class="nf">concept_reducer_properties</span><span class="p">(</span>
+        <span class="n">concepts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Map a set of owl concepts and a set of properties into OWL Restrictions</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        concepts:</span>
+<span class="sd">        properties:</span>
+<span class="sd">        cls (Callable): An owl Restriction class</span>
+<span class="sd">        cardinality: A positive Integer</span>
+
+<span class="sd">    Returns: List of OWL Restrictions</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">concepts</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="s2">&quot;Concepts must be an Iterable&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="s2">&quot;properties must be an Iterable&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">Callable</span><span class="p">),</span> <span class="s2">&quot;cls must be an Callable&quot;</span>
+    <span class="k">assert</span> <span class="n">cardinality</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">concepts</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">cls</span> <span class="o">==</span> <span class="n">OWLObjectMinCardinality</span> <span class="ow">or</span> <span class="bp">cls</span> <span class="o">==</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">cardinality</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="n">j</span><span class="p">,</span> <span class="n">filler</span><span class="o">=</span><span class="n">i</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
 
 
 <div class="viewcode-block" id="OWLClassExpressionLengthMetric">

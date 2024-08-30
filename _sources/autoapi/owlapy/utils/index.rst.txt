@@ -39,6 +39,8 @@ Functions
 
 .. autoapisummary::
 
+   owlapy.utils.concept_reducer
+   owlapy.utils.concept_reducer_properties
    owlapy.utils.get_expression_length
    owlapy.utils.combine_nary_expressions
    owlapy.utils.iter_count
@@ -47,6 +49,42 @@ Functions
 
 Module Contents
 ---------------
+
+.. py:function:: concept_reducer(concepts: Iterable, opt: Callable)
+
+   Reduces a set of concepts by applying a binary operation to each pair of concepts.
+
+   :param concepts: A set of concepts to be reduced.
+   :type concepts: set
+   :param opt: A binary function that takes a pair of concepts and returns a single concept.
+   :type opt: function
+
+   :returns: A set containing the results of applying the binary operation to each pair of concepts.
+   :rtype: set
+
+   .. rubric:: Example
+
+   >>> concepts = {1, 2, 3}
+   >>> opt = lambda x: x[0] + x[1]
+   >>> concept_reducer(concepts, opt)
+   {2, 3, 4, 5, 6}
+
+   .. note:: The operation `opt` should be commutative and associative to ensure meaningful reduction in the context of set operations.
+
+
+.. py:function:: concept_reducer_properties(concepts: Iterable, properties, cls: Callable = None, cardinality: int = 2) -> Iterable[Union[owlapy.class_expression.OWLQuantifiedObjectRestriction, owlapy.class_expression.OWLObjectCardinalityRestriction]]
+
+   Map a set of owl concepts and a set of properties into OWL Restrictions
+
+   :param concepts:
+   :param properties:
+   :param cls: An owl Restriction class
+   :type cls: Callable
+   :param cardinality: A positive Integer
+
+   Returns: List of OWL Restrictions
+
+
 
 .. py:class:: OWLClassExpressionLengthMetric(*, class_length: int, object_intersection_length: int, object_union_length: int, object_complement_length: int, object_some_values_length: int, object_all_values_length: int, object_has_value_length: int, object_cardinality_length: int, object_has_self_length: int, object_one_of_length: int, data_some_values_length: int, data_all_values_length: int, data_has_value_length: int, data_cardinality_length: int, object_property_length: int, object_inverse_length: int, data_property_length: int, datatype_length: int, data_one_of_length: int, data_complement_length: int, data_intersection_length: int, data_union_length: int)
 

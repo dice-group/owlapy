@@ -88,6 +88,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.concept_reducer"><code class="docutils literal notranslate"><span class="pre">concept_reducer()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.concept_reducer_properties"><code class="docutils literal notranslate"><span class="pre">concept_reducer_properties()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric"><code class="docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric.__slots__</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric.class_length"><code class="docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric.class_length</span></code></a></li>
@@ -279,6 +281,12 @@
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer" title="owlapy.utils.concept_reducer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer</span></code></a>(concepts, opt)</p></td>
+<td><p>Reduces a set of concepts by applying a binary operation to each pair of concepts.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer_properties" title="owlapy.utils.concept_reducer_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer_properties</span></code></a>(...)</p></td>
+<td><p>Map a set of owl concepts and a set of properties into OWL Restrictions</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.get_expression_length" title="owlapy.utils.get_expression_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_expression_length</span></code></a>(→ int)</p></td>
 <td><p></p></td>
 </tr>
@@ -296,6 +304,54 @@
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.concept_reducer">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">concept_reducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">concepts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#concept_reducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.concept_reducer" title="Link to this definition"></a></dt>
+<dd><p>Reduces a set of concepts by applying a binary operation to each pair of concepts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>concepts</strong> (<em>set</em>) – A set of concepts to be reduced.</p></li>
+<li><p><strong>opt</strong> (<em>function</em>) – A binary function that takes a pair of concepts and returns a single concept.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A set containing the results of applying the binary operation to each pair of concepts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">concepts</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">concept_reducer</span><span class="p">(</span><span class="n">concepts</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
+<span class="go">{2, 3, 4, 5, 6}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The operation <cite>opt</cite> should be commutative and associative to ensure meaningful reduction in the context of set operations.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.concept_reducer_properties">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">concept_reducer_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">concepts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cardinality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLQuantifiedObjectRestriction" title="owlapy.class_expression.OWLQuantifiedObjectRestriction"><span class="pre">owlapy.class_expression.OWLQuantifiedObjectRestriction</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLObjectCardinalityRestriction" title="owlapy.class_expression.OWLObjectCardinalityRestriction"><span class="pre">owlapy.class_expression.OWLObjectCardinalityRestriction</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#concept_reducer_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.concept_reducer_properties" title="Link to this definition"></a></dt>
+<dd><p>Map a set of owl concepts and a set of properties into OWL Restrictions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>concepts</strong></p></li>
+<li><p><strong>properties</strong></p></li>
+<li><p><strong>cls</strong> (<em>Callable</em>) – An owl Restriction class</p></li>
+<li><p><strong>cardinality</strong> – A positive Integer</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: List of OWL Restrictions</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.utils.OWLClassExpressionLengthMetric">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">OWLClassExpressionLengthMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_intersection_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_union_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_complement_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_some_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_all_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_has_value_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_cardinality_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_has_self_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_one_of_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_some_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_all_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_has_value_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_cardinality_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_property_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_inverse_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_property_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_one_of_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_complement_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_intersection_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_union_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#OWLClassExpressionLengthMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLClassExpressionLengthMetric" title="Link to this definition"></a></dt>
