@@ -14,11 +14,65 @@ from owlapy.class_expression import OWLClassExpression, OWLClass, OWLObjectCardi
     OWLDataAllValuesFrom, OWLDataSomeValuesFrom, OWLObjectAllValuesFrom, \
     OWLDataOneOf, OWLObjectIntersectionOf, \
     OWLDataCardinalityRestriction, OWLNaryBooleanClassExpression, OWLObjectUnionOf, \
-    OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf
+    OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf, OWLQuantifiedObjectRestriction
 from .owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange, OWLDataRange, \
     OWLPropertyRange
 from .owl_object import OWLObject
 from .owl_datatype import OWLDatatype
+
+def concept_reducer(concepts:Iterable, opt:Callable):
+    """
+    Reduces a set of concepts by applying a binary operation to each pair of concepts.
+
+    Args:
+        concepts (set): A set of concepts to be reduced.
+        opt (function): A binary function that takes a pair of concepts and returns a single concept.
+
+    Returns:
+        set: A set containing the results of applying the binary operation to each pair of concepts.
+
+    Example:
+        >>> concepts = {1, 2, 3}
+        >>> opt = lambda x: x[0] + x[1]
+        >>> concept_reducer(concepts, opt)
+        {2, 3, 4, 5, 6}
+
+    Note:
+        The operation `opt` should be commutative and associative to ensure meaningful reduction in the context of set operations.
+    """
+    result = set()
+    for i in concepts:
+        for j in concepts:
+            result.add(opt((i, j)))
+    return result
+
+def concept_reducer_properties(
+        concepts: Iterable, properties, cls: Callable = None, cardinality: int = 2
+) -> Iterable[Union[OWLQuantifiedObjectRestriction, OWLObjectCardinalityRestriction]]:
+    """
+    Map a set of owl concepts and a set of properties into OWL Restrictions
+
+    Args:
+        concepts:
+        properties:
+        cls (Callable): An owl Restriction class
+        cardinality: A positive Integer
+
+    Returns: List of OWL Restrictions
+
+    """
+    assert isinstance(concepts, Iterable), "Concepts must be an Iterable"
+    assert isinstance(properties, Iterable), "properties must be an Iterable"
+    assert isinstance(cls, Callable), "cls must be an Callable"
+    assert cardinality > 0
+    result = set()
+    for i in concepts:
+        for j in properties:
+            if cls == OWLObjectMinCardinality or cls == OWLObjectMaxCardinality:
+                result.add(cls(cardinality=cardinality, property=j, filler=i))
+                continue
+            result.add(cls(j, i))
+    return result
 
 
 class OWLClassExpressionLengthMetric:
