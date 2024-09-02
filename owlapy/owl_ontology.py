@@ -260,6 +260,7 @@ class OWLOntology(OWLObject, metaclass=ABCMeta):
         """Check whether this ontology does contain an IRI or not."""
         return self.get_ontology_id().is_anonymous()
 
+    @abstractmethod
     def add_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
         """Add the specified axiom/axioms to the ontology.
 
@@ -271,6 +272,7 @@ class OWLOntology(OWLObject, metaclass=ABCMeta):
         """
         pass
 
+    @abstractmethod
     def remove_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
         """Removes the specified axiom/axioms to the ontology.
 
@@ -1173,6 +1175,18 @@ class SyncOntology(OWLOntology):
 
     def get_ontology_id(self) -> OWLOntologyID:
         return self.mapper.map_(self.owlapi_ontology.getOntologyID())
+
+    def add_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
+        if isinstance(axiom, OWLAxiom):
+            self.owlapi_ontology.addAxiom(self.mapper.map_(axiom))
+        else:
+            self.owlapi_ontology.addAxioms(self.mapper.map_(axiom))
+
+    def remove_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
+        if isinstance(axiom, OWLAxiom):
+            self.owlapi_ontology.removeAxiom(self.mapper.map_(axiom))
+        else:
+            self.owlapi_ontology.removeAxioms(self.mapper.map_(axiom))
 
     def __eq__(self, other):
         if isinstance(other, SyncOntology):

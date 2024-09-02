@@ -1,33 +1,12 @@
 from abc import ABCMeta, abstractmethod
-from functools import singledispatch
-from itertools import islice, combinations
-import types
-from typing import cast, Union
+from typing import Union
 
 import jpype
 import owlready2
 
 from owlapy.iri import IRI
 from owlapy.meta_classes import HasIRI
-from owlapy.owl_object import OWLObject
-from owlready2 import destroy_entity, AllDisjoint, AllDifferent, GeneralClassAxiom
-from owlapy.class_expression import OWLThing, OWLClass, \
-    OWLQuantifiedDataRestriction, OWLDataHasValue, OWLNaryBooleanClassExpression, OWLObjectOneOf, OWLObjectComplementOf, \
-    OWLObjectHasValue, OWLQuantifiedObjectRestriction
-from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassOfAxiom, OWLEquivalentClassesAxiom, \
-    OWLDisjointUnionAxiom, OWLAnnotationAssertionAxiom, OWLAnnotationProperty, OWLSubPropertyAxiom, \
-    OWLPropertyRangeAxiom, OWLClassAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom, \
-    OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom, OWLPropertyDomainAxiom, \
-    OWLAsymmetricObjectPropertyAxiom, OWLDataPropertyCharacteristicAxiom, OWLFunctionalDataPropertyAxiom, \
-    OWLReflexiveObjectPropertyAxiom, OWLDataPropertyAssertionAxiom, OWLFunctionalObjectPropertyAxiom, \
-    OWLObjectPropertyCharacteristicAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, \
-    OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom, \
-    OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
-    OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom
-from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
-from owlapy.owl_ontology import OWLOntology, Ontology, ToOwlready2, SyncOntology
-from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, \
-    OWLProperty
+from owlapy.owl_ontology import OWLOntology, Ontology, SyncOntology
 from owlapy.static_funcs import startJVM
 
 
@@ -55,25 +34,25 @@ class OWLOntologyManager(metaclass=ABCMeta):
     ontologies."""
 
     @abstractmethod
-    def create_ontology(self, iri: IRI) -> OWLOntology:
+    def create_ontology(self, iri: Union[str, IRI]) -> OWLOntology:
         """Creates a new (empty) ontology that that has the specified ontology IRI (and no version IRI).
 
         Args:
-            iri: The IRI of the ontology to be created.
+            iri: The IRI of the ontology to be created, can also be a string.
 
         Returns:
-            The newly created ontology, or if an ontology with the specified IRI already exists then this existing
-            ontology will be returned.
+            The newly created ontology.
         """
         pass
 
     @abstractmethod
-    def load_ontology(self, iri: IRI) -> OWLOntology:
+    def load_ontology(self, iri: Union[IRI, str]) -> OWLOntology:
         """Loads an ontology that is assumed to have the specified ontology IRI as its IRI or version IRI. The ontology
         IRI will be mapped to an ontology document IRI.
 
         Args:
-            iri: The IRI that identifies the ontology. It is expected that the ontology will also have this IRI
+            iri: The IRI that identifies the ontology, can also be a string.
+                 It is expected that the ontology will also have this IRI
                 (although the OWL API should tolerate situations where this is not the case).
 
         Returns:
@@ -173,7 +152,7 @@ class OntologyManager(OWLOntologyManager):
             assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
         return Ontology(self, iri, load=False)
 
-    def load_ontology(self, iri: Union[str, IRI] = None) -> Ontology:
+    def load_ontology(self, iri: Union[IRI, str] = None) -> Ontology:
         if isinstance(iri, str):
             iri = IRI.create(iri)
         else:
@@ -196,7 +175,8 @@ class OntologyManager(OWLOntologyManager):
         self._world.save()
 
 
-class SyncOntologyManager:
+class SyncOntologyManager(OWLOntologyManager):
+
     # WARN: Do not move local imports to top of the module
     def __init__(self):
         if not jpype.isJVMStarted():
@@ -204,11 +184,18 @@ class SyncOntologyManager:
         from org.semanticweb.owlapi.apibinding import OWLManager
         self.owlapi_manager = OWLManager.createOWLOntologyManager()
 
-    def create_ontology(self, iri: IRI) -> SyncOntology:
+    def create_ontology(self, iri: Union[IRI, str]) -> SyncOntology:
+        if isinstance(iri, str):
+            iri = IRI.create(iri)
+        else:
+            assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
         return SyncOntology(self, iri, new=True)
 
-    def load_ontology(self, path: Union[IRI,str]) -> SyncOntology:
-        return SyncOntology(self, path, new=False)
+    def load_ontology(self, iri: Union[IRI, str]) -> SyncOntology:
+        return SyncOntology(self, iri, new=False)
 
     def get_owlapi_manager(self):
         return self.owlapi_manager
+
+    def apply_change(self, change: OWLOntologyChange):
+        raise NotImplementedError()
