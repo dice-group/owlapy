@@ -52,6 +52,9 @@ class OWLClass(OWLClassExpression, OWLEntity):
         return self._is_nothing
 
     def get_object_complement_of(self) -> OWLObjectComplementOf:
+        # TODO: CD: get_object_complement_of is not correct term.
+        # TODO: CD : we might want to use get_complement_of instead
+
         # documented in parent
         return OWLObjectComplementOf(self)
 
