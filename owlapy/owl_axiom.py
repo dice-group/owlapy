@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from itertools import combinations
 
-from typing import TypeVar, List, Optional, Iterable, Generic, Final, Union
+from typing import TypeVar, List, Optional, Iterable, Generic, Union
 from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
 from .owl_object import OWLObject, OWLEntity
 from .owl_datatype import OWLDatatype, OWLDataRange
@@ -14,9 +14,9 @@ from .iri import IRI
 from owlapy.owl_annotation import OWLAnnotationSubject, OWLAnnotationValue
 from .owl_literal import OWLLiteral
 
-_C = TypeVar('_C', bound='OWLObject')  #:
-_P = TypeVar('_P', bound='OWLPropertyExpression')  #:
-_R = TypeVar('_R', bound='OWLPropertyRange')  #:
+_C = TypeVar('_C', bound='OWLObject')  # noqa: F821
+_P = TypeVar('_P', bound='OWLPropertyExpression')  # noqa: F821
+_R = TypeVar('_R', bound='OWLPropertyRange')  # noqa: F821
 
 
 class OWLAxiom(OWLObject, metaclass=ABCMeta):

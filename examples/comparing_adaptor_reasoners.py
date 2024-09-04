@@ -1,8 +1,7 @@
 from owlapy.owl_property import OWLObjectProperty
-from owlapy.owlapi_adaptor import OWLAPIAdaptor
+from owlapy.owl_reasoner import SyncReasoner
 from owlapy.iri import IRI
-from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectAllValuesFrom, OWLObjectComplementOf
-from owlapy.providers import owl_datatype_min_exclusive_restriction
+from owlapy.class_expression import OWLClass, OWLObjectAllValuesFrom, OWLObjectComplementOf
 import time
 ontology_location = "../KGs/Carcinogenesis/carcinogenesis.owl"
 
@@ -11,21 +10,21 @@ i2 = set()
 i3 = set()
 i4 = set()
 
-for reasoner in ["HermiT", "Pellet", "JFact", "Openllet"]:
-    adaptor = OWLAPIAdaptor(ontology_location, reasoner)
-
-    ce = OWLObjectAllValuesFrom(property=OWLObjectProperty(IRI('http://dl-learner.org/carcinogenesis#','hasAtom')),
+for rsn in ["HermiT", "Pellet", "JFact", "Openllet"]:
+    reasoner = SyncReasoner(ontology_location, rsn)
+    # TODO AB: needs a more complex class expression to show the specific differences of the reasoners
+    ce = OWLObjectAllValuesFrom(property=OWLObjectProperty(IRI('http://dl-learner.org/carcinogenesis#', 'hasAtom')),
                                 filler=OWLObjectComplementOf(OWLClass(IRI('http://dl-learner.org/carcinogenesis#',
                                                                           'Sulfur-75'))))
 
-    if reasoner == "HermiT":
-        i1 = set(adaptor.instances(ce))
-    elif reasoner == "Pellet":
-        i2 = set(adaptor.instances(ce))
-    elif reasoner == "JFact":
-        i3 = set(adaptor.instances(ce))
-    elif reasoner == "Openllet":
-        i4 = set(adaptor.instances(ce))
+    if rsn == "HermiT":
+        i1 = set(reasoner.instances(ce))
+    elif rsn == "Pellet":
+        i2 = set(reasoner.instances(ce))
+    elif rsn == "JFact":
+        i3 = set(reasoner.instances(ce))
+    elif rsn == "Openllet":
+        i4 = set(reasoner.instances(ce))
 
 print("Hermit-Pellet:")
 [print(_) for _ in i1-i2]

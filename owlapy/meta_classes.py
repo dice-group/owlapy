@@ -13,7 +13,7 @@ class HasIRI(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def iri(self) -> 'IRI':
+    def iri(self):
         """Gets the IRI of this object.
 
         Returns:

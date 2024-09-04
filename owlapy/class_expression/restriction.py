@@ -163,7 +163,7 @@ class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpressi
                f"property={repr(self.get_property())},{self.get_cardinality()},filler={repr(self.get_filler())})"
 
     def __eq__(self, other):
-        if type(other) == type(self):
+        if type(other) is type(self):
             return self._property == other._property \
                 and self._cardinality == other._cardinality \
                 and self._filler == other._filler
@@ -335,7 +335,7 @@ class OWLObjectHasSelf(OWLObjectRestriction):
         return self._property
 
     def __eq__(self, other):
-        if type(other) == type(self):
+        if type(other) is type(self):
             return self._property == other._property
         return NotImplemented
 
@@ -429,7 +429,7 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
         return hash(self._values)
 
     def __eq__(self, other):
-        if type(other) == type(self):
+        if type(other) is type(self):
             return self._values == other._values
         return NotImplemented
 
@@ -492,7 +492,7 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
                f"property={repr(self.get_property())},{self.get_cardinality()},filler={repr(self.get_filler())})"
 
     def __eq__(self, other):
-        if type(other) == type(self):
+        if type(other) is type(self):
             return self._property == other._property \
                 and self._cardinality == other._cardinality \
                 and self._filler == other._filler
@@ -746,7 +746,7 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
         return hash(self._values)
 
     def __eq__(self, other):
-        if type(other) == type(self):
+        if type(other) is type(self):
             return self._values == other._values
         return NotImplemented
 

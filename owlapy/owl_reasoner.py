@@ -5,7 +5,7 @@ from collections import defaultdict
 from functools import singledispatchmethod, reduce
 from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
-from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet
+from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, List, Union
 import logging
 
 import owlready2
@@ -17,17 +17,16 @@ from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom,
     OWLDataAllValuesFrom
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLSubClassOfAxiom
+from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
 from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
-from owlapy.owl_ontology import OWLOntology, Ontology, _parse_concept_to_owlapy
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology import OWLOntology, Ontology, _parse_concept_to_owlapy, SyncOntology
+from owlapy.owl_ontology_manager import SyncOntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.owlapi_adaptor import OWLAPIAdaptor
 from owlapy.utils import LRUCache
 
 logger = logging.getLogger(__name__)
@@ -1596,88 +1595,515 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
         yield from relations
 
 
-class SyncReasoner(OWLReasonerEx):
+class SyncReasoner:
 
-    def __init__(self, ontology_path: str, reasoner="HermiT"):
+    def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
 
         Args:
-            ontology_path: Path of ontology that should be used by the reasoner.
-            reasoner: Choose from (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"]. Default: "HermiT".
+            ontology(SyncOntology): Ontology that will be used by this reasoner.
+            reasoner: Name of the reasoner. Possible values (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"].
+                Default: "HermiT".
         """
-        self.manager = OntologyManager()
-        self.ontology = self.manager.load_ontology(IRI.create("file://" + ontology_path))
-        super().__init__(self.ontology)
-        self.adaptor = OWLAPIAdaptor(ontology_path, reasoner)
+        assert reasoner in ["HermiT", "Pellet", "JFact", "Openllet"], \
+            (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet']. "
+             f"This field is case sensitive.")
+        if isinstance(ontology, SyncOntology):
+            self.manager = ontology.manager
+            self.ontology = ontology
+        elif isinstance(ontology, str):
+            self.manager = SyncOntologyManager()
+            self.ontology = self.manager.load_ontology(ontology)
 
-    def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
-        yield from self.adaptor.instances(ce, direct)
+        self._owlapi_manager = self.manager.get_owlapi_manager()
+        self._owlapi_ontology = self.ontology.get_owlapi_ontology()
+        # super().__init__(self.ontology)
+        self.mapper = self.ontology.mapper
+        from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
+                                                 InferredEquivalentClassAxiomGenerator,
+                                                 InferredDisjointClassesAxiomGenerator,
+                                                 InferredEquivalentDataPropertiesAxiomGenerator,
+                                                 InferredEquivalentObjectPropertyAxiomGenerator,
+                                                 InferredInverseObjectPropertiesAxiomGenerator,
+                                                 InferredSubDataPropertyAxiomGenerator,
+                                                 InferredSubObjectPropertyAxiomGenerator,
+                                                 InferredDataPropertyCharacteristicAxiomGenerator,
+                                                 InferredObjectPropertyCharacteristicAxiomGenerator)
 
-    def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
-        yield from self.adaptor.data_property_domains(pe, direct)
+        self.inference_types_mapping = {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
+                                        "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
+                                        "InferredDisjointClassesAxiomGenerator": InferredDisjointClassesAxiomGenerator(),
+                                        "InferredEquivalentClassAxiomGenerator": InferredEquivalentClassAxiomGenerator(),
+                                        "InferredInverseObjectPropertiesAxiomGenerator": InferredInverseObjectPropertiesAxiomGenerator(),
+                                        "InferredEquivalentDataPropertiesAxiomGenerator": InferredEquivalentDataPropertiesAxiomGenerator(),
+                                        "InferredEquivalentObjectPropertyAxiomGenerator": InferredEquivalentObjectPropertyAxiomGenerator(),
+                                        "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
+                                        "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
+                                        "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
+                                        "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator(),
+                                        }
 
-    def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
-        yield from self.adaptor.object_property_domains(pe, direct)
+        # () Create a reasoner for the loaded ontology
+        if reasoner == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+            self._owlapi_reasoner = ReasonerFactory().createReasoner(self._owlapi_ontology)
+            assert self._owlapi_reasoner.getReasonerName() == "HermiT"
+        elif reasoner == "JFact":
+            from uk.ac.manchester.cs.jfact import JFactFactory
+            self._owlapi_reasoner = JFactFactory().createReasoner(self._owlapi_ontology)
+        elif reasoner == "Pellet":
+            from openllet.owlapi import PelletReasonerFactory
+            self._owlapi_reasoner = PelletReasonerFactory().createReasoner(self._owlapi_ontology)
+        elif reasoner == "Openllet":
+            from openllet.owlapi import OpenlletReasonerFactory
+            self._owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(self._owlapi_ontology)
+        else:
+            raise NotImplementedError("Not implemented")
 
-    def object_property_ranges(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
-        yield from self.adaptor.object_property_ranges(pe, direct)
+    def instances(self, ce: OWLClassExpression, direct=False) -> List[OWLNamedIndividual]:
+        """
+        Get the instances for a given class expression using HermiT.
 
-    def equivalent_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
-        yield from self.adaptor.equivalent_classes(ce)
+        Args:
+            ce (OWLClassExpression): The class expression in OWLAPY format.
+            direct (bool): Whether to get direct instances or not. Defaults to False.
 
-    def disjoint_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
-        yield from self.adaptor.disjoint_classes(ce)
+        Returns:
+            list: A list of individuals classified by the given class expression.
+        """
+        inds = self._owlapi_reasoner.getInstances(self.mapper.map_(ce), direct).getFlattened()
+        return [self.mapper.map_(ind) for ind in inds]
 
-    def different_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
-        yield from self.adaptor.different_individuals(ind)
+    def equivalent_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
+        """
+        Gets the set of named classes that are equivalent to the specified class expression with
+        respect to the set of reasoner axioms.
 
-    def same_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
-        yield from self.adaptor.same_individuals(ind)
+        Args:
+            ce (OWLClassExpression): The class expression whose equivalent classes are to be retrieved.
 
-    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
-        yield from self.adaptor.data_property_values(e, pe)
+        Returns:
+            Equivalent classes of the given class expression.
+        """
+        classes = self._owlapi_reasoner.getEquivalentClasses(self.mapper.map_(ce)).getEntities()
+        yield from [self.mapper.map_(cls) for cls in classes]
 
-    def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = False) -> \
-            Iterable[OWLNamedIndividual]:
-        yield from self.adaptor.object_property_values(ind, pe)
+    def disjoint_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
+        """
+        Gets the classes that are disjoint with the specified class expression.
 
-    def sub_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[
-        OWLClassExpression]:
-        yield from self.adaptor.sub_classes(ce, direct)
+        Args:
+            ce (OWLClassExpression): The class expression whose disjoint classes are to be retrieved.
 
-    def super_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[
-        OWLClassExpression]:
-        yield from self.adaptor.super_classes(ce, direct)
+        Returns:
+            Disjoint classes of the given class expression.
+        """
+        classes = self._owlapi_reasoner.getDisjointClasses(self.mapper.map_(ce)).getFlattened()
+        yield from [self.mapper.map_(cls) for cls in classes]
 
-    def equivalent_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
-        yield from self.adaptor.equivalent_object_properties(op)
+    def sub_classes(self, ce: OWLClassExpression, direct=False) -> List[OWLClassExpression]:
+        """
+         Gets the set of named classes that are the strict (potentially direct) subclasses of the
+         specified class expression with respect to the reasoner axioms.
 
-    def equivalent_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
-        yield from self.adaptor.equivalent_data_properties(dp)
+         Args:
+             ce (OWLClassExpression): The class expression whose strict (direct) subclasses are to be retrieved.
+             direct (bool, optional): Specifies if the direct subclasses should be retrieved (True) or if
+                all subclasses (descendant) classes should be retrieved (False). Defaults to False.
+        Returns:
+            The subclasses of the given class expression depending on `direct` field.
+        """
+        classes = self._owlapi_reasoner.getSubClasses(self.mapper.map_(ce), direct).getFlattened()
+        yield from [self.mapper.map_(cls) for cls in classes]
 
-    def disjoint_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
-        yield from self.adaptor.disjoint_object_properties(op)
+    def super_classes(self, ce: OWLClassExpression, direct=False) -> List[OWLClassExpression]:
+        """
+        Gets the stream of named classes that are the strict (potentially direct) super classes of
+        the specified class expression with respect to the imports closure of the root ontology.
 
-    def disjoint_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
-        yield from self.adaptor.disjoint_data_properties(dp)
+        Args:
+             ce (OWLClassExpression): The class expression whose strict (direct) subclasses are to be retrieved.
+             direct (bool, optional): Specifies if the direct superclasses should be retrieved (True) or if
+                all superclasses (descendant) classes should be retrieved (False). Defaults to False.
 
-    def super_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
-        yield from self.adaptor.super_data_properties(dp, direct)
+        Returns:
+            The subclasses of the given class expression depending on `direct` field.
+        """
+        classes = self._owlapi_reasoner.getSuperClasses(self.mapper.map_(ce), direct).getFlattened()
+        yield from [self.mapper.map_(cls) for cls in classes]
 
-    def sub_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
-        yield from self.adaptor.sub_data_properties(dp, direct)
+    def data_property_domains(self, p: OWLDataProperty, direct: bool = False):
+        """Gets the class expressions that are the direct or indirect domains of this property with respect to the
+           imports closure of the root ontology.
 
-    def super_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) -> Iterable[
-        OWLObjectPropertyExpression]:
-        yield from self.adaptor.super_object_properties(op, direct)
+        Args:
+            p: The property expression whose domains are to be retrieved.
+            direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved
+                (False).
 
-    def sub_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) -> Iterable[
-        OWLObjectPropertyExpression]:
-        yield from self.adaptor.sub_object_properties(op, direct)
+        Returns:
+            :Let N = equivalent_classes(DataSomeValuesFrom(pe rdfs:Literal)). If direct is True: then if N is not
+            empty then the return value is N, else the return value is the result of
+            super_classes(DataSomeValuesFrom(pe rdfs:Literal), true). If direct is False: then the result of
+            super_classes(DataSomeValuesFrom(pe rdfs:Literal), false) together with N if N is non-empty.
+            (Note, rdfs:Literal is the top datatype).
+        """
+        yield from [self.mapper.map_(ce) for ce in
+                    self._owlapi_reasoner.getDataPropertyDomains(self.mapper.map_(p), direct).getFlattened()]
 
-    def types(self, ind: OWLNamedIndividual, direct: bool = False) -> Iterable[OWLClass]:
-        yield from self.adaptor.types(ind, direct)
+    def object_property_domains(self, p: OWLObjectProperty, direct: bool = False):
+        """Gets the class expressions that are the direct or indirect domains of this property with respect to the
+           imports closure of the root ontology.
+
+        Args:
+            p: The property expression whose domains are to be retrieved.
+            direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved
+                (False).
+
+        Returns:
+            :Let N = equivalent_classes(ObjectSomeValuesFrom(pe owl:Thing)). If direct is True: then if N is not empty
+            then the return value is N, else the return value is the result of
+            super_classes(ObjectSomeValuesFrom(pe owl:Thing), true). If direct is False: then the result of
+            super_classes(ObjectSomeValuesFrom(pe owl:Thing), false) together with N if N is non-empty.
+        """
+        yield from [self.mapper.map_(ce) for ce in
+                    self._owlapi_reasoner.getObjectPropertyDomains(self.mapper.map_(p), direct).getFlattened()]
+
+    def object_property_ranges(self, p: OWLObjectProperty, direct: bool = False):
+        """Gets the class expressions that are the direct or indirect ranges of this property with respect to the
+           imports closure of the root ontology.
+
+        Args:
+            p: The property expression whose ranges are to be retrieved.
+            direct: Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved
+                (False).
+
+        Returns:
+            :Let N = equivalent_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing)). If direct is True: then
+            if N is not empty then the return value is N, else the return value is the result of
+            super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), true). If direct is False: then
+            the result of super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), false) together with N
+            if N is non-empty.
+        """
+        yield from [self.mapper.map_(ce) for ce in
+                    self._owlapi_reasoner.getObjectPropertyRanges(self.mapper.map_(p), direct).getFlattened()]
+
+    def sub_object_properties(self, p: OWLObjectProperty, direct: bool = False):
+        """Gets the stream of simplified object property expressions that are the strict (potentially direct)
+        subproperties of the specified object property expression with respect to the imports closure of the root
+        ontology.
+
+        Args:
+            p: The object property expression whose strict (direct) subproperties are to be retrieved.
+            direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
+                (descendants) should be retrieved (False).
+
+        Returns:
+            If direct is True, simplified object property expressions, such that for each simplified object property
+            expression, P, the set of reasoner axioms entails DirectSubObjectPropertyOf(P, pe).
+            If direct is False, simplified object property expressions, such that for each simplified object property
+            expression, P, the set of reasoner axioms entails StrictSubObjectPropertyOf(P, pe).
+            If pe is equivalent to owl:bottomObjectProperty then nothing will be returned.
+        """
+        yield from [self.mapper.map_(pe) for pe in
+                    self._owlapi_reasoner.getSubObjectProperties(self.mapper.map_(p), direct).getFlattened()]
+
+    def super_object_properties(self, p: OWLObjectProperty, direct: bool = False):
+        """Gets the stream of object properties that are the strict (potentially direct) super properties of the
+         specified object property with respect to the imports closure of the root ontology.
+
+         Args:
+             p (OWLObjectPropertyExpression): The object property expression whose super properties are to be
+                                                retrieved.
+             direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all
+                            super properties (ancestors) should be retrieved (False).
+
+         Returns:
+             Iterable of super properties.
+         """
+        yield from [self.mapper.map_(pe) for pe in
+                    self._owlapi_reasoner.getSuperObjectProperties(self.mapper.map_(p), direct).getFlattened()]
+
+    def sub_data_properties(self, p: OWLDataProperty, direct: bool = False):
+        """Gets the set of named data properties that are the strict (potentially direct) subproperties of the
+        specified data property expression with respect to the imports closure of the root ontology.
+
+        Args:
+            p: The data property whose strict (direct) subproperties are to be retrieved.
+            direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
+                (descendants) should be retrieved (False).
+
+        Returns:
+            If direct is True, each property P where the set of reasoner axioms entails DirectSubDataPropertyOf(P, pe).
+            If direct is False, each property P where the set of reasoner axioms entails
+            StrictSubDataPropertyOf(P, pe). If pe is equivalent to owl:bottomDataProperty then nothing will be
+            returned.
+        """
+        yield from [self.mapper.map_(pe) for pe in
+                    self._owlapi_reasoner.getSubDataProperties(self.mapper.map_(p), direct).getFlattened()]
+
+    def super_data_properties(self, p: OWLDataProperty, direct: bool = False):
+        """Gets the stream of data properties that are the strict (potentially direct) super properties of the
+         specified data property with respect to the imports closure of the root ontology.
+
+         Args:
+             p (OWLDataProperty): The data property whose super properties are to be retrieved.
+             direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all
+                            super properties (ancestors) should be retrieved (False).
+
+         Returns:
+             Iterable of super properties.
+         """
+        yield from [self.mapper.map_(pe) for pe in
+                    self._owlapi_reasoner.getSuperDataProperties(self.mapper.map_(p), direct).getFlattened()]
+
+    def different_individuals(self, i: OWLNamedIndividual):
+        """Gets the individuals that are different from the specified individual with respect to the set of
+        reasoner axioms.
+
+        Args:
+            i: The individual whose different individuals are to be retrieved.
+
+        Returns:
+            All individuals x where the set of reasoner axioms entails DifferentIndividuals(ind x).
+        """
+        yield from [self.mapper.map_(ind) for ind in
+                    self._owlapi_reasoner.getDifferentIndividuals(self.mapper.map_(i)).getFlattened()]
+
+    def same_individuals(self, i: OWLNamedIndividual):
+        """Gets the individuals that are the same as the specified individual with respect to the set of
+        reasoner axioms.
+
+        Args:
+            i: The individual whose same individuals are to be retrieved.
+
+        Returns:
+            All individuals x where the root ontology imports closure entails SameIndividual(ind x).
+        """
+        yield from [self.mapper.map_(ind) for ind in
+                    self.mapper.to_list(self._owlapi_reasoner.sameIndividuals(self.mapper.map_(i)))]
+
+    def equivalent_object_properties(self, p: OWLObjectProperty):
+        """Gets the simplified object properties that are equivalent to the specified object property with respect
+        to the set of reasoner axioms.
+
+        Args:
+            p: The object property whose equivalent object properties are to be retrieved.
+
+        Returns:
+            All simplified object properties e where the root ontology imports closure entails
+            EquivalentObjectProperties(op e). If op is unsatisfiable with respect to the set of reasoner axioms
+            then owl:bottomDataProperty will be returned.
+        """
+        yield from [self.mapper.map_(pe) for pe in
+                    self.mapper.to_list(self._owlapi_reasoner.equivalentObjectProperties(self.mapper.map_(p)))]
+
+    def equivalent_data_properties(self, p: OWLDataProperty):
+        """Gets the data properties that are equivalent to the specified data property with respect to the set of
+        reasoner axioms.
+
+        Args:
+            p: The data property whose equivalent data properties are to be retrieved.
+
+        Returns:
+            All data properties e where the root ontology imports closure entails EquivalentDataProperties(dp e).
+            If dp is unsatisfiable with respect to the set of reasoner axioms then owl:bottomDataProperty will
+            be returned.
+        """
+        yield from [self.mapper.map_(pe) for pe in
+                    self.mapper.to_list(self._owlapi_reasoner.getEquivalentDataProperties(self.mapper.map_(p)))]
+
+    def object_property_values(self, i: OWLNamedIndividual, p: OWLObjectProperty):
+        """Gets the object property values for the specified individual and object property expression.
+
+        Args:
+            i: The individual that is the subject of the object property values.
+            p: The object property expression whose values are to be retrieved for the specified individual.
+
+        Returns:
+            The named individuals such that for each individual j, the set of reasoner axioms entails
+            ObjectPropertyAssertion(pe ind j).
+        """
+        yield from [self.mapper.map_(ind) for ind in
+                    self._owlapi_reasoner.getObjectPropertyValues(self.mapper.map_(i), self.mapper.map_(p)).getFlattened()]
+
+    def data_property_values(self, e: OWLEntity, p: OWLDataProperty):
+        """Gets the data property values for the specified entity and data property expression.
+
+        Args:
+            e: The entity (usually an individual) that is the subject of the data property values.
+            p: The data property expression whose values are to be retrieved for the specified individual.
+
+        Returns:
+            A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
+            axioms entails DataPropertyAssertion(pe ind l).
+        """
+        yield from [self.mapper.map_(literal) for literal in
+                    self.mapper.to_list(self._owlapi_reasoner.dataPropertyValues(self.mapper.map_(e), self.mapper.map_(p)))]
+
+    def disjoint_object_properties(self, p: OWLObjectProperty):
+        """Gets the simplified object properties that are disjoint with the specified object property with respect
+        to the set of reasoner axioms.
+
+        Args:
+            p: The object property whose disjoint object properties are to be retrieved.
+
+        Returns:
+            All simplified object properties e where the root ontology imports closure entails
+            EquivalentObjectProperties(e ObjectPropertyComplementOf(op)) or
+            StrictSubObjectPropertyOf(e ObjectPropertyComplementOf(op)).
+        """
+        yield from [self.mapper.map_(pe) for pe in
+                    self._owlapi_reasoner.getDisjointObjectProperties(self.mapper.map_(p)).getFlattened()]
+
+    def disjoint_data_properties(self, p: OWLDataProperty):
+        """Gets the data properties that are disjoint with the specified data property with respect
+        to the set of reasoner axioms.
+
+        Args:
+            p: The data property whose disjoint data properties are to be retrieved.
+
+        Returns:
+            All data properties e where the root ontology imports closure entails
+            EquivalentDataProperties(e DataPropertyComplementOf(dp)) or
+            StrictSubDataPropertyOf(e DataPropertyComplementOf(dp)).
+        """
+        yield from [self.mapper.map_(pe) for pe in
+                    self._owlapi_reasoner.getDisjointDataProperties(self.mapper.map_(p)).getFlattened()]
+
+    def types(self, i: OWLNamedIndividual, direct: bool = False):
+        """Gets the named classes which are (potentially direct) types of the specified named individual.
+
+        Args:
+            i: The individual whose types are to be retrieved.
+            direct: Specifies if the direct types should be retrieved (True), or if all types should be retrieved
+                (False).
+
+        Returns:
+            If direct is True, each named class C where the set of reasoner axioms entails
+            DirectClassAssertion(C, ind). If direct is False, each named class C where the set of reasoner axioms
+            entails ClassAssertion(C, ind).
+        """
+        yield from [self.mapper.map_(ind) for ind in
+                    self._owlapi_reasoner.getTypes(self.mapper.map_(i), direct).getFlattened()]
+
+    def has_consistent_ontology(self) -> bool:
+        """
+        Check if the used ontology is consistent.
+
+        Returns:
+            bool: True if the ontology used by this reasoner is consistent, False otherwise.
+        """
+        return self._owlapi_reasoner.isConsistent()
+
+    def infer_axioms(self, inference_types: list[str]) -> Iterable[OWLAxiom]:
+        """
+        Infer the specified inference type of axioms for the ontology managed by this instance's reasoner and
+        return them.
+
+        Args:
+            inference_types: Axiom inference types: Avaliable options (can set more than 1):
+             ["InferredClassAssertionAxiomGenerator", "InferredSubClassAxiomGenerator",
+             "InferredDisjointClassesAxiomGenerator", "InferredEquivalentClassAxiomGenerator",
+             "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
+             "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
+             "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
+             "InferredObjectPropertyCharacteristicAxiomGenerator"
+             ]
+
+        Returns:
+            Iterable of inferred axioms.
+        """
+        from java.util import ArrayList
+        from org.semanticweb.owlapi.util import InferredOntologyGenerator
+
+        generators = ArrayList()
+        for i in inference_types:
+            if java_object := self.inference_types_mapping.get(i, None):
+                generators.add(java_object)
+        iog = InferredOntologyGenerator(self._owlapi_reasoner, generators)
+        inferred_axioms = list(iog.getAxiomGenerators())
+        for ia in inferred_axioms:
+            for axiom in ia.createAxioms(self._owlapi_manager.getOWLDataFactory(), self._owlapi_reasoner):
+                yield self.mapper.map_(axiom)
+
+    def infer_axioms_and_save(self, output_path: str = None, output_format: str = None, inference_types: list[str] = None):
+        """
+        Generates inferred axioms for the ontology managed by this instance's reasoner and saves them to a file.
+        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner
+        associated with this instance. The inferred axioms are saved to the specified output file in the desired format.
+
+        Args:
+            output_path : The name of the file where the inferred axioms will be saved.
+            output_format : The format in which to save the inferred axioms. Supported formats are:
+                - "ttl" or "turtle" for Turtle format
+                - "rdf/xml" for RDF/XML format
+                - "owl/xml" for OWL/XML format
+                If not specified, the format of the original ontology is used.
+            inference_types: Axiom inference types: Avaliable options (can set more than 1):
+             ["InferredClassAssertionAxiomGenerator", "InferredSubClassAxiomGenerator",
+             "InferredDisjointClassesAxiomGenerator", "InferredEquivalentClassAxiomGenerator",
+             "InferredEquivalentDataPropertiesAxiomGenerator","InferredEquivalentObjectPropertyAxiomGenerator",
+             "InferredInverseObjectPropertiesAxiomGenerator","InferredSubDataPropertyAxiomGenerator",
+             "InferredSubObjectPropertyAxiomGenerator","InferredDataPropertyCharacteristicAxiomGenerator",
+             "InferredObjectPropertyCharacteristicAxiomGenerator"
+             ]
+
+        Returns:
+            None (the file is saved to the specified directory)
+        """
+        from java.io import File, FileOutputStream
+        from java.util import ArrayList
+        from org.semanticweb.owlapi.util import InferredOntologyGenerator
+        from org.semanticweb.owlapi.formats import TurtleDocumentFormat, RDFXMLDocumentFormat, OWLXMLDocumentFormat
+        if output_format == "ttl" or output_format == "turtle":
+            document_format = TurtleDocumentFormat()
+        elif output_format == "rdf/xml":
+            document_format = RDFXMLDocumentFormat()
+        elif output_format == "owl/xml":
+            document_format = OWLXMLDocumentFormat()
+        else:
+            document_format = self._owlapi_manager.getOntologyFormat(self._owlapi_ontology)
+        generators = ArrayList()
+
+        for i in inference_types:
+            if java_object := self.inference_types_mapping.get(i, None):
+                generators.add(java_object)
+        iog = InferredOntologyGenerator(self._owlapi_reasoner, generators)
+        inferred_axioms_ontology = self._owlapi_manager.createOntology()
+        iog.fillOntology(self._owlapi_manager.getOWLDataFactory(), inferred_axioms_ontology)
+        inferred_ontology_file = File(output_path).getAbsoluteFile()
+        output_stream = FileOutputStream(inferred_ontology_file)
+        self._owlapi_manager.saveOntology(inferred_axioms_ontology, document_format, output_stream)
+
+    def generate_and_save_inferred_class_assertion_axioms(self, output="temp.ttl", output_format: str = None):
+        """
+        Generates inferred class assertion axioms for the ontology managed by this instance's reasoner and saves them to a file.
+        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner
+        associated with this instance. The inferred axioms are saved to the specified output file in the desired format.
+        Parameters:
+        -----------
+        output : str, optional
+            The name of the file where the inferred axioms will be saved. Default is "temp.ttl".
+        output_format : str, optional
+            The format in which to save the inferred axioms. Supported formats are:
+            - "ttl" or "turtle" for Turtle format
+            - "rdf/xml" for RDF/XML format
+            - "owl/xml" for OWL/XML format
+            If not specified, the format of the original ontology is used.
+        Notes:
+        ------
+        - The function supports saving in multiple formats: Turtle, RDF/XML, and OWL/XML.
+        - The inferred axioms are generated using the reasoner associated with this instance and the OWL API's
+          InferredClassAssertionAxiomGenerator.
+        - The inferred axioms are added to a new ontology which is then saved in the specified format.
+        Example:
+        --------
+        >>> instance.generate_and_save_inferred_class_assertion_axioms(output="inferred_axioms.ttl", format="ttl")
+        This will save the inferred class assertion axioms to the file "inferred_axioms.ttl" in Turtle format.
+        """
+        self.infer_axioms_and_save(output, output_format, ["InferredClassAssertionAxiomGenerator"])
 
     def get_root_ontology(self) -> OWLOntology:
         return self.ontology

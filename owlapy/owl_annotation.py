@@ -1,7 +1,6 @@
 """OWL Annotations"""
 from abc import ABCMeta
 from .owl_object import OWLObject
-from typing import Optional
 
 
 class OWLAnnotationObject(OWLObject, metaclass=ABCMeta):
@@ -9,10 +8,10 @@ class OWLAnnotationObject(OWLObject, metaclass=ABCMeta):
     __slots__ = ()
 
     # noinspection PyMethodMayBeStatic
-    def as_iri(self) -> Optional['IRI']:
+    def as_iri(self):
         """
         Returns:
-            if the value is an IRI, return it. Return Mone otherwise.
+            if the value is an IRI, return it. Return None otherwise.
         """
         return None
 
@@ -43,7 +42,7 @@ class OWLAnnotationValue(OWLAnnotationObject, metaclass=ABCMeta):
         return False
 
     # noinspection PyMethodMayBeStatic
-    def as_literal(self) -> Optional['OWLLiteral']:
+    def as_literal(self):
         """
         Returns:
             if the value is a literal, returns it. Return None otherwise

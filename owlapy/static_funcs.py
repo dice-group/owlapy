@@ -3,6 +3,9 @@ import os
 import subprocess
 import platform
 import shutil
+import jpype
+import jpype.imports
+import pkg_resources
 
 # NOTE: Static functions closely related with owl classes should be placed in utils.py not here
 
@@ -37,3 +40,20 @@ def download_external_files(ftp_link: str):
             subprocess.run(['unzip', file_name])
         os.remove(os.path.join(os.getcwd(), file_name))
         shutil.move(current_dir, root_dir)
+
+
+def startJVM():
+    """Start the JVM with jar dependencies. This method is called automatically on object initialization, if the
+    JVM is not started yet."""
+    # Start a java virtual machine using the dependencies in the respective folder:
+    jar_folder = pkg_resources.resource_filename('owlapy', 'jar_dependencies')
+    jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
+    # Starting JVM
+    jpype.startJVM(classpath=jar_files)
+
+
+def stopJVM() -> None:
+    """Detaches the thread from Java packages and shuts down the java virtual machine hosted by jpype."""
+    if jpype.isJVMStarted():
+        jpype.detachThreadFromJVM()
+        jpype.shutdownJVM()

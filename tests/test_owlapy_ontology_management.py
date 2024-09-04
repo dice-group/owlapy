@@ -45,9 +45,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         compound = OWLClass(IRI(ns, 'Compound'))
         has_atom = OWLObjectProperty(IRI(ns, 'hasAtom'))
 
-        mgr.add_axiom(onto, OWLEquivalentClassesAxiom([OWLObjectUnionOf([atom, bond]), compound, atom, bond]))
-        mgr.add_axiom(onto, OWLEquivalentClassesAxiom([bond, benzene]))
-        mgr.add_axiom(onto, OWLEquivalentClassesAxiom([bond, OWLObjectSomeValuesFrom(has_atom, ball3)]))
+        onto.add_axiom(OWLEquivalentClassesAxiom([OWLObjectUnionOf([atom, bond]), compound, atom, bond]))
+        onto.add_axiom(OWLEquivalentClassesAxiom([bond, benzene]))
+        onto.add_axiom(OWLEquivalentClassesAxiom([bond, OWLObjectSomeValuesFrom(has_atom, ball3)]))
 
         classes = frozenset({atom, compound, bond})
         target_classes = frozenset(reasoner.equivalent_classes(benzene, only_named=True))
@@ -87,9 +87,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         benzene = OWLClass(IRI(ns, 'Benzene'))
         has_atom = OWLObjectProperty(IRI(ns, 'hasAtom'))
 
-        mgr.add_axiom(onto, OWLSubClassOfAxiom(benzene, OWLObjectUnionOf([bond, bond])))
-        mgr.add_axiom(onto, OWLSubClassOfAxiom(OWLObjectUnionOf([bond, bond]), ball3))
-        mgr.add_axiom(onto, OWLSubClassOfAxiom(ball3, OWLObjectSomeValuesFrom(has_atom, ball3)))
+        onto.add_axiom(OWLSubClassOfAxiom(benzene, OWLObjectUnionOf([bond, bond])))
+        onto.add_axiom(OWLSubClassOfAxiom(OWLObjectUnionOf([bond, bond]), ball3))
+        onto.add_axiom(OWLSubClassOfAxiom(ball3, OWLObjectSomeValuesFrom(has_atom, ball3)))
 
         # Named class
         # Direct, only named
@@ -149,9 +149,9 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         ring_structure = OWLClass(IRI(ns, 'RingStructure'))
         has_atom = OWLObjectProperty(IRI(ns, 'hasAtom'))
 
-        mgr.add_axiom(onto, OWLSubClassOfAxiom(OWLObjectSomeValuesFrom(has_atom, ball3), benzene))
-        mgr.add_axiom(onto, OWLSubClassOfAxiom(benzene, OWLObjectUnionOf([bond, bond])))
-        mgr.add_axiom(onto, OWLSubClassOfAxiom(OWLObjectUnionOf([bond, bond]), ball3))
+        onto.add_axiom(OWLSubClassOfAxiom(OWLObjectSomeValuesFrom(has_atom, ball3), benzene))
+        onto.add_axiom(OWLSubClassOfAxiom(benzene, OWLObjectUnionOf([bond, bond])))
+        onto.add_axiom(OWLSubClassOfAxiom(OWLObjectUnionOf([bond, bond]), ball3))
 
         # Named class
         # Direct, only named
@@ -255,7 +255,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         heinz = OWLNamedIndividual(IRI(ns, 'heinz'))
         has_child = OWLObjectProperty(IRI.create(ns, 'hasChild'))
         super_has_child = OWLObjectProperty(IRI.create(ns, 'super_hasChild'))
-        mgr.add_axiom(onto, OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
+        onto.add_axiom(OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
 
         kids = frozenset(reasoner.object_property_values(stefan, has_child))
         target_kids = frozenset({markus})
@@ -275,12 +275,12 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
         # test inverse
         has_child_inverse = OWLObjectProperty(IRI.create(ns, 'hasChild_inverse'))
-        mgr.add_axiom(onto, OWLInverseObjectPropertiesAxiom(has_child, has_child_inverse))
+        onto.add_axiom(OWLInverseObjectPropertiesAxiom(has_child, has_child_inverse))
         parents = frozenset(reasoner.object_property_values(markus, OWLObjectInverseOf(has_child), direct=True))
         target_parents = frozenset({stefan})
         self.assertEqual(target_parents, parents)
         # Remove again for completeness, would not be necessary
-        mgr.remove_axiom(onto, OWLInverseObjectPropertiesAxiom(has_child, has_child_inverse))
+        onto.remove_axiom(OWLInverseObjectPropertiesAxiom(has_child, has_child_inverse))
 
         # test inverse with sub property
         # Setup:
@@ -288,7 +288,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         # hasChild inverseOf hasChild_inverse
         # super_hasChild inverseOf super_hasChild_inverse
         super_has_child_inverse = OWLObjectProperty(IRI.create(ns, 'super_hasChild_inverse'))
-        mgr.add_axiom(onto, OWLInverseObjectPropertiesAxiom(super_has_child, super_has_child_inverse))
+        onto.add_axiom(OWLInverseObjectPropertiesAxiom(super_has_child, super_has_child_inverse))
 
         parents = frozenset(reasoner.object_property_values(stefan,
                                                             OWLObjectInverseOf(super_has_child_inverse),
@@ -301,8 +301,8 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
                                                             direct=False))
         target_parents = frozenset({markus})
         self.assertEqual(target_parents, parents)
-        mgr.remove_axiom(onto, OWLInverseObjectPropertiesAxiom(super_has_child, super_has_child_inverse))
-        mgr.remove_axiom(onto, OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
+        onto.remove_axiom(OWLInverseObjectPropertiesAxiom(super_has_child, super_has_child_inverse))
+        onto.remove_axiom(OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
 
     def test_data_values(self):
         ns = "http://dl-learner.org/mutagenesis#"
@@ -314,7 +314,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         d100_1 = OWLNamedIndividual(IRI.create(ns, 'd100_1'))
         charge = OWLDataProperty(IRI.create(ns, 'charge'))
         super_charge = OWLDataProperty(IRI.create(ns, 'super_charge'))
-        mgr.add_axiom(onto, OWLSubDataPropertyOfAxiom(charge, super_charge))
+        onto.add_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
         values = frozenset(reasoner.data_property_values(d100_1, charge))
         targets = frozenset({OWLLiteral(-0.128)})
@@ -332,7 +332,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         values = frozenset(reasoner.data_property_values(d100_1, super_charge, direct=True))
         targets = frozenset()
         self.assertEqual(targets, values)
-        mgr.remove_axiom(onto, OWLSubDataPropertyOfAxiom(charge, super_charge))
+        onto.remove_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
     def test_all_data_values(self):
         ns = "http://dl-learner.org/mutagenesis#"
@@ -343,7 +343,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
         charge = OWLDataProperty(IRI.create(ns, 'charge'))
         super_charge = OWLDataProperty(IRI.create(ns, 'super_charge'))
-        mgr.add_axiom(onto, OWLSubDataPropertyOfAxiom(charge, super_charge))
+        onto.add_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
         values = frozenset(reasoner.all_data_property_values(charge, direct=True))
         self.assertEqual(529, len(values))
@@ -353,7 +353,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
 
         values = frozenset(reasoner.all_data_property_values(super_charge, direct=False))
         self.assertEqual(529, len(values))
-        mgr.remove_axiom(onto, OWLSubDataPropertyOfAxiom(charge, super_charge))
+        onto.remove_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
     def test_ind_object_properties(self):
         ns = "http://example.com/father#"
@@ -365,7 +365,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         stefan = OWLNamedIndividual(IRI.create(ns, 'stefan'))
         has_child = OWLObjectProperty(IRI.create(ns, 'hasChild'))
         super_has_child = OWLObjectProperty(IRI.create(ns, 'super_hasChild'))
-        mgr.add_axiom(onto, OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
+        onto.add_axiom(OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
 
         properties = frozenset(reasoner.ind_object_properties(stefan, direct=True))
         target_properties = frozenset({has_child})
@@ -374,7 +374,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         properties = frozenset(reasoner.ind_object_properties(stefan, direct=False))
         target_properties = frozenset({has_child, super_has_child})
         self.assertEqual(target_properties, properties)
-        mgr.remove_axiom(onto, OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
+        onto.remove_axiom(OWLSubObjectPropertyOfAxiom(has_child, super_has_child))
 
     def test_ind_data_properties(self):
         ns = "http://dl-learner.org/mutagenesis#"
@@ -386,7 +386,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         d100_1 = OWLNamedIndividual(IRI.create(ns, 'd100_1'))
         charge = OWLDataProperty(IRI.create(ns, 'charge'))
         super_charge = OWLDataProperty(IRI.create(ns, 'super_charge'))
-        mgr.add_axiom(onto, OWLSubDataPropertyOfAxiom(charge, super_charge))
+        onto.add_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
         properties = frozenset(reasoner.ind_data_properties(d100_1, direct=True))
         target_properties = frozenset({charge})
@@ -395,7 +395,7 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         properties = frozenset(reasoner.ind_data_properties(d100_1, direct=False))
         target_properties = frozenset({charge, super_charge})
         self.assertEqual(target_properties, properties)
-        mgr.remove_axiom(onto, OWLSubDataPropertyOfAxiom(charge, super_charge))
+        onto.remove_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
     def test_add_remove_axiom(self):
         ns = "http://example.com/father#"
@@ -423,159 +423,159 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         aerial_animal = OWLClass(IRI(ns, 'aerialAnimal'))
 
         self.assertNotIn(sister, list(onto.classes_in_signature()))
-        mgr.add_axiom(onto, OWLClassAssertionAxiom(anna, sister))
+        onto.add_axiom(OWLClassAssertionAxiom(anna, sister))
         self.assertIn(sister, list(onto.classes_in_signature()))
         self.assertIn(anna, list(reasoner.instances(sister)))
         self.assertIn(sister, list(reasoner.types(anna)))
-        mgr.remove_axiom(onto, OWLClassAssertionAxiom(anna, sister))
+        onto.remove_axiom(OWLClassAssertionAxiom(anna, sister))
         self.assertNotIn(anna, list(reasoner.instances(sister)))
         self.assertNotIn(sister, list(reasoner.types(anna)))
 
         self.assertNotIn(michelle, list(reasoner.instances(sister)))
-        mgr.add_axiom(onto, OWLClassAssertionAxiom(michelle, sister))
+        onto.add_axiom(OWLClassAssertionAxiom(michelle, sister))
         self.assertIn(michelle, list(reasoner.instances(sister)))
         self.assertIn(sister, list(reasoner.types(michelle)))
-        mgr.remove_axiom(onto, OWLClassAssertionAxiom(michelle, sister))
+        onto.remove_axiom(OWLClassAssertionAxiom(michelle, sister))
         self.assertNotIn(michelle, list(reasoner.instances(sister)))
         self.assertNotIn(sister, list(reasoner.types(michelle)))
 
         self.assertFalse(list(reasoner.object_property_values(michelle, has_child)))
-        mgr.add_axiom(onto, OWLObjectPropertyAssertionAxiom(michelle, has_child, anna))
+        onto.add_axiom(OWLObjectPropertyAssertionAxiom(michelle, has_child, anna))
         self.assertIn(anna, list(reasoner.object_property_values(michelle, has_child)))
-        mgr.remove_axiom(onto, OWLObjectPropertyAssertionAxiom(michelle, has_child, anna))
+        onto.remove_axiom(OWLObjectPropertyAssertionAxiom(michelle, has_child, anna))
         self.assertNotIn(anna, list(reasoner.object_property_values(michelle, has_child)))
-        mgr.remove_axiom(onto, OWLObjectPropertyAssertionAxiom(michelle, has_child, anna))
+        onto.remove_axiom(OWLObjectPropertyAssertionAxiom(michelle, has_child, anna))
 
         self.assertNotIn(has_sibling, list(onto.object_properties_in_signature()))
         self.assertNotIn(marius, list(onto.individuals_in_signature()))
-        mgr.add_axiom(onto, OWLObjectPropertyAssertionAxiom(marius, has_sibling, michelle))
+        onto.add_axiom(OWLObjectPropertyAssertionAxiom(marius, has_sibling, michelle))
         self.assertIn(has_sibling, list(onto.object_properties_in_signature()))
         self.assertIn(marius, list(onto.individuals_in_signature()))
         self.assertIn(michelle, list(reasoner.object_property_values(marius, has_sibling)))
-        mgr.remove_axiom(onto, OWLObjectPropertyAssertionAxiom(marius, has_sibling, michelle))
+        onto.remove_axiom(OWLObjectPropertyAssertionAxiom(marius, has_sibling, michelle))
         self.assertNotIn(michelle, list(reasoner.object_property_values(marius, has_sibling)))
 
         self.assertNotIn(age, list(onto.data_properties_in_signature()))
-        mgr.add_axiom(onto, OWLDataPropertyAssertionAxiom(markus, age, OWLLiteral(30)))
+        onto.add_axiom(OWLDataPropertyAssertionAxiom(markus, age, OWLLiteral(30)))
         self.assertIn(age, list(onto.data_properties_in_signature()))
         self.assertIn(OWLLiteral(30), list(reasoner.data_property_values(markus, age)))
-        mgr.remove_axiom(onto, OWLDataPropertyAssertionAxiom(markus, age, OWLLiteral(30)))
+        onto.remove_axiom(OWLDataPropertyAssertionAxiom(markus, age, OWLLiteral(30)))
         self.assertNotIn(OWLLiteral(30), list(reasoner.data_property_values(markus, age)))
 
         self.assertNotIn(OWLLiteral(31), list(reasoner.data_property_values(anna, age)))
-        mgr.add_axiom(onto, OWLDataPropertyAssertionAxiom(anna, age, OWLLiteral(31)))
+        onto.add_axiom(OWLDataPropertyAssertionAxiom(anna, age, OWLLiteral(31)))
         self.assertIn(OWLLiteral(31), list(reasoner.data_property_values(anna, age)))
-        mgr.remove_axiom(onto, OWLDataPropertyAssertionAxiom(anna, age, OWLLiteral(31)))
+        onto.remove_axiom(OWLDataPropertyAssertionAxiom(anna, age, OWLLiteral(31)))
         self.assertNotIn(OWLLiteral(31), list(reasoner.data_property_values(anna, age)))
 
         self.assertNotIn(brother, list(onto.classes_in_signature()))
         self.assertNotIn(animal, list(onto.classes_in_signature()))
         self.assertNotIn(aerial_animal, list(onto.classes_in_signature()))
-        mgr.add_axiom(onto, OWLSubClassOfAxiom(brother, male))
-        mgr.add_axiom(onto, OWLSubClassOfAxiom(aerial_animal, animal))
+        onto.add_axiom(OWLSubClassOfAxiom(brother, male))
+        onto.add_axiom(OWLSubClassOfAxiom(aerial_animal, animal))
         self.assertIn(brother, list(reasoner.sub_classes(male)))
         self.assertIn(aerial_animal, list(reasoner.sub_classes(animal)))
         self.assertIn(male, list(reasoner.super_classes(brother)))
         self.assertIn(animal, list(reasoner.super_classes(aerial_animal)))
-        mgr.remove_axiom(onto, OWLSubClassOfAxiom(brother, male))
+        onto.remove_axiom(OWLSubClassOfAxiom(brother, male))
         self.assertNotIn(brother, list(reasoner.sub_classes(male)))
         self.assertNotIn(male, list(reasoner.super_classes(brother)))
 
         self.assertNotIn(has_sibling, list(reasoner.sub_object_properties(has_child)))
-        mgr.add_axiom(onto, OWLSubObjectPropertyOfAxiom(has_sibling, has_child))
+        onto.add_axiom(OWLSubObjectPropertyOfAxiom(has_sibling, has_child))
         self.assertIn(has_sibling, list(reasoner.sub_object_properties(has_child)))
-        mgr.remove_axiom(onto, OWLSubObjectPropertyOfAxiom(has_sibling, has_child))
+        onto.remove_axiom(OWLSubObjectPropertyOfAxiom(has_sibling, has_child))
         self.assertNotIn(has_sibling, list(reasoner.sub_object_properties(has_child)))
 
         self.assertNotIn(OWLObjectUnionOf([person, person_sibling]),
                          list(reasoner.object_property_domains(has_sibling)))
-        mgr.add_axiom(onto, OWLObjectPropertyDomainAxiom(has_sibling, OWLObjectUnionOf([person, person_sibling])))
+        onto.add_axiom(OWLObjectPropertyDomainAxiom(has_sibling, OWLObjectUnionOf([person, person_sibling])))
         self.assertIn(OWLObjectUnionOf([person, person_sibling]),
                       list(reasoner.object_property_domains(has_sibling, direct=True)))
-        mgr.remove_axiom(onto, OWLObjectPropertyDomainAxiom(has_sibling, OWLObjectUnionOf([person, person_sibling])))
+        onto.remove_axiom(OWLObjectPropertyDomainAxiom(has_sibling, OWLObjectUnionOf([person, person_sibling])))
         self.assertNotIn(OWLObjectUnionOf([person, person_sibling]),
                          list(reasoner.object_property_domains(has_sibling, direct=True)))
 
         self.assertNotIn(sister, list(reasoner.object_property_ranges(has_sibling)))
-        mgr.add_axiom(onto, OWLObjectPropertyRangeAxiom(has_sibling, sister))
+        onto.add_axiom(OWLObjectPropertyRangeAxiom(has_sibling, sister))
         self.assertIn(sister, list(reasoner.object_property_ranges(has_sibling)))
-        mgr.remove_axiom(onto, OWLObjectPropertyRangeAxiom(has_sibling, sister))
+        onto.remove_axiom(OWLObjectPropertyRangeAxiom(has_sibling, sister))
         self.assertNotIn(sister, list(reasoner.object_property_ranges(has_sibling)))
 
         self.assertNotIn(person, list(reasoner.data_property_domains(age)))
-        mgr.add_axiom(onto, OWLDataPropertyDomainAxiom(age, person))
+        onto.add_axiom(OWLDataPropertyDomainAxiom(age, person))
         self.assertIn(person, list(reasoner.data_property_domains(age)))
-        mgr.remove_axiom(onto, OWLDataPropertyDomainAxiom(age, person))
+        onto.remove_axiom(OWLDataPropertyDomainAxiom(age, person))
         self.assertNotIn(person, list(reasoner.data_property_domains(age)))
 
         self.assertFalse(list(reasoner.data_property_ranges(age)))
-        mgr.add_axiom(onto, OWLDataPropertyRangeAxiom(age, OWLDataUnionOf([IntegerOWLDatatype, DateOWLDatatype])))
+        onto.add_axiom(OWLDataPropertyRangeAxiom(age, OWLDataUnionOf([IntegerOWLDatatype, DateOWLDatatype])))
         self.assertIn(OWLDataUnionOf([IntegerOWLDatatype, DateOWLDatatype]), list(reasoner.data_property_ranges(age)))
-        mgr.remove_axiom(onto, OWLDataPropertyRangeAxiom(age, OWLDataUnionOf([IntegerOWLDatatype, DateOWLDatatype])))
+        onto.remove_axiom(OWLDataPropertyRangeAxiom(age, OWLDataUnionOf([IntegerOWLDatatype, DateOWLDatatype])))
         self.assertNotIn(OWLDataUnionOf([IntegerOWLDatatype, DateOWLDatatype]),
                          list(reasoner.data_property_ranges(age)))
 
         self.assertFalse(list(reasoner.equivalent_classes(brother)))
-        mgr.add_axiom(onto, OWLEquivalentClassesAxiom([brother, male]))
+        onto.add_axiom(OWLEquivalentClassesAxiom([brother, male]))
         self.assertIn(male, list(reasoner.equivalent_classes(brother)))
-        mgr.remove_axiom(onto, OWLEquivalentClassesAxiom([brother, male]))
+        onto.remove_axiom(OWLEquivalentClassesAxiom([brother, male]))
         self.assertNotIn(male, list(reasoner.equivalent_classes(brother)))
 
         self.assertFalse(list(reasoner.equivalent_object_properties(has_child)))
-        mgr.add_axiom(onto, OWLEquivalentObjectPropertiesAxiom([has_child, has_sibling]))
+        onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([has_child, has_sibling]))
         self.assertIn(has_sibling, list(reasoner.equivalent_object_properties(has_child)))
-        mgr.remove_axiom(onto, OWLEquivalentObjectPropertiesAxiom([has_child, has_sibling]))
+        onto.remove_axiom(OWLEquivalentObjectPropertiesAxiom([has_child, has_sibling]))
         self.assertNotIn(has_sibling, list(reasoner.equivalent_object_properties(has_child)))
 
         self.assertFalse(list(reasoner.equivalent_data_properties(age)))
-        mgr.add_axiom(onto, OWLEquivalentDataPropertiesAxiom([age, test1]))
+        onto.add_axiom(OWLEquivalentDataPropertiesAxiom([age, test1]))
         self.assertIn(test1, list(reasoner.equivalent_data_properties(age)))
-        mgr.remove_axiom(onto, OWLEquivalentDataPropertiesAxiom([age, test1]))
+        onto.remove_axiom(OWLEquivalentDataPropertiesAxiom([age, test1]))
         self.assertNotIn(test1, list(reasoner.equivalent_data_properties(age)))
 
         self.assertFalse(list(reasoner.same_individuals(markus)))
-        mgr.add_axiom(onto, OWLSameIndividualAxiom([markus, anna, person1]))
+        onto.add_axiom(OWLSameIndividualAxiom([markus, anna, person1]))
         self.assertEqual({anna, person1}, set(reasoner.same_individuals(markus)))
-        mgr.remove_axiom(onto, OWLSameIndividualAxiom([markus, anna, person1]))
+        onto.remove_axiom(OWLSameIndividualAxiom([markus, anna, person1]))
         self.assertFalse(set(reasoner.same_individuals(markus)))
 
         self.assertFalse(list(reasoner.disjoint_classes(brother)))
         self.assertFalse(list(reasoner.disjoint_classes(person)))
-        mgr.add_axiom(onto, OWLDisjointClassesAxiom([brother, sister, aerial_animal]))
+        onto.add_axiom(OWLDisjointClassesAxiom([brother, sister, aerial_animal]))
         self.assertEqual({sister, aerial_animal}, set(reasoner.disjoint_classes(brother)))
-        mgr.remove_axiom(onto, OWLDisjointClassesAxiom([brother, sister, aerial_animal]))
+        onto.remove_axiom(OWLDisjointClassesAxiom([brother, sister, aerial_animal]))
         self.assertFalse(set(reasoner.disjoint_classes(brother)))
-        mgr.add_axiom(onto, OWLDisjointClassesAxiom([person, animal]))
+        onto.add_axiom(OWLDisjointClassesAxiom([person, animal]))
         self.assertEqual({animal, aerial_animal}, set(reasoner.disjoint_classes(person)))
-        mgr.remove_axiom(onto, OWLDisjointClassesAxiom([person, animal]))
+        onto.remove_axiom(OWLDisjointClassesAxiom([person, animal]))
         self.assertFalse(set(reasoner.disjoint_classes(person)))
 
         self.assertFalse(list(reasoner.disjoint_object_properties(has_sibling)))
         self.assertFalse(list(reasoner.disjoint_object_properties(has_child)))
-        mgr.add_axiom(onto, OWLDisjointObjectPropertiesAxiom([has_child, has_sibling]))
+        onto.add_axiom(OWLDisjointObjectPropertiesAxiom([has_child, has_sibling]))
         self.assertIn(has_sibling, set(reasoner.disjoint_object_properties(has_child)))
         self.assertIn(has_child, set(reasoner.disjoint_object_properties(has_sibling)))
-        mgr.remove_axiom(onto, OWLDisjointObjectPropertiesAxiom([has_child, has_sibling]))
+        onto.remove_axiom(OWLDisjointObjectPropertiesAxiom([has_child, has_sibling]))
         self.assertNotIn(has_sibling, set(reasoner.disjoint_object_properties(has_child)))
         self.assertNotIn(has_child, set(reasoner.disjoint_object_properties(has_sibling)))
 
         self.assertFalse(list(reasoner.disjoint_data_properties(age)))
         self.assertFalse(list(reasoner.disjoint_data_properties(test1)))
-        mgr.add_axiom(onto, OWLDisjointDataPropertiesAxiom([age, test1]))
+        onto.add_axiom(OWLDisjointDataPropertiesAxiom([age, test1]))
         self.assertIn(test1, set(reasoner.disjoint_data_properties(age)))
         self.assertIn(age, set(reasoner.disjoint_data_properties(test1)))
-        mgr.remove_axiom(onto, OWLDisjointDataPropertiesAxiom([age, test1]))
+        onto.remove_axiom(OWLDisjointDataPropertiesAxiom([age, test1]))
         self.assertNotIn(test1, set(reasoner.disjoint_data_properties(age)))
         self.assertNotIn(age, set(reasoner.disjoint_data_properties(test1)))
 
         self.assertFalse(list(reasoner.different_individuals(markus)))
         self.assertFalse(list(reasoner.different_individuals(michelle)))
-        mgr.add_axiom(onto, OWLDifferentIndividualsAxiom([markus, michelle]))
-        mgr.add_axiom(onto, OWLDifferentIndividualsAxiom([markus, anna, marius]))
+        onto.add_axiom(OWLDifferentIndividualsAxiom([markus, michelle]))
+        onto.add_axiom(OWLDifferentIndividualsAxiom([markus, anna, marius]))
         self.assertEqual({michelle, anna, marius}, set(reasoner.different_individuals(markus)))
         self.assertEqual({markus}, set(reasoner.different_individuals(michelle)))
-        mgr.remove_axiom(onto, OWLDifferentIndividualsAxiom([markus, michelle]))
-        mgr.remove_axiom(onto, OWLDifferentIndividualsAxiom([markus, anna, marius]))
+        onto.remove_axiom(OWLDifferentIndividualsAxiom([markus, michelle]))
+        onto.remove_axiom(OWLDifferentIndividualsAxiom([markus, anna, marius]))
         self.assertFalse(set(reasoner.different_individuals(markus)))
         self.assertFalse(set(reasoner.different_individuals(michelle)))
 
