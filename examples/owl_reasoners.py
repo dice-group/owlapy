@@ -1,9 +1,9 @@
 """ A script to show that OWL Reasoners return the same retrieval results in different runtimes """
 import time
-from owlapy.class_expression import *
+
+from owlapy.class_expression import OWLClass, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom
 from owlapy.owl_ontology_manager import OntologyManager
-from owlapy.owlapi_adaptor import OWLAPIAdaptor
-from owlapy.class_expression import OWLObjectMaxCardinality
+from owlapy.owl_reasoner import SyncReasoner
 from owlapy.utils import concept_reducer_properties
 
 import matplotlib.pyplot as plt
@@ -13,10 +13,10 @@ import numpy as np
 ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
 
 owl_reasoners = dict()
-owl_reasoners["HermiT"] = OWLAPIAdaptor(path=ontology_path, name_reasoner="HermiT")
-owl_reasoners["Pellet"] = OWLAPIAdaptor(path=ontology_path, name_reasoner="Pellet")
-owl_reasoners["JFact"] = OWLAPIAdaptor(path=ontology_path, name_reasoner="JFact")
-owl_reasoners["Openllet"] = OWLAPIAdaptor(path=ontology_path, name_reasoner="Openllet")
+owl_reasoners["HermiT"] = SyncReasoner(ontology=ontology_path, reasoner="HermiT")
+owl_reasoners["Pellet"] = SyncReasoner(ontology=ontology_path, reasoner="Pellet")
+owl_reasoners["JFact"] = SyncReasoner(ontology=ontology_path, reasoner="JFact")
+owl_reasoners["Openllet"] = SyncReasoner(ontology=ontology_path, reasoner="Openllet")
 onto = OntologyManager().load_ontology(ontology_path)
 c: OWLClass
 ###################################################################
