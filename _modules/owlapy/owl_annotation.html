@@ -53,7 +53,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_adaptor.html">Owlapi Adaptor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_adaptor.html">Owlapi Synchronization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/further_resources.html">Further Resources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
 </ul>
@@ -86,7 +86,6 @@
 <span></span><span class="sd">&quot;&quot;&quot;OWL Annotations&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
 <span class="kn">from</span> <span class="nn">.owl_object</span> <span class="kn">import</span> <span class="n">OWLObject</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
 
 <div class="viewcode-block" id="OWLAnnotationObject">
@@ -98,10 +97,10 @@
     <span class="c1"># noinspection PyMethodMayBeStatic</span>
 <div class="viewcode-block" id="OWLAnnotationObject.as_iri">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationObject.as_iri">[docs]</a>
-    <span class="k">def</span> <span class="nf">as_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;IRI&#39;</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">as_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            if the value is an IRI, return it. Return Mone otherwise.</span>
+<span class="sd">            if the value is an IRI, return it. Return None otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -147,7 +146,7 @@
     <span class="c1"># noinspection PyMethodMayBeStatic</span>
 <div class="viewcode-block" id="OWLAnnotationValue.as_literal">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_annotation/index.html#owlapy.owl_annotation.OWLAnnotationValue.as_literal">[docs]</a>
-    <span class="k">def</span> <span class="nf">as_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;OWLLiteral&#39;</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">as_literal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            if the value is a literal, returns it. Return None otherwise</span>
