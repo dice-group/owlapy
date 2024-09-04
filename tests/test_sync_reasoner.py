@@ -2,7 +2,8 @@ import os
 import unittest
 
 from jpype import JDouble
-from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIntersectionOf, OWLNothing, OWLThing
+from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIntersectionOf, OWLNothing, OWLThing, \
+    OWLClassExpression
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDisjointClassesAxiom, OWLDeclarationAxiom, OWLClassAssertionAxiom, OWLSubClassOfAxiom, \
     OWLEquivalentClassesAxiom, OWLSubDataPropertyOfAxiom, OWLSubObjectPropertyOfAxiom
@@ -83,6 +84,35 @@ class TestSyncReasoner(unittest.TestCase):
 
     def test_consistency_check(self):
         self.assertEqual(self.reasoner.has_consistent_ontology(), True)
+
+    def test_named_concepts(self):
+
+        ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
+
+        # Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet'
+        owl_reasoners = dict()
+        owl_reasoners["HermiT"] = SyncReasoner(ontology=ontology_path, reasoner="HermiT")
+        owl_reasoners["Pellet"] = SyncReasoner(ontology=ontology_path, reasoner="Pellet")
+        owl_reasoners["JFact"] = SyncReasoner(ontology=ontology_path, reasoner="JFact")
+        owl_reasoners["Openllet"] = SyncReasoner(ontology=ontology_path, reasoner="Openllet")
+
+        onto = OntologyManager().load_ontology(ontology_path)
+
+        def compute_agreements(i: OWLClassExpression, verbose=False):
+            if verbose:
+                print(f"Computing agreements between Reasoners on {i}...")
+            retrieval_result = None
+            flag = False
+            for __, reasoner in owl_reasoners.items():
+                if retrieval_result:
+                    flag = retrieval_result == {_.str for _ in reasoner.instances(i)}
+                else:
+                    retrieval_result = {_.str for _ in reasoner.instances(i)}
+            return flag
+
+        # Agreement between instances over
+        for i in onto.classes_in_signature():
+            assert compute_agreements(i, True)
 
     def test_inconsistency_check(self):
         manager = OntologyManager()
