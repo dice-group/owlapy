@@ -434,9 +434,13 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
             for atleast one l.
         """
         onto = self.get_root_ontology()
+        has_direct = "direct" in str(signature(self.data_property_values))
         for dp in onto.data_properties_in_signature():
             try:
-                next(iter(self.data_property_values(ind, dp, direct)))
+                if has_direct:
+                    next(iter(self.data_property_values(ind, dp, direct)))
+                else:
+                    next(iter(self.data_property_values(ind, dp)))
                 yield dp
             except StopIteration:
                 pass
