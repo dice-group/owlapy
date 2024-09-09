@@ -1,5 +1,6 @@
 """OWL Reasoner"""
 from abc import ABCMeta, abstractmethod
+from inspect import signature
 from typing import Iterable
 import logging
 
@@ -397,19 +398,26 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
                 logger.warning("indirect not implemented")
 
     # default
-    def all_data_property_values(self, pe: OWLDataProperty) -> Iterable[OWLLiteral]:
+    def all_data_property_values(self, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
         """Gets all values for the given data property expression that appear in the knowledge base.
 
         Args:
             pe: The data property expression whose values are to be retrieved
+            direct: Specifies if only the direct values of the data property pe should be retrieved (True), or if
+                    the values of sub properties of pe should be taken into account (False).
 
         Returns:
             A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
             axioms entails DataPropertyAssertion(pe ind l) for any ind.
         """
         onto = self.get_root_ontology()
+        has_direct = "direct" in str(signature(self.data_property_values))
         for ind in onto.individuals_in_signature():
-            for lit in self.data_property_values(ind, pe):
+            if has_direct:
+                dpv = self.data_property_values(ind, pe, direct)
+            else:
+                dpv = self.data_property_values(ind, pe)
+            for lit in dpv:
                 yield lit
 
     # default
@@ -447,9 +455,13 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
             for atleast one ind2.
         """
         onto = self.get_root_ontology()
+        has_direct = "direct" in str(signature(self.object_property_values))
         for op in onto.object_properties_in_signature():
             try:
-                next(iter(self.object_property_values(ind, op)))
+                if has_direct:
+                    next(iter(self.object_property_values(ind, op, direct)))
+                else:
+                    next(iter(self.object_property_values(ind, op)))
                 yield op
             except StopIteration:
                 pass
