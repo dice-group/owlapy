@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Final, Iterable, Union, Optional
+from typing import Final, Iterable, Union, Optional, TypeVar
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
@@ -7,8 +7,10 @@ from owlapy.owl_axiom import OWLEquivalentClassesAxiom, OWLClassAxiom, OWLDataPr
     OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_object import OWLObject
-from owlapy.owl_ontology import _M, OWLOntologyID
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
+
+_M = TypeVar('_M', bound='OWLOntologyManager')  # noqa: F821
+_OI = TypeVar('_OI', bound='OWLOntologyID')  # noqa: F821
 
 
 class OWLOntology(OWLObject, metaclass=ABCMeta):
@@ -136,7 +138,7 @@ class OWLOntology(OWLObject, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_ontology_id(self) -> OWLOntologyID:
+    def get_ontology_id(self) -> _OI:
         """Gets the OWLOntologyID belonging to this object.
 
         Returns:
