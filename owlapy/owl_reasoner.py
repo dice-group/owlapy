@@ -33,11 +33,6 @@ logger = logging.getLogger(__name__)
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
-# TODO:CD:The name of the classes defined with metaclass=ABCMeta should reflect that
-# TODO:CD: An instance cannot be created from those classes.
-# TODO:CD: We should move those Abstract Base Classes into a respective package, e.g.
-# TODO:CD: owlapy/abstract_owl_reasoner/abstract_owl_reasoner.py should contain OWLReasoner and OWLReasonerEx
-
 
 class OntologyReasoner(OWLReasonerEx):
     __slots__ = '_ontology', '_world'
@@ -1149,7 +1144,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
         yield from relations
 
 
-class SyncReasoner:
+class SyncReasoner(OWLReasonerEx):
 
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
@@ -1633,9 +1628,10 @@ class SyncReasoner:
 
     def generate_and_save_inferred_class_assertion_axioms(self, output="temp.ttl", output_format: str = None):
         """
-        Generates inferred class assertion axioms for the ontology managed by this instance's reasoner and saves them to a file.
-        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner
-        associated with this instance. The inferred axioms are saved to the specified output file in the desired format.
+        Generates inferred class assertion axioms for the ontology managed by this instance's reasoner and saves them
+        to a file. This function uses the OWL API to generate inferred class assertion axioms based on the ontology
+        and reasoner associated with this instance. The inferred axioms are saved to the specified output file in
+        the desired format.
         Parameters:
         -----------
         output : str, optional

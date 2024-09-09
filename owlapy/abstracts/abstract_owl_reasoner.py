@@ -1,7 +1,7 @@
 """OWL Reasoner"""
 from abc import ABCMeta, abstractmethod
 from typing import Iterable
-
+import logging
 
 from owlapy.class_expression import OWLClassExpression
 from owlapy.class_expression import OWLClass
@@ -11,6 +11,8 @@ from owlapy.owl_ontology import OWLOntology
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
+
+logger = logging.getLogger(__name__)
 
 
 class OWLReasoner(metaclass=ABCMeta):
@@ -79,13 +81,12 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def equivalent_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
+    def equivalent_classes(self, ce: OWLClassExpression) -> Iterable[OWLClassExpression]:
         """Gets the class expressions that are equivalent to the specified class expression with respect to the set of
         reasoner axioms.
 
         Args:
             ce: The class expression whose equivalent classes are to be retrieved.
-            only_named: Whether to only retrieve named equivalent classes or also complex class expressions.
 
         Returns:
             All class expressions C where the root ontology imports closure entails EquivalentClasses(ce C). If ce is
@@ -96,13 +97,12 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def disjoint_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
+    def disjoint_classes(self, ce: OWLClassExpression) -> Iterable[OWLClassExpression]:
         """Gets the class expressions that are disjoint with specified class expression with respect to the set of
         reasoner axioms.
 
         Args:
             ce: The class expression whose disjoint classes are to be retrieved.
-            only_named: Whether to only retrieve named disjoint classes or also complex class expressions.
 
         Returns:
             All class expressions D where the set of reasoner axioms entails EquivalentClasses(D ObjectComplementOf(ce))
@@ -167,15 +167,13 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty, direct: bool = True) \
+    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty) \
             -> Iterable['OWLLiteral']:
         """Gets the data property values for the specified entity and data property expression.
 
         Args:
             e: The owl entity (usually an individual) that is the subject of the data property values.
             pe: The data property expression whose values are to be retrieved for the specified entity.
-            direct: Specifies if the direct values should be retrieved (True), or if all values should be retrieved
-                (False), so that sub properties are taken into account.
 
         Note: Can be used to get values, for example, of 'label' property of owl entities such as classes and properties
         too (not only individuals).
@@ -187,15 +185,13 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = True) \
+    def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression) \
             -> Iterable[OWLNamedIndividual]:
         """Gets the object property values for the specified individual and object property expression.
 
         Args:
             ind: The individual that is the subject of the object property values.
             pe: The object property expression whose values are to be retrieved for the specified individual.
-            direct: Specifies if the direct values should be retrieved (True), or if all values should be retrieved
-                (False), so that sub properties are taken into account.
 
         Returns:
             The named individuals such that for each individual j, the set of reasoner axioms entails
@@ -221,7 +217,7 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def sub_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
+    def sub_classes(self, ce: OWLClassExpression, direct: bool = False) \
             -> Iterable[OWLClassExpression]:
         """Gets the set of named classes that are the strict (potentially direct) subclasses of the specified class
         expression with respect to the reasoner axioms.
@@ -230,7 +226,6 @@ class OWLReasoner(metaclass=ABCMeta):
             ce: The class expression whose strict (direct) subclasses are to be retrieved.
             direct: Specifies if the direct subclasses should be retrieved (True) or if the all subclasses
                 (descendant) classes should be retrieved (False).
-            only_named: Whether to only retrieve named sub-classes or also complex class expressions.
 
         Returns:
             If direct is True, each class C where reasoner axioms entails DirectSubClassOf(C, ce). If direct is False,
@@ -363,7 +358,7 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def super_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
+    def super_classes(self, ce: OWLClassExpression, direct: bool = False) \
             -> Iterable[OWLClassExpression]:
         """Gets the stream of named classes that are the strict (potentially direct) super classes of the specified
         class expression with respect to the imports closure of the root ontology.
@@ -372,7 +367,6 @@ class OWLReasoner(metaclass=ABCMeta):
             ce: The class expression whose strict (direct) super classes are to be retrieved.
             direct: Specifies if the direct super classes should be retrieved (True) or if the all super classes
                 (ancestors) classes should be retrieved (False).
-            only_named: Whether to only retrieve named super classes or also complex class expressions.
 
         Returns:
             If direct is True, each class C where the set of reasoner axioms entails DirectSubClassOf(ce, C).
@@ -380,6 +374,8 @@ class OWLReasoner(metaclass=ABCMeta):
             If ce is equivalent to owl:Thing then nothing will be returned.
         """
         pass
+
+
 class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
     """Extra convenience methods for OWL Reasoners"""
 
@@ -399,16 +395,13 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
             yield ax.get_range()
             if not direct:
                 logger.warning("indirect not implemented")
-                # TODO:
 
     # default
-    def all_data_property_values(self, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
+    def all_data_property_values(self, pe: OWLDataProperty) -> Iterable[OWLLiteral]:
         """Gets all values for the given data property expression that appear in the knowledge base.
 
         Args:
             pe: The data property expression whose values are to be retrieved
-            direct: Specifies if only the direct values of the data property pe should be retrieved (True), or if
-                    the values of sub properties of pe should be taken into account (False).
 
         Returns:
             A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
@@ -416,7 +409,7 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
         """
         onto = self.get_root_ontology()
         for ind in onto.individuals_in_signature():
-            for lit in self.data_property_values(ind, pe, direct):
+            for lit in self.data_property_values(ind, pe):
                 yield lit
 
     # default
@@ -456,7 +449,7 @@ class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
         onto = self.get_root_ontology()
         for op in onto.object_properties_in_signature():
             try:
-                next(iter(self.object_property_values(ind, op, direct)))
+                next(iter(self.object_property_values(ind, op)))
                 yield op
             except StopIteration:
                 pass
