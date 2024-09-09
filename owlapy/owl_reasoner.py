@@ -1153,11 +1153,13 @@ class SyncReasoner(OWLReasonerEx):
 
         Args:
             ontology(SyncOntology): Ontology that will be used by this reasoner.
-            reasoner: Name of the reasoner. Possible values (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet"].
+            reasoner: Name of the reasoner. Possible values (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet",
+             "Structural"].
                 Default: "HermiT".
         """
-        assert reasoner in ["HermiT", "Pellet", "JFact", "Openllet"], \
-            (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet']. "
+        assert reasoner in ["HermiT", "Pellet", "JFact", "Openllet", "Structural"], \
+            (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet', "
+             f"'Structural']. "
              f"This field is case sensitive.")
         if isinstance(ontology, SyncOntology):
             self.manager = ontology.manager
@@ -1194,7 +1196,7 @@ class SyncReasoner(OWLReasonerEx):
                                         "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator(),
                                         }
 
-        # () Create a reasoner for the loaded ontology
+        # () Create a reasoner using the ontology
         if reasoner == "HermiT":
             from org.semanticweb.HermiT import ReasonerFactory
             self._owlapi_reasoner = ReasonerFactory().createReasoner(self._owlapi_ontology)
@@ -1208,6 +1210,9 @@ class SyncReasoner(OWLReasonerEx):
         elif reasoner == "Openllet":
             from openllet.owlapi import OpenlletReasonerFactory
             self._owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(self._owlapi_ontology)
+        elif reasoner == "Structural":
+            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
+            self._owlapi_reasoner = StructuralReasonerFactory().createReasoner(self._owlapi_ontology)
         else:
             raise NotImplementedError("Not implemented")
 
