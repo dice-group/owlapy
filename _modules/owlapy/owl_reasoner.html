@@ -85,15 +85,14 @@
   <h1>Source code for owlapy.owl_reasoner</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;OWL Reasoner&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">operator</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">owlready2</span>
+
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">singledispatchmethod</span><span class="p">,</span> <span class="n">reduce</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">repeat</span>
 <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MappingProxyType</span><span class="p">,</span> <span class="n">FunctionType</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-
-<span class="kn">import</span> <span class="nn">owlready2</span>
 
 <span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> \
     <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> \
@@ -106,552 +105,19 @@
 <span class="kn">from</span> <span class="nn">owlapy.owl_data_ranges</span> <span class="kn">import</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_datatype</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_object</span> <span class="kn">import</span> <span class="n">OWLEntity</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">SyncOntology</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">SyncOntology</span>
+<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_ontology_manager</span> <span class="kn">import</span> <span class="n">SyncOntologyManager</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> \
     <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span> <span class="nn">owlapy.utils</span> <span class="kn">import</span> <span class="n">LRUCache</span>
+<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_reasoner</span> <span class="kn">import</span> <span class="n">OWLReasoner</span><span class="p">,</span> <span class="n">OWLReasonerEx</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">_P</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_P&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">OWLPropertyExpression</span><span class="p">)</span>
-
-<span class="c1"># TODO:CD:The name of the classes defined with metaclass=ABCMeta should reflect that</span>
-<span class="c1"># TODO:CD: An instance cannot be created from those classes.</span>
-<span class="c1"># TODO:CD: We should move those Abstract Base Classes into a respective package, e.g.</span>
-<span class="c1"># TODO:CD: owlapy/abstract_owl_reasoner/abstract_owl_reasoner.py should contain OWLReasoner and OWLReasonerEx</span>
-<div class="viewcode-block" id="OWLReasoner">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLReasoner</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An OWLReasoner reasons over a set of axioms (the set of reasoner axioms) that is based on the imports closure of</span>
-<span class="sd">    a particular ontology - the &quot;root&quot; ontology.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">OWLOntology</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-<div class="viewcode-block" id="OWLReasoner.data_property_domains">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.data_property_domains">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">data_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are the direct or indirect domains of this property with respect to the</span>
-<span class="sd">           imports closure of the root ontology.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pe: The property expression whose domains are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved</span>
-<span class="sd">                (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            :Let N = equivalent_classes(DataSomeValuesFrom(pe rdfs:Literal)). If direct is True: then if N is not</span>
-<span class="sd">            empty then the return value is N, else the return value is the result of</span>
-<span class="sd">            super_classes(DataSomeValuesFrom(pe rdfs:Literal), true). If direct is False: then the result of</span>
-<span class="sd">            super_classes(DataSomeValuesFrom(pe rdfs:Literal), false) together with N if N is non-empty.</span>
-<span class="sd">            (Note, rdfs:Literal is the top datatype).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.object_property_domains">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.object_property_domains">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">object_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are the direct or indirect domains of this property with respect to the</span>
-<span class="sd">           imports closure of the root ontology.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pe: The property expression whose domains are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved</span>
-<span class="sd">                (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            :Let N = equivalent_classes(ObjectSomeValuesFrom(pe owl:Thing)). If direct is True: then if N is not empty</span>
-<span class="sd">            then the return value is N, else the return value is the result of</span>
-<span class="sd">            super_classes(ObjectSomeValuesFrom(pe owl:Thing), true). If direct is False: then the result of</span>
-<span class="sd">            super_classes(ObjectSomeValuesFrom(pe owl:Thing), false) together with N if N is non-empty.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.object_property_ranges">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.object_property_ranges">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">object_property_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are the direct or indirect ranges of this property with respect to the</span>
-<span class="sd">           imports closure of the root ontology.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pe: The property expression whose ranges are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved</span>
-<span class="sd">                (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            :Let N = equivalent_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing)). If direct is True: then</span>
-<span class="sd">            if N is not empty then the return value is N, else the return value is the result of</span>
-<span class="sd">            super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), true). If direct is False: then</span>
-<span class="sd">            the result of super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), false) together with N</span>
-<span class="sd">            if N is non-empty.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.equivalent_classes">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.equivalent_classes">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">equivalent_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are equivalent to the specified class expression with respect to the set of</span>
-<span class="sd">        reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ce: The class expression whose equivalent classes are to be retrieved.</span>
-<span class="sd">            only_named: Whether to only retrieve named equivalent classes or also complex class expressions.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All class expressions C where the root ontology imports closure entails EquivalentClasses(ce C). If ce is</span>
-<span class="sd">            not a class name (i.e. it is an anonymous class expression) and there are no such classes C then there will</span>
-<span class="sd">            be no result. If ce is unsatisfiable with respect to the set of reasoner axioms then  owl:Nothing, i.e. the</span>
-<span class="sd">            bottom node, will be returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.disjoint_classes">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.disjoint_classes">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">disjoint_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are disjoint with specified class expression with respect to the set of</span>
-<span class="sd">        reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ce: The class expression whose disjoint classes are to be retrieved.</span>
-<span class="sd">            only_named: Whether to only retrieve named disjoint classes or also complex class expressions.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All class expressions D where the set of reasoner axioms entails EquivalentClasses(D ObjectComplementOf(ce))</span>
-<span class="sd">            or StrictSubClassOf(D ObjectComplementOf(ce)).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.different_individuals">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.different_individuals">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">different_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the individuals that are different from the specified individual with respect to the set of</span>
-<span class="sd">        reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ind: The individual whose different individuals are to be retrieved.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All individuals x where the set of reasoner axioms entails DifferentIndividuals(ind x).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.same_individuals">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.same_individuals">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">same_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the individuals that are the same as the specified individual with respect to the set of</span>
-<span class="sd">        reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ind: The individual whose same individuals are to be retrieved.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All individuals x where the root ontology imports closure entails SameIndividual(ind x).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.equivalent_object_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.equivalent_object_properties">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">equivalent_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the simplified object properties that are equivalent to the specified object property with respect</span>
-<span class="sd">        to the set of reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            op: The object property whose equivalent object properties are to be retrieved.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All simplified object properties e where the root ontology imports closure entails</span>
-<span class="sd">            EquivalentObjectProperties(op e). If op is unsatisfiable with respect to the set of reasoner axioms</span>
-<span class="sd">            then owl:bottomDataProperty will be returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.equivalent_data_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.equivalent_data_properties">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">equivalent_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data properties that are equivalent to the specified data property with respect to the set of</span>
-<span class="sd">        reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            dp: The data property whose equivalent data properties are to be retrieved.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All data properties e where the root ontology imports closure entails EquivalentDataProperties(dp e).</span>
-<span class="sd">            If dp is unsatisfiable with respect to the set of reasoner axioms then owl:bottomDataProperty will</span>
-<span class="sd">            be returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.data_property_values">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.data_property_values">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
-            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLLiteral&#39;</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data property values for the specified entity and data property expression.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            e: The owl entity (usually an individual) that is the subject of the data property values.</span>
-<span class="sd">            pe: The data property expression whose values are to be retrieved for the specified entity.</span>
-<span class="sd">            direct: Specifies if the direct values should be retrieved (True), or if all values should be retrieved</span>
-<span class="sd">                (False), so that sub properties are taken into account.</span>
-
-<span class="sd">        Note: Can be used to get values, for example, of &#39;label&#39; property of owl entities such as classes and properties</span>
-<span class="sd">        too (not only individuals).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner</span>
-<span class="sd">            axioms entails DataPropertyAssertion(pe ind l).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.object_property_values">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.object_property_values">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">object_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
-            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the object property values for the specified individual and object property expression.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ind: The individual that is the subject of the object property values.</span>
-<span class="sd">            pe: The object property expression whose values are to be retrieved for the specified individual.</span>
-<span class="sd">            direct: Specifies if the direct values should be retrieved (True), or if all values should be retrieved</span>
-<span class="sd">                (False), so that sub properties are taken into account.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The named individuals such that for each individual j, the set of reasoner axioms entails</span>
-<span class="sd">            ObjectPropertyAssertion(pe ind j).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.instances">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.instances">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the individuals which are instances of the specified class expression.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ce: The class expression whose instances are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct instances should be retrieved (True), or if all instances should be</span>
-<span class="sd">                retrieved (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            If direct is True, each named individual j where the set of reasoner axioms entails</span>
-<span class="sd">            DirectClassAssertion(ce, j). If direct is False, each named individual j where the set of reasoner axioms</span>
-<span class="sd">            entails ClassAssertion(ce, j). If ce is unsatisfiable with respect to the set of reasoner axioms then</span>
-<span class="sd">            nothing returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.sub_classes">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.sub_classes">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">sub_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
-            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the set of named classes that are the strict (potentially direct) subclasses of the specified class</span>
-<span class="sd">        expression with respect to the reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ce: The class expression whose strict (direct) subclasses are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct subclasses should be retrieved (True) or if the all subclasses</span>
-<span class="sd">                (descendant) classes should be retrieved (False).</span>
-<span class="sd">            only_named: Whether to only retrieve named sub-classes or also complex class expressions.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            If direct is True, each class C where reasoner axioms entails DirectSubClassOf(C, ce). If direct is False,</span>
-<span class="sd">            each class C where reasoner axioms entails StrictSubClassOf(C, ce). If ce is equivalent to owl:Nothing then</span>
-<span class="sd">            nothing will be returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.disjoint_object_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.disjoint_object_properties">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">disjoint_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the simplified object properties that are disjoint with the specified object property with respect</span>
-<span class="sd">        to the set of reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            op: The object property whose disjoint object properties are to be retrieved.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All simplified object properties e where the root ontology imports closure entails</span>
-<span class="sd">            EquivalentObjectProperties(e ObjectPropertyComplementOf(op)) or</span>
-<span class="sd">            StrictSubObjectPropertyOf(e ObjectPropertyComplementOf(op)).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.disjoint_data_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.disjoint_data_properties">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">disjoint_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data properties that are disjoint with the specified data property with respect</span>
-<span class="sd">        to the set of reasoner axioms.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            dp: The data property whose disjoint data properties are to be retrieved.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All data properties e where the root ontology imports closure entails</span>
-<span class="sd">            EquivalentDataProperties(e DataPropertyComplementOf(dp)) or</span>
-<span class="sd">            StrictSubDataPropertyOf(e DataPropertyComplementOf(dp)).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.sub_data_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.sub_data_properties">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">sub_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the set of named data properties that are the strict (potentially direct) subproperties of the</span>
-<span class="sd">        specified data property expression with respect to the imports closure of the root ontology.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            dp: The data property whose strict (direct) subproperties are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties</span>
-<span class="sd">                (descendants) should be retrieved (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            If direct is True, each property P where the set of reasoner axioms entails DirectSubDataPropertyOf(P, pe).</span>
-<span class="sd">            If direct is False, each property P where the set of reasoner axioms entails</span>
-<span class="sd">            StrictSubDataPropertyOf(P, pe). If pe is equivalent to owl:bottomDataProperty then nothing will be</span>
-<span class="sd">            returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.super_data_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.super_data_properties">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">super_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the stream of data properties that are the strict (potentially direct) super properties of the</span>
-<span class="sd">         specified data property with respect to the imports closure of the root ontology.</span>
-
-<span class="sd">         Args:</span>
-<span class="sd">             dp (OWLDataProperty): The data property whose super properties are to be retrieved.</span>
-<span class="sd">             direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all</span>
-<span class="sd">                            super properties (ancestors) should be retrieved (False).</span>
-
-<span class="sd">         Returns:</span>
-<span class="sd">             Iterable of super properties.</span>
-<span class="sd">         &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.sub_object_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.sub_object_properties">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">sub_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> \
-            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the stream of simplified object property expressions that are the strict (potentially direct)</span>
-<span class="sd">        subproperties of the specified object property expression with respect to the imports closure of the root</span>
-<span class="sd">        ontology.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            op: The object property expression whose strict (direct) subproperties are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties</span>
-<span class="sd">                (descendants) should be retrieved (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            If direct is True, simplified object property expressions, such that for each simplified object property</span>
-<span class="sd">            expression, P, the set of reasoner axioms entails DirectSubObjectPropertyOf(P, pe).</span>
-<span class="sd">            If direct is False, simplified object property expressions, such that for each simplified object property</span>
-<span class="sd">            expression, P, the set of reasoner axioms entails StrictSubObjectPropertyOf(P, pe).</span>
-<span class="sd">            If pe is equivalent to owl:bottomObjectProperty then nothing will be returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.super_object_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.super_object_properties">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">super_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> \
-            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the stream of object properties that are the strict (potentially direct) super properties of the</span>
-<span class="sd">         specified object property with respect to the imports closure of the root ontology.</span>
-
-<span class="sd">         Args:</span>
-<span class="sd">             op (OWLObjectPropertyExpression): The object property expression whose super properties are to be</span>
-<span class="sd">                                                retrieved.</span>
-<span class="sd">             direct (bool): Specifies if the direct super properties should be retrieved (True) or if the all</span>
-<span class="sd">                            super properties (ancestors) should be retrieved (False).</span>
-
-<span class="sd">         Returns:</span>
-<span class="sd">             Iterable of super properties.</span>
-<span class="sd">         &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.types">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.types">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the named classes which are (potentially direct) types of the specified named individual.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ind: The individual whose types are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct types should be retrieved (True), or if all types should be retrieved</span>
-<span class="sd">                (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            If direct is True, each named class C where the set of reasoner axioms entails</span>
-<span class="sd">            DirectClassAssertion(C, ind). If direct is False, each named class C where the set of reasoner axioms</span>
-<span class="sd">            entails ClassAssertion(C, ind).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.get_root_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.get_root_ontology">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the &quot;root&quot; ontology that is loaded into this reasoner. The reasoner takes into account the axioms in</span>
-<span class="sd">        this ontology and its import&#39;s closure.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLReasoner.super_classes">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasoner.super_classes">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">super_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> \
-            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the stream of named classes that are the strict (potentially direct) super classes of the specified</span>
-<span class="sd">        class expression with respect to the imports closure of the root ontology.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ce: The class expression whose strict (direct) super classes are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct super classes should be retrieved (True) or if the all super classes</span>
-<span class="sd">                (ancestors) classes should be retrieved (False).</span>
-<span class="sd">            only_named: Whether to only retrieve named super classes or also complex class expressions.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            If direct is True, each class C where the set of reasoner axioms entails DirectSubClassOf(ce, C).</span>
-<span class="sd">            If direct is False, each class C where  set of reasoner axioms entails StrictSubClassOf(ce, C).</span>
-<span class="sd">            If ce is equivalent to owl:Thing then nothing will be returned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-</div>
-
-<div class="viewcode-block" id="OWLReasonerEx">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasonerEx">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLReasonerEx</span><span class="p">(</span><span class="n">OWLReasoner</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extra convenience methods for OWL Reasoners&quot;&quot;&quot;</span>
-
-    <span class="c1"># default</span>
-<div class="viewcode-block" id="OWLReasonerEx.data_property_ranges">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasonerEx.data_property_ranges">[docs]</a>
-    <span class="k">def</span> <span class="nf">data_property_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data ranges that are the direct or indirect ranges of this property with respect to the imports</span>
-<span class="sd">        closure of the root ontology.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pe: The property expression whose ranges are to be retrieved.</span>
-<span class="sd">            direct: Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved</span>
-<span class="sd">                (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span><span class="o">.</span><span class="n">data_property_range_axioms</span><span class="p">(</span><span class="n">pe</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_range</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">direct</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;indirect not implemented&quot;</span><span class="p">)</span></div>
-
-                <span class="c1"># TODO:</span>
-
-    <span class="c1"># default</span>
-<div class="viewcode-block" id="OWLReasonerEx.all_data_property_values">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasonerEx.all_data_property_values">[docs]</a>
-    <span class="k">def</span> <span class="nf">all_data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all values for the given data property expression that appear in the knowledge base.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pe: The data property expression whose values are to be retrieved</span>
-<span class="sd">            direct: Specifies if only the direct values of the data property pe should be retrieved (True), or if</span>
-<span class="sd">                    the values of sub properties of pe should be taken into account (False).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner</span>
-<span class="sd">            axioms entails DataPropertyAssertion(pe ind l) for any ind.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">lit</span></div>
-
-
-    <span class="c1"># default</span>
-<div class="viewcode-block" id="OWLReasonerEx.ind_data_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasonerEx.ind_data_properties">[docs]</a>
-    <span class="k">def</span> <span class="nf">ind_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all data properties for the given individual that appear in the knowledge base.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ind: The named individual whose data properties are to be retrieved</span>
-<span class="sd">            direct: Specifies if the direct data properties should be retrieved (True), or if all</span>
-<span class="sd">                data properties should be retrieved (False), so that sub properties are taken into account.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All data properties pe where the set of reasoner axioms entails DataPropertyAssertion(pe ind l)</span>
-<span class="sd">            for atleast one l.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">():</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">direct</span><span class="p">)))</span>
-                <span class="k">yield</span> <span class="n">dp</span>
-            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-                <span class="k">pass</span></div>
-
-
-    <span class="c1"># default</span>
-<div class="viewcode-block" id="OWLReasonerEx.ind_object_properties">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OWLReasonerEx.ind_object_properties">[docs]</a>
-    <span class="k">def</span> <span class="nf">ind_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all object properties for the given individual that appear in the knowledge base.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ind: The named individual whose object properties are to be retrieved</span>
-<span class="sd">            direct: Specifies if the direct object properties should be retrieved (True), or if all</span>
-<span class="sd">                object properties should be retrieved (False), so that sub properties are taken into account.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            All data properties pe where the set of reasoner axioms entails ObjectPropertyAssertion(pe ind ind2)</span>
-<span class="sd">            for atleast one ind2.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">():</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">direct</span><span class="p">)))</span>
-                <span class="k">yield</span> <span class="n">op</span>
-            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-                <span class="k">pass</span></div>
-</div>
 
 
 <div class="viewcode-block" id="OntologyReasoner">
@@ -1916,7 +1382,7 @@
 
 <div class="viewcode-block" id="SyncReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner">[docs]</a>
-<span class="k">class</span> <span class="nc">SyncReasoner</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">SyncReasoner</span><span class="p">(</span><span class="n">OWLReasonerEx</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SyncOntology</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">reasoner</span><span class="o">=</span><span class="s2">&quot;HermiT&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1924,11 +1390,13 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            ontology(SyncOntology): Ontology that will be used by this reasoner.</span>
-<span class="sd">            reasoner: Name of the reasoner. Possible values (case-sensitive): [&quot;HermiT&quot;, &quot;Pellet&quot;, &quot;JFact&quot;, &quot;Openllet&quot;].</span>
+<span class="sd">            reasoner: Name of the reasoner. Possible values (case-sensitive): [&quot;HermiT&quot;, &quot;Pellet&quot;, &quot;JFact&quot;, &quot;Openllet&quot;,</span>
+<span class="sd">             &quot;Structural&quot;].</span>
 <span class="sd">                Default: &quot;HermiT&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">reasoner</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HermiT&quot;</span><span class="p">,</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">,</span> <span class="s2">&quot;JFact&quot;</span><span class="p">,</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">],</span> \
-            <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">reasoner</span><span class="si">}</span><span class="s2">&#39; is not implemented. Available reasoners: [&#39;HermiT&#39;, &#39;Pellet&#39;, &#39;JFact&#39;, &#39;Openllet&#39;]. &quot;</span>
+        <span class="k">assert</span> <span class="n">reasoner</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HermiT&quot;</span><span class="p">,</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">,</span> <span class="s2">&quot;JFact&quot;</span><span class="p">,</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">,</span> <span class="s2">&quot;Structural&quot;</span><span class="p">],</span> \
+            <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">reasoner</span><span class="si">}</span><span class="s2">&#39; is not implemented. Available reasoners: [&#39;HermiT&#39;, &#39;Pellet&#39;, &#39;JFact&#39;, &#39;Openllet&#39;, &quot;</span>
+             <span class="sa">f</span><span class="s2">&quot;&#39;Structural&#39;]. &quot;</span>
              <span class="sa">f</span><span class="s2">&quot;This field is case sensitive.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">manager</span>
@@ -1965,7 +1433,7 @@
                                         <span class="s2">&quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
                                         <span class="p">}</span>
 
-        <span class="c1"># () Create a reasoner for the loaded ontology</span>
+        <span class="c1"># () Create a reasoner using the ontology</span>
         <span class="k">if</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">org.semanticweb.HermiT</span> <span class="kn">import</span> <span class="n">ReasonerFactory</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
@@ -1979,6 +1447,9 @@
         <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">openllet.owlapi</span> <span class="kn">import</span> <span class="n">OpenlletReasonerFactory</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">OpenlletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.reasoner.structural</span> <span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
 
@@ -2474,9 +1945,10 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.generate_and_save_inferred_class_assertion_axioms">[docs]</a>
     <span class="k">def</span> <span class="nf">generate_and_save_inferred_class_assertion_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;temp.ttl&quot;</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generates inferred class assertion axioms for the ontology managed by this instance&#39;s reasoner and saves them to a file.</span>
-<span class="sd">        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner</span>
-<span class="sd">        associated with this instance. The inferred axioms are saved to the specified output file in the desired format.</span>
+<span class="sd">        Generates inferred class assertion axioms for the ontology managed by this instance&#39;s reasoner and saves them</span>
+<span class="sd">        to a file. This function uses the OWL API to generate inferred class assertion axioms based on the ontology</span>
+<span class="sd">        and reasoner associated with this instance. The inferred axioms are saved to the specified output file in</span>
+<span class="sd">        the desired format.</span>
 <span class="sd">        Parameters:</span>
 <span class="sd">        -----------</span>
 <span class="sd">        output : str, optional</span>

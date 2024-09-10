@@ -83,99 +83,17 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.owl_ontology_manager</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">jpype</span>
 <span class="kn">import</span> <span class="nn">owlready2</span>
 
+<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_ontology_manager</span> <span class="kn">import</span> <span class="n">OWLOntologyChange</span><span class="p">,</span> <span class="n">OWLOntologyManager</span>
 <span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
 <span class="kn">from</span> <span class="nn">owlapy.meta_classes</span> <span class="kn">import</span> <span class="n">HasIRI</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">SyncOntology</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">SyncOntology</span>
+<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span>
 <span class="kn">from</span> <span class="nn">owlapy.static_funcs</span> <span class="kn">import</span> <span class="n">startJVM</span>
-
-
-<div class="viewcode-block" id="OWLOntologyChange">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyChange">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLOntologyChange</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an ontology change.&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-    <span class="n">_ont</span><span class="p">:</span> <span class="n">OWLOntology</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">OWLOntology</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ont</span> <span class="o">=</span> <span class="n">ontology</span>
-
-<div class="viewcode-block" id="OWLOntologyChange.get_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyChange.get_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the ontology that the change is/was applied to.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The ontology that the change is applicable to.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ont</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="OWLOntologyManager">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLOntologyManager</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing</span>
-<span class="sd">    ontologies.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="OWLOntologyManager.create_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager.create_ontology">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">create_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">IRI</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a new (empty) ontology that that has the specified ontology IRI (and no version IRI).</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            iri: The IRI of the ontology to be created, can also be a string.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The newly created ontology.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLOntologyManager.load_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager.load_ontology">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">load_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads an ontology that is assumed to have the specified ontology IRI as its IRI or version IRI. The ontology</span>
-<span class="sd">        IRI will be mapped to an ontology document IRI.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            iri: The IRI that identifies the ontology, can also be a string.</span>
-<span class="sd">                 It is expected that the ontology will also have this IRI</span>
-<span class="sd">                (although the OWL API should tolerate situations where this is not the case).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The OWLOntology representation of the ontology that was loaded.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
-<div class="viewcode-block" id="OWLOntologyManager.apply_change">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OWLOntologyManager.apply_change">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">apply_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">:</span> <span class="n">OWLOntologyChange</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that applies just one change to an ontology. When this method is used through an</span>
-<span class="sd">        OWLOntologyManager implementation, the instance used should be the one that the ontology returns through the</span>
-<span class="sd">        get_owl_ontology_manager() call.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            change: The change to be applied.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ChangeApplied.UNSUCCESSFULLY: if the change was not applied successfully.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-</div>
-
 
 
 <div class="viewcode-block" id="OWLImportsDeclaration">
