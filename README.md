@@ -1,7 +1,7 @@
 # OWLAPY
 [![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.2.0-blue)](https://pypi.org/project/owlapy/1.2.0/)
-[![Docs](https://img.shields.io/badge/documentation-1.2.0-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Pypi](https://img.shields.io/badge/pypi-1.3.0-blue)](https://pypi.org/project/owlapy/1.3.0/)
+[![Docs](https://img.shields.io/badge/documentation-1.3.0-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
 
@@ -38,21 +38,34 @@ pytest -p no:warnings -x # Running  102 tests takes ~ 1 min
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
 from owlapy.owl_property import OWLObjectProperty
 from owlapy import owl_expression_to_sparql, owl_expression_to_dl
+from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
+from owlapy.owl_individual import OWLNamedIndividual, IRI
 
-# Create the male class
+# Using owl classes to create a complex class expression
 male = OWLClass("http://example.com/society#male")
-# Create an object property using the iri as a string for 'hasChild' property.
 hasChild = OWLObjectProperty("http://example.com/society#hasChild")
-# Create an existential restrictions
 hasChild_male = OWLObjectSomeValuesFrom(hasChild, male)
-# Let's make it more complex by intersecting with another class
 teacher = OWLClass("http://example.com/society#teacher")
 teacher_that_hasChild_male = OWLObjectIntersectionOf([hasChild_male, teacher])
-# You can render and print owl class expressions in description logics syntax (and vice-versa)
-print(owl_expression_to_dl(teacher_that_hasChild_male))
-# (∃ hasChild.male) ⊓ teacher
-print(owl_expression_to_sparql(teacher_that_hasChild_male))
-#  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
+
+# You can render and print owl class expressions in Description Logics syntax or convert it to SPARQL for example. 
+print(owl_expression_to_dl(teacher_that_hasChild_male)) # (∃ hasChild.male) ⊓ teacher
+print(owl_expression_to_sparql(teacher_that_hasChild_male)) #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
+
+# Create an Ontology, add the axioms and save the Ontology.
+manager = OntologyManager()
+new_iri = IRI.create("file:/example_ontology.owl")
+ontology = manager.create_ontology(new_iri)
+
+john = OWLNamedIndividual("http://example.com/society#john")
+male_declaration_axiom = OWLDeclarationAxiom(male)
+hasChild_declaration_axiom = OWLDeclarationAxiom(hasChild)
+john_declaration_axiom = OWLDeclarationAxiom(john)
+john_a_male_assertion_axiom = OWLClassAssertionAxiom(john, male)
+ontology.add_axiom([male_declaration_axiom, hasChild_declaration_axiom, john_declaration_axiom, john_a_male_assertion_axiom])
+ontology.save()
+
 ```
 
 Every OWL object that can be used to classify individuals, is considered a class expression and 
@@ -73,18 +86,19 @@ OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/i
 
 ```python
 from owlapy.owl_ontology_manager import OntologyManager
-from owlapy.owlapi_adaptor import OWLAPIAdaptor
+from owlapy.owl_reasoner import SyncReasoner
+from owlapy.static_funcs import stopJVM
 
 ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
 # Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet'
-owlapi_adaptor = OWLAPIAdaptor(path=ontology_path, name_reasoner="Pellet")
+reasoner = SyncReasoner(ontology = ontology_path, reasoner="Pellet")
 onto = OntologyManager().load_ontology(ontology_path)
 # Iterate over defined owl Classes in the signature
 for i in onto.classes_in_signature():
     # Performing type inference with Pellet
-    instances=owlapi_adaptor.instances(i,direct=False)
+    instances=sync_reasoner.instances(i,direct=False)
     print(f"Class:{i}\t Num instances:{len(instances)}")
-owlapi_adaptor.stopJVM()
+stopJVM()
 ```
 
 </details>
@@ -95,11 +109,12 @@ owlapi_adaptor.stopJVM()
 
 An Ontology can be enriched by inferring many different axioms.
 ```python
-from owlapy.owlapi_adaptor import OWLAPIAdaptor
+from owlapy.owl_reasoner import SyncReasoner
+from owlapy.static_funcs import stopJVM
 
-adaptor = OWLAPIAdaptor(path="KGs/Family/family-benchmark_rich_background.owl", name_reasoner="Pellet")
+sync_reasoner = SyncReasoner(ontology="KGs/Family/family-benchmark_rich_background.owl", reasoner="Pellet")
 # Infer missing class assertions
-adaptor.infer_axioms_and_save(output_path="KGs/Family/inferred_family-benchmark_rich_background.ttl",
+sync_reasoner.infer_axioms_and_save(output_path="KGs/Family/inferred_family-benchmark_rich_background.ttl",
                        output_format="ttl",
                        inference_types=[
                            "InferredClassAssertionAxiomGenerator",
@@ -108,7 +123,7 @@ adaptor.infer_axioms_and_save(output_path="KGs/Family/inferred_family-benchmark_
                                         "InferredSubClassAxiomGenerator",
                                         "InferredInverseObjectPropertiesAxiomGenerator",
                                         "InferredEquivalentClassAxiomGenerator"])
-adaptor.stopJVM()
+stopJVM()
 ```
 
 </details>

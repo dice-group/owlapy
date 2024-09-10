@@ -4,7 +4,7 @@ from owlapy.owl_axiom import OWLSubClassOfAxiom, OWLObjectPropertyDomainAxiom, O
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
-from owlapy.owl_reasoner import OntologyReasoner
+from owlapy.owl_reasoner import OntologyReasoner, FastInstanceCheckerReasoner
 
 data_file = '../KGs/Test/test_ontology.owl'
 NS = 'http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#'
@@ -61,7 +61,7 @@ d = OWLNamedIndividual(IRI(NS, "d"))
 e = OWLNamedIndividual(IRI(NS, "e"))
 g = OWLNamedIndividual(IRI(NS, "g"))
 m = OWLNamedIndividual(IRI(NS, "m"))
-l = OWLNamedIndividual(IRI(NS, "l"))
+l = OWLNamedIndividual(IRI(NS, "l"))  # noqa: E741
 n = OWLNamedIndividual(IRI(NS, "n"))
 o = OWLNamedIndividual(IRI(NS, "o"))
 p = OWLNamedIndividual(IRI(NS, "p"))
@@ -93,11 +93,11 @@ G = OWLClass(IRI(NS, 'G'))
 J = OWLClass(IRI(NS, 'J'))
 K = OWLClass(IRI(NS, 'K'))
 H = OWLClass(IRI(NS, 'H'))
-I = OWLClass(IRI(NS, 'I'))
+I = OWLClass(IRI(NS, 'I'))  # noqa: E741
 L = OWLClass(IRI(NS, 'L'))
 M = OWLClass(IRI(NS, 'M'))
 N = OWLClass(IRI(NS, 'N'))
-O = OWLClass(IRI(NS, 'O'))
+O = OWLClass(IRI(NS, 'O'))  # noqa: E741
 P = OWLClass(IRI(NS, 'P'))
 Q = OWLClass(IRI(NS, 'Q'))
 R = OWLClass(IRI(NS, 'R'))
@@ -117,20 +117,20 @@ JK = OWLObjectIntersectionOf([J, K])
 r1T = OWLObjectSomeValuesFrom(property=r1, filler=OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')))
 
 manager = OntologyManager()
-onto = manager.load_ontology(IRI.create(f'file://' + data_file))
+onto = manager.load_ontology(IRI.create('file://' + data_file))
 
-manager.add_axiom(onto, OWLEquivalentObjectPropertiesAxiom([r6, r5]))
-manager.add_axiom(onto, OWLEquivalentObjectPropertiesAxiom([r5, r6]))
-manager.add_axiom(onto, OWLObjectPropertyDomainAxiom(r1, ST))
+onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([r6, r5]))
+onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([r5, r6]))
+onto.add_axiom(OWLObjectPropertyDomainAxiom(r1, ST))
 
-manager.add_axiom(onto, OWLSubClassOfAxiom(R, r5Q))
-manager.add_axiom(onto, OWLSubClassOfAxiom(ST, U))
+onto.add_axiom(OWLSubClassOfAxiom(R, r5Q))
+onto.add_axiom(OWLSubClassOfAxiom(ST, U))
 
 base_reasoner = OntologyReasoner(onto)
 
 # ---------------------------------------- Reasoning ----------------------------------------
 
-reasoner = FastInstanceCheckerReasoner(onto)
+reasoner = FastInstanceCheckerReasoner(onto, base_reasoner)
 
 # Instances
 t1 = list(reasoner.instances(N))
