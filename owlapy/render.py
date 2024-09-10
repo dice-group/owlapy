@@ -20,7 +20,7 @@ from owlapy.vocab import OWLFacet
 from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .owl_datatype import OWLDatatype
-from .owl_reasoner import OWLReasoner
+from .abstracts.abstract_owl_reasoner import OWLReasoner
 import requests
 import warnings
 import abc

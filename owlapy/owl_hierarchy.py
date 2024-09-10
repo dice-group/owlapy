@@ -9,7 +9,7 @@ from owlapy.class_expression import OWLClass, OWLThing, OWLNothing
 from owlapy.meta_classes import HasIRI
 from owlapy.owl_literal import OWLTopObjectProperty, OWLBottomObjectProperty, OWLTopDataProperty, OWLBottomDataProperty
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
-from owlapy.owl_reasoner import OWLReasoner
+from owlapy.abstracts.abstract_owl_reasoner import OWLReasoner
 
 _S = TypeVar('_S', bound=HasIRI)  #:
 _U = TypeVar('_U', bound='AbstractHierarchy')  #:
