@@ -39,7 +39,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
     _namespace: str
     _remainder: str
 
-    def __init__(self, namespace: Union[str, Namespaces], remainder: str):
+    def __init__(self, namespace: Union[str, Namespaces], remainder: str=""):
         if isinstance(namespace, Namespaces):
             namespace = namespace.ns
         else:
@@ -89,7 +89,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         return IRI(string[0:index], string[index:])
 
     def __repr__(self):
-        return f"IRI(namespace:{repr(self._namespace)}, reminder:{repr(self._remainder)})"
+        return f"IRI({repr(self._namespace)}, {repr(self._remainder)})"
 
     def __eq__(self, other):
         if type(other) is type(self):
