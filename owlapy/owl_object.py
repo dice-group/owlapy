@@ -88,8 +88,6 @@ class OWLNamedObject(OWLObject, HasIRI, metaclass=ABCMeta):
     def __repr__(self):
         return f"{type(self).__name__}({repr(self._iri)})"
 
-    pass
-
 
 class OWLEntity(OWLNamedObject, metaclass=ABCMeta):
     """Represents Entities in the OWL 2 Specification."""
