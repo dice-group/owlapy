@@ -189,12 +189,13 @@
 
 <div class="viewcode-block" id="OntologyManager.load_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OntologyManager.load_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Ontology</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">load_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Ontology</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">path_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">IRI</span><span class="p">),</span> <span class="s2">&quot;iri either must be string or an instance of IRI Class&quot;</span>
-        <span class="k">return</span> <span class="n">Ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">IRI</span><span class="p">),</span> <span class="s2">&quot;iri either must be string or an instance of IRI Class&quot;</span>
+            <span class="n">path_iri</span><span class="o">=</span><span class="n">path</span>
+        <span class="k">return</span> <span class="n">Ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OntologyManager.apply_change">

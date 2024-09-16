@@ -131,11 +131,29 @@ Module Contents
 
 
 
+   .. py:method:: properties_in_signature() -> Iterable[owlapy.owl_property.OWLProperty]
+
+
    .. py:method:: individuals_in_signature() -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
 
       A convenience method that obtains the individuals that are in the signature of this object.
 
       :returns: Individuals that are in the signature of this object.
+
+
+
+   .. py:method:: tbox_axioms() -> Iterable
+      :abstractmethod:
+
+
+
+   .. py:method:: abox_axioms_between_individuals() -> Iterable
+      :abstractmethod:
+
+
+
+   .. py:method:: abox_axioms_between_individuals_and_classes() -> Iterable
+      :abstractmethod:
 
 
 
@@ -232,7 +250,7 @@ Module Contents
 
 
 
-   .. py:method:: save(document_iri: Optional[owlapy.iri.IRI] = None)
+   .. py:method:: save(path: Union[str, owlapy.iri.IRI] = None, rdf_format='rdfxml')
 
       Saves this ontology, using its IRI to determine where/how the ontology should be
       saved.
