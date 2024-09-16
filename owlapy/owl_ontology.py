@@ -928,7 +928,9 @@ class Ontology(OWLOntology):
             for ax in axiom:
                 _remove_axiom(ax, self, self._world)
 
-    def save(self, path: str = None, rdf_format = "rdfxml"):
+    def save(self, path: Union[str,IRI] = None, rdf_format = "rdfxml"):
+        if isinstance(path, IRI):
+            path=path.as_str()
         ont_x:owlready2.namespace.Ontology
         assert isinstance(path,str), f"path must be string. Currently it is {type(path)}"
         ont_x = self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str())
