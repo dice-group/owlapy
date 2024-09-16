@@ -25,11 +25,10 @@ pip3 install owlapy
 ```shell
 # To download RDF knowledge graphs
 wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
-pytest -p no:warnings -x # Running  102 tests takes ~ 1 min
+pytest -p no:warnings -x # Running  103 tests
 ```
 
-## Usage
-
+## Examples
 
 ### Creating OWL Class Expressions
 <details><summary> Click me! </summary>
@@ -91,7 +90,7 @@ from owlapy.static_funcs import stopJVM
 
 ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
 # Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet'
-reasoner = SyncReasoner(ontology = ontology_path, reasoner="Pellet")
+sync_reasoner = SyncReasoner(ontology = ontology_path, reasoner="Pellet")
 onto = OntologyManager().load_ontology(ontology_path)
 # Iterate over defined owl Classes in the signature
 for i in onto.classes_in_signature():
