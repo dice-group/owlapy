@@ -9,6 +9,8 @@ from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
 from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, List, Union
 
+from jpype import javax
+
 from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
@@ -1228,6 +1230,8 @@ class SyncReasoner(OWLReasonerEx):
             list: A list of individuals classified by the given class expression.
         """
         inds = self._owlapi_reasoner.getInstances(self.mapper.map_(ce), direct).getFlattened()
+        assert str(type(inds)) == "<java class 'java.util.LinkedHashSet'>"
+
         return [self.mapper.map_(ind) for ind in inds]
 
     def equivalent_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
