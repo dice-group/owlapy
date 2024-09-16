@@ -38,6 +38,7 @@ from owlapy.owl_axiom import (OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClass
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom, OWLClassAxiom,
                               OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom)
 from owlapy.vocab import OWLFacet
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -800,6 +801,9 @@ class Ontology(OWLOntology):
             onto = onto.load()
         self._onto = onto
 
+    def __len__(self) -> int:
+        return len([t for t in self._onto.get_triples()])
+
     def classes_in_signature(self) -> Iterable[OWLClass]:
         for c in self._onto.classes():
             yield OWLClass(IRI.create(c.iri))
@@ -928,13 +932,27 @@ class Ontology(OWLOntology):
             for ax in axiom:
                 _remove_axiom(ax, self, self._world)
 
-    def save(self, path: Union[str,IRI] = None, rdf_format = "rdfxml"):
+    def save(self, path: Union[str,IRI] = None, inplace:bool=False, rdf_format = "rdfxml"):
+        # convert it into str.
         if isinstance(path, IRI):
-            path=path.as_str()
+            path = path.as_str()
+        # Sanity checking
+        if inplace is False:
+            assert isinstance(path,str), f"path must be string if inplace is set to False. Current path is {type(path)}"
+        # Get the current ontology defined in the world.
         ont_x:owlready2.namespace.Ontology
-        assert isinstance(path,str), f"path must be string. Currently it is {type(path)}"
         ont_x = self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str())
-        ont_x.save(file=path,format=rdf_format)
+
+        if inplace:
+            if os.path.exists(self._iri.as_str()):
+                print(f"Saving {self} inplace...")
+                ont_x.save(file=self._iri.as_str(), format=rdf_format)
+            else:
+                print(f"Saving {self} inplace with name of demo.owl...")
+                self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(file="demo.owl")
+        else:
+            print(f"Saving {path}..")
+            ont_x.save(file=path,format=rdf_format)
 
     def get_original_iri(self):
         """Get the IRI argument that was used to create this ontology."""
@@ -949,7 +967,7 @@ class Ontology(OWLOntology):
         return hash(self._onto.base_iri)
 
     def __repr__(self):
-        return f'Ontology({IRI.create(self._onto.base_iri)}, {self._onto.loaded})'
+        return f'Ontology({self._onto.base_iri}, loaded:{self._onto.loaded})'
 
 
 class SyncOntology(OWLOntology):
