@@ -126,7 +126,7 @@ class TestSyncReasoner(unittest.TestCase):
         onto.add_axiom(OWLClassAssertionAxiom(new_individual, self.nitrogen38))
         onto.add_axiom(OWLClassAssertionAxiom(new_individual, carbon230))
 
-        onto.save(IRI.create("file:/test.owl"))
+        onto.save("test.owl")
         reasoner = SyncReasoner("test.owl")
         self.assertEqual(reasoner.has_consistent_ontology(), False)
         os.remove("test.owl")
