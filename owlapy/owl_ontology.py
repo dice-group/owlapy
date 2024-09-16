@@ -812,16 +812,31 @@ class Ontology(OWLOntology):
         for op in self._onto.object_properties():
             yield OWLObjectProperty(IRI.create(op.iri))
 
+    def properties_in_signature(self) -> Iterable[OWLProperty]:
+        yield from self.object_properties_in_signature()
+        yield from self.data_properties_in_signature()
+
     def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
         for i in self._onto.individuals():
             yield OWLNamedIndividual(IRI.create(i.iri))
 
+    def tbox_axioms(self)->Iterable:
+        # @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint
+        raise NotImplementedError("will be implemented in future")
+    def abox_axioms_between_individuals(self)->Iterable:
+        # @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties
+        raise NotImplementedError("will be implemented in future")
+    def abox_axioms_between_individuals_and_classes(self)->Iterable:
+        # @TODO: CD: Return all type information about individuals, i.e., individual type Class
+        raise NotImplementedError("will be implemented in future")
+
+    # @TODO:CD:Unsure it is working
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
         c_x: owlready2.ThingClass = self._world[c.str]
         # TODO: Should this also return EquivalentClasses general class axioms? Compare to java owlapi
         for ec_x in c_x.equivalent_to:
             yield OWLEquivalentClassesAxiom([c, _parse_concept_to_owlapy(ec_x)])
-
+    # @TODO:CD:Unsure it is working
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
         # TODO: At the moment owlready2 only supports SubClassOf general class axioms. (18.02.2023)
         for ca in self._onto.general_class_axioms():
@@ -913,17 +928,11 @@ class Ontology(OWLOntology):
             for ax in axiom:
                 _remove_axiom(ax, self, self._world)
 
-    def save(self, document_iri: Optional[IRI] = None):
-        ont_x: owlready2.namespace.Ontology = self._world.get_ontology(
-            self.get_ontology_id().get_ontology_iri().as_str()
-        )
-        if document_iri is None:
-            document_iri = self._iri
-        if document_iri.get_namespace().startswith('file:/'):
-            filename = document_iri.as_str()[len('file:/'):]
-            ont_x.save(file=filename)
-        else:
-            raise NotImplementedError("Couldn't save because the namespace of current ontology's IRI does not start with **file:/**")
+    def save(self, path: str = None, rdf_format = "rdfxml"):
+        ont_x:owlready2.namespace.Ontology
+        assert isinstance(path,str), f"path must be string. Currently it is {type(path)}"
+        ont_x = self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str())
+        ont_x.save(file=path,format=rdf_format)
 
     def get_original_iri(self):
         """Get the IRI argument that was used to create this ontology."""

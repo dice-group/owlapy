@@ -88,12 +88,13 @@ class OntologyManager(OWLOntologyManager):
             assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
         return Ontology(self, iri, load=False)
 
-    def load_ontology(self, iri: Union[IRI, str] = None) -> Ontology:
-        if isinstance(iri, str):
-            iri = IRI.create(iri)
+    def load_ontology(self, path: Union[IRI, str] = None) -> Ontology:
+        if isinstance(path, str):
+            path_iri = IRI.create(path)
         else:
-            assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
-        return Ontology(self, iri, load=True)
+            assert isinstance(path, IRI), "iri either must be string or an instance of IRI Class"
+            path_iri=path
+        return Ontology(self, path_iri, load=True)
 
     def apply_change(self, change: OWLOntologyChange):
         if isinstance(change, AddImport):
