@@ -3,4 +3,6 @@ from .render import (owl_expression_to_dl as owl_expression_to_dl,
 from .parser import (dl_to_owl_expression as dl_to_owl_expression,
                      manchester_to_owl_expression as manchester_to_owl_expression)
 from .converter import owl_expression_to_sparql as owl_expression_to_sparql
-__version__ = '1.3.0'
+from .owl_ontology_manager import OntologyManager as OntologyManager
+
+__version__ = '1.3.1'
