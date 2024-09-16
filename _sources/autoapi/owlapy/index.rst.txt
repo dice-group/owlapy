@@ -54,6 +54,14 @@ Attributes
    owlapy.__version__
 
 
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.OntologyManager
+
+
 Functions
 ---------
 
@@ -90,7 +98,64 @@ Package Contents
    that are instances of owl:NamedIndividual
 
 
+.. py:class:: OntologyManager(world_store=None)
+
+   Bases: :py:obj:`owlapy.abstracts.abstract_owl_ontology_manager.OWLOntologyManager`
+
+
+   An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing
+   ontologies.
+
+
+   .. py:attribute:: __slots__
+      :value: '_world'
+
+
+
+   .. py:method:: create_ontology(iri: Union[str, owlapy.iri.IRI] = None) -> owlapy.owl_ontology.Ontology
+
+      Creates a new (empty) ontology that that has the specified ontology IRI (and no version IRI).
+
+      :param iri: The IRI of the ontology to be created, can also be a string.
+
+      :returns: The newly created ontology.
+
+
+
+   .. py:method:: load_ontology(path: Union[owlapy.iri.IRI, str] = None) -> owlapy.owl_ontology.Ontology
+
+      Loads an ontology that is assumed to have the specified ontology IRI as its IRI or version IRI. The ontology
+      IRI will be mapped to an ontology document IRI.
+
+      :param iri:
+                  The IRI that identifies the ontology, can also be a string.
+                   It is expected that the ontology will also have this IRI
+                  (although the OWL API should tolerate situations where this is not the case).
+
+      :returns: The OWLOntology representation of the ontology that was loaded.
+
+
+
+   .. py:method:: apply_change(change: owlapy.abstracts.abstract_owl_ontology_manager.OWLOntologyChange)
+
+      A convenience method that applies just one change to an ontology. When this method is used through an
+      OWLOntologyManager implementation, the instance used should be the one that the ontology returns through the
+      get_owl_ontology_manager() call.
+
+      :param change: The change to be applied.
+
+      :raises ChangeApplied.UNSUCCESSFULLY: if the change was not applied successfully.
+
+
+
+   .. py:method:: save_world()
+
+      Saves the actual state of the quadstore in the SQLite3 file.
+
+
+
+
 .. py:data:: __version__
-   :value: '1.3.0'
+   :value: '1.3.1'
 
 
