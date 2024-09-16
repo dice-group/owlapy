@@ -8,9 +8,7 @@ setup(
     version="1.3.0",
     packages=find_packages(),
     include_package_data=True,
-    package_data={
-        'owlapy': ['jar_dependencies/*.jar'],
-    },
+    package_data={'owlapy': ['jar_dependencies/*.jar'],},
     install_requires=[
         "pandas>=1.5.0",
         "requests>=2.32.3",
