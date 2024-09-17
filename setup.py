@@ -8,9 +8,7 @@ setup(
     version="1.3.0",
     packages=find_packages(),
     include_package_data=True,
-    package_data={
-        'owlapy': ['jar_dependencies/*.jar'],
-    },
+    package_data={'owlapy': ['jar_dependencies/*.jar'],},
     install_requires=[
         "pandas>=1.5.0",
         "requests>=2.32.3",
@@ -19,7 +17,8 @@ setup(
         "pytest>=8.1.1",
         "sortedcontainers>=2.4.0",
         "owlready2>=0.40",
-        "JPype1>=1.5.0"],
+        "JPype1>=1.5.0",
+        "tqdm>=4.66.5"],
     author='Caglar Demir',
     author_email='caglardemir8@gmail.com',
     url='https://github.com/dice-group/owlapy',

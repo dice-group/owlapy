@@ -9,6 +9,7 @@ from owlapy.utils import concept_reducer_properties
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+from tqdm import tqdm
 
 ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
 
@@ -45,10 +46,9 @@ forall_nc = concept_reducer_properties(
 
 
 def eval_reasoners(iter_owl_exp, mapping):
-    print("Number of expressions:", len(iter_owl_exp))
     results = dict()
     runtime_results = dict()
-    for c in iter_owl_exp:
+    for c in tqdm(iter_owl_exp):
         for name_i, reasoner_i in mapping.items():
             start_time_i = time.time()
             result_reasoner_i = {i.str for i in reasoner_i.instances(c)}
@@ -110,15 +110,19 @@ def plot_similarity_btw_reasoners(results):
 
 
 # EVAL Named Concepts
+print("Evaluation over named concepts...")
 similarity_results, average_runtime_owl_reasoners = eval_reasoners(nc, owl_reasoners)
 plot_similarity_btw_reasoners(similarity_results)
 plot_runtimes(average_runtime_owl_reasoners, title="Avg Runtime of Reasoners on Named Concepts")
+
 # EVAL Negated Concepts
+print("Evaluation over negated named concepts...")
 similarity_results, average_runtime_owl_reasoners = eval_reasoners(nnc, owl_reasoners)
 plot_similarity_btw_reasoners(similarity_results)
 plot_runtimes(average_runtime_owl_reasoners, title="Avg Runtime of Reasoners on Negated Named Concepts")
 
 # EVAL Exist R. NC
+print("Evaluation over existential object property restrictions... takes some time")
 similarity_results, average_runtime_owl_reasoners = eval_reasoners(exist_nc, owl_reasoners)
 plot_similarity_btw_reasoners(similarity_results)
 plot_runtimes(average_runtime_owl_reasoners, title="Avg Runtime of Reasoners on OWLObjectSomeValuesFrom")

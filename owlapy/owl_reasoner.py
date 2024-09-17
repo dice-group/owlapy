@@ -1228,6 +1228,7 @@ class SyncReasoner(OWLReasonerEx):
             list: A list of individuals classified by the given class expression.
         """
         inds = self._owlapi_reasoner.getInstances(self.mapper.map_(ce), direct).getFlattened()
+        assert str(type(inds)) == "<java class 'java.util.LinkedHashSet'>"
         return [self.mapper.map_(ind) for ind in inds]
 
     def equivalent_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:

@@ -62,4 +62,10 @@ class OWLClass(OWLClassExpression, OWLEntity):
         # documented in parent
         return self
 
+    def __str__(self):
+        return f"OWLClass({self.reminder})"
+
+    def __repr__(self):
+        return f"OWLClass({self._iri})"
+
 
