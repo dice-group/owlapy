@@ -39,7 +39,7 @@ def main():
 
     args = get_default_arguments()
     sync_reasoner = SyncReasoner(args.path_ontology)
-    if args.inference_types == "all":
+    if "all" in args.inference_types:
         it = inference_types
     else:
         it = args.inference_types
