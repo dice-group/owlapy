@@ -8,7 +8,7 @@ import logging
 import owlready2
 from pandas import Timedelta
 from owlapy import namespaces
-from owlapy.abstracts.abstract_owl_ontology import OWLOntology
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
@@ -124,7 +124,7 @@ class OWLOntologyID:
         return NotImplemented
 
 
-def _check_expression(expr: OWLObject, ontology: OWLOntology, world: owlready2.namespace.World):
+def _check_expression(expr: OWLObject, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     """
     @TODO:CD: Documentation
     Creates all entities (individuals, classes, properties) that appear in the given (complex) class expression
@@ -149,12 +149,12 @@ def _check_expression(expr: OWLObject, ontology: OWLOntology, world: owlready2.n
 
 
 @singledispatch
-def _add_axiom(axiom: OWLAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _add_axiom(axiom: OWLAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     raise NotImplementedError(f'Axiom type {axiom} is not implemented yet.')
 
 
 @_add_axiom.register
-def _(axiom: OWLDeclarationAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDeclarationAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -185,7 +185,7 @@ def _(axiom: OWLDeclarationAxiom, ontology: OWLOntology, world: owlready2.namesp
 
 
 @_add_axiom.register
-def _(axiom: OWLClassAssertionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLClassAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -203,7 +203,7 @@ def _(axiom: OWLClassAssertionAxiom, ontology: OWLOntology, world: owlready2.nam
 
 
 @_add_axiom.register
-def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -221,7 +221,7 @@ def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: OWLOntology, world: owlr
 
 
 @_add_axiom.register
-def _(axiom: OWLDataPropertyAssertionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDataPropertyAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -236,7 +236,7 @@ def _(axiom: OWLDataPropertyAssertionAxiom, ontology: OWLOntology, world: owlrea
 
 
 @_add_axiom.register
-def _(axiom: OWLSubClassOfAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLSubClassOfAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -262,7 +262,7 @@ def _(axiom: OWLSubClassOfAxiom, ontology: OWLOntology, world: owlready2.namespa
 
 # TODO: Update as soon as owlready2 adds support for EquivalentClasses general class axioms
 @_add_axiom.register
-def _(axiom: OWLEquivalentClassesAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x = conv.map_object(ontology)
 
@@ -295,7 +295,7 @@ def _(axiom: OWLEquivalentClassesAxiom, ontology: OWLOntology, world: owlready2.
 
 
 @_add_axiom.register
-def _(axiom: OWLDisjointClassesAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDisjointClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -308,7 +308,7 @@ def _(axiom: OWLDisjointClassesAxiom, ontology: OWLOntology, world: owlready2.na
 
 
 @_add_axiom.register
-def _(axiom: OWLDisjointUnionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDisjointUnionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -322,7 +322,7 @@ def _(axiom: OWLDisjointUnionAxiom, ontology: OWLOntology, world: owlready2.name
 
 
 @_add_axiom.register
-def _(axiom: OWLAnnotationAssertionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLAnnotationAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -348,7 +348,7 @@ def _(axiom: OWLAnnotationAssertionAxiom, ontology: OWLOntology, world: owlready
 
 
 @_add_axiom.register
-def _(axiom: OWLNaryIndividualAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLNaryIndividualAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -368,7 +368,7 @@ def _(axiom: OWLNaryIndividualAxiom, ontology: OWLOntology, world: owlready2.nam
 
 
 @_add_axiom.register
-def _(axiom: OWLSubPropertyAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLSubPropertyAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -383,7 +383,7 @@ def _(axiom: OWLSubPropertyAxiom, ontology: OWLOntology, world: owlready2.namesp
 
 
 @_add_axiom.register
-def _(axiom: OWLPropertyDomainAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLPropertyDomainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -398,7 +398,7 @@ def _(axiom: OWLPropertyDomainAxiom, ontology: OWLOntology, world: owlready2.nam
 
 
 @_add_axiom.register
-def _(axiom: OWLPropertyRangeAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLPropertyRangeAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -415,7 +415,7 @@ def _(axiom: OWLPropertyRangeAxiom, ontology: OWLOntology, world: owlready2.name
 
 
 @_add_axiom.register
-def _(axiom: OWLNaryPropertyAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLNaryPropertyAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -441,7 +441,7 @@ def _(axiom: OWLNaryPropertyAxiom, ontology: OWLOntology, world: owlready2.names
 
 
 @_add_axiom.register
-def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -468,7 +468,7 @@ def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: OWLOntology, world:
 
 
 @_add_axiom.register
-def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -483,12 +483,12 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: OWLOntology, world: o
 
 
 @singledispatch
-def _remove_axiom(axiom: OWLAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _remove_axiom(axiom: OWLAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     raise NotImplementedError(f'Axiom type {axiom} is not implemented yet.')
 
 
 @_remove_axiom.register
-def _(axiom: OWLDeclarationAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDeclarationAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
     with ont_x:
@@ -499,7 +499,7 @@ def _(axiom: OWLDeclarationAxiom, ontology: OWLOntology, world: owlready2.namesp
 
 
 @_remove_axiom.register
-def _(axiom: OWLClassAssertionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLClassAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -515,7 +515,7 @@ def _(axiom: OWLClassAssertionAxiom, ontology: OWLOntology, world: owlready2.nam
 
 
 @_remove_axiom.register
-def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -528,7 +528,7 @@ def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: OWLOntology, world: owlr
 
 
 @_remove_axiom.register
-def _(axiom: OWLDataPropertyAssertionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDataPropertyAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -541,7 +541,7 @@ def _(axiom: OWLDataPropertyAssertionAxiom, ontology: OWLOntology, world: owlrea
 
 
 @_remove_axiom.register
-def _(axiom: OWLSubClassOfAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLSubClassOfAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
     sub_class = axiom.get_sub_class()
@@ -566,7 +566,7 @@ def _(axiom: OWLSubClassOfAxiom, ontology: OWLOntology, world: owlready2.namespa
 
 # TODO: Update as soons as owlready2 adds support for EquivalentClasses general class axioms
 @_remove_axiom.register
-def _(axiom: OWLEquivalentClassesAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x = conv.map_object(ontology)
 
@@ -586,7 +586,7 @@ def _(axiom: OWLEquivalentClassesAxiom, ontology: OWLOntology, world: owlready2.
 
 
 @_remove_axiom.register
-def _(axiom: OWLDisjointClassesAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDisjointClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -601,7 +601,7 @@ def _(axiom: OWLDisjointClassesAxiom, ontology: OWLOntology, world: owlready2.na
 
 
 @_remove_axiom.register
-def _(axiom: OWLDisjointUnionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDisjointUnionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
     assert isinstance(axiom.get_owl_class(), OWLClass), f'({axiom.get_owl_class()}) is not a named class.'
@@ -617,7 +617,7 @@ def _(axiom: OWLDisjointUnionAxiom, ontology: OWLOntology, world: owlready2.name
 
 
 @_remove_axiom.register
-def _(axiom: OWLAnnotationAssertionAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLAnnotationAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -637,7 +637,7 @@ def _(axiom: OWLAnnotationAssertionAxiom, ontology: OWLOntology, world: owlready
 
 
 @_remove_axiom.register
-def _(axiom: OWLNaryIndividualAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLNaryIndividualAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -663,7 +663,7 @@ def _(axiom: OWLNaryIndividualAxiom, ontology: OWLOntology, world: owlready2.nam
 
 
 @_remove_axiom.register
-def _(axiom: OWLSubPropertyAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLSubPropertyAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -679,7 +679,7 @@ def _(axiom: OWLSubPropertyAxiom, ontology: OWLOntology, world: owlready2.namesp
 
 
 @_remove_axiom.register
-def _(axiom: OWLPropertyDomainAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLPropertyDomainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -691,7 +691,7 @@ def _(axiom: OWLPropertyDomainAxiom, ontology: OWLOntology, world: owlready2.nam
 
 
 @_remove_axiom.register
-def _(axiom: OWLPropertyRangeAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLPropertyRangeAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -704,7 +704,7 @@ def _(axiom: OWLPropertyRangeAxiom, ontology: OWLOntology, world: owlready2.name
 
 
 @_remove_axiom.register
-def _(axiom: OWLNaryPropertyAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLNaryPropertyAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -738,7 +738,7 @@ def _(axiom: OWLNaryPropertyAxiom, ontology: OWLOntology, world: owlready2.names
 
 
 @_remove_axiom.register
-def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -767,7 +767,7 @@ def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: OWLOntology, world:
 
 
 @_remove_axiom.register
-def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: OWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -778,7 +778,7 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: OWLOntology, world: o
             property_x.is_a.remove(owlready2.FunctionalProperty)
 
 
-class Ontology(OWLOntology):
+class Ontology(AbstractOWLOntology):
     __slots__ = '_manager', '_iri', '_world', '_onto'
 
     _manager: _OM
@@ -970,7 +970,7 @@ class Ontology(OWLOntology):
         return f'Ontology({self._onto.base_iri}, loaded:{self._onto.loaded})'
 
 
-class SyncOntology(OWLOntology):
+class SyncOntology(AbstractOWLOntology):
 
     def __init__(self, manager: _SM, path: Union[IRI, str], new: bool = False):
         from owlapy.owlapi_mapper import OWLAPIMapper
@@ -1094,7 +1094,7 @@ class ToOwlready2:
         return self.map_concept(ce)
 
     @map_object.register
-    def _(self, ont: OWLOntology) -> owlready2.namespace.Ontology:
+    def _(self, ont: AbstractOWLOntology) -> owlready2.namespace.Ontology:
         return self._world.get_ontology(
             ont.get_ontology_id().get_ontology_iri().as_str()
         )

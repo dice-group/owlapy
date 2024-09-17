@@ -13,7 +13,7 @@ _M = TypeVar('_M', bound='OWLOntologyManager')  # noqa: F821
 _OI = TypeVar('_OI', bound='OWLOntologyID')  # noqa: F821
 
 
-class OWLOntology(OWLObject, metaclass=ABCMeta):
+class AbstractOWLOntology(OWLObject, metaclass=ABCMeta):
     """Represents an OWL 2 Ontology  in the OWL 2 specification.
 
     An OWLOntology consists of a possibly empty set of OWLAxioms and a possibly empty set of OWLAnnotations.

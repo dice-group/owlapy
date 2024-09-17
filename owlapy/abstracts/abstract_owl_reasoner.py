@@ -8,7 +8,7 @@ from owlapy.class_expression import OWLClassExpression
 from owlapy.class_expression import OWLClass
 from owlapy.owl_data_ranges import OWLDataRange
 from owlapy.owl_object import OWLEntity
-from owlapy.abstracts.abstract_owl_ontology import OWLOntology
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
@@ -16,13 +16,13 @@ from owlapy.owl_literal import OWLLiteral
 logger = logging.getLogger(__name__)
 
 
-class OWLReasoner(metaclass=ABCMeta):
+class AbstractOWLReasoner(metaclass=ABCMeta):
     """An OWLReasoner reasons over a set of axioms (the set of reasoner axioms) that is based on the imports closure of
     a particular ontology - the "root" ontology."""
     __slots__ = ()
 
     @abstractmethod
-    def __init__(self, ontology: OWLOntology):
+    def __init__(self, ontology: AbstractOWLOntology):
         pass
 
     @abstractmethod
@@ -353,7 +353,7 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_root_ontology(self) -> OWLOntology:
+    def get_root_ontology(self) -> AbstractOWLOntology:
         """Gets the "root" ontology that is loaded into this reasoner. The reasoner takes into account the axioms in
         this ontology and its import's closure."""
         pass
@@ -377,7 +377,7 @@ class OWLReasoner(metaclass=ABCMeta):
         pass
 
 
-class OWLReasonerEx(OWLReasoner, metaclass=ABCMeta):
+class AbstractOWLReasonerEx(AbstractOWLReasoner, metaclass=ABCMeta):
     """Extra convenience methods for OWL Reasoners"""
 
     # default
