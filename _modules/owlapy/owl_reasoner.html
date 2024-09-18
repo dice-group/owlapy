@@ -106,14 +106,14 @@
 <span class="kn">from</span> <span class="nn">owlapy.owl_datatype</span> <span class="kn">import</span> <span class="n">OWLDatatype</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_object</span> <span class="kn">import</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">SyncOntology</span>
-<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntology</span>
+<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_ontology</span> <span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_ontology_manager</span> <span class="kn">import</span> <span class="n">SyncOntologyManager</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> \
     <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span> <span class="nn">owlapy.utils</span> <span class="kn">import</span> <span class="n">LRUCache</span>
-<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_reasoner</span> <span class="kn">import</span> <span class="n">OWLReasoner</span><span class="p">,</span> <span class="n">OWLReasonerEx</span>
+<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_reasoner</span> <span class="kn">import</span> <span class="n">AbstractOWLReasoner</span><span class="p">,</span> <span class="n">AbstractOWLReasonerEx</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -122,7 +122,7 @@
 
 <div class="viewcode-block" id="OntologyReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner">[docs]</a>
-<span class="k">class</span> <span class="nc">OntologyReasoner</span><span class="p">(</span><span class="n">OWLReasonerEx</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">OntologyReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasonerEx</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_ontology&#39;</span><span class="p">,</span> <span class="s1">&#39;_world&#39;</span>
     <span class="c1"># TODO: CD: We will remove owlready2 from owlapy</span>
     <span class="n">_ontology</span><span class="p">:</span> <span class="n">Ontology</span>
@@ -731,7 +731,7 @@
 
 <div class="viewcode-block" id="OntologyReasoner.get_root_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.OntologyReasoner.get_root_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span></div>
 </div>
 
@@ -739,7 +739,7 @@
 
 <div class="viewcode-block" id="FastInstanceCheckerReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner">[docs]</a>
-<span class="k">class</span> <span class="nc">FastInstanceCheckerReasoner</span><span class="p">(</span><span class="n">OWLReasonerEx</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">FastInstanceCheckerReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasonerEx</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Tries to check instances fast (but maybe incomplete).&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_ontology&#39;</span><span class="p">,</span> <span class="s1">&#39;_base_reasoner&#39;</span><span class="p">,</span> \
                 <span class="s1">&#39;_ind_set&#39;</span><span class="p">,</span> <span class="s1">&#39;_cls_to_ind&#39;</span><span class="p">,</span> \
@@ -750,8 +750,8 @@
                 <span class="s1">&#39;_negation_default&#39;</span><span class="p">,</span> \
                 <span class="s1">&#39;__warned&#39;</span>
 
-    <span class="n">_ontology</span><span class="p">:</span> <span class="n">OWLOntology</span>
-    <span class="n">_base_reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span>
+    <span class="n">_ontology</span><span class="p">:</span> <span class="n">AbstractOWLOntology</span>
+    <span class="n">_base_reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span>
     <span class="n">_cls_to_ind</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span>  <span class="c1"># Class =&gt; individuals</span>
     <span class="n">_has_prop</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">LRUCache</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span>  <span class="c1"># Type =&gt; Property =&gt; individuals</span>
     <span class="n">_ind_set</span><span class="p">:</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]</span>
@@ -771,7 +771,7 @@
     <span class="n">_negation_default</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">_sub_properties</span><span class="p">:</span> <span class="nb">bool</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">OWLOntology</span><span class="p">,</span> <span class="n">base_reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">AbstractOWLOntology</span><span class="p">,</span> <span class="n">base_reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                  <span class="n">property_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">negation_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sub_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fast instance checker.</span>
 
@@ -967,7 +967,7 @@
 
 <div class="viewcode-block" id="FastInstanceCheckerReasoner.get_root_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.FastInstanceCheckerReasoner.get_root_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span></div>
 
 
@@ -1382,7 +1382,7 @@
 
 <div class="viewcode-block" id="SyncReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner">[docs]</a>
-<span class="k">class</span> <span class="nc">SyncReasoner</span><span class="p">(</span><span class="n">OWLReasonerEx</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SyncReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasonerEx</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SyncOntology</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">reasoner</span><span class="o">=</span><span class="s2">&quot;HermiT&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1981,7 +1981,7 @@
 
 <div class="viewcode-block" id="SyncReasoner.get_root_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.get_root_ontology">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLOntology</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span></div>
 </div>
 

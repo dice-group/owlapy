@@ -9,14 +9,14 @@ Classes
 
 .. autoapisummary::
 
-   owlapy.abstracts.abstract_owl_ontology_manager.OWLOntologyChange
-   owlapy.abstracts.abstract_owl_ontology_manager.OWLOntologyManager
+   owlapy.abstracts.abstract_owl_ontology_manager.AbstractOWLOntologyChange
+   owlapy.abstracts.abstract_owl_ontology_manager.AbstractOWLOntologyManager
 
 
 Module Contents
 ---------------
 
-.. py:class:: OWLOntologyChange(ontology: owlapy.abstracts.abstract_owl_ontology.OWLOntology)
+.. py:class:: AbstractOWLOntologyChange(ontology: owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology)
 
    Represents an ontology change.
 
@@ -26,7 +26,7 @@ Module Contents
 
 
 
-   .. py:method:: get_ontology() -> owlapy.abstracts.abstract_owl_ontology.OWLOntology
+   .. py:method:: get_ontology() -> owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology
 
       Gets the ontology that the change is/was applied to.
 
@@ -34,13 +34,13 @@ Module Contents
 
 
 
-.. py:class:: OWLOntologyManager
+.. py:class:: AbstractOWLOntologyManager
 
    An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing
    ontologies.
 
 
-   .. py:method:: create_ontology(iri: Union[str, owlapy.iri.IRI]) -> owlapy.abstracts.abstract_owl_ontology.OWLOntology
+   .. py:method:: create_ontology(iri: Union[str, owlapy.iri.IRI]) -> owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology
       :abstractmethod:
 
 
@@ -52,7 +52,7 @@ Module Contents
 
 
 
-   .. py:method:: load_ontology(iri: Union[owlapy.iri.IRI, str]) -> owlapy.abstracts.abstract_owl_ontology.OWLOntology
+   .. py:method:: load_ontology(iri: Union[owlapy.iri.IRI, str]) -> owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology
       :abstractmethod:
 
 
@@ -68,7 +68,7 @@ Module Contents
 
 
 
-   .. py:method:: apply_change(change: OWLOntologyChange)
+   .. py:method:: apply_change(change: AbstractOWLOntologyChange)
       :abstractmethod:
 
 

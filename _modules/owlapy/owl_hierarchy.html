@@ -94,7 +94,7 @@
 <span class="kn">from</span> <span class="nn">owlapy.meta_classes</span> <span class="kn">import</span> <span class="n">HasIRI</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLTopObjectProperty</span><span class="p">,</span> <span class="n">OWLBottomObjectProperty</span><span class="p">,</span> <span class="n">OWLTopDataProperty</span><span class="p">,</span> <span class="n">OWLBottomDataProperty</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
-<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_reasoner</span> <span class="kn">import</span> <span class="n">OWLReasoner</span>
+<span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_reasoner</span> <span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
 
 <span class="n">_S</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_S&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">HasIRI</span><span class="p">)</span>  <span class="c1">#:</span>
 <span class="n">_U</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_U&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;AbstractHierarchy&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
@@ -127,20 +127,20 @@
         <span class="o">...</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">_S</span><span class="p">],</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">_S</span><span class="p">],</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">):</span>
         <span class="o">...</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">_S</span><span class="p">],</span> <span class="n">arg</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Type</span> <span class="o">=</span> <span class="n">factory</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">OWLReasoner</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">AbstractOWLReasoner</span><span class="p">):</span>
             <span class="n">hier_down_gen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hierarchy_down_generator</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">hier_down_gen</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
 
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]]]:</span>
+    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_S</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the suitable downwards hierarchy based on the reasoner.&quot;&quot;&quot;</span>
         <span class="k">pass</span>
 
@@ -401,7 +401,7 @@
         <span class="k">return</span> <span class="n">OWLNothing</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]]]:</span>
+    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]]]:</span>
         <span class="k">yield from</span> <span class="p">((</span><span class="n">_</span><span class="p">,</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
                     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">())</span>
 
@@ -427,7 +427,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchy_down</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]]]):</span> <span class="o">...</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">):</span> <span class="o">...</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span></div>
@@ -452,7 +452,7 @@
         <span class="k">return</span> <span class="n">OWLBottomObjectProperty</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">)</span> \
+    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">)</span> \
             <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]]]:</span>
         <span class="k">return</span> <span class="p">((</span><span class="n">_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">cast</span><span class="p">(</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span>
                         <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">),</span>
@@ -505,7 +505,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchy_down</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]]]):</span> <span class="o">...</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">):</span> <span class="o">...</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span></div>
@@ -530,7 +530,7 @@
         <span class="k">return</span> <span class="n">OWLBottomDataProperty</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">)</span> \
+    <span class="k">def</span> <span class="nf">_hierarchy_down_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">)</span> \
             <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]]]:</span>
         <span class="k">return</span> <span class="p">((</span><span class="n">_</span><span class="p">,</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">sub_data_properties</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
                 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">())</span>
@@ -581,7 +581,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchy_down</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]]]):</span> <span class="o">...</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">OWLReasoner</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reasoner</span><span class="p">:</span> <span class="n">AbstractOWLReasoner</span><span class="p">):</span> <span class="o">...</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span></div>
