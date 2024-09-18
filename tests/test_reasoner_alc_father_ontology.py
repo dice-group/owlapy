@@ -18,11 +18,10 @@ class TestHermitFather:
         # Female OWL CLass
         female = eval("OWLClass(IRI('http://example.com/father#', 'female'))")
         # hasChild object property
-        hasChild = eval("OWLObjectProperty(IRI('http://example.com/father#', 'hasChild'))")
+        hasChild = OWLObjectProperty(IRI('http://example.com/father#', 'hasChild'))
 
         # Things
-        assert hermit.instances(thing) == eval(
-            "{OWLNamedIndividual(IRI('http://example.com/father#', 'anna')), OWLNamedIndividual(IRI('http://example.com/father#', 'martin')), OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')), OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')), OWLNamedIndividual(IRI('http://example.com/father#', 'michelle')), OWLNamedIndividual(IRI('http://example.com/father#', 'markus'))}")
+        assert hermit.instances(thing) == {OWLNamedIndividual(IRI('http://example.com/father#', 'anna')), OWLNamedIndividual(IRI('http://example.com/father#', 'martin')), OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')), OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')), OWLNamedIndividual(IRI('http://example.com/father#', 'michelle')), OWLNamedIndividual(IRI('http://example.com/father#', 'markus'))}
 
         # hasChild a thing.
         assert hermit.instances(OWLObjectSomeValuesFrom(property=hasChild, filler=thing)) == eval(
