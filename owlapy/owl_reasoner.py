@@ -1216,7 +1216,10 @@ class SyncReasoner(AbstractOWLReasonerEx):
         else:
             raise NotImplementedError("Not implemented")
 
-    def instances(self, ce: OWLClassExpression, direct=False) -> List[OWLNamedIndividual]:
+
+        self.reasoner=reasoner
+
+    def instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
         Get the instances for a given class expression using HermiT.
 
@@ -1225,11 +1228,13 @@ class SyncReasoner(AbstractOWLReasonerEx):
             direct (bool): Whether to get direct instances or not. Defaults to False.
 
         Returns:
-            list: A list of individuals classified by the given class expression.
+            set: A set of individuals classified by the given class expression.
         """
-        inds = self._owlapi_reasoner.getInstances(self.mapper.map_(ce), direct).getFlattened()
-        assert str(type(inds)) == "<java class 'java.util.LinkedHashSet'>"
-        return [self.mapper.map_(ind) for ind in inds]
+        mapped_ce=self.mapper.map_(ce)
+        instances = self._owlapi_reasoner.getInstances(mapped_ce, direct)
+        flattended_instances = instances.getFlattened()
+        assert str(type(flattended_instances)) == "<java class 'java.util.LinkedHashSet'>"
+        return {self.mapper.map_(ind) for ind in flattended_instances}
 
     def equivalent_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
         """
