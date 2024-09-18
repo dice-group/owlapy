@@ -1453,9 +1453,12 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
 
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span><span class="o">=</span><span class="n">reasoner</span>
+
 <div class="viewcode-block" id="SyncReasoner.instances">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.instances">[docs]</a>
-    <span class="k">def</span> <span class="nf">instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the instances for a given class expression using HermiT.</span>
 
@@ -1464,11 +1467,13 @@
 <span class="sd">            direct (bool): Whether to get direct instances or not. Defaults to False.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list: A list of individuals classified by the given class expression.</span>
+<span class="sd">            set: A set of individuals classified by the given class expression.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">inds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getInstances</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">inds</span><span class="p">))</span> <span class="o">==</span> <span class="s2">&quot;&lt;java class &#39;java.util.LinkedHashSet&#39;&gt;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">inds</span><span class="p">]</span></div>
+        <span class="n">mapped_ce</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getInstances</span><span class="p">(</span><span class="n">mapped_ce</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span>
+        <span class="n">flattended_instances</span> <span class="o">=</span> <span class="n">instances</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">flattended_instances</span><span class="p">))</span> <span class="o">==</span> <span class="s2">&quot;&lt;java class &#39;java.util.LinkedHashSet&#39;&gt;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">flattended_instances</span><span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.equivalent_classes">
