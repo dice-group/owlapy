@@ -1231,7 +1231,6 @@ class SyncReasoner(OWLReasonerEx):
             set: A set of individuals classified by the given class expression.
         """
         mapped_ce=self.mapper.map_(ce)
-        assert str(type(mapped_ce)) == "<java class 'uk.ac.manchester.cs.owl.owlapi.OWLClassImpl'>"
         instances = self._owlapi_reasoner.getInstances(mapped_ce, direct)
         flattended_instances = instances.getFlattened()
         assert str(type(flattended_instances)) == "<java class 'java.util.LinkedHashSet'>"
