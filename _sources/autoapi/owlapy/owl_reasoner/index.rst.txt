@@ -27,10 +27,20 @@ Classes
    owlapy.owl_reasoner.SyncReasoner
 
 
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.owl_reasoner.run_with_timeout
+
+
 Module Contents
 ---------------
 
 .. py:data:: logger
+
+.. py:function:: run_with_timeout(func, timeout, args=(), kwargs={})
 
 .. py:class:: OntologyReasoner(ontology: owlapy.owl_ontology.Ontology)
 
@@ -183,13 +193,14 @@ Module Contents
 
 
 
-   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, timeout: int = 1000)
 
       Gets the individuals which are instances of the specified class expression.
 
       :param ce: The class expression whose instances are to be retrieved.
       :param direct: Specifies if the direct instances should be retrieved (True), or if all instances should be
                      retrieved (False).
+      :param timeout: Time limit in seconds until results must be returned, else empty set is returned.
 
       :returns: If direct is True, each named individual j where the set of reasoner axioms entails
                 DirectClassAssertion(ce, j). If direct is False, each named individual j where the set of reasoner axioms
@@ -536,13 +547,14 @@ Module Contents
 
 
 
-   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, timeout: int = 1000)
 
       Gets the individuals which are instances of the specified class expression.
 
       :param ce: The class expression whose instances are to be retrieved.
       :param direct: Specifies if the direct instances should be retrieved (True), or if all instances should be
                      retrieved (False).
+      :param timeout: Time limit in seconds until results must be returned, else empty set is returned.
 
       :returns: If direct is True, each named individual j where the set of reasoner axioms entails
                 DirectClassAssertion(ce, j). If direct is False, each named individual j where the set of reasoner axioms
@@ -736,17 +748,19 @@ Module Contents
    .. py:attribute:: reasoner
 
 
-   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct=False) -> Set[owlapy.owl_individual.OWLNamedIndividual]
+   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, timeout: int = 1000)
 
-      Get the instances for a given class expression using HermiT.
+      Gets the individuals which are instances of the specified class expression.
 
-      :param ce: The class expression in OWLAPY format.
-      :type ce: OWLClassExpression
-      :param direct: Whether to get direct instances or not. Defaults to False.
-      :type direct: bool
+      :param ce: The class expression whose instances are to be retrieved.
+      :param direct: Specifies if the direct instances should be retrieved (True), or if all instances should be
+                     retrieved (False).
+      :param timeout: Time limit in seconds until results must be returned, else empty set is returned.
 
-      :returns: A set of individuals classified by the given class expression.
-      :rtype: set
+      :returns: If direct is True, each named individual j where the set of reasoner axioms entails
+                DirectClassAssertion(ce, j). If direct is False, each named individual j where the set of reasoner axioms
+                entails ClassAssertion(ce, j). If ce is unsatisfiable with respect to the set of reasoner axioms then
+                nothing returned.
 
 
 
