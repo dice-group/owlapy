@@ -3,8 +3,7 @@ from typing import Iterable, TypeVar
 import jpype.imports
 
 from owlapy import owl_expression_to_manchester, manchester_to_owl_expression
-from owlapy.class_expression import OWLClassExpression, OWLDataOneOf, OWLFacetRestriction, OWLDatatypeRestriction, \
-    OWLNothing, OWLClass
+from owlapy.class_expression import OWLClassExpression, OWLDataOneOf, OWLFacetRestriction, OWLDatatypeRestriction
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationProperty, OWLClassAssertionAxiom, \
     OWLDataPropertyAssertionAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, \
