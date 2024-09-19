@@ -111,6 +111,7 @@ class OWLAPIMapper:
         ontology_set.add(self.ontology)
         bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
         entity_checker = ShortFormEntityChecker(bidi_provider)
+        bidi_provider.add(self.manager.getOWLDataFactory().getOWLNothing())
         self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
         self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
 
@@ -152,8 +153,6 @@ class OWLAPIMapper:
 
     @map_.register
     def _(self, e: OWLClassExpression):
-        if isinstance(e, OWLClass) and e.str == OWLNothing.str:
-            return OWLClassImpl(self.map_(e.iri))
         return self.parser.parse(owl_expression_to_manchester(e))
 
     @map_.register(OWLAnonymousClassExpressionImpl)
