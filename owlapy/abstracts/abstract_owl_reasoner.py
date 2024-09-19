@@ -201,13 +201,14 @@ class AbstractOWLReasoner(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+    def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000) -> Iterable[OWLNamedIndividual]:
         """Gets the individuals which are instances of the specified class expression.
 
         Args:
             ce: The class expression whose instances are to be retrieved.
             direct: Specifies if the direct instances should be retrieved (True), or if all instances should be
                 retrieved (False).
+            timeout: Time limit in seconds until results must be returned, else empty set is returned.
 
         Returns:
             If direct is True, each named individual j where the set of reasoner axioms entails
