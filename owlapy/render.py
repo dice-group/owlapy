@@ -20,7 +20,7 @@ from owlapy.vocab import OWLFacet
 from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .owl_datatype import OWLDatatype
-from .abstracts.abstract_owl_reasoner import OWLReasoner
+from .abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 import requests
 import warnings
 import abc
@@ -78,7 +78,7 @@ def translating_short_form_provider(e: OWLEntity, reasoner, rules: dict[str:str]
     label_iri = "http://www.w3.org/2000/01/rdf-schema#label"
 
     def get_label(entity, r, predicate=label_iri):
-        if isinstance(r, OWLReasoner):
+        if isinstance(r, AbstractOWLReasoner):
             values = list(r.data_property_values(entity, OWLDataProperty(predicate)))
             if values:
                 return str(values[0].get_literal())

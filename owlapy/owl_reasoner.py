@@ -21,21 +21,21 @@ from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUni
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology
-from owlapy.abstracts.abstract_owl_ontology import OWLOntology
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.owl_ontology_manager import SyncOntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.utils import LRUCache
-from owlapy.abstracts.abstract_owl_reasoner import OWLReasoner, OWLReasonerEx
+from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner, AbstractOWLReasonerEx
 
 logger = logging.getLogger(__name__)
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 
-class OntologyReasoner(OWLReasonerEx):
+class OntologyReasoner(AbstractOWLReasonerEx):
     __slots__ = '_ontology', '_world'
     # TODO: CD: We will remove owlready2 from owlapy
     _ontology: Ontology
@@ -576,11 +576,11 @@ class OntologyReasoner(OWLReasonerEx):
     #                                            infer_data_property_values=infer_data_property_values,
     #                                            debug=debug)
 
-    def get_root_ontology(self) -> OWLOntology:
+    def get_root_ontology(self) -> AbstractOWLOntology:
         return self._ontology
 
 
-class FastInstanceCheckerReasoner(OWLReasonerEx):
+class FastInstanceCheckerReasoner(AbstractOWLReasonerEx):
     """Tries to check instances fast (but maybe incomplete)."""
     __slots__ = '_ontology', '_base_reasoner', \
                 '_ind_set', '_cls_to_ind', \
@@ -591,8 +591,8 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
                 '_negation_default', \
                 '__warned'
 
-    _ontology: OWLOntology
-    _base_reasoner: OWLReasoner
+    _ontology: AbstractOWLOntology
+    _base_reasoner: AbstractOWLReasoner
     _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
     _has_prop: Mapping[Type[_P], LRUCache[_P, FrozenSet[OWLNamedIndividual]]]  # Type => Property => individuals
     _ind_set: FrozenSet[OWLNamedIndividual]
@@ -612,7 +612,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
     _negation_default: bool
     _sub_properties: bool
 
-    def __init__(self, ontology: OWLOntology, base_reasoner: OWLReasoner, *,
+    def __init__(self, ontology: AbstractOWLOntology, base_reasoner: AbstractOWLReasoner, *,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
         """Fast instance checker.
 
@@ -734,7 +734,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
             -> Iterable[OWLObjectPropertyExpression]:
         yield from self._base_reasoner.sub_object_properties(op=op, direct=direct)
 
-    def get_root_ontology(self) -> OWLOntology:
+    def get_root_ontology(self) -> AbstractOWLOntology:
         return self._ontology
 
     def _lazy_cache_obj_prop(self, pe: OWLObjectPropertyExpression) -> None:
@@ -1145,7 +1145,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
         yield from relations
 
 
-class SyncReasoner(OWLReasonerEx):
+class SyncReasoner(AbstractOWLReasonerEx):
 
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
@@ -1667,5 +1667,5 @@ class SyncReasoner(OWLReasonerEx):
         """
         self.infer_axioms_and_save(output, output_format, ["InferredClassAssertionAxiomGenerator"])
 
-    def get_root_ontology(self) -> OWLOntology:
+    def get_root_ontology(self) -> AbstractOWLOntology:
         return self.ontology
