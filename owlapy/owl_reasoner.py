@@ -2,7 +2,6 @@
 import operator
 import logging
 import threading
-import time
 
 import owlready2
 
