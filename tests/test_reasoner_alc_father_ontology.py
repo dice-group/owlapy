@@ -13,6 +13,9 @@ class TestHermitFather:
 
         # Thing
         thing = OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing'))
+        # Nothing
+        nothing = OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Nothing'))
+
         # Person OWL Class
         person = eval("OWLClass(IRI('http://example.com/father#', 'person'))")
         # Female OWL CLass
@@ -22,6 +25,9 @@ class TestHermitFather:
 
         # Things
         assert hermit.instances(thing) == {OWLNamedIndividual(IRI('http://example.com/father#', 'anna')), OWLNamedIndividual(IRI('http://example.com/father#', 'martin')), OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')), OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')), OWLNamedIndividual(IRI('http://example.com/father#', 'michelle')), OWLNamedIndividual(IRI('http://example.com/father#', 'markus'))}
+
+        # De Morgen Rules : Thing \equiv \neg Bottom
+        assert hermit.instances(thing) == hermit.instances(nothing.get_object_complement_of())
 
         # hasChild a thing.
         assert hermit.instances(OWLObjectSomeValuesFrom(property=hasChild, filler=thing)) == eval(
