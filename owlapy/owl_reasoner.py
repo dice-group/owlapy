@@ -29,25 +29,11 @@ from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OW
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.utils import LRUCache
+from owlapy.utils import LRUCache, run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner, AbstractOWLReasonerEx
-
 logger = logging.getLogger(__name__)
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
-
-
-def run_with_timeout(func, timeout, args=(), kwargs={}):
-    result = [None]
-    thread = threading.Thread(target=lambda: result.append(func(*args, **kwargs)))
-    thread.start()
-    thread.join(timeout)
-    if thread.is_alive():
-        print(f"{func.__self__.__class__.__name__}.instances timed out! Timeout limit is currently set to {timeout} "
-              f"seconds\nReturning empty results...")
-        return []
-    return result[-1]
-
 
 class OntologyReasoner(AbstractOWLReasonerEx):
     __slots__ = '_ontology', '_world'
