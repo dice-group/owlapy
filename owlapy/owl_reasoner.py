@@ -1,6 +1,8 @@
 """OWL Reasoner"""
 import operator
 import logging
+import threading
+
 import owlready2
 
 from collections import defaultdict
@@ -33,6 +35,18 @@ from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner, Abstract
 logger = logging.getLogger(__name__)
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
+
+
+def run_with_timeout(func, timeout, args=(), kwargs={}):
+    result = [None]
+    thread = threading.Thread(target=lambda: result.append(func(*args, **kwargs)))
+    thread.start()
+    thread.join(timeout)
+    if thread.is_alive():
+        print(f"{func.__self__.__class__.__name__}.instances timed out! Timeout limit is currently set to {timeout} "
+              f"seconds\nReturning empty results...")
+        return []
+    return result[-1]
 
 
 class OntologyReasoner(AbstractOWLReasonerEx):
@@ -198,7 +212,7 @@ class OntologyReasoner(AbstractOWLReasonerEx):
         else:
             raise NotImplementedError(pe)
 
-    def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+    def _instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
         if direct:
             if isinstance(ce, OWLClass):
                 c_x: owlready2.ThingClass = self._world[ce.str]
@@ -225,6 +239,9 @@ class OntologyReasoner(AbstractOWLReasonerEx):
             #             yield OWLNamedIndividual(IRI.create(i.iri))
             else:
                 raise NotImplementedError("instances for complex class expressions not implemented", ce)
+
+    def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
+        return run_with_timeout(self._instances, timeout, (ce, direct))
 
     def _sub_classes_recursive(self, ce: OWLClassExpression, seen_set: Set, only_named: bool = True) \
             -> Iterable[OWLClassExpression]:
@@ -690,13 +707,16 @@ class FastInstanceCheckerReasoner(AbstractOWLReasonerEx):
             -> Iterable[OWLNamedIndividual]:
         yield from self._base_reasoner.object_property_values(ind, pe, direct)
 
-    def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+    def _instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
         if direct:
             if not self.__warned & 2:
                 logger.warning("direct not implemented")
                 self.__warned |= 2
         temp = self._find_instances(ce)
         yield from temp
+
+    def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
+        return run_with_timeout(self._instances, timeout, (ce, direct))
 
     def sub_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
             -> Iterable[OWLClassExpression]:
@@ -1216,10 +1236,9 @@ class SyncReasoner(AbstractOWLReasonerEx):
         else:
             raise NotImplementedError("Not implemented")
 
+        self.reasoner = reasoner
 
-        self.reasoner=reasoner
-
-    def instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
+    def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
         Get the instances for a given class expression using HermiT.
 
@@ -1230,11 +1249,14 @@ class SyncReasoner(AbstractOWLReasonerEx):
         Returns:
             set: A set of individuals classified by the given class expression.
         """
-        mapped_ce=self.mapper.map_(ce)
+        mapped_ce = self.mapper.map_(ce)
         instances = self._owlapi_reasoner.getInstances(mapped_ce, direct)
         flattended_instances = instances.getFlattened()
         assert str(type(flattended_instances)) == "<java class 'java.util.LinkedHashSet'>"
         return {self.mapper.map_(ind) for ind in flattended_instances}
+
+    def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
+        return run_with_timeout(self._instances, timeout, (ce, direct))
 
     def equivalent_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
         """
