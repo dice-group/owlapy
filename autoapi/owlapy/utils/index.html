@@ -87,6 +87,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.run_with_timeout"><code class="docutils literal notranslate"><span class="pre">run_with_timeout()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.concept_reducer"><code class="docutils literal notranslate"><span class="pre">concept_reducer()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.concept_reducer_properties"><code class="docutils literal notranslate"><span class="pre">concept_reducer_properties()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric"><code class="docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric</span></code></a><ul>
@@ -281,22 +282,25 @@
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer" title="owlapy.utils.concept_reducer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer</span></code></a>(concepts, opt)</p></td>
-<td><p>Reduces a set of concepts by applying a binary operation to each pair of concepts.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer_properties" title="owlapy.utils.concept_reducer_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer_properties</span></code></a>(...)</p></td>
-<td><p>Map a set of owl concepts and a set of properties into OWL Restrictions</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.get_expression_length" title="owlapy.utils.get_expression_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_expression_length</span></code></a>(→ int)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.run_with_timeout" title="owlapy.utils.run_with_timeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_with_timeout</span></code></a>(func, timeout[, args])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.combine_nary_expressions" title="owlapy.utils.combine_nary_expressions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">combine_nary_expressions</span></code></a>(…)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer" title="owlapy.utils.concept_reducer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer</span></code></a>(concepts, opt)</p></td>
+<td><p>Reduces a set of concepts by applying a binary operation to each pair of concepts.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer_properties" title="owlapy.utils.concept_reducer_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer_properties</span></code></a>(...)</p></td>
+<td><p>Map a set of owl concepts and a set of properties into OWL Restrictions</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.get_expression_length" title="owlapy.utils.get_expression_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_expression_length</span></code></a>(→ int)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.combine_nary_expressions" title="owlapy.utils.combine_nary_expressions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">combine_nary_expressions</span></code></a>(…)</p></td>
 <td><p>Shortens an OWLClassExpression or OWLDataRange by combining all nested nary expressions of the same type.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.iter_count" title="owlapy.utils.iter_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_count</span></code></a>(→ int)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.iter_count" title="owlapy.utils.iter_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_count</span></code></a>(→ int)</p></td>
 <td><p>Count the number of elements in an iterable.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.as_index" title="owlapy.utils.as_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_index</span></code></a>(→ HasIndex)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.as_index" title="owlapy.utils.as_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_index</span></code></a>(→ HasIndex)</p></td>
 <td><p>Cast OWL Object to HasIndex.</p></td>
 </tr>
 </tbody>
@@ -304,6 +308,11 @@
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.run_with_timeout">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">run_with_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#run_with_timeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.run_with_timeout" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="owlapy.utils.concept_reducer">
 <span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">concept_reducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">concepts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#concept_reducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.concept_reducer" title="Link to this definition"></a></dt>
