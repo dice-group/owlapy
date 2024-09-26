@@ -1171,8 +1171,10 @@ class SyncReasoner(AbstractOWLReasonerEx):
             self.manager = ontology.manager
             self.ontology = ontology
         elif isinstance(ontology, str):
+            # https://owlcs.github.io/owlapi/apidocs_5/org/semanticweb/owlapi/apibinding/OWLManager.html
             self.manager = SyncOntologyManager()
-            self.ontology = self.manager.load_ontology(ontology)
+            # OWLOntology
+            self.ontology = self.manager.load_ontology(iri=ontology)
 
         self._owlapi_manager = self.manager.get_owlapi_manager()
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
@@ -1640,11 +1642,12 @@ class SyncReasoner(AbstractOWLReasonerEx):
             if java_object := self.inference_types_mapping.get(i, None):
                 generators.add(java_object)
         iog = InferredOntologyGenerator(self._owlapi_reasoner, generators)
-        inferred_axioms_ontology = self._owlapi_manager.createOntology()
-        iog.fillOntology(self._owlapi_manager.getOWLDataFactory(), inferred_axioms_ontology)
-        inferred_ontology_file = File(output_path).getAbsoluteFile()
-        output_stream = FileOutputStream(inferred_ontology_file)
-        self._owlapi_manager.saveOntology(inferred_axioms_ontology, document_format, output_stream)
+        # CD: No need to create a new ontology
+        # inferred_axioms_ontology = self._owlapi_manager.createOntology()
+        iog.fillOntology(self._owlapi_manager.getOWLDataFactory(), self._owlapi_ontology)
+        self._owlapi_manager.saveOntology(self._owlapi_ontology,
+                                          document_format,
+                                          FileOutputStream(File(output_path).getAbsoluteFile()))
 
     def generate_and_save_inferred_class_assertion_axioms(self, output="temp.ttl", output_format: str = None):
         """
