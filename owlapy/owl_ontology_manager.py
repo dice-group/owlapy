@@ -113,6 +113,10 @@ class OntologyManager(AbstractOWLOntologyManager):
 
 
 class SyncOntologyManager(AbstractOWLOntologyManager):
+    """
+    Create OWLManager in Python
+    https://owlcs.github.io/owlapi/apidocs_5/org/semanticweb/owlapi/apibinding/OWLManager.html
+    """
 
     # WARN: Do not move local imports to top of the module
     def __init__(self):
