@@ -1,8 +1,6 @@
 """OWL Reasoner"""
 import operator
 import logging
-import threading
-
 import owlready2
 
 from collections import defaultdict
