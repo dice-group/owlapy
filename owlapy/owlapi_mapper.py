@@ -111,6 +111,7 @@ class OWLAPIMapper:
         bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
         entity_checker = ShortFormEntityChecker(bidi_provider)
         bidi_provider.add(self.manager.getOWLDataFactory().getOWLNothing())
+        bidi_provider.add(self.manager.getOWLDataFactory().getOWLThing())
         self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
         self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
 
