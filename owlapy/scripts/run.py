@@ -11,7 +11,8 @@ inference_types = ["InferredClassAssertionAxiomGenerator",
                    "InferredSubDataPropertyAxiomGenerator",
                    "InferredSubObjectPropertyAxiomGenerator",
                    "InferredDataPropertyCharacteristicAxiomGenerator",
-                   "InferredObjectPropertyCharacteristicAxiomGenerator"]
+                   "InferredObjectPropertyCharacteristicAxiomGenerator"
+                   ]
 
 
 def get_default_arguments(description=None):
@@ -38,12 +39,13 @@ def get_default_arguments(description=None):
 def main():
 
     args = get_default_arguments()
-    sync_reasoner = SyncReasoner(args.path_ontology)
+    sync_reasoner = SyncReasoner(ontology=args.path_ontology)
     if "all" in args.inference_types:
         it = inference_types
     else:
         it = args.inference_types
-    sync_reasoner.infer_axioms_and_save(output_path=args.out_ontology, output_format=args.output_type,
+    sync_reasoner.infer_axioms_and_save(output_path=args.out_ontology,
+                                        output_format=args.output_type,
                                         inference_types=it)
     print("Finished inferring axioms \nOutput filename: '{}'".format(args.out_ontology))
 

@@ -20,6 +20,17 @@ from .owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataInterse
 from .owl_object import OWLObject
 from .owl_datatype import OWLDatatype
 
+import concurrent.futures
+def run_with_timeout(func, timeout, args=(), **kwargs):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future = executor.submit(func, *args, **kwargs)
+        try:
+            result = future.result(timeout=timeout)
+            return result
+        except concurrent.futures.TimeoutError:
+            return set()
+
+
 def concept_reducer(concepts:Iterable, opt:Callable):
     """
     Reduces a set of concepts by applying a binary operation to each pair of concepts.
