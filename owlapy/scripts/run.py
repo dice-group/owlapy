@@ -47,7 +47,7 @@ def main():
     sync_reasoner.infer_axioms_and_save(output_path=args.out_ontology,
                                         output_format=args.output_type,
                                         inference_types=it)
-    print("Finished inferring axioms \nOutput filename: '{}'".format(args.out_ontology))
+    print("\nFinished inferring axioms \nOutput filename: '{}'".format(args.out_ontology))
 
 
 if __name__ == '__main__':
