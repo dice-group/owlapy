@@ -2,7 +2,7 @@ import subprocess
 import sys
 import unittest
 
-from owlapy.class_expression import OWLClass, OWLNothing, OWLThing
+from owlapy.class_expression import OWLClass, OWLNothing
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLSymmetricObjectPropertyAxiom, OWLReflexiveObjectPropertyAxiom
 from owlapy.owl_ontology_manager import SyncOntologyManager
