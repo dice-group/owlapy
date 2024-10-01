@@ -509,6 +509,10 @@ class OWLAPIMapper:
                 java_list.add(self.map_(item))
         return java_list
 
+    @map_.register(Stream)
+    def _(self, e):
+        return self.to_list(e)
+
     @staticmethod
     def to_list(stream_obj):
         """Converts Java Stream object to Python list"""
