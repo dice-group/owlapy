@@ -1676,5 +1676,34 @@ class SyncReasoner(AbstractOWLReasonerEx):
         """
         self.infer_axioms_and_save(output, output_format, ["InferredClassAssertionAxiomGenerator"])
 
+    def is_entailed(self, axiom: OWLAxiom) -> bool:
+        """A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.
+
+        Args:
+            axiom: The axiom to check for entailment.
+
+        Return:
+            True if the axiom is entailed by the reasoner axioms and False otherwise.
+        """
+        return bool(self._owlapi_reasoner.isEntailed(self.mapper.map_(axiom)))
+
+    def is_satisfiable(self, ce: OWLClassExpression) -> bool:
+        """A convenience method that determines if the specified class expression is satisfiable with respect
+        to the reasoner axioms.
+
+        Args:
+            ce: The class expression to check for satisfiability.
+
+        Return:
+            True if the class expression is satisfiable by the reasoner axioms and False otherwise.
+        """
+
+        return bool(self._owlapi_reasoner.isSatisfiable(self.mapper.map_(ce)))
+
+    def unsatisfiable_classes(self):
+        """A convenience method that obtains the classes in the signature of the root ontology that are
+        unsatisfiable."""
+        return self.mapper.map_(self._owlapi_reasoner.unsatisfiableClasses())
+
     def get_root_ontology(self) -> AbstractOWLOntology:
         return self.ontology
