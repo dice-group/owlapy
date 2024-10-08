@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
@@ -5,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>owlapy.owl_reasoner &mdash; OWLAPY 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
@@ -13,15 +15,11 @@
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -1986,6 +1984,44 @@
 <span class="sd">        This will save the inferred class assertion axioms to the file &quot;inferred_axioms.ttl&quot; in Turtle format.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">infer_axioms_and_save</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">output_format</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.is_entailed">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.is_entailed">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_entailed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            axiom: The axiom to check for entailment.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            True if the axiom is entailed by the reasoner axioms and False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">isEntailed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.is_satisfiable">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.is_satisfiable">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_satisfiable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that determines if the specified class expression is satisfiable with respect</span>
+<span class="sd">        to the reasoner axioms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ce: The class expression to check for satisfiability.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            True if the class expression is satisfiable by the reasoner axioms and False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">isSatisfiable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.unsatisfiable_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">unsatisfiable_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that obtains the classes in the signature of the root ontology that are</span>
+<span class="sd">        unsatisfiable.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">unsatisfiableClasses</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.get_root_ontology">

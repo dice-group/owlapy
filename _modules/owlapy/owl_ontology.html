@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
@@ -5,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>owlapy.owl_ontology &mdash; OWLAPY 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
@@ -13,15 +15,11 @@
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -1235,6 +1233,57 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.object_property_range_axioms">[docs]</a>
     <span class="k">def</span> <span class="nf">object_property_range_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyRangeAxiom</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="o">.</span><span class="n">getObjectPropertyRangeAxioms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="nb">property</span><span class="p">)))</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_get_imports_enum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_imports_closure</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.model.parameters</span> <span class="kn">import</span> <span class="n">Imports</span>
+        <span class="k">if</span> <span class="n">include_imports_closure</span><span class="p">:</span>
+            <span class="n">imports</span> <span class="o">=</span> <span class="n">Imports</span><span class="o">.</span><span class="n">INCLUDED</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">imports</span> <span class="o">=</span> <span class="n">Imports</span><span class="o">.</span><span class="n">EXCLUDED</span>
+        <span class="k">return</span> <span class="n">imports</span>
+
+<div class="viewcode-block" id="SyncOntology.get_signature">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.get_signature">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_imports_closure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the entities that are in the signature of this ontology.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include_imports_closure: Whether to include/exclude imports from searches.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Entities in signature.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="o">.</span><span class="n">getSignature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_imports_enum</span><span class="p">(</span><span class="n">include_imports_closure</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="SyncOntology.get_abox_axioms">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.get_abox_axioms">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_abox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_imports_closure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all ABox axioms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include_imports_closure: Whether to include/exclude imports from searches.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ABox axioms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="o">.</span><span class="n">getABoxAxioms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_imports_enum</span><span class="p">(</span><span class="n">include_imports_closure</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="SyncOntology.get_tbox_axioms">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.get_tbox_axioms">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tbox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_imports_closure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all TBox axioms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include_imports_closure: Whether to include/exclude imports from searches.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TBox axioms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="o">.</span><span class="n">getTBoxAxioms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_imports_enum</span><span class="p">(</span><span class="n">include_imports_closure</span><span class="p">)))</span></div>
 
 
 <div class="viewcode-block" id="SyncOntology.get_owl_ontology_manager">

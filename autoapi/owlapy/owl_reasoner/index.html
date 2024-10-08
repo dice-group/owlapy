@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
@@ -6,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>owlapy.owl_reasoner &mdash; OWLAPY 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=7ab3649f" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
       <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
       <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
@@ -14,15 +16,11 @@
 
   
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=1f29e9d3"></script>
-        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=1f29e9d3"></script>
+      <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -166,6 +164,9 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.infer_axioms"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.infer_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.infer_axioms_and_save"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.infer_axioms_and_save()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.generate_and_save_inferred_class_assertion_axioms"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.generate_and_save_inferred_class_assertion_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.is_entailed"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.is_entailed()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.is_satisfiable"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.is_satisfiable()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.unsatisfiable_classes()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.get_root_ontology"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.get_root_ontology()</span></code></a></li>
 </ul>
 </li>
@@ -1709,6 +1710,42 @@ InferredClassAssertionAxiomGenerator.</p></li>
 </pre></div>
 </div>
 </section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.is_entailed">
+<span class="sig-name descname"><span class="pre">is_entailed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.is_entailed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.is_entailed" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axiom</strong> – The axiom to check for entailment.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the axiom is entailed by the reasoner axioms and False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.is_satisfiable">
+<span class="sig-name descname"><span class="pre">is_satisfiable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.is_satisfiable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.is_satisfiable" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that determines if the specified class expression is satisfiable with respect
+to the reasoner axioms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ce</strong> – The class expression to check for satisfiability.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the class expression is satisfiable by the reasoner axioms and False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes">
+<span class="sig-name descname"><span class="pre">unsatisfiable_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.unsatisfiable_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that obtains the classes in the signature of the root ontology that are
+unsatisfiable.</p>
 </dd></dl>
 
 <dl class="py method">
