@@ -511,7 +511,9 @@ class OWLAPIMapper:
 
     @map_.register(Stream)
     def _(self, e):
-        return self.to_list(e)
+        # for en in self.to_list(e):
+        #     yield self.map_(en)
+        return self.map_(self.to_list(e))
 
     @staticmethod
     def to_list(stream_obj):
