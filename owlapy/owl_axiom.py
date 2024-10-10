@@ -989,8 +989,8 @@ class OWLPropertyAssertionAxiom(Generic[_P, _C], OWLIndividualAxiom, metaclass=A
         return hash((self._subject, self._property, self._object, *self._annotations))
 
     def __repr__(self):
-        return f'{type(self).__name__}(subject={self._subject},property={self._property},' \
-               f'object={self._object},annotation={self._annotations})'
+        return f'{type(self).__name__}(subject={self._subject},property_={self._property},' \
+               f'object_={self._object},annotations={self._annotations})'
 
 
 class OWLObjectPropertyAssertionAxiom(OWLPropertyAssertionAxiom[OWLObjectPropertyExpression, OWLIndividual]):
