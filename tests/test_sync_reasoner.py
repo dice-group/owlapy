@@ -3,7 +3,7 @@ import unittest
 
 from jpype import JDouble
 from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIntersectionOf, OWLNothing, OWLThing, \
-    OWLClassExpression
+    OWLClassExpression, OWLObjectSomeValuesFrom
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDisjointClassesAxiom, OWLDeclarationAxiom, OWLClassAssertionAxiom, OWLSubClassOfAxiom, \
     OWLEquivalentClassesAxiom, OWLSubDataPropertyOfAxiom, OWLSubObjectPropertyOfAxiom
@@ -351,3 +351,20 @@ class TestSyncReasoner(unittest.TestCase):
                     OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r1')),super_property=OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#','topObjectProperty')),annotations=[]),
                     OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r3')),super_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r4')),annotations=[]),
                     OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','r6')),super_property=OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#','topObjectProperty')),annotations=[])])
+
+    def test_entailment(self):
+        self.assertTrue(reasoner2.is_entailed(OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','D')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),annotations=[])))
+        self.assertFalse(reasoner2.is_entailed(OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','B')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','D')),annotations=[])))
+        self.assertFalse(reasoner2.is_entailed(OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','C')),super_class=OWLClass(IRI('http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#','G')),annotations=[])))
+
+    def test_satisfiability(self):
+        ST = OWLObjectIntersectionOf([S, T])
+        LM = OWLObjectIntersectionOf([L, M])
+        r7E = OWLObjectSomeValuesFrom(property=r7, filler=E)
+        self.assertTrue(reasoner2.is_satisfiable(ST))
+        self.assertTrue(reasoner2.is_satisfiable(r7E))
+        self.assertFalse(reasoner2.is_satisfiable(LM))
+
+    def test_unsatisfiability(self):
+        self.assertEqual(list(reasoner2.unsatisfiable_classes()), [OWLNothing])
+        self.assertNotEquals(list(reasoner2.unsatisfiable_classes()), [OWLThing])

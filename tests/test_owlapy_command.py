@@ -40,11 +40,11 @@ class TestOwlapyCommand(unittest.TestCase):
         reflexive_axioms = mapper.map_(
             onto.get_owlapi_ontology().getAxioms(AxiomType.REFLEXIVE_OBJECT_PROPERTY).stream())
 
-        self.assertEqual(mapper.map_(symetrical_axioms[0]),
+        self.assertEqual(list(symetrical_axioms)[0],
                          OWLSymmetricObjectPropertyAxiom(OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#',
                                                                                'topObjectProperty')), []))
 
-        self.assertEqual(mapper.map_(reflexive_axioms[0]),
+        self.assertEqual(list(reflexive_axioms)[0],
                          OWLReflexiveObjectPropertyAxiom(OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#',
                                                                                'topObjectProperty')), []))
 

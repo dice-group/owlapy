@@ -1024,6 +1024,48 @@ class SyncOntology(AbstractOWLOntology):
     def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
         return self.mapper.map_(self.owlapi_ontology.getObjectPropertyRangeAxioms(self.mapper.map_(property)))
 
+    def _get_imports_enum(self, include_imports_closure: bool):
+        from org.semanticweb.owlapi.model.parameters import Imports
+        if include_imports_closure:
+            imports = Imports.INCLUDED
+        else:
+            imports = Imports.EXCLUDED
+        return imports
+
+    def get_signature(self, include_imports_closure: bool = True):
+        """Gets the entities that are in the signature of this ontology.
+
+        Args:
+            include_imports_closure: Whether to include/exclude imports from searches.
+
+        Returns:
+            Entities in signature.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
+
+    def get_abox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
+        """Get all ABox axioms.
+
+        Args:
+            include_imports_closure: Whether to include/exclude imports from searches.
+
+        Returns:
+            ABox axioms.
+        """
+
+        return self.mapper.map_(self.owlapi_ontology.getABoxAxioms(self._get_imports_enum(include_imports_closure)))
+
+    def get_tbox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
+        """Get all TBox axioms.
+
+        Args:
+            include_imports_closure: Whether to include/exclude imports from searches.
+
+        Returns:
+            TBox axioms.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getTBoxAxioms(self._get_imports_enum(include_imports_closure)))
+
     def get_owl_ontology_manager(self) -> _M:
         return self.manager
 
