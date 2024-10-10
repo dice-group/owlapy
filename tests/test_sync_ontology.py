@@ -1,8 +1,9 @@
 import unittest
 
-from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
+from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectComplementOf
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLEquivalentClassesAxiom
+from owlapy.owl_axiom import OWLEquivalentClassesAxiom, OWLClassAssertionAxiom, OWLObjectPropertyAssertionAxiom, \
+    OWLSubClassOfAxiom, OWLObjectPropertyRangeAxiom, OWLObjectPropertyDomainAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology import OWLOntologyID
 from owlapy.owl_ontology_manager import SyncOntologyManager
@@ -69,6 +70,9 @@ S = OWLClass(IRI(NS, 'S'))
 T = OWLClass(IRI(NS, 'T'))
 U = OWLClass(IRI(NS, 'U'))
 
+father_onto_path = "KGs/Family/father.owl"
+father_manager = SyncOntologyManager()
+father_onto = father_manager.load_ontology(father_onto_path)
 
 class TestSyncReasoner(unittest.TestCase):
 
@@ -110,3 +114,39 @@ class TestSyncReasoner(unittest.TestCase):
     def test__eq__(self):
         onto2 = self.manager.load_ontology(self.ontology_path)
         self.assertTrue(self.onto.__eq__(onto2))
+
+    def test_get_signature(self):
+        self.assertCountEqual(father_onto.get_signature(),
+                              [OWLClass(IRI('http://example.com/father#', 'female')),
+                               OWLClass(IRI('http://example.com/father#', 'male')),
+                               OWLClass(IRI('http://example.com/father#', 'person')),
+                               OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')),
+                               OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),
+                               OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),
+                               OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),
+                               OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),
+                               OWLNamedIndividual(IRI('http://example.com/father#', 'martin')),
+                               OWLNamedIndividual(IRI('http://example.com/father#', 'michelle')),
+                               OWLNamedIndividual(IRI('http://example.com/father#', 'stefan'))])
+
+    def test_get_abox(self):
+        self.assertCountEqual(father_onto.get_abox_axioms(),
+                              [OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'martin')),class_expression=OWLClass(IRI('http://example.com/father#', 'male')),annotations=[]),
+                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),class_expression=OWLClass(IRI('http://example.com/father#', 'male')),annotations=[]),
+                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'michelle')),class_expression=OWLClass(IRI('http://example.com/father#', 'female')),annotations=[]),
+                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),class_expression=OWLClass(IRI('http://example.com/father#', 'male')),annotations=[]),
+                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')),class_expression=OWLClass(IRI('http://example.com/father#', 'male')),annotations=[]),
+                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),class_expression=OWLClass(IRI('http://example.com/father#', 'female')),annotations=[]),
+                               OWLObjectPropertyAssertionAxiom(subject=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),object_=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),annotations=[]),
+                               OWLObjectPropertyAssertionAxiom(subject=OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')),property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),object_=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),annotations=[]),
+                               OWLObjectPropertyAssertionAxiom(subject=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),object_=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),annotations=[]),
+                               OWLObjectPropertyAssertionAxiom(subject=OWLNamedIndividual(IRI('http://example.com/father#', 'martin')),property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),object_=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),annotations=[])])
+
+    def test_get_tbox(self):
+        self.assertCountEqual(father_onto.get_tbox_axioms(),
+                              [OWLEquivalentClassesAxiom([OWLClass(IRI('http://example.com/father#', 'male')), OWLObjectComplementOf(OWLClass(IRI('http://example.com/father#', 'female')))],[]),
+                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'female')),super_class=OWLClass(IRI('http://example.com/father#', 'person')),annotations=[]),
+                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'male')),super_class=OWLClass(IRI('http://example.com/father#', 'person')),annotations=[]),
+                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'person')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')),annotations=[]),
+                               OWLObjectPropertyRangeAxiom(OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),OWLClass(IRI('http://example.com/father#', 'person')),[]),
+                               OWLObjectPropertyDomainAxiom(OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),OWLClass(IRI('http://example.com/father#', 'person')),[])])
