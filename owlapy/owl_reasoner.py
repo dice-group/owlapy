@@ -28,12 +28,13 @@ from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OW
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.utils import LRUCache, run_with_timeout
-from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner, AbstractOWLReasonerEx
+from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 logger = logging.getLogger(__name__)
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
-class OntologyReasoner(AbstractOWLReasonerEx):
+
+class OntologyReasoner(AbstractOWLReasoner):
     __slots__ = '_ontology', '_world'
     # TODO: CD: We will remove owlready2 from owlapy
     _ontology: Ontology
@@ -581,7 +582,7 @@ class OntologyReasoner(AbstractOWLReasonerEx):
         return self._ontology
 
 
-class FastInstanceCheckerReasoner(AbstractOWLReasonerEx):
+class FastInstanceCheckerReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
     __slots__ = '_ontology', '_base_reasoner', \
                 '_ind_set', '_cls_to_ind', \
@@ -1149,7 +1150,7 @@ class FastInstanceCheckerReasoner(AbstractOWLReasonerEx):
         yield from relations
 
 
-class SyncReasoner(AbstractOWLReasonerEx):
+class SyncReasoner(AbstractOWLReasoner):
 
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
