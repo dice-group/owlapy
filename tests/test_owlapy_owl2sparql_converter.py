@@ -408,6 +408,36 @@ FILTER NOT EXISTS {
     #     # self.assertEqual(len(sparql_results_actual), len(reasoner_results))
     #     # self.assertTrue(check_reasoner_instances_in_sparql_results(sparql_results_actual, reasoner_results))
 
+    def test_ConfusionMatrixQuery(self):
+        # rdf graph - using rdflib
+        family_rdf_graph = Graph()
+        family_rdf_graph.parse(location=PATH_FAMILY)
+
+        ce_str = "Brother"
+        ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
+
+        positive_examples = [
+            DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str="F10M173"),
+            DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str="F10M183"),
+        ]
+
+        negative_examples = [
+            DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str="F10M184"),
+            DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str="F10F179"),
+        ]
+
+        query_with_confusion_matrix = Owl2SparqlConverter().as_confusion_matrix_query(root_variable=self._root_var_,
+                                                                                      ce=ce_parsed,
+                                                                                      positive_examples=positive_examples,
+                                                                                      negative_examples=negative_examples,
+                                                                                      for_all_de_morgan=True,
+                                                                                      named_individuals=True)
+
+        sparql_results = family_rdf_graph.query(query_with_confusion_matrix)
+        self.assertEqual(float(sparql_results.bindings[0]["tp"]), 2.0)
+        self.assertEqual(float(sparql_results.bindings[0]["fn"]), 0.0)
+        self.assertEqual(float(sparql_results.bindings[0]["fp"]), 1.0)
+        self.assertEqual(float(sparql_results.bindings[0]["tn"]), 1.0)
 
 if __name__ == '__main__':
     unittest.main()
