@@ -774,6 +774,64 @@
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
         <span class="n">parseQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">query</span></div>
+
+
+<div class="viewcode-block" id="Owl2SparqlConverter.as_confusion_matrix_query">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.as_confusion_matrix_query">[docs]</a>
+    <span class="k">def</span> <span class="nf">as_confusion_matrix_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                  <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                  <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                                  <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+                                  <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+                                  <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                                  <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># get the graph pattern corresponding to the provided class expression (ce)</span>
+        <span class="n">graph_pattern_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span>
+                                                 <span class="n">ce</span><span class="p">,</span>
+                                                 <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                                 <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">))</span>
+        <span class="c1"># preparation for the final query</span>
+
+        <span class="c1"># required to compute false negatives</span>
+        <span class="n">number_of_positive_examples</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># required to compute true negatives</span>
+        <span class="n">number_of_negative_examples</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># string representation of the positive examples (to be passed to the first VALUES clause)</span>
+        <span class="n">positive_examples_as_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="c1"># iterate over the positive examples</span>
+        <span class="k">for</span> <span class="n">positive_example</span> <span class="ow">in</span> <span class="n">positive_examples</span><span class="p">:</span>
+            <span class="n">number_of_positive_examples</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">positive_examples_as_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">positive_example</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt; &quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">positive_examples_as_str</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># string representation of the positive examples (to be passed to the first VALUES clause)</span>
+        <span class="n">negative_examples_as_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="c1"># iterate over the negative examples</span>
+        <span class="k">for</span> <span class="n">negative_example</span> <span class="ow">in</span> <span class="n">negative_examples</span><span class="p">:</span>
+            <span class="n">number_of_negative_examples</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">negative_examples_as_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">negative_example</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt; &quot;</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">negative_examples_as_str</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># create the sparql query</span>
+        <span class="n">sparql_str</span><span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    PREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;</span>
+<span class="s2">                    SELECT * WHERE </span><span class="se">{{</span>
+<span class="s2">                       </span><span class="se">{{</span>
+<span class="s2">                          SELECT (xsd:double(COUNT(DISTINCT </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2">)) as ?tp) (xsd:double((</span><span class="si">{</span><span class="n">number_of_positive_examples</span><span class="si">}</span><span class="s2"> - COUNT(DISTINCT </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2">))) as ?fn) WHERE </span><span class="se">{{</span>
+<span class="s2">                             VALUES </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2"> </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="n">positive_examples_as_str</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span>
+<span class="s2">                             </span><span class="si">{</span><span class="n">graph_pattern_str</span><span class="si">}</span>
+<span class="s2">                          </span><span class="se">}}</span>
+<span class="s2">                       </span><span class="se">}}</span>
+<span class="s2">                       </span><span class="se">{{</span>
+<span class="s2">                          SELECT DISTINCT (xsd:double(COUNT(DISTINCT </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2">)) as ?fp) (xsd:double((</span><span class="si">{</span><span class="n">number_of_negative_examples</span><span class="si">}</span><span class="s2"> - COUNT(DISTINCT </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2">))) as ?tn) WHERE </span><span class="se">{{</span>
+<span class="s2">                             VALUES </span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2"> </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="n">negative_examples_as_str</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span>
+<span class="s2">                             </span><span class="si">{</span><span class="n">graph_pattern_str</span><span class="si">}</span>
+<span class="s2">                          </span><span class="se">}}</span>
+<span class="s2">                       </span><span class="se">}}</span>
+<span class="s2">                    </span><span class="se">}}</span>
+<span class="s2">                    &quot;&quot;&quot;</span>
+        <span class="n">parseQuery</span><span class="p">(</span><span class="n">sparql_str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sparql_str</span></div>
 </div>
 
 
@@ -801,6 +859,36 @@
     <span class="k">assert</span> <span class="n">expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;expression cannot be None&quot;</span>
     <span class="k">return</span> <span class="n">converter</span><span class="o">.</span><span class="n">as_query</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
                               <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span> <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="owl_expression_to_sparql_with_confusion_matrix">
+<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.owl_expression_to_sparql_with_confusion_matrix">[docs]</a>
+<span class="k">def</span> <span class="nf">owl_expression_to_sparql_with_confusion_matrix</span><span class="p">(</span><span class="n">expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                                                   <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]],</span>
+                                                   <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]],</span>
+                                                   <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?x&quot;</span><span class="p">,</span>
+                                                   <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                                                   <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query</span>
+<span class="sd">     root variable: the variable that will be projected</span>
+<span class="sd">     expression: the class expression to be transformed to a SPARQL query</span>
+<span class="sd">     positive_examples: positive examples from a class expression problem</span>
+<span class="sd">     negative_examples: positive examples from a class expression problem</span>
+<span class="sd">     for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS</span>
+<span class="sd">     patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query</span>
+<span class="sd">     named_individuals: if set to True, the generated SPARQL query will return only entities</span>
+<span class="sd">     that are instances of owl:NamedIndividual</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;expression cannot be None&quot;</span>
+    <span class="k">assert</span> <span class="n">positive_examples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;positive examples cannot be None&quot;</span>
+    <span class="k">assert</span> <span class="n">negative_examples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;negative examples cannot be None&quot;</span>
+    <span class="k">return</span> <span class="n">converter</span><span class="o">.</span><span class="n">as_confusion_matrix_query</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span>
+                                               <span class="n">expression</span><span class="p">,</span>
+                                               <span class="n">positive_examples</span><span class="o">=</span><span class="n">positive_examples</span><span class="p">,</span>
+                                               <span class="n">negative_examples</span><span class="o">=</span><span class="n">negative_examples</span><span class="p">,</span>
+                                               <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                                               <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">)</span></div>
 
 </pre></div>
 
