@@ -434,10 +434,11 @@ FILTER NOT EXISTS {
                                                                                       named_individuals=True)
 
         sparql_results = family_rdf_graph.query(query_with_confusion_matrix)
-        self.assertEqual(float(sparql_results.bindings[0]["tp"]), 2.0)
-        self.assertEqual(float(sparql_results.bindings[0]["fn"]), 0.0)
-        self.assertEqual(float(sparql_results.bindings[0]["fp"]), 1.0)
-        self.assertEqual(float(sparql_results.bindings[0]["tn"]), 1.0)
+        print(str(sparql_results.bindings))
+        self.assertEqual(int(sparql_results.bindings[0]["tp"]), 2)
+        self.assertEqual(int(sparql_results.bindings[0]["fn"]), 0)
+        self.assertEqual(int(sparql_results.bindings[0]["fp"]), 1)
+        self.assertEqual(int(sparql_results.bindings[0]["tn"]), 1)
 
 if __name__ == '__main__':
     unittest.main()
