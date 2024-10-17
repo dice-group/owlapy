@@ -46,6 +46,14 @@ Submodules
    /autoapi/owlapy/vocab/index
 
 
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.__version__
+
+
 Classes
 -------
 
@@ -64,7 +72,6 @@ Functions
    owlapy.dl_to_owl_expression
    owlapy.manchester_to_owl_expression
    owlapy.owl_expression_to_sparql
-   owlapy.owl_expression_to_sparql_with_confusion_matrix
 
 
 Package Contents
@@ -85,19 +92,6 @@ Package Contents
    expression: the class expression to be transformed to a SPARQL query
 
    values: positive or negative examples from a class expression problem. Unclear
-   for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS
-   patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
-   named_individuals: if set to True, the generated SPARQL query will return only entities
-   that are instances of owl:NamedIndividual
-
-
-.. py:function:: owl_expression_to_sparql_with_confusion_matrix(expression: owlapy.class_expression.OWLClassExpression, positive_examples: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]], negative_examples: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]], root_variable: str = '?x', for_all_de_morgan: bool = True, named_individuals: bool = False) -> str
-
-   Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
-   root variable: the variable that will be projected
-   expression: the class expression to be transformed to a SPARQL query
-   positive_examples: positive examples from a class expression problem
-   negative_examples: positive examples from a class expression problem
    for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS
    patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
    named_individuals: if set to True, the generated SPARQL query will return only entities
@@ -159,5 +153,9 @@ Package Contents
       Saves the actual state of the quadstore in the SQLite3 file.
 
 
+
+
+.. py:data:: __version__
+   :value: '1.3.1'
 
 

@@ -89,6 +89,7 @@
 <li class="toctree-l3"><a class="reference internal" href="vocab/index.html">owlapy.vocab</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
@@ -97,7 +98,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#owlapy.dl_to_owl_expression"><code class="docutils literal notranslate"><span class="pre">dl_to_owl_expression()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#owlapy.manchester_to_owl_expression"><code class="docutils literal notranslate"><span class="pre">manchester_to_owl_expression()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#owlapy.owl_expression_to_sparql"><code class="docutils literal notranslate"><span class="pre">owl_expression_to_sparql()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#owlapy.owl_expression_to_sparql_with_confusion_matrix"><code class="docutils literal notranslate"><span class="pre">owl_expression_to_sparql_with_confusion_matrix()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#owlapy.OntologyManager"><code class="docutils literal notranslate"><span class="pre">OntologyManager</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#owlapy.OntologyManager.__slots__"><code class="docutils literal notranslate"><span class="pre">OntologyManager.__slots__</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#owlapy.OntologyManager.create_ontology"><code class="docutils literal notranslate"><span class="pre">OntologyManager.create_ontology()</span></code></a></li>
@@ -106,6 +106,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#owlapy.OntologyManager.save_world"><code class="docutils literal notranslate"><span class="pre">OntologyManager.save_world()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#owlapy.__version__"><code class="docutils literal notranslate"><span class="pre">__version__</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -178,6 +179,16 @@
 </ul>
 </div>
 </section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.__version__" title="owlapy.__version__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__version__</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -205,9 +216,6 @@
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_expression_to_sparql" title="owlapy.owl_expression_to_sparql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owl_expression_to_sparql</span></code></a>(→ str)</p></td>
-<td><p>Convert an OWL Class Expression (<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Class_Expressions">https://www.w3.org/TR/owl2-syntax/#Class_Expressions</a>) into a SPARQL query</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_expression_to_sparql_with_confusion_matrix" title="owlapy.owl_expression_to_sparql_with_confusion_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owl_expression_to_sparql_with_confusion_matrix</span></code></a>(→ str)</p></td>
 <td><p>Convert an OWL Class Expression (<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Class_Expressions">https://www.w3.org/TR/owl2-syntax/#Class_Expressions</a>) into a SPARQL query</p></td>
 </tr>
 </tbody>
@@ -242,20 +250,6 @@
 root variable: the variable that will be projected
 expression: the class expression to be transformed to a SPARQL query</p>
 <p>values: positive or negative examples from a class expression problem. Unclear
-for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS
-patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
-named_individuals: if set to True, the generated SPARQL query will return only entities
-that are instances of owl:NamedIndividual</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.owl_expression_to_sparql_with_confusion_matrix">
-<span class="sig-prename descclassname"><span class="pre">owlapy.</span></span><span class="sig-name descname"><span class="pre">owl_expression_to_sparql_with_confusion_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negative_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">for_all_de_morgan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/owlapy/converter.html#owl_expression_to_sparql_with_confusion_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_expression_to_sparql_with_confusion_matrix" title="Link to this definition"></a></dt>
-<dd><p>Convert an OWL Class Expression (<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Class_Expressions">https://www.w3.org/TR/owl2-syntax/#Class_Expressions</a>) into a SPARQL query
-root variable: the variable that will be projected
-expression: the class expression to be transformed to a SPARQL query
-positive_examples: positive examples from a class expression problem
-negative_examples: positive examples from a class expression problem
 for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS
 patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
 named_individuals: if set to True, the generated SPARQL query will return only entities
@@ -330,6 +324,11 @@ get_owl_ontology_manager() call.</p>
 </dd></dl>
 
 </dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.__version__">
+<span class="sig-prename descclassname"><span class="pre">owlapy.</span></span><span class="sig-name descname"><span class="pre">__version__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'1.3.1'</span></em><a class="headerlink" href="#owlapy.__version__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </section>
 </section>
