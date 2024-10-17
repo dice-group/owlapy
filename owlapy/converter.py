@@ -673,13 +673,13 @@ class Owl2SparqlConverter:
                     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
                     SELECT * WHERE {{
                        {{
-                          SELECT (xsd:double(COUNT(DISTINCT {root_variable})) as ?tp) (xsd:double(({number_of_positive_examples} - COUNT(DISTINCT {root_variable}))) as ?fn) WHERE {{
+                          SELECT (COUNT(DISTINCT {root_variable}) as ?tp) (({number_of_positive_examples} - COUNT(DISTINCT {root_variable})) as ?fn) WHERE {{
                              VALUES {root_variable} {{ {positive_examples_as_str} }}
                              {graph_pattern_str}
                           }}
                        }}
                        {{
-                          SELECT DISTINCT (xsd:double(COUNT(DISTINCT {root_variable})) as ?fp) (xsd:double(({number_of_negative_examples} - COUNT(DISTINCT {root_variable}))) as ?tn) WHERE {{
+                          SELECT (COUNT(DISTINCT {root_variable}) as ?fp) (({number_of_negative_examples} - COUNT(DISTINCT {root_variable})) as ?tn) WHERE {{
                              VALUES {root_variable} {{ {negative_examples_as_str} }}
                              {graph_pattern_str}
                           }}
