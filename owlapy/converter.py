@@ -211,7 +211,7 @@ class Owl2SparqlConverter:
     # each overload of the method is responsible for processing a different type of class expressions (e.g., ⊔ or ⊓)
     @singledispatchmethod
     def process(self, ce: OWLClassExpression):
-        raise NotImplementedError(ce)
+        raise NotImplementedError(f"We cannot create SPARQL query based on the following owl class {ce}")
 
     # an overload of process function
     # this overload is responsible for handling single concepts (e.g., Brother)
@@ -607,6 +607,7 @@ class Owl2SparqlConverter:
                  count: bool = False,
                  values: Optional[Iterable[OWLNamedIndividual]] = None,
                  named_individuals: bool = False) -> str:
+        assert isinstance(ce,OWLClassExpression), f"ce must be an instance of OWLClassExpression. Currently {type(ce)}"
         # root variable: the variable that will be projected
         # ce: the class expression to be transformed to a SPARQL query
         # for_all_de_morgan: true -> ¬(∃r.¬C), false -> (∀r.C)
