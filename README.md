@@ -1,7 +1,7 @@
 # OWLAPY
 [![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.3.0-blue)](https://pypi.org/project/owlapy/1.3.0/)
-[![Docs](https://img.shields.io/badge/documentation-1.3.0-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Pypi](https://img.shields.io/badge/pypi-1.3.1-blue)](https://pypi.org/project/owlapy/1.3.1/)
+[![Docs](https://img.shields.io/badge/documentation-1.3.1-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
 
@@ -25,11 +25,10 @@ pip3 install owlapy
 ```shell
 # To download RDF knowledge graphs
 wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
-pytest -p no:warnings -x # Running  102 tests takes ~ 1 min
+pytest -p no:warnings -x # Running  142 tests ~ 30 secs
 ```
 
-## Usage
-
+## Examples
 
 ### Creating OWL Class Expressions
 <details><summary> Click me! </summary>
@@ -91,7 +90,7 @@ from owlapy.static_funcs import stopJVM
 
 ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
 # Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet'
-reasoner = SyncReasoner(ontology = ontology_path, reasoner="Pellet")
+sync_reasoner = SyncReasoner(ontology = ontology_path, reasoner="Pellet")
 onto = OntologyManager().load_ontology(ontology_path)
 # Iterate over defined owl Classes in the signature
 for i in onto.classes_in_signature():

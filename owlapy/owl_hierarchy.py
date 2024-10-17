@@ -9,7 +9,7 @@ from owlapy.class_expression import OWLClass, OWLThing, OWLNothing
 from owlapy.meta_classes import HasIRI
 from owlapy.owl_literal import OWLTopObjectProperty, OWLBottomObjectProperty, OWLTopDataProperty, OWLBottomDataProperty
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
-from owlapy.abstracts.abstract_owl_reasoner import OWLReasoner
+from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 
 _S = TypeVar('_S', bound=HasIRI)  #:
 _U = TypeVar('_U', bound='AbstractHierarchy')  #:
@@ -40,20 +40,20 @@ class AbstractHierarchy(Generic[_S], metaclass=ABCMeta):
         ...
 
     @overload
-    def __init__(self, factory: Type[_S], reasoner: OWLReasoner):
+    def __init__(self, factory: Type[_S], reasoner: AbstractOWLReasoner):
         ...
 
     @abstractmethod
     def __init__(self, factory: Type[_S], arg):
         self._Type = factory
-        if isinstance(arg, OWLReasoner):
+        if isinstance(arg, AbstractOWLReasoner):
             hier_down_gen = self._hierarchy_down_generator(arg)
             self._init(hier_down_gen)
         else:
             self._init(arg)
 
     @abstractmethod
-    def _hierarchy_down_generator(self, reasoner: OWLReasoner) -> Iterable[Tuple[_S, Iterable[_S]]]:
+    def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) -> Iterable[Tuple[_S, Iterable[_S]]]:
         """Generate the suitable downwards hierarchy based on the reasoner."""
         pass
 
@@ -263,7 +263,7 @@ class ClassHierarchy(AbstractHierarchy[OWLClass]):
     def get_bottom_entity(cls) -> OWLClass:
         return OWLNothing
 
-    def _hierarchy_down_generator(self, reasoner: OWLReasoner) -> Iterable[Tuple[OWLClass, Iterable[OWLClass]]]:
+    def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) -> Iterable[Tuple[OWLClass, Iterable[OWLClass]]]:
         yield from ((_, reasoner.sub_classes(_, direct=True))
                     for _ in reasoner.get_root_ontology().classes_in_signature())
 
@@ -280,7 +280,7 @@ class ClassHierarchy(AbstractHierarchy[OWLClass]):
     def __init__(self, hierarchy_down: Iterable[Tuple[OWLClass, Iterable[OWLClass]]]): ...
 
     @overload
-    def __init__(self, reasoner: OWLReasoner): ...
+    def __init__(self, reasoner: AbstractOWLReasoner): ...
 
     def __init__(self, arg):
         super().__init__(OWLClass, arg)
@@ -296,7 +296,7 @@ class ObjectPropertyHierarchy(AbstractHierarchy[OWLObjectProperty]):
     def get_bottom_entity(cls) -> OWLObjectProperty:
         return OWLBottomObjectProperty
 
-    def _hierarchy_down_generator(self, reasoner: OWLReasoner) \
+    def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) \
             -> Iterable[Tuple[OWLObjectProperty, Iterable[OWLObjectProperty]]]:
         return ((_, map(lambda _: cast(OWLObjectProperty, _),
                         filter(lambda _: isinstance(_, OWLObjectProperty),
@@ -328,7 +328,7 @@ class ObjectPropertyHierarchy(AbstractHierarchy[OWLObjectProperty]):
     def __init__(self, hierarchy_down: Iterable[Tuple[OWLObjectProperty, Iterable[OWLObjectProperty]]]): ...
 
     @overload
-    def __init__(self, reasoner: OWLReasoner): ...
+    def __init__(self, reasoner: AbstractOWLReasoner): ...
 
     def __init__(self, arg):
         super().__init__(OWLObjectProperty, arg)
@@ -344,7 +344,7 @@ class DatatypePropertyHierarchy(AbstractHierarchy[OWLDataProperty]):
     def get_bottom_entity(cls) -> OWLDataProperty:
         return OWLBottomDataProperty
 
-    def _hierarchy_down_generator(self, reasoner: OWLReasoner) \
+    def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) \
             -> Iterable[Tuple[OWLDataProperty, Iterable[OWLDataProperty]]]:
         return ((_, reasoner.sub_data_properties(_, direct=True))
                 for _ in reasoner.get_root_ontology().data_properties_in_signature())
@@ -374,7 +374,7 @@ class DatatypePropertyHierarchy(AbstractHierarchy[OWLDataProperty]):
     def __init__(self, hierarchy_down: Iterable[Tuple[OWLDataProperty, Iterable[OWLDataProperty]]]): ...
 
     @overload
-    def __init__(self, reasoner: OWLReasoner): ...
+    def __init__(self, reasoner: AbstractOWLReasoner): ...
 
     def __init__(self, arg):
         super().__init__(OWLDataProperty, arg)

@@ -3,11 +3,11 @@ from typing import Union
 import jpype
 import owlready2
 
-from owlapy.abstracts.abstract_owl_ontology_manager import OWLOntologyChange, OWLOntologyManager
+from owlapy.abstracts.abstract_owl_ontology_manager import AbstractOWLOntologyChange, AbstractOWLOntologyManager
 from owlapy.iri import IRI
 from owlapy.meta_classes import HasIRI
 from owlapy.owl_ontology import Ontology, SyncOntology
-from owlapy.abstracts.abstract_owl_ontology import OWLOntology
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.static_funcs import startJVM
 
 
@@ -41,11 +41,11 @@ class OWLImportsDeclaration(HasIRI):
         return self._iri.as_str()
 
 
-class AddImport(OWLOntologyChange):
+class AddImport(AbstractOWLOntologyChange):
     """Represents an ontology change where an import statement is added to an ontology."""
     __slots__ = '_ont', '_declaration'
 
-    def __init__(self, ontology: OWLOntology, import_declaration: OWLImportsDeclaration):
+    def __init__(self, ontology: AbstractOWLOntology, import_declaration: OWLImportsDeclaration):
         """
         Args:
             ontology: The ontology to which the change is to be applied.
@@ -63,7 +63,7 @@ class AddImport(OWLOntologyChange):
         return self._declaration
 
 
-class OntologyManager(OWLOntologyManager):
+class OntologyManager(AbstractOWLOntologyManager):
     __slots__ = '_world'
 
     _world: owlready2.namespace.World
@@ -88,14 +88,15 @@ class OntologyManager(OWLOntologyManager):
             assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
         return Ontology(self, iri, load=False)
 
-    def load_ontology(self, iri: Union[IRI, str] = None) -> Ontology:
-        if isinstance(iri, str):
-            iri = IRI.create(iri)
+    def load_ontology(self, path: Union[IRI, str] = None) -> Ontology:
+        if isinstance(path, str):
+            path_iri = IRI.create(path)
         else:
-            assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
-        return Ontology(self, iri, load=True)
+            assert isinstance(path, IRI), "iri either must be string or an instance of IRI Class"
+            path_iri=path
+        return Ontology(self, path_iri, load=True)
 
-    def apply_change(self, change: OWLOntologyChange):
+    def apply_change(self, change: AbstractOWLOntologyChange):
         if isinstance(change, AddImport):
             ont_x: owlready2.namespace.Ontology = self._world.get_ontology(
                 change.get_ontology().get_ontology_id().get_ontology_iri().as_str())
@@ -111,7 +112,11 @@ class OntologyManager(OWLOntologyManager):
         self._world.save()
 
 
-class SyncOntologyManager(OWLOntologyManager):
+class SyncOntologyManager(AbstractOWLOntologyManager):
+    """
+    Create OWLManager in Python
+    https://owlcs.github.io/owlapi/apidocs_5/org/semanticweb/owlapi/apibinding/OWLManager.html
+    """
 
     # WARN: Do not move local imports to top of the module
     def __init__(self):
@@ -133,5 +138,5 @@ class SyncOntologyManager(OWLOntologyManager):
     def get_owlapi_manager(self):
         return self.owlapi_manager
 
-    def apply_change(self, change: OWLOntologyChange):
+    def apply_change(self, change: AbstractOWLOntologyChange):
         raise NotImplementedError()

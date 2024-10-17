@@ -110,6 +110,8 @@ class OWLAPIMapper:
         ontology_set.add(self.ontology)
         bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
         entity_checker = ShortFormEntityChecker(bidi_provider)
+        bidi_provider.add(self.manager.getOWLDataFactory().getOWLNothing())
+        bidi_provider.add(self.manager.getOWLDataFactory().getOWLThing())
         self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
         self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
 
@@ -506,6 +508,11 @@ class OWLAPIMapper:
             for item in e:
                 java_list.add(self.map_(item))
         return java_list
+
+    @map_.register(Stream)
+    def _(self, e):
+        for en in self.to_list(e):
+            yield self.map_(en)
 
     @staticmethod
     def to_list(stream_obj):

@@ -1,21 +1,21 @@
 from abc import ABCMeta, abstractmethod
 from typing import Union
 
-from owlapy.abstracts.abstract_owl_ontology import OWLOntology
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.iri import IRI
 
 
-class OWLOntologyChange(metaclass=ABCMeta):
+class AbstractOWLOntologyChange(metaclass=ABCMeta):
     """Represents an ontology change."""
     __slots__ = ()
 
-    _ont: OWLOntology
+    _ont: AbstractOWLOntology
 
     @abstractmethod
-    def __init__(self, ontology: OWLOntology):
+    def __init__(self, ontology: AbstractOWLOntology):
         self._ont = ontology
 
-    def get_ontology(self) -> OWLOntology:
+    def get_ontology(self) -> AbstractOWLOntology:
         """Gets the ontology that the change is/was applied to.
 
         Returns:
@@ -24,12 +24,12 @@ class OWLOntologyChange(metaclass=ABCMeta):
         return self._ont
 
 
-class OWLOntologyManager(metaclass=ABCMeta):
+class AbstractOWLOntologyManager(metaclass=ABCMeta):
     """An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing
     ontologies."""
 
     @abstractmethod
-    def create_ontology(self, iri: Union[str, IRI]) -> OWLOntology:
+    def create_ontology(self, iri: Union[str, IRI]) -> AbstractOWLOntology:
         """Creates a new (empty) ontology that that has the specified ontology IRI (and no version IRI).
 
         Args:
@@ -41,7 +41,7 @@ class OWLOntologyManager(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def load_ontology(self, iri: Union[IRI, str]) -> OWLOntology:
+    def load_ontology(self, iri: Union[IRI, str]) -> AbstractOWLOntology:
         """Loads an ontology that is assumed to have the specified ontology IRI as its IRI or version IRI. The ontology
         IRI will be mapped to an ontology document IRI.
 
@@ -56,7 +56,7 @@ class OWLOntologyManager(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def apply_change(self, change: OWLOntologyChange):
+    def apply_change(self, change: AbstractOWLOntologyChange):
         """A convenience method that applies just one change to an ontology. When this method is used through an
         OWLOntologyManager implementation, the instance used should be the one that the ontology returns through the
         get_owl_ontology_manager() call.

@@ -5,12 +5,10 @@ with open('README.md', 'r') as fh:
 setup(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
-    version="1.3.0",
+    version="1.3.1",
     packages=find_packages(),
     include_package_data=True,
-    package_data={
-        'owlapy': ['jar_dependencies/*.jar'],
-    },
+    package_data={'owlapy': ['jar_dependencies/*.jar'],},
     install_requires=[
         "pandas>=1.5.0",
         "requests>=2.32.3",
@@ -19,7 +17,8 @@ setup(
         "pytest>=8.1.1",
         "sortedcontainers>=2.4.0",
         "owlready2>=0.40",
-        "JPype1>=1.5.0"],
+        "JPype1>=1.5.0",
+        "tqdm>=4.66.5"],
     author='Caglar Demir',
     author_email='caglardemir8@gmail.com',
     url='https://github.com/dice-group/owlapy',
@@ -28,6 +27,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering"],
     python_requires='>=3.10.13',
+    entry_points={"console_scripts": ["owlapy=owlapy.scripts.run:main"]},
     long_description=long_description,
     long_description_content_type="text/markdown",
 )

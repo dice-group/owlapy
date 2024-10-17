@@ -21,21 +21,19 @@ from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUni
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology
-from owlapy.abstracts.abstract_owl_ontology import OWLOntology
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.owl_ontology_manager import SyncOntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.utils import LRUCache
-from owlapy.abstracts.abstract_owl_reasoner import OWLReasoner, OWLReasonerEx
-
+from owlapy.utils import LRUCache, run_with_timeout
+from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner, AbstractOWLReasonerEx
 logger = logging.getLogger(__name__)
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
-
-class OntologyReasoner(OWLReasonerEx):
+class OntologyReasoner(AbstractOWLReasonerEx):
     __slots__ = '_ontology', '_world'
     # TODO: CD: We will remove owlready2 from owlapy
     _ontology: Ontology
@@ -198,7 +196,7 @@ class OntologyReasoner(OWLReasonerEx):
         else:
             raise NotImplementedError(pe)
 
-    def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+    def _instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
         if direct:
             if isinstance(ce, OWLClass):
                 c_x: owlready2.ThingClass = self._world[ce.str]
@@ -225,6 +223,9 @@ class OntologyReasoner(OWLReasonerEx):
             #             yield OWLNamedIndividual(IRI.create(i.iri))
             else:
                 raise NotImplementedError("instances for complex class expressions not implemented", ce)
+
+    def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
+        return run_with_timeout(self._instances, timeout, (ce, direct))
 
     def _sub_classes_recursive(self, ce: OWLClassExpression, seen_set: Set, only_named: bool = True) \
             -> Iterable[OWLClassExpression]:
@@ -576,11 +577,11 @@ class OntologyReasoner(OWLReasonerEx):
     #                                            infer_data_property_values=infer_data_property_values,
     #                                            debug=debug)
 
-    def get_root_ontology(self) -> OWLOntology:
+    def get_root_ontology(self) -> AbstractOWLOntology:
         return self._ontology
 
 
-class FastInstanceCheckerReasoner(OWLReasonerEx):
+class FastInstanceCheckerReasoner(AbstractOWLReasonerEx):
     """Tries to check instances fast (but maybe incomplete)."""
     __slots__ = '_ontology', '_base_reasoner', \
                 '_ind_set', '_cls_to_ind', \
@@ -591,8 +592,8 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
                 '_negation_default', \
                 '__warned'
 
-    _ontology: OWLOntology
-    _base_reasoner: OWLReasoner
+    _ontology: AbstractOWLOntology
+    _base_reasoner: AbstractOWLReasoner
     _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
     _has_prop: Mapping[Type[_P], LRUCache[_P, FrozenSet[OWLNamedIndividual]]]  # Type => Property => individuals
     _ind_set: FrozenSet[OWLNamedIndividual]
@@ -612,7 +613,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
     _negation_default: bool
     _sub_properties: bool
 
-    def __init__(self, ontology: OWLOntology, base_reasoner: OWLReasoner, *,
+    def __init__(self, ontology: AbstractOWLOntology, base_reasoner: AbstractOWLReasoner, *,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
         """Fast instance checker.
 
@@ -690,13 +691,16 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
             -> Iterable[OWLNamedIndividual]:
         yield from self._base_reasoner.object_property_values(ind, pe, direct)
 
-    def instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+    def _instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
         if direct:
             if not self.__warned & 2:
                 logger.warning("direct not implemented")
                 self.__warned |= 2
         temp = self._find_instances(ce)
         yield from temp
+
+    def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
+        return run_with_timeout(self._instances, timeout, (ce, direct))
 
     def sub_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
             -> Iterable[OWLClassExpression]:
@@ -734,7 +738,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
             -> Iterable[OWLObjectPropertyExpression]:
         yield from self._base_reasoner.sub_object_properties(op=op, direct=direct)
 
-    def get_root_ontology(self) -> OWLOntology:
+    def get_root_ontology(self) -> AbstractOWLOntology:
         return self._ontology
 
     def _lazy_cache_obj_prop(self, pe: OWLObjectPropertyExpression) -> None:
@@ -1145,7 +1149,7 @@ class FastInstanceCheckerReasoner(OWLReasonerEx):
         yield from relations
 
 
-class SyncReasoner(OWLReasonerEx):
+class SyncReasoner(AbstractOWLReasonerEx):
 
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
@@ -1165,8 +1169,10 @@ class SyncReasoner(OWLReasonerEx):
             self.manager = ontology.manager
             self.ontology = ontology
         elif isinstance(ontology, str):
+            # https://owlcs.github.io/owlapi/apidocs_5/org/semanticweb/owlapi/apibinding/OWLManager.html
             self.manager = SyncOntologyManager()
-            self.ontology = self.manager.load_ontology(ontology)
+            # OWLOntology
+            self.ontology = self.manager.load_ontology(iri=ontology)
 
         self._owlapi_manager = self.manager.get_owlapi_manager()
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
@@ -1216,7 +1222,9 @@ class SyncReasoner(OWLReasonerEx):
         else:
             raise NotImplementedError("Not implemented")
 
-    def instances(self, ce: OWLClassExpression, direct=False) -> List[OWLNamedIndividual]:
+        self.reasoner = reasoner
+
+    def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
         Get the instances for a given class expression using HermiT.
 
@@ -1225,10 +1233,16 @@ class SyncReasoner(OWLReasonerEx):
             direct (bool): Whether to get direct instances or not. Defaults to False.
 
         Returns:
-            list: A list of individuals classified by the given class expression.
+            set: A set of individuals classified by the given class expression.
         """
-        inds = self._owlapi_reasoner.getInstances(self.mapper.map_(ce), direct).getFlattened()
-        return [self.mapper.map_(ind) for ind in inds]
+        mapped_ce = self.mapper.map_(ce)
+        instances = self._owlapi_reasoner.getInstances(mapped_ce, direct)
+        flattended_instances = instances.getFlattened()
+        assert str(type(flattended_instances)) == "<java class 'java.util.LinkedHashSet'>"
+        return {self.mapper.map_(ind) for ind in flattended_instances}
+
+    def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
+        return run_with_timeout(self._instances, timeout, (ce, direct))
 
     def equivalent_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
         """
@@ -1626,11 +1640,12 @@ class SyncReasoner(OWLReasonerEx):
             if java_object := self.inference_types_mapping.get(i, None):
                 generators.add(java_object)
         iog = InferredOntologyGenerator(self._owlapi_reasoner, generators)
-        inferred_axioms_ontology = self._owlapi_manager.createOntology()
-        iog.fillOntology(self._owlapi_manager.getOWLDataFactory(), inferred_axioms_ontology)
-        inferred_ontology_file = File(output_path).getAbsoluteFile()
-        output_stream = FileOutputStream(inferred_ontology_file)
-        self._owlapi_manager.saveOntology(inferred_axioms_ontology, document_format, output_stream)
+        # CD: No need to create a new ontology
+        # inferred_axioms_ontology = self._owlapi_manager.createOntology()
+        iog.fillOntology(self._owlapi_manager.getOWLDataFactory(), self._owlapi_ontology)
+        self._owlapi_manager.saveOntology(self._owlapi_ontology,
+                                          document_format,
+                                          FileOutputStream(File(output_path).getAbsoluteFile()))
 
     def generate_and_save_inferred_class_assertion_axioms(self, output="temp.ttl", output_format: str = None):
         """
@@ -1661,5 +1676,34 @@ class SyncReasoner(OWLReasonerEx):
         """
         self.infer_axioms_and_save(output, output_format, ["InferredClassAssertionAxiomGenerator"])
 
-    def get_root_ontology(self) -> OWLOntology:
+    def is_entailed(self, axiom: OWLAxiom) -> bool:
+        """A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.
+
+        Args:
+            axiom: The axiom to check for entailment.
+
+        Return:
+            True if the axiom is entailed by the reasoner axioms and False otherwise.
+        """
+        return bool(self._owlapi_reasoner.isEntailed(self.mapper.map_(axiom)))
+
+    def is_satisfiable(self, ce: OWLClassExpression) -> bool:
+        """A convenience method that determines if the specified class expression is satisfiable with respect
+        to the reasoner axioms.
+
+        Args:
+            ce: The class expression to check for satisfiability.
+
+        Return:
+            True if the class expression is satisfiable by the reasoner axioms and False otherwise.
+        """
+
+        return bool(self._owlapi_reasoner.isSatisfiable(self.mapper.map_(ce)))
+
+    def unsatisfiable_classes(self):
+        """A convenience method that obtains the classes in the signature of the root ontology that are
+        unsatisfiable."""
+        return self.mapper.map_(self._owlapi_reasoner.unsatisfiableClasses())
+
+    def get_root_ontology(self) -> AbstractOWLOntology:
         return self.ontology
