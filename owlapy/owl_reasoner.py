@@ -9,6 +9,7 @@ from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
 from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, List, Union
 
+from owlapy.abstracts import AbstractOWLOntologyManager
 from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
@@ -47,11 +48,82 @@ class OntologyReasoner(AbstractOWLReasoner):
         Args:
             ontology: The ontology that should be used by the reasoner.
         """
+
+
+class FastInstanceCheckerReasoner(AbstractOWLReasoner):
+    """Tries to check instances fast (but maybe incomplete)."""
+    __slots__ = '_ontology', '_world'\
+                '_ind_set', '_cls_to_ind', \
+                '_has_prop', \
+                '_objectsomevalues_cache', '_datasomevalues_cache', '_objectcardinality_cache', \
+                '_property_cache', \
+                '_obj_prop', '_obj_prop_inv', '_data_prop', \
+                '_negation_default', '_sub_properties', \
+                '__warned'
+
+    _ontology: AbstractOWLOntology
+    _world: owlready2.World
+    _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
+    _has_prop: Mapping[Type[_P], LRUCache[_P, FrozenSet[OWLNamedIndividual]]]  # Type => Property => individuals
+    _ind_set: FrozenSet[OWLNamedIndividual]
+    # ObjectSomeValuesFrom => individuals
+    _objectsomevalues_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
+    # DataSomeValuesFrom => individuals
+    _datasomevalues_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
+    # ObjectCardinalityRestriction => individuals
+    _objectcardinality_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
+    # ObjectProperty => { individual => individuals }
+    _obj_prop: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
+    # ObjectProperty => { individual => individuals }
+    _obj_prop_inv: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
+    # DataProperty => { individual => literals }
+    _data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]]
+    _property_cache: bool
+    _negation_default: bool
+    _sub_properties: bool
+
+    def __init__(self, ontology: AbstractOWLOntology, *,
+                 property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
+        """Fast instance checker.
+
+        Args:
+            ontology: Ontology to use.
+            property_cache: Whether to cache property values.
+            negation_default: Whether to assume a missing fact means it is false ("closed world view").
+            sub_properties: Whether to take sub properties into account for the
+                :func:`OWLReasoner_FastInstanceChecker.instances` retrieval.
+            """
         super().__init__(ontology)
         assert isinstance(ontology, Ontology)
-        self._isolated = False
-        self._ontology = ontology
         self._world = ontology._world
+        self._ontology = ontology
+        self._property_cache = property_cache
+        self._negation_default = negation_default
+        self._sub_properties = sub_properties
+        self.__warned = 0
+        self._init()
+
+    def _init(self, cache_size=128):
+        self._cls_to_ind = dict()
+        individuals = self._ontology.individuals_in_signature()
+        self._ind_set = frozenset(individuals)
+        self._objectsomevalues_cache = LRUCache(maxsize=cache_size)
+        self._datasomevalues_cache = LRUCache(maxsize=cache_size)
+        self._objectcardinality_cache = LRUCache(maxsize=cache_size)
+        if self._property_cache:
+            self._obj_prop = dict()
+            self._obj_prop_inv = dict()
+            self._data_prop = dict()
+        else:
+            self._has_prop = MappingProxyType({
+                OWLDataProperty: LRUCache(maxsize=cache_size),
+                OWLObjectProperty: LRUCache(maxsize=cache_size),
+                OWLObjectInverseOf: LRUCache(maxsize=cache_size),
+            })
+
+    def reset(self):
+        """The reset method shall reset any cached state."""
+        self._init()
 
     def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         domains = {d.get_domain() for d in self.get_root_ontology().data_property_domain_axioms(pe)}
@@ -59,6 +131,9 @@ class OntologyReasoner(AbstractOWLReasoner):
         yield from domains - super_domains
         if not direct:
             yield from super_domains
+
+    def data_property_ranges(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataRange]:
+        yield from self._base_reasoner.data_property_ranges(pe, direct=direct)
 
     def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         domains = {d.get_domain() for d in self.get_root_ontology().object_property_domain_axioms(pe)}
@@ -199,31 +274,11 @@ class OntologyReasoner(AbstractOWLReasoner):
 
     def _instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
         if direct:
-            if isinstance(ce, OWLClass):
-                c_x: owlready2.ThingClass = self._world[ce.str]
-                for i in self._ontology._onto.get_instances_of(c_x):
-                    if isinstance(i, owlready2.Thing):
-                        yield OWLNamedIndividual(IRI.create(i.iri))
-            else:
-                raise NotImplementedError("instances for complex class expressions not implemented", ce)
-        else:
-            if ce.is_owl_thing():
-                yield from self._ontology.individuals_in_signature()
-            elif isinstance(ce, OWLClass):
-                c_x: owlready2.ThingClass = self._world[ce.str]
-                for i in c_x.instances(world=self._world):
-                    if isinstance(i, owlready2.Thing):
-                        yield OWLNamedIndividual(IRI.create(i.iri))
-            # elif isinstance(ce, OWLObjectSomeValuesFrom) and ce.get_filler().is_owl_thing()\
-            #         and isinstance(ce.get_property(), OWLProperty):
-            #     seen_set = set()
-            #     p_x: owlready2.ObjectProperty = self._world[ce.get_property().get_named_property().str]
-            #     for i, _ in p_x.get_relations():
-            #         if isinstance(i, owlready2.Thing) and i not in seen_set:
-            #             seen_set.add(i)
-            #             yield OWLNamedIndividual(IRI.create(i.iri))
-            else:
-                raise NotImplementedError("instances for complex class expressions not implemented", ce)
+            if not self.__warned & 2:
+                logger.warning("direct not implemented")
+                self.__warned |= 2
+        temp = self._find_instances(ce)
+        yield from temp
 
     def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
         return run_with_timeout(self._instances, timeout, (ce, direct))
@@ -556,188 +611,6 @@ class OntologyReasoner(AbstractOWLReasoner):
                 if isinstance(c, owlready2.ThingClass):
                     yield OWLClass(IRI.create(c.iri))
                 # Anonymous classes are ignored
-
-    # Deprecated
-    # def _sync_reasoner(self, other_reasoner: BaseReasoner = None,
-    #                    infer_property_values: bool = True,
-    #                    infer_data_property_values: bool = True, debug: bool = False) -> None:
-    #     """Call Owlready2's sync_reasoner method, which spawns a Java process on a temp file to infer more.
-    #
-    #     Args:
-    #         other_reasoner: Set to BaseReasoner.PELLET (default) or BaseReasoner.HERMIT.
-    #         infer_property_values: Whether to infer property values.
-    #         infer_data_property_values: Whether to infer data property values (only for PELLET).
-    #     """
-    #     assert other_reasoner is None or isinstance(other_reasoner, BaseReasoner)
-    #     with self.get_root_ontology()._onto:
-    #         if other_reasoner == BaseReasoner.HERMIT:
-    #             owlready2.sync_reasoner_hermit(self._world, infer_property_values=infer_property_values, debug=debug)
-    #         else:
-    #             owlready2.sync_reasoner_pellet(self._world,
-    #                                            infer_property_values=infer_property_values,
-    #                                            infer_data_property_values=infer_data_property_values,
-    #                                            debug=debug)
-
-    def get_root_ontology(self) -> AbstractOWLOntology:
-        return self._ontology
-
-
-class FastInstanceCheckerReasoner(AbstractOWLReasoner):
-    """Tries to check instances fast (but maybe incomplete)."""
-    __slots__ = '_ontology', '_base_reasoner', \
-                '_ind_set', '_cls_to_ind', \
-                '_has_prop', \
-                '_objectsomevalues_cache', '_datasomevalues_cache', '_objectcardinality_cache', \
-                '_property_cache', \
-                '_obj_prop', '_obj_prop_inv', '_data_prop', \
-                '_negation_default', \
-                '__warned'
-
-    _ontology: AbstractOWLOntology
-    _base_reasoner: AbstractOWLReasoner
-    _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
-    _has_prop: Mapping[Type[_P], LRUCache[_P, FrozenSet[OWLNamedIndividual]]]  # Type => Property => individuals
-    _ind_set: FrozenSet[OWLNamedIndividual]
-    # ObjectSomeValuesFrom => individuals
-    _objectsomevalues_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
-    # DataSomeValuesFrom => individuals
-    _datasomevalues_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
-    # ObjectCardinalityRestriction => individuals
-    _objectcardinality_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
-    # ObjectProperty => { individual => individuals }
-    _obj_prop: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
-    # ObjectProperty => { individual => individuals }
-    _obj_prop_inv: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
-    # DataProperty => { individual => literals }
-    _data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]]
-    _property_cache: bool
-    _negation_default: bool
-    _sub_properties: bool
-
-    def __init__(self, ontology: AbstractOWLOntology, base_reasoner: AbstractOWLReasoner, *,
-                 property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
-        """Fast instance checker.
-
-        Args:
-            ontology: Ontology to use.
-            base_reasoner: Reasoner to get instances/types from.
-            property_cache: Whether to cache property values.
-            negation_default: Whether to assume a missing fact means it is false ("closed world view").
-            sub_properties: Whether to take sub properties into account for the
-                :func:`OWLReasoner_FastInstanceChecker.instances` retrieval.
-            """
-        super().__init__(ontology)
-        self._ontology = ontology
-        self._base_reasoner = base_reasoner
-        self._property_cache = property_cache
-        self._negation_default = negation_default
-        self._sub_properties = sub_properties
-        self.__warned = 0
-        self._init()
-
-    def _init(self, cache_size=128):
-        self._cls_to_ind = dict()
-        individuals = self._ontology.individuals_in_signature()
-        self._ind_set = frozenset(individuals)
-        self._objectsomevalues_cache = LRUCache(maxsize=cache_size)
-        self._datasomevalues_cache = LRUCache(maxsize=cache_size)
-        self._objectcardinality_cache = LRUCache(maxsize=cache_size)
-        if self._property_cache:
-            self._obj_prop = dict()
-            self._obj_prop_inv = dict()
-            self._data_prop = dict()
-        else:
-            self._has_prop = MappingProxyType({
-                OWLDataProperty: LRUCache(maxsize=cache_size),
-                OWLObjectProperty: LRUCache(maxsize=cache_size),
-                OWLObjectInverseOf: LRUCache(maxsize=cache_size),
-            })
-
-    def reset(self):
-        """The reset method shall reset any cached state."""
-        self._init()
-
-    def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
-        yield from self._base_reasoner.data_property_domains(pe, direct=direct)
-
-    def data_property_ranges(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataRange]:
-        yield from self._base_reasoner.data_property_ranges(pe, direct=direct)
-
-    def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
-        yield from self._base_reasoner.object_property_domains(pe, direct=direct)
-
-    def object_property_ranges(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
-        yield from self._base_reasoner.object_property_ranges(pe, direct=direct)
-
-    def equivalent_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
-        yield from self._base_reasoner.equivalent_classes(ce, only_named=only_named)
-
-    def disjoint_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
-        yield from self._base_reasoner.disjoint_classes(ce, only_named=only_named)
-
-    def different_individuals(self, ce: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
-        yield from self._base_reasoner.different_individuals(ce)
-
-    def same_individuals(self, ce: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
-        yield from self._base_reasoner.same_individuals(ce)
-
-    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty, direct: bool = True) \
-            -> Iterable[OWLLiteral]:
-        yield from self._base_reasoner.data_property_values(e, pe, direct)
-
-    def all_data_property_values(self, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
-        yield from self._base_reasoner.all_data_property_values(pe, direct)
-
-    def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = True) \
-            -> Iterable[OWLNamedIndividual]:
-        yield from self._base_reasoner.object_property_values(ind, pe, direct)
-
-    def _instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
-        if direct:
-            if not self.__warned & 2:
-                logger.warning("direct not implemented")
-                self.__warned |= 2
-        temp = self._find_instances(ce)
-        yield from temp
-
-    def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
-        return run_with_timeout(self._instances, timeout, (ce, direct))
-
-    def sub_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
-            -> Iterable[OWLClassExpression]:
-        yield from self._base_reasoner.sub_classes(ce, direct=direct, only_named=only_named)
-
-    def super_classes(self, ce: OWLClassExpression, direct: bool = False, only_named: bool = True) \
-            -> Iterable[OWLClassExpression]:
-        yield from self._base_reasoner.super_classes(ce, direct=direct, only_named=only_named)
-
-    def types(self, ind: OWLNamedIndividual, direct: bool = False) -> Iterable[OWLClass]:
-        yield from self._base_reasoner.types(ind, direct=direct)
-
-    def equivalent_object_properties(self, dp: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
-        yield from self._base_reasoner.equivalent_object_properties(dp)
-
-    def equivalent_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
-        yield from self._base_reasoner.equivalent_data_properties(dp)
-
-    def disjoint_object_properties(self, dp: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
-        yield from self._base_reasoner.disjoint_object_properties(dp)
-
-    def disjoint_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
-        yield from self._base_reasoner.disjoint_data_properties(dp)
-
-    def sub_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
-        yield from self._base_reasoner.sub_data_properties(dp=dp, direct=direct)
-
-    def super_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
-        yield from self._base_reasoner.super_data_properties(dp=dp, direct=direct)
-
-    def super_object_properties(self, op: OWLObjectProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
-        yield from self._base_reasoner.super_object_properties(op=op, direct=direct)
-
-    def sub_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) \
-            -> Iterable[OWLObjectPropertyExpression]:
-        yield from self._base_reasoner.sub_object_properties(op=op, direct=direct)
 
     def get_root_ontology(self) -> AbstractOWLOntology:
         return self._ontology
