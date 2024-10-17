@@ -331,7 +331,7 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter.process">[docs]</a>
     <span class="nd">@singledispatchmethod</span>
     <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;We cannot create SPARQL query based on the following owl class </span><span class="si">{</span><span class="n">ce</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
     <span class="c1"># an overload of process function</span>
@@ -748,6 +748,7 @@
                  <span class="n">count</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span><span class="n">OWLClassExpression</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;ce must be an instance of OWLClassExpression. Currently </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="c1"># root variable: the variable that will be projected</span>
         <span class="c1"># ce: the class expression to be transformed to a SPARQL query</span>
         <span class="c1"># for_all_de_morgan: true -&gt; ¬(∃r.¬C), false -&gt; (∀r.C)</span>
@@ -863,7 +864,7 @@
 
 
 <div class="viewcode-block" id="owl_expression_to_sparql_with_confusion_matrix">
-<a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.owl_expression_to_sparql_with_confusion_matrix">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/owlapy/index.html#owlapy.converter.owl_expression_to_sparql_with_confusion_matrix">[docs]</a>
 <span class="k">def</span> <span class="nf">owl_expression_to_sparql_with_confusion_matrix</span><span class="p">(</span><span class="n">expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
                                                    <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]],</span>
                                                    <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]],</span>
