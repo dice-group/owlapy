@@ -132,7 +132,7 @@ You can get all the types of a certain individual using `types` method:
 <!--pytest-codeblocks:cont-->
 
 ```python
-anna = list(onto.individuals_in_signature()).pop()
+anna = list(onto.individuals_in_signature()).pop(0)
 
 anna_types = fic_reasoner.types(anna)
 ```
