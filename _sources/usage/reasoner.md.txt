@@ -6,6 +6,7 @@ component is required.
 For this guide we will also consider the 'father' ontology that we slightly described [here](ontologies.md):
 
 ```python
+from owlapy.iri import IRI
 from owlapy.owl_ontology_manager import OntologyManager
 
 manager = OntologyManager()
