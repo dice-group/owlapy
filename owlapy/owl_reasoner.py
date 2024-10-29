@@ -116,9 +116,6 @@ class StructuralReasoner(AbstractOWLReasoner):
         if not direct:
             yield from super_domains
 
-    def data_property_ranges(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataRange]:
-        yield from self._base_reasoner.data_property_ranges(pe, direct=direct)
-
     def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         domains = {d.get_domain() for d in self.get_root_ontology().object_property_domain_axioms(pe)}
         super_domains = set(chain.from_iterable([self.super_classes(d) for d in domains]))
@@ -635,7 +632,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                     opc[s] |= {o}
         else:
             for s in self._ind_set:
-                individuals = set(self._base_reasoner.object_property_values(s, pe, not self._sub_properties))
+                individuals = set(self.object_property_values(s, pe, not self._sub_properties))
                 if individuals:
                     opc[s] = individuals
 
@@ -671,9 +668,9 @@ class StructuralReasoner(AbstractOWLReasoner):
                         subs |= {OWLNamedIndividual(IRI.create(l_x.iri))}
             else:
                 if isinstance(pe, OWLDataProperty):
-                    func = self._base_reasoner.data_property_values
+                    func = self.data_property_values
                 else:
-                    func = self._base_reasoner.object_property_values
+                    func = self.object_property_values
 
                 for s in self._ind_set:
                     try:
@@ -716,7 +713,7 @@ class StructuralReasoner(AbstractOWLReasoner):
 
             for s in subs:
                 count = 0
-                for o in self._base_reasoner.object_property_values(s, pe, not self._sub_properties):
+                for o in self.object_property_values(s, pe, not self._sub_properties):
                     if {o} & filler_inds:
                         count = count + 1
                         if max_count is None and count >= min_count:
@@ -748,7 +745,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                     opc[s].add(o_literal)
         else:
             for s in self._ind_set:
-                values = set(self._base_reasoner.data_property_values(s, pe))
+                values = set(self.data_property_values(s, pe))
                 if len(values) > 0:
                     opc[s] = values
 
@@ -893,7 +890,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                     ind |= {s}
             else:
                 for s in subs:
-                    for lit in self._base_reasoner.data_property_values(s, pe):
+                    for lit in self.data_property_values(s, pe):
                         if lit.get_datatype() == filler:
                             ind |= {s}
                             break
@@ -905,7 +902,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                         ind |= {s}
             else:
                 for s in subs:
-                    for lit in self._base_reasoner.data_property_values(s, pe):
+                    for lit in self.data_property_values(s, pe):
                         if lit in values:
                             ind |= {s}
                             break
@@ -950,7 +947,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                             break
             else:
                 for s in subs:
-                    for lit in self._base_reasoner.data_property_values(s, pe):
+                    for lit in self.data_property_values(s, pe):
                         if include(lit):
                             ind |= {s}
                             break
@@ -981,7 +978,7 @@ class StructuralReasoner(AbstractOWLReasoner):
     def _lazy_cache_class(self, c: OWLClass) -> None:
         if c in self._cls_to_ind:
             return
-        temp = self._base_reasoner.instances(c)
+        temp = self.instances(c)
         self._cls_to_ind[c] = frozenset(temp)
 
     def _retrieve_triples(self, pe: OWLPropertyExpression) -> Iterable:
