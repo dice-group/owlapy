@@ -9,7 +9,6 @@ from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
 from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, List, Union
 
-from owlapy.abstracts import AbstractOWLOntologyManager
 from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
@@ -37,7 +36,7 @@ _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
-    __slots__ = '_ontology', '_world'\
+    __slots__ = '_ontology', '_world', \
                 '_ind_set', '_cls_to_ind', \
                 '_has_prop', \
                 '_objectsomevalues_cache', '_datasomevalues_cache', '_objectcardinality_cache', \
