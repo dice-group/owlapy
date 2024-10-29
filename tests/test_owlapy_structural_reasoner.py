@@ -14,13 +14,13 @@ from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
 from owlready2.prop import DataProperty
 
-from owlapy.owl_reasoner import FastInstanceCheckerReasoner, OntologyReasoner
+from owlapy.owl_reasoner import StructuralReasoner
 
 from owlapy.providers import owl_datatype_min_max_inclusive_restriction, owl_datatype_min_max_exclusive_restriction, \
                              owl_datatype_max_inclusive_restriction
 
 
-class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
+class Owlapy_StructuralReasoner_Test(unittest.TestCase):
     # noinspection DuplicatedCode
     def test_instances(self):
         NS = "http://example.com/father#"
@@ -31,8 +31,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         female = OWLClass(IRI.create(NS, 'female'))
         has_child = OWLObjectProperty(IRI(NS, 'hasChild'))
 
-        base_reasoner = OntologyReasoner(onto)
-        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner)
+        reasoner = StructuralReasoner(onto)
 
         self.assertEqual([], list(reasoner.sub_object_properties(has_child, direct=True)))
 
@@ -82,9 +81,8 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         female = OWLClass(IRI.create(NS, 'female'))
         has_child = OWLObjectProperty(IRI(NS, 'hasChild'))
 
-        base_reasoner = OntologyReasoner(onto)
-        reasoner_nd = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
-        reasoner_open = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=False)
+        reasoner_nd = StructuralReasoner(onto, negation_default=True)
+        reasoner_open = StructuralReasoner(onto, negation_default=False)
 
         self.assertEqual(set(reasoner_nd.instances(male)), set(reasoner_nd.instances(OWLObjectComplementOf(female))))
         self.assertEqual(set(reasoner_nd.instances(female)), set(reasoner_nd.instances(OWLObjectComplementOf(male))))
@@ -108,8 +106,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
 
         has_child = OWLObjectProperty(IRI(NS, 'hasChild'))
 
-        base_reasoner = OntologyReasoner(onto)
-        reasoner_nd = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
+        reasoner_nd = StructuralReasoner(onto, negation_default=True)
 
         # note, these answers are all wrong under OWA
         no_child = frozenset(reasoner_nd.instances(OWLObjectAllValuesFrom(property=has_child, filler=OWLNothing)))
@@ -125,8 +122,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         male = OWLClass(IRI.create(NS, 'male'))
         female = OWLClass(IRI.create(NS, 'female'))
 
-        base_reasoner = OntologyReasoner(onto)
-        reasoner_open = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=False)
+        reasoner_open = StructuralReasoner(onto, negation_default=False)
 
         # Should be empty under open world assumption
         self.assertEqual(set(), set(reasoner_open.instances(OWLObjectComplementOf(female))))
@@ -141,8 +137,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         atom = OWLClass(IRI.create(NS, 'Atom'))
         has_atom = OWLObjectProperty(IRI(NS, 'hasAtom'))
 
-        base_reasoner = OntologyReasoner(onto)
-        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
+        reasoner = StructuralReasoner(onto, negation_default=True)
 
         inst = frozenset(reasoner.instances(OWLObjectExactCardinality(cardinality=2,
                                                                       property=has_atom,
@@ -178,8 +173,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         logp = OWLDataProperty(IRI(NS, 'logp'))
         charge = OWLDataProperty(IRI(NS, 'charge'))
 
-        base_reasoner = OntologyReasoner(onto)
-        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
+        reasoner = StructuralReasoner(onto, negation_default=True)
 
         self.assertEqual([], list(reasoner.sub_data_properties(act, direct=True)))
 
@@ -274,8 +268,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         michelle = OWLNamedIndividual(IRI(NS, 'michelle'))
         martin = OWLNamedIndividual(IRI(NS, 'martin'))
 
-        base_reasoner = OntologyReasoner(onto)
-        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner)
+        reasoner = StructuralReasoner(onto)
 
         restriction = owl_datatype_min_max_exclusive_restriction(date(year=1995, month=6, day=12),
                                                             date(year=1999, month=3, day=2))
@@ -312,8 +305,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         onto.add_axiom(OWLSubDataPropertyOfAxiom(charge, super_charge))
 
         # sub_property = True
-        base_reasoner = OntologyReasoner(onto)
-        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, sub_properties=True)
+        reasoner = StructuralReasoner(onto, sub_properties=True)
 
         # object property
         ce = OWLObjectIntersectionOf([compound, OWLObjectSomeValuesFrom(super_has_structure, benzene)])
@@ -326,8 +318,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         self.assertEqual(len(individuals), 75)
 
         # sub_property = False
-        base_reasoner = OntologyReasoner(onto)
-        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, sub_properties=False)
+        reasoner = StructuralReasoner(onto, sub_properties=False)
 
         # object property
         ce = OWLObjectIntersectionOf([compound, OWLObjectSomeValuesFrom(super_has_structure, benzene)])
@@ -356,8 +347,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
                    OWLNamedIndividual(IRI.create(ns, 'stefan')),
                    OWLNamedIndividual(IRI.create(ns, 'markus'))}
 
-        base_reasoner = OntologyReasoner(onto)
-        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, sub_properties=False)
+        reasoner = StructuralReasoner(onto, sub_properties=False)
 
         expr = OWLObjectSomeValuesFrom(has_child, OWLThing)
         expr_inverse = OWLObjectSomeValuesFrom(OWLObjectInverseOf(has_child_inverse), OWLThing)
@@ -383,7 +373,7 @@ class Owlapy_FastInstanceChecker_Test(unittest.TestCase):
         self.assertEqual(parents_expr_inverse, frozenset())
 
         # True (sub properties taken into account)
-        reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, sub_properties=True)
+        reasoner = StructuralReasoner(onto,  sub_properties=True)
         expr = OWLObjectSomeValuesFrom(super_has_child, OWLThing)
         expr_inverse = OWLObjectSomeValuesFrom(OWLObjectInverseOf(super_has_child_inverse), OWLThing)
         parents_expr = frozenset(reasoner.instances(expr))

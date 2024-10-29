@@ -35,22 +35,7 @@ logger = logging.getLogger(__name__)
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 
-class OntologyReasoner(AbstractOWLReasoner):
-    __slots__ = '_ontology', '_world'
-    # TODO: CD: We will remove owlready2 from owlapy
-    _ontology: Ontology
-    _world: owlready2.World
-
-    def __init__(self, ontology: Ontology):
-        """
-        Base reasoner in Ontolearn, used to reason in the given ontology.
-
-        Args:
-            ontology: The ontology that should be used by the reasoner.
-        """
-
-
-class FastInstanceCheckerReasoner(AbstractOWLReasoner):
+class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
     __slots__ = '_ontology', '_world'\
                 '_ind_set', '_cls_to_ind', \
