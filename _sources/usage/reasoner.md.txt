@@ -53,7 +53,7 @@ from:
     sync_reasoner = SyncReasoner(ontology_path="KGs/Mutagenesis/mutagenesis.owl", reasoner="HermiT")
     ```
     
-    Sync Reasoner is made available by [owlapi adaptor](owlapi_adaptor.md) and requires the ontology path
+    Sync Reasoner is made available by [owlapi mapper](owlapi_adaptor.md) and requires the ontology path
     together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"JFact"`, `"Openllet"`.
 
 
