@@ -17,7 +17,7 @@ from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom,
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
-from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology
@@ -978,8 +978,17 @@ class StructuralReasoner(AbstractOWLReasoner):
     def _lazy_cache_class(self, c: OWLClass) -> None:
         if c in self._cls_to_ind:
             return
-        temp = self.instances(c)
+        temp = self.get_instances_from_owl_class(c)
         self._cls_to_ind[c] = frozenset(temp)
+
+    def get_instances_from_owl_class(self, c: OWLClass):
+        if c.is_owl_thing():
+            yield from self._ontology.individuals_in_signature()
+        elif isinstance(c, OWLClass):
+            c_x: owlready2.ThingClass = self._world[c.str]
+            for i in c_x.instances(world=self._world):
+                if isinstance(i, owlready2.Thing):
+                    yield OWLNamedIndividual(IRI.create(i.iri))
 
     def _retrieve_triples(self, pe: OWLPropertyExpression) -> Iterable:
         """Retrieve all subject/object pairs for the given property."""
