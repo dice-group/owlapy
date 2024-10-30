@@ -438,7 +438,7 @@ DL_GRAMMAR = Grammar(r"""
     object_property = object_property_iri "⁻"?
 
     class_expression = class_iri / individual_list / parentheses
-    individual_list = "{" maybe_ws individual_iri (maybe_ws "," maybe_ws individual_iri)* maybe_ws "}"
+    individual_list = "{" maybe_ws individual_iri (maybe_ws "⊔" maybe_ws individual_iri)* maybe_ws "}"
 
     # Back to start symbol (first production rule)
     parentheses = "(" maybe_ws union maybe_ws ")"
