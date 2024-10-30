@@ -8,13 +8,21 @@ from owlapy.owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataPr
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.parser import DLSyntaxParser, ManchesterOWLSyntaxParser
 from owlapy.render import DLSyntaxObjectRenderer, ManchesterOWLSyntaxOWLObjectRenderer
-from owlapy.class_expression import *
+from owlapy.class_expression import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMinCardinality, \
+    OWLObjectSomeValuesFrom, OWLObjectUnionOf, OWLClass, OWLObjectOneOf, \
+    OWLClassExpression, OWLObjectComplementOf, OWLObjectExactCardinality, \
+    OWLQuantifiedDataRestriction, OWLQuantifiedObjectRestriction,  OWLFacetRestriction, \
+    OWLDataSomeValuesFrom, OWLDataExactCardinality, OWLObjectHasValue, \
+    OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, \
+    OWLDataOneOf, OWLObjectCardinalityRestriction, OWLDatatypeRestriction, \
+    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom
 
 from owlapy.owl_literal import DoubleOWLDatatype, IntegerOWLDatatype, OWLLiteral, BooleanOWLDatatype
 
 
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.providers import owl_datatype_max_exclusive_restriction, owl_datatype_min_exclusive_restriction, owl_datatype_min_max_exclusive_restriction, owl_datatype_min_max_inclusive_restriction
+from owlapy.vocab import OWLFacet
 
 class TestOWLConversions(unittest.TestCase):
     def test_owlapy_to_dl_str_and_back(self):
