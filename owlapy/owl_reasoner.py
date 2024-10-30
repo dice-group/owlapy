@@ -38,14 +38,14 @@ class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
     __slots__ = '_ontology', '_world', \
                 '_ind_set', '_cls_to_ind', \
-                '_has_prop', \
+                '_has_prop', 'class_cache', \
                 '_objectsomevalues_cache', '_datasomevalues_cache', '_objectcardinality_cache', \
                 '_property_cache', \
                 '_obj_prop', '_obj_prop_inv', '_data_prop', \
                 '_negation_default', '_sub_properties', \
                 '__warned'
 
-    _ontology: AbstractOWLOntology
+    _ontology: Ontology
     _world: owlready2.World
     _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
     _has_prop: Mapping[Type[_P], LRUCache[_P, FrozenSet[OWLNamedIndividual]]]  # Type => Property => individuals
@@ -62,11 +62,12 @@ class StructuralReasoner(AbstractOWLReasoner):
     _obj_prop_inv: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
     # DataProperty => { individual => literals }
     _data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]]
+    class_cache: bool
     _property_cache: bool
     _negation_default: bool
     _sub_properties: bool
 
-    def __init__(self, ontology: AbstractOWLOntology, *,
+    def __init__(self, ontology: AbstractOWLOntology, *, class_cache: bool = True,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
         """Fast instance checker.
 
@@ -81,6 +82,7 @@ class StructuralReasoner(AbstractOWLReasoner):
         assert isinstance(ontology, Ontology)
         self._world = ontology._world
         self._ontology = ontology
+        self.class_cache = class_cache
         self._property_cache = property_cache
         self._negation_default = negation_default
         self._sub_properties = sub_properties
@@ -88,12 +90,15 @@ class StructuralReasoner(AbstractOWLReasoner):
         self._init()
 
     def _init(self, cache_size=128):
-        self._cls_to_ind = dict()
+
         individuals = self._ontology.individuals_in_signature()
         self._ind_set = frozenset(individuals)
         self._objectsomevalues_cache = LRUCache(maxsize=cache_size)
         self._datasomevalues_cache = LRUCache(maxsize=cache_size)
         self._objectcardinality_cache = LRUCache(maxsize=cache_size)
+        if self.class_cache:
+            self._cls_to_ind = dict()
+
         if self._property_cache:
             self._obj_prop = dict()
             self._obj_prop_inv = dict()
@@ -687,7 +692,8 @@ class StructuralReasoner(AbstractOWLReasoner):
                           min_count: int = 1, max_count: Optional[int] = None) -> FrozenSet[OWLNamedIndividual]:
         """Get all individuals that have one of filler_inds as their object property value."""
         ret = set()
-
+        if self._ontology.is_modified:
+            self.reset_and_disable_cache()
         if self._property_cache:
             self._lazy_cache_obj_prop(pe)
 
@@ -758,8 +764,13 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     @_find_instances.register
     def _(self, c: OWLClass) -> FrozenSet[OWLNamedIndividual]:
-        self._lazy_cache_class(c)
-        return self._cls_to_ind[c]
+        if self._ontology.is_modified:
+            self.reset_and_disable_cache()
+        if self.class_cache:
+            self._lazy_cache_class(c)
+            return self._cls_to_ind[c]
+        else:
+            return frozenset(self.get_instances_from_owl_class(c))
 
     @_find_instances.register
     def _(self, ce: OWLObjectUnionOf) -> FrozenSet[OWLNamedIndividual]:
@@ -871,8 +882,9 @@ class StructuralReasoner(AbstractOWLReasoner):
         pe = ce.get_property()
         filler = ce.get_filler()
         assert isinstance(pe, OWLDataProperty)
-        #
 
+        if self._ontology.is_modified:
+            self.reset_and_disable_cache()
         property_cache = self._property_cache
 
         if property_cache:
@@ -1011,6 +1023,11 @@ class StructuralReasoner(AbstractOWLReasoner):
                 indirect_relations = ((r[1], r[0]) for r in indirect_relations)
             relations = chain(relations, indirect_relations)
         yield from relations
+
+    def reset_and_disable_cache(self):
+        self.reset()
+        self.class_cache = False
+        self._property_cache = False
 
 
 class SyncReasoner(AbstractOWLReasoner):
