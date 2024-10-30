@@ -10,12 +10,10 @@ from owlapy.parser import DLSyntaxParser, ManchesterOWLSyntaxParser
 from owlapy.render import DLSyntaxObjectRenderer, ManchesterOWLSyntaxOWLObjectRenderer
 from owlapy.class_expression import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMinCardinality, \
     OWLObjectSomeValuesFrom, OWLObjectUnionOf, OWLClass, OWLObjectOneOf, \
-    OWLClassExpression, OWLObjectComplementOf, OWLObjectExactCardinality, \
-    OWLQuantifiedDataRestriction, OWLQuantifiedObjectRestriction,  OWLFacetRestriction, \
+    OWLObjectComplementOf, OWLObjectExactCardinality, OWLFacetRestriction, \
     OWLDataSomeValuesFrom, OWLDataExactCardinality, OWLObjectHasValue, \
     OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, \
-    OWLDataOneOf, OWLObjectCardinalityRestriction, OWLDatatypeRestriction, \
-    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom
+    OWLDataOneOf, OWLDatatypeRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom
 
 from owlapy.owl_literal import DoubleOWLDatatype, IntegerOWLDatatype, OWLLiteral, BooleanOWLDatatype
 
