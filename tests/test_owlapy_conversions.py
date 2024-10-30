@@ -46,10 +46,10 @@ class TestOWLConversions(unittest.TestCase):
         # (4)
         i1 = OWLNamedIndividual(IRI.create(NS, 'heinz'))
         i2 = OWLNamedIndividual(IRI.create(NS, 'marie'))
-        c = OWLObjectOneOf((i1, i2))
+        c = OWLObjectOneOf({i1, i2})
         rendered_c = renderer.render(c)
         self.assertEqual(c, parser.parse_expression(rendered_c))
-        self.assertEqual(rendered_c, "{heinz ⊔ marie}")
+        assert rendered_c== "{heinz ⊔ marie}" or rendered_c=="{marie ⊔ heinz}"
         # (5)
         c = OWLObjectHasValue(property=has_child, individual=i1)
         rendered_c = renderer.render(c)
@@ -110,7 +110,7 @@ class TestOWLConversions(unittest.TestCase):
             OWLNamedIndividual(IRI.create(NS, 'A')),
             OWLNamedIndividual(IRI.create(NS, 'B'))]))
         renderer_c = renderer.render(c)
-        self.assertEqual(renderer_c, "∃ hasChild.{A ⊔ B}")
+        assert renderer_c=="∃ hasChild.{A ⊔ B}" or renderer_c== "∃ hasChild.{B ⊔ A}"
         self.assertEqual(c, parser.parse_expression(renderer_c))
         # (16)
         c = OWLObjectAllValuesFrom(property=has_child, filler=OWLObjectOneOf([

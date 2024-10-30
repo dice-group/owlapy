@@ -1,7 +1,7 @@
 """OWL Restrictions"""
 from abc import ABCMeta, abstractmethod
 from ..meta_classes import HasFiller, HasCardinality, HasOperands
-from typing import TypeVar, Generic, Final, Sequence, Union, Iterable
+from typing import TypeVar, Generic, Final, Sequence, Union, Iterable, Set
 from .nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
 from .class_expression import OWLAnonymousClassExpression, OWLClassExpression
 from ..owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, OWLDataPropertyExpression
@@ -393,13 +393,15 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
     __slots__ = '_values'
     type_index: Final = 3004
 
-    def __init__(self, values: Union[OWLIndividual, Iterable[OWLIndividual]]):
+    def __init__(self, values: OWLIndividual | Iterable[OWLIndividual]):
+        #assert isinstance(values, OWLIndividual) | isinstance(values, set)
+        #    f"The input of OWLObjectOneOf must be either an OWLIndividual or a set of OWLIndividual. Currently, {type(values)}!"
         if isinstance(values, OWLIndividual):
             self._values = values,
         else:
             for _ in values:
                 assert isinstance(_, OWLIndividual)
-            self._values = tuple(values)
+            self._values = {i for i in values}
 
     def individuals(self) -> Iterable[OWLIndividual]:
         """Gets the individuals that are in the oneOf. These individuals represent the exact instances (extension)
