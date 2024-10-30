@@ -15,7 +15,10 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
         Args:
             operands: Class expressions.
         """
+        # TODO: CD: Replace tuple with set
         self._operands = tuple(operands)
+
+        assert len(self._operands)>1, "OWLNaryBooleanClassExpression requires at least one operand."
 
     def operands(self) -> Iterable[OWLClassExpression]:
         # documented in parent
@@ -26,8 +29,9 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._operands == other._operands
-        return NotImplemented
+            return {i for i in self._operands} == { j for j in other.operands()}
+        else:
+            return False
 
     def __hash__(self):
         return hash(self._operands)

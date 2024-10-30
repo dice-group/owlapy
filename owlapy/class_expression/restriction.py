@@ -148,7 +148,7 @@ class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpressi
     __slots__ = ()
 
     _property: OWLObjectPropertyExpression
-
+    # @TODO: CD: property shows the in-built function
     @abstractmethod
     def __init__(self, cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
         super().__init__(cardinality, filler)
@@ -167,8 +167,8 @@ class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpressi
             return self._property == other._property \
                 and self._cardinality == other._cardinality \
                 and self._filler == other._filler
-        return NotImplemented
-
+        else:
+            return False
     def __hash__(self):
         return hash((self._property, self._cardinality, self._filler))
 
@@ -288,7 +288,7 @@ class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
     individuals that are instances of CE. (https://www.w3.org/TR/owl2-syntax/#Universal_Quantification)"""
     __slots__ = '_property', '_filler'
     type_index: Final = 3006
-
+    # @TODO: CD: property shows the in-built function
     def __init__(self, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
         super().__init__(filler)
         self._property = property
@@ -299,7 +299,8 @@ class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
-        return NotImplemented
+        else:
+            return False
 
     def __hash__(self):
         return hash((self._filler, self._property))
@@ -337,7 +338,8 @@ class OWLObjectHasSelf(OWLObjectRestriction):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._property == other._property
-        return NotImplemented
+        else:
+            return False
 
     def __hash__(self):
         return hash(self._property)
@@ -357,7 +359,7 @@ class OWLObjectHasValue(OWLHasValueRestriction[OWLIndividual], OWLObjectRestrict
 
     _property: OWLObjectPropertyExpression
     _v: OWLIndividual
-
+    # @TODO: CD: property shows the in-built function
     def __init__(self, property: OWLObjectPropertyExpression, individual: OWLIndividual):
         """
         Args:
@@ -433,7 +435,8 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._values == other._values
-        return NotImplemented
+        else:
+            return False
 
     def __repr__(self):
         return f'OWLObjectOneOf({self._values})'
@@ -452,8 +455,6 @@ class OWLDataRestriction(OWLRestriction, metaclass=ABCMeta):
         # documented in parent
         return True
 
-    pass
-
 
 class OWLQuantifiedDataRestriction(OWLQuantifiedRestriction[OWLDataRange],
                                    OWLDataRestriction, metaclass=ABCMeta):
@@ -465,7 +466,7 @@ class OWLQuantifiedDataRestriction(OWLQuantifiedRestriction[OWLDataRange],
     def __init__(self, filler: OWLDataRange):
         assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
         self._filler = filler
-
+    # @TODO:CD: define it as @property
     def get_filler(self) -> OWLDataRange:
         # documented in parent (HasFiller)
         return self._filler
@@ -478,7 +479,7 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
     __slots__ = ()
 
     _property: OWLDataPropertyExpression
-
+    # @TODO: CD: property shows the in-built function
     @abstractmethod
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
         assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
@@ -513,7 +514,7 @@ class OWLDataMinCardinality(OWLDataCardinalityRestriction):
     __slots__ = '_cardinality', '_filler', '_property'
 
     type_index: Final = 3015
-
+    # @TODO: CD: property shows the in-built function
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """
         Args:
@@ -536,7 +537,7 @@ class OWLDataMaxCardinality(OWLDataCardinalityRestriction):
     __slots__ = '_cardinality', '_filler', '_property'
 
     type_index: Final = 3017
-
+    # @TODO: CD: property shows the in-built function
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """
         Args:
@@ -559,7 +560,7 @@ class OWLDataExactCardinality(OWLDataCardinalityRestriction):
     __slots__ = '_cardinality', '_filler', '_property'
 
     type_index: Final = 3016
-
+    # @TODO: CD: property shows the in-built function
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """
         Args:
@@ -595,7 +596,7 @@ class OWLDataSomeValuesFrom(OWLQuantifiedDataRestriction):
     type_index: Final = 3012
 
     _property: OWLDataPropertyExpression
-
+    # @TODO: CD: property shows the in-built function
     def __init__(self, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """Gets an OWLDataSomeValuesFrom restriction.
 
@@ -615,8 +616,8 @@ class OWLDataSomeValuesFrom(OWLQuantifiedDataRestriction):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
-        return NotImplemented
-
+        else:
+            return False
     def __hash__(self):
         return hash((self._filler, self._property))
 
@@ -638,7 +639,7 @@ class OWLDataAllValuesFrom(OWLQuantifiedDataRestriction):
     type_index: Final = 3013
 
     _property: OWLDataPropertyExpression
-
+    # @TODO:CD:property shows the in-built function
     def __init__(self, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """Gets an OWLDataAllValuesFrom restriction.
 
@@ -658,7 +659,8 @@ class OWLDataAllValuesFrom(OWLQuantifiedDataRestriction):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
-        return NotImplemented
+        else:
+            return False
 
     def __hash__(self):
         return hash((self._filler, self._property))
@@ -675,11 +677,13 @@ class OWLDataHasValue(OWLHasValueRestriction[OWLLiteral], OWLDataRestriction):
     (https://www.w3.org/TR/owl2-syntax/#Literal_Value_Restriction)
     """
     __slots__ = '_property'
+    # @TODO:CD:What is _v? even if it is inherited from somewhere, we should add it into docstring.
+    # @TODO:CD: We should also name the class attributes in a more meaningful manner.
 
     type_index: Final = 3014
 
     _property: OWLDataPropertyExpression
-
+    # @TODO: CD: property shows the in-built function
     def __init__(self, property: OWLDataPropertyExpression, value: OWLLiteral):
         """Gets an OWLDataHasValue restriction.
 
@@ -731,7 +735,7 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
             for _ in values:
                 assert isinstance(_, OWLLiteral)
             self._values = tuple(values)
-
+    # TODO:CD: define it as @property as the name of the class method does not correspond to an action
     def values(self) -> Iterable[OWLLiteral]:
         """Gets the values that are in the oneOf.
 
@@ -749,8 +753,9 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._values == other._values
-        return NotImplemented
+            return {i for i in self._values} == {j for j in other._values}
+        else:
+            return False
 
     def __repr__(self):
         return f'OWLDataOneOf({self._values})'
