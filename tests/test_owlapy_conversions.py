@@ -117,7 +117,7 @@ class TestOWLConversions(unittest.TestCase):
             OWLNamedIndividual(IRI.create(NS, 'A')),
             OWLNamedIndividual(IRI.create(NS, 'B'))]))
         renderer_c = renderer.render(c)
-        self.assertEqual(renderer_c, "∀ hasChild.{A ⊔ B}")
+        assert renderer_c=="∀ hasChild.{A ⊔ B}" or renderer_c=="∀ hasChild.{B ⊔ A}"
         self.assertEqual(c, parser.parse_expression(renderer_c))
 
     def test_owlapy_to_manchester_str_and_back(self):

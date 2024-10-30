@@ -116,7 +116,7 @@ class Owlapy_ManchesterRenderer_Test(unittest.TestCase):
         i2 = OWLNamedIndividual(IRI.create(NS, 'marie'))
         oneof = OWLObjectOneOf((i1, i2))
         r = renderer.render(oneof)
-        self.assertEqual(r, "{heinz , marie}")
+        assert r == "{heinz , marie}" or r== "{marie , heinz}"
 
         hasvalue = OWLObjectHasValue(property=has_child, individual=i1)
         r = renderer.render(hasvalue)
