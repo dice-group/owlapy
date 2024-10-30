@@ -100,7 +100,10 @@
 <span class="sd">        Args:</span>
 <span class="sd">            operands: Class expressions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: CD: Replace tuple with set</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">operands</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;OWLNaryBooleanClassExpression requires at least one operand.&quot;</span>
 
 <div class="viewcode-block" id="OWLNaryBooleanClassExpression.operands">
 <a class="viewcode-back" href="../../../autoapi/owlapy/class_expression/nary_boolean_expression/index.html#owlapy.class_expression.OWLNaryBooleanClassExpression.operands">[docs]</a>
@@ -119,8 +122,9 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/class_expression/nary_boolean_expression/index.html#owlapy.class_expression.OWLNaryBooleanClassExpression.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_operands</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+            <span class="k">return</span> <span class="p">{</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operands</span><span class="p">}</span> <span class="o">==</span> <span class="p">{</span> <span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">operands</span><span class="p">()}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="OWLNaryBooleanClassExpression.__hash__">
