@@ -211,7 +211,7 @@ class Owl2SparqlConverter:
     # each overload of the method is responsible for processing a different type of class expressions (e.g., ⊔ or ⊓)
     @singledispatchmethod
     def process(self, ce: OWLClassExpression):
-        raise NotImplementedError(ce)
+        raise NotImplementedError(f"We cannot create SPARQL query based on the following owl class {ce}")
 
     # an overload of process function
     # this overload is responsible for handling single concepts (e.g., Brother)
@@ -607,6 +607,7 @@ class Owl2SparqlConverter:
                  count: bool = False,
                  values: Optional[Iterable[OWLNamedIndividual]] = None,
                  named_individuals: bool = False) -> str:
+        assert isinstance(ce,OWLClassExpression), f"ce must be an instance of OWLClassExpression. Currently {type(ce)}"
         # root variable: the variable that will be projected
         # ce: the class expression to be transformed to a SPARQL query
         # for_all_de_morgan: true -> ¬(∃r.¬C), false -> (∀r.C)
@@ -634,6 +635,61 @@ class Owl2SparqlConverter:
         parseQuery(query)
         return query
 
+    def as_confusion_matrix_query(self,
+                                  root_variable: str,
+                                  ce: OWLClassExpression,
+                                  positive_examples: Iterable[OWLNamedIndividual],
+                                  negative_examples: Iterable[OWLNamedIndividual],
+                                  for_all_de_morgan: bool = True,
+                                  named_individuals: bool = False) -> str:
+        # get the graph pattern corresponding to the provided class expression (ce)
+        graph_pattern_str = "".join(self.convert(root_variable,
+                                                 ce,
+                                                 for_all_de_morgan=for_all_de_morgan,
+                                                 named_individuals=named_individuals))
+        # preparation for the final query
+
+        # required to compute false negatives
+        number_of_positive_examples = 0
+        # required to compute true negatives
+        number_of_negative_examples = 0
+        # string representation of the positive examples (to be passed to the first VALUES clause)
+        positive_examples_as_str = ""
+        # iterate over the positive examples
+        for positive_example in positive_examples:
+            number_of_positive_examples += 1
+            positive_examples_as_str += f"<{positive_example.to_string_id()}> "
+        assert (len(positive_examples_as_str) > 0)
+
+        # string representation of the positive examples (to be passed to the first VALUES clause)
+        negative_examples_as_str = ""
+        # iterate over the negative examples
+        for negative_example in negative_examples:
+            number_of_negative_examples += 1
+            negative_examples_as_str += f"<{negative_example.to_string_id()}> "
+        assert(len(negative_examples_as_str) > 0)
+
+        # create the sparql query
+        sparql_str= f"""
+                    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                    SELECT * WHERE {{
+                       {{
+                          SELECT (COUNT(DISTINCT {root_variable}) as ?tp) (({number_of_positive_examples} - COUNT(DISTINCT {root_variable})) as ?fn) WHERE {{
+                             VALUES {root_variable} {{ {positive_examples_as_str} }}
+                             {graph_pattern_str}
+                          }}
+                       }}
+                       {{
+                          SELECT (COUNT(DISTINCT {root_variable}) as ?fp) (({number_of_negative_examples} - COUNT(DISTINCT {root_variable})) as ?tn) WHERE {{
+                             VALUES {root_variable} {{ {negative_examples_as_str} }}
+                             {graph_pattern_str}
+                          }}
+                       }}
+                    }}
+                    """
+        parseQuery(sparql_str)
+        return sparql_str
+
 
 converter = Owl2SparqlConverter()
 
@@ -656,3 +712,30 @@ def owl_expression_to_sparql(expression: OWLClassExpression = None,
     assert expression is not None, "expression cannot be None"
     return converter.as_query(root_variable, expression, count=False, values=values,
                               named_individuals=named_individuals, for_all_de_morgan=for_all_de_morgan)
+
+
+def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpression,
+                                                   positive_examples: Optional[Iterable[OWLNamedIndividual]],
+                                                   negative_examples: Optional[Iterable[OWLNamedIndividual]],
+                                                   root_variable: str = "?x",
+                                                   for_all_de_morgan: bool = True,
+                                                   named_individuals: bool = False) -> str:
+    """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
+     root variable: the variable that will be projected
+     expression: the class expression to be transformed to a SPARQL query
+     positive_examples: positive examples from a class expression problem
+     negative_examples: positive examples from a class expression problem
+     for_all_de_morgan: if set to True, the SPARQL mapping will use the mapping containing the nested FILTER NOT EXISTS
+     patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
+     named_individuals: if set to True, the generated SPARQL query will return only entities
+     that are instances of owl:NamedIndividual
+    """
+    assert expression is not None, "expression cannot be None"
+    assert positive_examples is not None, "positive examples cannot be None"
+    assert negative_examples is not None, "negative examples cannot be None"
+    return converter.as_confusion_matrix_query(root_variable,
+                                               expression,
+                                               positive_examples=positive_examples,
+                                               negative_examples=negative_examples,
+                                               named_individuals=named_individuals,
+                                               for_all_de_morgan=for_all_de_morgan)

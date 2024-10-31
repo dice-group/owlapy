@@ -1,7 +1,7 @@
 # OWLAPY
 [![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.3.0-blue)](https://pypi.org/project/owlapy/1.3.0/)
-[![Docs](https://img.shields.io/badge/documentation-1.3.0-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Pypi](https://img.shields.io/badge/pypi-1.3.1-blue)](https://pypi.org/project/owlapy/1.3.1/)
+[![Docs](https://img.shields.io/badge/documentation-1.3.1-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
 
@@ -25,7 +25,7 @@ pip3 install owlapy
 ```shell
 # To download RDF knowledge graphs
 wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
-pytest -p no:warnings -x # Running  103 tests
+pytest -p no:warnings -x # Running  142 tests ~ 30 secs
 ```
 
 ## Examples

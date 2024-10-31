@@ -6,6 +6,7 @@ component is required.
 For this guide we will also consider the 'father' ontology that we slightly described [here](ontologies.md):
 
 ```python
+from owlapy.iri import IRI
 from owlapy.owl_ontology_manager import OntologyManager
 
 manager = OntologyManager()
@@ -115,7 +116,7 @@ You can get all the types of a certain individual using `types` method:
 <!--pytest-codeblocks:cont-->
 
 ```python
-anna = list(onto.individuals_in_signature()).pop()
+anna = list(onto.individuals_in_signature()).pop(0)
 
 anna_types = structural_reasoner.types(anna)
 ```

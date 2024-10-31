@@ -246,7 +246,7 @@ class DLSyntaxObjectRenderer(OWLObjectRenderer):
 
     @render.register
     def _(self, r: OWLObjectOneOf):
-        return "{%s}" % (" %s " % _DL_SYNTAX.COMMA).join(
+        return "{%s}" % (" %s " % _DL_SYNTAX.OR).join(
             "%s" % (self.render(_)) for _ in r.individuals())
 
     @render.register
