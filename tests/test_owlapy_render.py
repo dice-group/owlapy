@@ -14,6 +14,7 @@ from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, O
 from owlapy.providers import owl_datatype_min_max_inclusive_restriction
 from owlapy.render import DLSyntaxObjectRenderer, ManchesterOWLSyntaxOWLObjectRenderer
 
+
 class Owlapy_DLRenderer_Test(unittest.TestCase):
     def test_ce_render(self):
         renderer = DLSyntaxObjectRenderer()
@@ -71,7 +72,7 @@ class Owlapy_DLRenderer_Test(unittest.TestCase):
         dr = OWLDataAllValuesFrom(property=has_age, filler=OWLDataUnionOf([datatype_restriction, IntegerOWLDatatype]))
         r = renderer.render(dr)
         print(r)
-        self.assertEqual(r, "∀ hasAge.(xsd:integer[≥ 40 , ≤ 80] ⊔ xsd:integer)")
+        self.assertEqual(r, "∀ hasAge.(xsd:integer[≥ 40 ⊓ ≤ 80] ⊔ xsd:integer)")
 
         dr = OWLDataSomeValuesFrom(property=has_age,
                                    filler=OWLDataIntersectionOf([OWLDataOneOf([OWLLiteral(32.5), OWLLiteral(4.5)]),
@@ -157,7 +158,7 @@ class Owlapy_ManchesterRenderer_Test(unittest.TestCase):
         dr = OWLDataAllValuesFrom(property=has_age, filler=OWLDataUnionOf([datatype_restriction, IntegerOWLDatatype]))
         r = renderer.render(dr)
         print(r)
-        self.assertEqual(r, "hasAge only (xsd:integer[>= 40 , <= 80] or xsd:integer)")
+        self.assertEqual(r, "hasAge only (xsd:integer[>= 40 and <= 80] or xsd:integer)")
 
         dr = OWLDataSomeValuesFrom(property=has_age,
                                    filler=OWLDataIntersectionOf([OWLDataOneOf([OWLLiteral(32.5), OWLLiteral(4.5)]),
