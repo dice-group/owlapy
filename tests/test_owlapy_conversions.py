@@ -20,6 +20,8 @@ from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, O
 from owlapy.providers import owl_datatype_max_exclusive_restriction, owl_datatype_min_exclusive_restriction, owl_datatype_min_max_exclusive_restriction, owl_datatype_min_max_inclusive_restriction
 
 from owlapy.vocab import OWLFacet
+
+
 class TestOWLConversions(unittest.TestCase):
     def test_owlapy_to_dl_str_and_back(self):
         NS = "http://example.com/father#"
@@ -75,7 +77,7 @@ class TestOWLConversions(unittest.TestCase):
         c = OWLDataAllValuesFrom(property=has_age, filler=OWLDataUnionOf([owl_datatype_min_max_inclusive_restriction(40, 80), IntegerOWLDatatype]))
         rendered_c = renderer.render(c)
         self.assertEqual(c, parser.parse_expression(rendered_c))
-        self.assertEqual(rendered_c, "∀ hasAge.(xsd:integer[≥ 40 , ≤ 80] ⊔ xsd:integer)")
+        self.assertEqual(rendered_c, "∀ hasAge.(xsd:integer[≥ 40 ⊓ ≤ 80] ⊔ xsd:integer)")
         # (9)
         c = OWLDataSomeValuesFrom(property=has_age,
                                    filler=OWLDataIntersectionOf([OWLDataOneOf([OWLLiteral(32.5), OWLLiteral(4.5)]),
@@ -703,7 +705,7 @@ class Owlapy_DLRenderer_Test(unittest.TestCase):
 
         dr = OWLDataAllValuesFrom(property=has_age, filler=OWLDataUnionOf([datatype_restriction, IntegerOWLDatatype]))
         r = renderer.render(dr)
-        self.assertEqual(r, "∀ hasAge.(xsd:integer[≥ 40 , ≤ 80] ⊔ xsd:integer)")
+        self.assertEqual(r, "∀ hasAge.(xsd:integer[≥ 40 ⊓ ≤ 80] ⊔ xsd:integer)")
 
         dr = OWLDataSomeValuesFrom(property=has_age,
                                    filler=OWLDataIntersectionOf([OWLDataOneOf([OWLLiteral(32.5), OWLLiteral(4.5)]),
@@ -776,7 +778,7 @@ class Owlapy_ManchesterRenderer_Test(unittest.TestCase):
 
         dr = OWLDataAllValuesFrom(property=has_age, filler=OWLDataUnionOf([datatype_restriction, IntegerOWLDatatype]))
         r = renderer.render(dr)
-        self.assertEqual(r, "hasAge only (xsd:integer[>= 40 , <= 80] or xsd:integer)")
+        self.assertEqual(r, "hasAge only (xsd:integer[>= 40 and <= 80] or xsd:integer)")
 
         dr = OWLDataSomeValuesFrom(property=has_age,
                                    filler=OWLDataIntersectionOf([OWLDataOneOf([OWLLiteral(32.5), OWLLiteral(4.5)]),
