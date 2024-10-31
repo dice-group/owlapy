@@ -4,7 +4,7 @@ from owlapy.owl_axiom import OWLSubClassOfAxiom, OWLObjectPropertyDomainAxiom, O
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
-from owlapy.owl_reasoner import OntologyReasoner, FastInstanceCheckerReasoner
+from owlapy.owl_reasoner import StructuralReasoner
 
 data_file = '../KGs/Test/test_ontology.owl'
 NS = 'http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#'
@@ -126,11 +126,10 @@ onto.add_axiom(OWLObjectPropertyDomainAxiom(r1, ST))
 onto.add_axiom(OWLSubClassOfAxiom(R, r5Q))
 onto.add_axiom(OWLSubClassOfAxiom(ST, U))
 
-base_reasoner = OntologyReasoner(onto)
 
 # ---------------------------------------- Reasoning ----------------------------------------
 
-reasoner = FastInstanceCheckerReasoner(onto, base_reasoner)
+reasoner = StructuralReasoner(onto)
 
 # Instances
 t1 = list(reasoner.instances(N))

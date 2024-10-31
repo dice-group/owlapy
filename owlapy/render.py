@@ -269,7 +269,7 @@ class DLSyntaxObjectRenderer(OWLObjectRenderer):
     @render.register
     def _(self, r: OWLDatatypeRestriction) -> str:
         s = [self.render(_) for _ in r.get_facet_restrictions()]
-        return "%s[%s]" % (self.render(r.get_datatype()), (" %s " % _DL_SYNTAX.COMMA).join(s))
+        return "%s[%s]" % (self.render(r.get_datatype()), (" %s " % _DL_SYNTAX.AND).join(s))
 
     @render.register
     def _(self, r: OWLDataHasValue):
@@ -463,7 +463,7 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
     @render.register
     def _(self, r: OWLDatatypeRestriction):
         s = [self.render(_) for _ in r.get_facet_restrictions()]
-        return "%s[%s]" % (self.render(r.get_datatype()), (" %s " % _MAN_SYNTAX.COMMA).join(s))
+        return "%s[%s]" % (self.render(r.get_datatype()), (" %s " % _MAN_SYNTAX.AND).join(s))
 
     @render.register
     def _(self, r: OWLDataHasValue):

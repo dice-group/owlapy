@@ -13,87 +13,71 @@ manager = OntologyManager()
 onto = manager.load_ontology(IRI.create("KGs/Family/father.owl"))
 ```
 
-In our Owlapy library, we provide several **reasoners** to choose
-from:
-
-- [**OntologyReasoner**](owlapy.owl_reasoner.OntologyReasoner)
-
-    Or differently Structural Reasoner, is the base reasoner in Owlapy. The functionalities
-  of this reasoner are limited. It does not provide full reasoning in _ALCH_. Furthermore,
-  it has no support for instances of complex class expressions, which is covered by the
-  other reasoners (SyncReasoner and FIC). This reasoner is used as
-  a base reasoner for FIC which overwrites the `instances` method. 
-  We recommend using the other reasoners for any reasoning tasks.
-
-    **Initialization:**
-
-   ```python
-   from owlapy.owl_reasoner import OntologyReasoner
-   
-   structural_reasoner = OntologyReasoner(onto)
-   ```
-
-    The structural reasoner requires an ontology ([OWLOntology](owlapy.owl_ontology.OWLOntology)).
-    
+In our Owlapy library, we provide two main reasoner classes:
 
 
-- [**SyncReasoner**](owlapy.owl_reasoner.SyncReasoner)
+- [**StructuralReasoner**](owlapy.owl_reasoner.StructuralReasoner) (What used to be FastInstanceCheckerReasoner )
 
-    Can perform full reasoning in _ALCH_ due to the use of reasoners from 
-  owlapi like HermiT, Pellet, etc. and provides support for
-  complex class expression instances (when using the method `instances`). 
-  SyncReasoner is more useful when your main goal is reasoning over the ontology,
-  and you are familiarized with the java reasoners (HermiT, Pellet, ...).
+    Structural Reasoner is the base reasoner in Owlapy. This reasoner works 
+   under CWA/PCWA and the base library used for it is _owlready2_. The functionalities
+  of this reasoner are limited and may be incomplete. It does not provide full reasoning in _ALCH_. 
+  It provides support for finding instance of complex class expression.
+  It has a cache storing system that allows for faster execution of some reasoning functionalities.
 
     **Initialization:**
 
     ```python
-    from owlapy.owl_reasoner import SyncReasoner
+    from owlapy.owl_reasoner import StructuralReasoner
     
-    sync_reasoner = SyncReasoner(ontology_path="KGs/Mutagenesis/mutagenesis.owl", reasoner="HermiT")
+    structural_reasoner = StructuralReasoner(onto, property_cache = True, negation_default = True, sub_properties = False)
     ```
-    
-    Sync Reasoner is made available by [owlapi mapper](owlapi_adaptor.md) and requires the ontology path
-    together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"JFact"`, `"Openllet"`.
-
-
-- [**FastInstanceCheckerReasoner**](owlapy.owl_reasoner.FastInstanceCheckerReasoner) **(FIC)**
-
-    FIC also provides support for complex class expression but the rest of the methods are the same as in
-  the base reasoner.
-  It has a cache storing system that allows for faster execution of some reasoning functionalities. Due to this
-  feature, FIC is more appropriate to be used in concept learning.
-
-    **Initialization:**
-
-    ```python
-    from owlapy.owl_reasoner import FastInstanceCheckerReasoner
-    
-    fic_reasoner = FastInstanceCheckerReasoner(onto, structural_reasoner, property_cache = True,
-                                                   negation_default = True, sub_properties = False)
-    ```
-    Besides the ontology, FIC requires a base reasoner to delegate any reasoning tasks not covered by it.
-  This base reasoner
-  can be any other reasoner in Owlapy (usually it's [OntologyReasoner](owlapy.owl_reasoner.OntologyReasoner)).
+  The structural reasoner requires an ontology ([AbstractOWLOntology](owlapy.abstracts.AbstractOWLOntology)).
   `property_cache` specifies whether to cache property values. This
   requires more memory, but it speeds up the reasoning processes. If `negation_default` argument is set
   to `True` the missing facts in the ontology means false. The argument
     `sub_properties` is another boolean argument to specify whether you want to take sub properties in consideration
   for `instances()` method.
 
+
+- [**SyncReasoner**](owlapy.owl_reasoner.SyncReasoner)
+  
+  SyncReasoner is a class that serves as a 'syncing' class 
+  between our framework and reasoners in _owlapi_. It
+  can perform full reasoning in _ALCH_ due to the use of reasoners from 
+  powerful reasoners like HermiT, Pellet, etc. 
+  SyncReasoner is more useful when your main goal is reasoning over the ontology,
+  and you are familiarized with the java reasoners (HermiT, Pellet, JFact, Openllet, ...).
+
+    **Initialization:**
+
+    ```python
+    from owlapy.owl_reasoner import SyncReasoner
+    
+    sync_reasoner = SyncReasoner(ontology="KGs/Mutagenesis/mutagenesis.owl", reasoner="HermiT")
+    ```
+    
+    SyncReasoner is made available by [owlapi mapper](owlapi_synchronization.md) and requires the ontology path or an
+    object of type [SyncOntology](owlapy.owl_ontology.SyncOntology),
+    together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"JFact"`, `"Openllet"`
+   `"StructuralReasoner"`.
+ 
+   
+   **Note that SyncReasoner with `reasoner` argument set to `"StructuralReasoner"` is refering to 
+   _StructuralReasoner_ implemented in owlapi. That is different from our StructuralReasoner.**
+
+  
 ## Usage of the Reasoner
 All the reasoners available in the Owlapy library inherit from the
-class: [OWLReasonerEx](owlapy.owl_reasoner.OWLReasonerEx). This class provides some 
-extra convenient methods compared to its base abstract class [OWLReasoner](owlapy.owl_reasoner.OWLReasoner).
-Further on, in this guide, we use [FastInstanceCheckerReasoner](owlapy.owl_reasoner.FastInstanceCheckerReasoner)
+class: [AbstractOWLReasoner](owlapy.abstracts.AbstractOWLReasoner).
+Further on, in this guide, we use [StructuralReasoner](owlapy.owl_reasoner.StructuralReasoner)
 to show the capabilities of a reasoner in Owlapy.
 
-As mentioned earlier we will use the _father_ dataset to give examples.
+We will proceed to use the _father_ dataset to give examples.
 
 
 ## Class Reasoning
 
-Using an [OWLOntology](owlapy.owl_ontology.OWLOntology) you can list all the classes in the signature, 
+Using an [AbstractOWLOntology](owlapy.abstracts.AbstractOWLOntology) you can list all the classes in the signature, 
 but a reasoner can give you more than that. You can get the subclasses, superclasses or the 
 equivalent classes of a class in the ontology:
 
@@ -106,9 +90,9 @@ from owlapy.iri import IRI
 namespace = "http://example.com/father#"
 male = OWLClass(IRI(namespace, "male"))
 
-male_super_classes = fic_reasoner.super_classes(male)
-male_sub_classes = fic_reasoner.sub_classes(male)
-male_equivalent_classes = fic_reasoner.equivalent_classes(male)
+male_super_classes = structural_reasoner.super_classes(male)
+male_sub_classes = structural_reasoner.sub_classes(male)
+male_equivalent_classes = structural_reasoner.equivalent_classes(male)
 ```
 
 We define the _male_ class by creating an [OWLClass](owlapy.class_expression.owl_class.OWLClass) object. The 
@@ -124,9 +108,8 @@ means that it will return only the named classes.
 >**NOTE**: The extra arguments `direct` and `only_named` are also used in other methods that reason
 upon the class, object property, or data property hierarchy.
 
->**NOTE**: SyncReasoner implements OWLReasoner where we can specify the `only_named` argument
-> in some methods but in java reasoners there is no use for such argument and therefore this
-> argument is trivial when used in SyncReasoner's methods. 
+>**NOTE**: In SyncReasoner, there is no use for the argument `only_named` as this is not
+> supported by methods in the java library owlapi. 
 
 You can get all the types of a certain individual using `types` method:
 
@@ -135,7 +118,7 @@ You can get all the types of a certain individual using `types` method:
 ```python
 anna = list(onto.individuals_in_signature()).pop(0)
 
-anna_types = fic_reasoner.types(anna)
+anna_types = structural_reasoner.types(anna)
 ```
 
 We retrieve _anna_ as the first individual on the list of individuals 
@@ -145,7 +128,7 @@ of the 'Father' ontology. The `type` method only returns named classes.
 ## Object Properties and Data Properties Reasoning
 Owlapy reasoners offers some convenient methods for working with object properties and 
 data properties. Below we show some of them, but you can always check all the methods in the 
-[OWLReasoner](owlapy.owl_reasoner.OWLReasoner)
+[AbstractOWLReasoner](owlapy.abstracts.AbstractOWLReasoner)
 class documentation. 
 
 You can get all the object properties that an individual has by using the 
@@ -154,7 +137,7 @@ following method:
 <!--pytest-codeblocks:cont-->
 ```python
 anna = individuals[0] 
-object_properties = fic_reasoner.ind_object_properties(anna)
+object_properties = structural_reasoner.ind_object_properties(anna)
 ```
 In this example, `object_properties` contains all the object properties
 that _anna_ has, which in our case would only be _hasChild_.
@@ -163,7 +146,7 @@ Now we can get the individuals of this object property for _anna_.
 <!--pytest-codeblocks:cont-->
 ```python
 for op in object_properties:
-    object_properties_values = fic_reasoner.object_property_values(anna, op)
+    object_properties_values = structural_reasoner.object_property_values(anna, op)
     for individual in object_properties_values:
         print(individual)
 ```
@@ -191,16 +174,16 @@ from owlapy.owl_property import OWLObjectProperty
 
 hasChild = OWLObjectProperty(IRI(namespace, "hasChild"))
 
-equivalent_to_hasChild = fic_reasoner.equivalent_object_properties(hasChild)
-hasChild_sub_properties = fic_reasoner.sub_object_properties(hasChild)
+equivalent_to_hasChild = structural_reasoner.equivalent_object_properties(hasChild)
+hasChild_sub_properties = structural_reasoner.sub_object_properties(hasChild)
 ```
 
 In case you want to get the domains and ranges of an object property use the following:
 
 <!--pytest-codeblocks:cont-->
 ```python
-hasChild_domains = fic_reasoner.object_property_domains(hasChild)
-hasChild_ranges = fic_reasoner.object_property_ranges(hasChild)
+hasChild_domains = structural_reasoner.object_property_domains(hasChild)
+hasChild_ranges = structural_reasoner.object_property_ranges(hasChild)
 ```
 
 > **NOTE:** Again, you can do the same for data properties but instead of the word 'object' in the 
@@ -218,7 +201,7 @@ Let us now show a simple example by finding the instances of the class _male_ an
 
 <!--pytest-codeblocks:cont-->
 ```python
-male_individuals = fic_reasoner.instances(male)
+male_individuals = structural_reasoner.instances(male)
 for ind in male_individuals:
     print(ind)
 ```
@@ -226,7 +209,7 @@ for ind in male_individuals:
 -----------------------------------------------------------------------
 
 In this guide we covered the main functionalities of the reasoners in Owlapy. 
-In the next one, we speak about owlapi adaptor and how can make use of owlapi in owlapy.
+In the next one, we speak about owlapi synchronization and how can make use of owlapi in owlapy.
 
 
 

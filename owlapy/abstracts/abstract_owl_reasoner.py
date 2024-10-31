@@ -377,11 +377,6 @@ class AbstractOWLReasoner(metaclass=ABCMeta):
         """
         pass
 
-
-class AbstractOWLReasonerEx(AbstractOWLReasoner, metaclass=ABCMeta):
-    """Extra convenience methods for OWL Reasoners"""
-
-    # default
     def data_property_ranges(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataRange]:
         """Gets the data ranges that are the direct or indirect ranges of this property with respect to the imports
         closure of the root ontology.

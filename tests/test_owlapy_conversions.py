@@ -20,6 +20,8 @@ from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, O
 from owlapy.providers import owl_datatype_max_exclusive_restriction, owl_datatype_min_exclusive_restriction, owl_datatype_min_max_exclusive_restriction, owl_datatype_min_max_inclusive_restriction
 
 from owlapy.vocab import OWLFacet
+
+
 class TestOWLConversions(unittest.TestCase):
     def test_owlapy_to_dl_str_and_back(self):
         NS = "http://example.com/father#"
@@ -75,7 +77,7 @@ class TestOWLConversions(unittest.TestCase):
         c = OWLDataAllValuesFrom(property=has_age, filler=OWLDataUnionOf([owl_datatype_min_max_inclusive_restriction(40, 80), IntegerOWLDatatype]))
         rendered_c = renderer.render(c)
         self.assertEqual(c, parser.parse_expression(rendered_c))
-        self.assertEqual(rendered_c, "∀ hasAge.(xsd:integer[≥ 40 , ≤ 80] ⊔ xsd:integer)")
+        self.assertEqual(rendered_c, "∀ hasAge.(xsd:integer[≥ 40 ⊓ ≤ 80] ⊔ xsd:integer)")
         # (9)
         c = OWLDataSomeValuesFrom(property=has_age,
                                    filler=OWLDataIntersectionOf([OWLDataOneOf([OWLLiteral(32.5), OWLLiteral(4.5)]),
@@ -246,7 +248,7 @@ class ManchesterOWLSyntaxParserTest(unittest.TestCase):
         self.assertEqual(p, c)
 
         p = self.parser.parse_expression('charge some <http://www.w3.org/2001/XMLSchema#double>'
-                                         '[> "4.4"^^xsd:double, < -32.5]')
+                                         '[> "4.4"^^xsd:double ⊓ < -32.5]')
         c = OWLDataSomeValuesFrom(self.charge, owl_datatype_min_max_exclusive_restriction(4.4, -32.5))
         self.assertEqual(p, c)
 
@@ -263,7 +265,7 @@ class ManchesterOWLSyntaxParserTest(unittest.TestCase):
         c = OWLDataMinCardinality(25, self.charge, filler)
         self.assertEqual(p, c)
 
-        p = self.parser.parse_expression('act exactly 11 xsd:integer[totalDigits "5"^^xsd:integer, > -100]')
+        p = self.parser.parse_expression('act exactly 11 xsd:integer[totalDigits "5"^^xsd:integer ⊓ > -100]')
         filler = OWLDatatypeRestriction(IntegerOWLDatatype, (OWLFacetRestriction(OWLFacet.TOTAL_DIGITS, 5),
                                                              OWLFacetRestriction(OWLFacet.MIN_EXCLUSIVE, -100)))
         c = OWLDataExactCardinality(11, self.act, filler)
@@ -303,14 +305,14 @@ class ManchesterOWLSyntaxParserTest(unittest.TestCase):
 
     def test_data_properties_time(self):
         p = self.parser.parse_expression('charge some <http://www.w3.org/2001/XMLSchema#date>'
-                                         '[> 2012-10-09, < "1990-01-31"^^xsd:date]')
+                                         '[> 2012-10-09 ⊓ < "1990-01-31"^^xsd:date]')
         filler = owl_datatype_min_max_exclusive_restriction(date(year=2012, month=10, day=9),
                                                             date(year=1990, month=1, day=31))
         c = OWLDataSomeValuesFrom(self.charge, filler)
         self.assertEqual(p, c)
 
         p = self.parser.parse_expression('charge exactly 10 dateTime'
-                                         '[> 2012-12-31T23:59:59Z, < 2000-01-01 01:01:01.999999]')
+                                         '[> 2012-12-31T23:59:59Z ⊓ < 2000-01-01 01:01:01.999999]')
         filler = owl_datatype_min_max_exclusive_restriction(datetime(year=2012, month=12, day=31, hour=23,
                                                                      minute=59, second=59, tzinfo=timezone.utc),
                                                             datetime(year=2000, month=1, day=1, hour=1, minute=1,
@@ -325,7 +327,7 @@ class ManchesterOWLSyntaxParserTest(unittest.TestCase):
         self.assertEqual(p, c)
 
         p = self.parser.parse_expression('charge only <http://www.w3.org/2001/XMLSchema#duration>'
-                                         '[> P10W20DT8H12M10S, < "P10M10.999999S"^^xsd:duration]')
+                                         '[> P10W20DT8H12M10S ⊓ < "P10M10.999999S"^^xsd:duration]')
         filler = owl_datatype_min_max_exclusive_restriction(Timedelta(weeks=10, days=20, hours=8, minutes=12, seconds=10),
                                                             Timedelta(minutes=10, seconds=10, microseconds=999999))
         c = OWLDataAllValuesFrom(self.charge, filler)
@@ -385,7 +387,7 @@ class ManchesterOWLSyntaxParserTest(unittest.TestCase):
         c = OWLDataAllValuesFrom(self.act, OWLDataOneOf((OWLLiteral(1.2), OWLLiteral(3.2))))
         self.assertEqual(p, c)
 
-        p = self.parser.parse_expression('act some (  xsd:double[  > 5f,< 4.2f \n, <  -1.8e10f  ]\t and  integer )')
+        p = self.parser.parse_expression('act some (  xsd:double[  > 5f ⊓ < 4.2f \n ⊓ <  -1.8e10f  ]\t and  integer )')
         f1 = OWLFacetRestriction(OWLFacet.MIN_EXCLUSIVE, OWLLiteral(5.0))
         f2 = OWLFacetRestriction(OWLFacet.MAX_EXCLUSIVE, OWLLiteral(4.2))
         f3 = OWLFacetRestriction(OWLFacet.MAX_EXCLUSIVE, OWLLiteral(-1.8e10))
@@ -506,7 +508,7 @@ class DLSyntaxParserTest(unittest.TestCase):
         self.assertEqual(p, c)
 
         p = self.parser.parse_expression('∃ charge.<http://www.w3.org/2001/XMLSchema#double>'
-                                         '[> "4.4"^^xsd:double, < -32.5]')
+                                         '[> "4.4"^^xsd:double ⊓ < -32.5]')
         c = OWLDataSomeValuesFrom(self.charge, owl_datatype_min_max_exclusive_restriction(4.4, -32.5))
         self.assertEqual(p, c)
 
@@ -523,7 +525,7 @@ class DLSyntaxParserTest(unittest.TestCase):
         c = OWLDataMaxCardinality(25, self.charge, filler)
         self.assertEqual(p, c)
 
-        p = self.parser.parse_expression('= 11 act.xsd:integer[totalDigits "5"^^xsd:integer, > -100]')
+        p = self.parser.parse_expression('= 11 act.xsd:integer[totalDigits "5"^^xsd:integer ⊓ > -100]')
         filler = OWLDatatypeRestriction(IntegerOWLDatatype, (OWLFacetRestriction(OWLFacet.TOTAL_DIGITS, 5),
                                                              OWLFacetRestriction(OWLFacet.MIN_EXCLUSIVE, -100)))
         c = OWLDataExactCardinality(11, self.act, filler)
@@ -563,14 +565,14 @@ class DLSyntaxParserTest(unittest.TestCase):
 
     def test_data_properties_time(self):
         p = self.parser.parse_expression('∃ charge.<http://www.w3.org/2001/XMLSchema#date>'
-                                         '[> 2012-10-09, < "1990-01-31"^^xsd:date]')
+                                         '[> 2012-10-09 ⊓ < "1990-01-31"^^xsd:date]')
         filler = owl_datatype_min_max_exclusive_restriction(date(year=2012, month=10, day=9),
                                                             date(year=1990, month=1, day=31))
         c = OWLDataSomeValuesFrom(self.charge, filler)
         self.assertEqual(p, c)
 
         p = self.parser.parse_expression('= 10 charge.dateTime'
-                                         '[> 2012-12-31T23:59:59Z, < 2000-01-01 01:01:01.999999]')
+                                         '[> 2012-12-31T23:59:59Z ⊓ < 2000-01-01 01:01:01.999999]')
         filler = owl_datatype_min_max_exclusive_restriction(datetime(year=2012, month=12, day=31, hour=23,
                                                                      minute=59, second=59, tzinfo=timezone.utc),
                                                             datetime(year=2000, month=1, day=1, hour=1, minute=1,
@@ -585,7 +587,7 @@ class DLSyntaxParserTest(unittest.TestCase):
         self.assertEqual(p, c)
 
         p = self.parser.parse_expression('∀ charge.<http://www.w3.org/2001/XMLSchema#duration>'
-                                         '[> P10W20DT8H12M10S, < "P10M10.999999S"^^xsd:duration]')
+                                         '[> P10W20DT8H12M10S ⊓ < "P10M10.999999S"^^xsd:duration]')
         filler = owl_datatype_min_max_exclusive_restriction(Timedelta(weeks=10, days=20, hours=8, minutes=12, seconds=10),
                                                             Timedelta(minutes=10, seconds=10, microseconds=999999))
         c = OWLDataAllValuesFrom(self.charge, filler)
@@ -645,7 +647,7 @@ class DLSyntaxParserTest(unittest.TestCase):
         c = OWLDataAllValuesFrom(self.act, OWLDataOneOf((OWLLiteral(1.2), OWLLiteral(3.2))))
         self.assertEqual(p, c)
 
-        p = self.parser.parse_expression('∃ act.(  xsd:double[  > 5f,< 4.2f \n, <  -1.8e10f  ]\t ⊓  integer )')
+        p = self.parser.parse_expression('∃ act.(  xsd:double[  > 5f ⊓ < 4.2f \n ⊓ <  -1.8e10f  ]\t ⊓  integer )')
         f1 = OWLFacetRestriction(OWLFacet.MIN_EXCLUSIVE, OWLLiteral(5.0))
         f2 = OWLFacetRestriction(OWLFacet.MAX_EXCLUSIVE, OWLLiteral(4.2))
         f3 = OWLFacetRestriction(OWLFacet.MAX_EXCLUSIVE, OWLLiteral(-1.8e10))
@@ -703,7 +705,7 @@ class Owlapy_DLRenderer_Test(unittest.TestCase):
 
         dr = OWLDataAllValuesFrom(property=has_age, filler=OWLDataUnionOf([datatype_restriction, IntegerOWLDatatype]))
         r = renderer.render(dr)
-        self.assertEqual(r, "∀ hasAge.(xsd:integer[≥ 40 , ≤ 80] ⊔ xsd:integer)")
+        self.assertEqual(r, "∀ hasAge.(xsd:integer[≥ 40 ⊓ ≤ 80] ⊔ xsd:integer)")
 
         dr = OWLDataSomeValuesFrom(property=has_age,
                                    filler=OWLDataIntersectionOf([OWLDataOneOf([OWLLiteral(32.5), OWLLiteral(4.5)]),
@@ -776,7 +778,7 @@ class Owlapy_ManchesterRenderer_Test(unittest.TestCase):
 
         dr = OWLDataAllValuesFrom(property=has_age, filler=OWLDataUnionOf([datatype_restriction, IntegerOWLDatatype]))
         r = renderer.render(dr)
-        self.assertEqual(r, "hasAge only (xsd:integer[>= 40 , <= 80] or xsd:integer)")
+        self.assertEqual(r, "hasAge only (xsd:integer[>= 40 and <= 80] or xsd:integer)")
 
         dr = OWLDataSomeValuesFrom(property=has_age,
                                    filler=OWLDataIntersectionOf([OWLDataOneOf([OWLLiteral(32.5), OWLLiteral(4.5)]),

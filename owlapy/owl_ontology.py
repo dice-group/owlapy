@@ -779,11 +779,12 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, 
 
 
 class Ontology(AbstractOWLOntology):
-    __slots__ = '_manager', '_iri', '_world', '_onto'
+    __slots__ = '_manager', '_iri', '_world', '_onto', 'is_modified'
 
     _manager: _OM
     _onto: owlready2.Ontology
     _world: owlready2.World
+    is_modified: bool
 
     def __init__(self, manager: _OM, ontology_iri: IRI, load: bool):
         """Represents an Ontology in Ontolearn.
@@ -796,6 +797,7 @@ class Ontology(AbstractOWLOntology):
         self._manager = manager
         self._iri = ontology_iri
         self._world = manager._world
+        self.is_modified = False
         onto = self._world.get_ontology(ontology_iri.as_str())
         if load:
             onto = onto.load()
@@ -919,6 +921,7 @@ class Ontology(AbstractOWLOntology):
                     pass  # XXX TODO
 
     def add_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
+        self.is_modified = True
         if isinstance(axiom, OWLAxiom):
             _add_axiom(axiom, self, self._world)
         else:
@@ -926,6 +929,7 @@ class Ontology(AbstractOWLOntology):
                 _add_axiom(ax, self, self._world)
 
     def remove_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
+        self.is_modified = True
         if isinstance(axiom, OWLAxiom):
             _remove_axiom(axiom, self, self._world)
         else:

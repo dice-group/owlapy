@@ -55,7 +55,7 @@ MANCHESTER_GRAMMAR = Grammar(r"""
     data_union = data_intersection (must_ws "or" must_ws data_intersection)*
     data_intersection = data_primary (must_ws "and" must_ws data_primary)*
     datatype_restriction = datatype_iri "[" maybe_ws facet_restrictions maybe_ws "]"
-    facet_restrictions = facet_restriction (maybe_ws "," maybe_ws facet_restriction)*
+    facet_restrictions = facet_restriction (maybe_ws "⊓" maybe_ws facet_restriction)*
     facet_restriction = facet must_ws literal
     facet = "length" / "minLength" / "maxLength" / "pattern" / "langRange"
             / "totalDigits" / "fractionDigits" / "<=" / ">=" / "<" / ">"
@@ -454,7 +454,7 @@ DL_GRAMMAR = Grammar(r"""
     data_union = data_intersection (must_ws "⊔" must_ws data_intersection)*
     data_intersection = data_primary (must_ws "⊓" must_ws data_primary)*
     datatype_restriction = datatype_iri "[" maybe_ws facet_restrictions maybe_ws "]"
-    facet_restrictions = facet_restriction (maybe_ws "," maybe_ws facet_restriction)*
+    facet_restrictions = facet_restriction (maybe_ws "⊓" maybe_ws facet_restriction)*
     facet_restriction = facet must_ws literal
     facet = "length" / "minLength" / "maxLength" / "pattern" / "langRange"
             / "totalDigits" / "fractionDigits" / "≥" / "≤" / "<" / ">"
