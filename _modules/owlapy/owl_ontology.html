@@ -51,7 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_adaptor.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage/further_resources.html">Further Resources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
 </ul>
@@ -885,11 +885,12 @@
 <div class="viewcode-block" id="Ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology">[docs]</a>
 <span class="k">class</span> <span class="nc">Ontology</span><span class="p">(</span><span class="n">AbstractOWLOntology</span><span class="p">):</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_manager&#39;</span><span class="p">,</span> <span class="s1">&#39;_iri&#39;</span><span class="p">,</span> <span class="s1">&#39;_world&#39;</span><span class="p">,</span> <span class="s1">&#39;_onto&#39;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_manager&#39;</span><span class="p">,</span> <span class="s1">&#39;_iri&#39;</span><span class="p">,</span> <span class="s1">&#39;_world&#39;</span><span class="p">,</span> <span class="s1">&#39;_onto&#39;</span><span class="p">,</span> <span class="s1">&#39;is_modified&#39;</span>
 
     <span class="n">_manager</span><span class="p">:</span> <span class="n">_OM</span>
     <span class="n">_onto</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">Ontology</span>
     <span class="n">_world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span>
+    <span class="n">is_modified</span><span class="p">:</span> <span class="nb">bool</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="p">:</span> <span class="n">_OM</span><span class="p">,</span> <span class="n">ontology_iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents an Ontology in Ontolearn.</span>
@@ -902,6 +903,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span> <span class="o">=</span> <span class="n">manager</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">ontology_iri</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">_world</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_modified</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="n">ontology_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
             <span class="n">onto</span> <span class="o">=</span> <span class="n">onto</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
@@ -1078,6 +1080,7 @@
 <div class="viewcode-block" id="Ontology.add_axiom">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.add_axiom">[docs]</a>
     <span class="k">def</span> <span class="nf">add_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_modified</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axiom</span><span class="p">,</span> <span class="n">OWLAxiom</span><span class="p">):</span>
             <span class="n">_add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1088,6 +1091,7 @@
 <div class="viewcode-block" id="Ontology.remove_axiom">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.remove_axiom">[docs]</a>
     <span class="k">def</span> <span class="nf">remove_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_modified</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axiom</span><span class="p">,</span> <span class="n">OWLAxiom</span><span class="p">):</span>
             <span class="n">_remove_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>

@@ -51,7 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_adaptor.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../autoapi/owlapy/index.html">owlapy</a></li>
 </ul>
@@ -526,18 +526,10 @@
 <span class="sd">            If ce is equivalent to owl:Thing then nothing will be returned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
-</div>
 
 
-
-<div class="viewcode-block" id="AbstractOWLReasonerEx">
-<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasonerEx">[docs]</a>
-<span class="k">class</span> <span class="nc">AbstractOWLReasonerEx</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extra convenience methods for OWL Reasoners&quot;&quot;&quot;</span>
-
-    <span class="c1"># default</span>
-<div class="viewcode-block" id="AbstractOWLReasonerEx.data_property_ranges">
-<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasonerEx.data_property_ranges">[docs]</a>
+<div class="viewcode-block" id="AbstractOWLReasoner.data_property_ranges">
+<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner.data_property_ranges">[docs]</a>
     <span class="k">def</span> <span class="nf">data_property_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataRange</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the data ranges that are the direct or indirect ranges of this property with respect to the imports</span>
 <span class="sd">        closure of the root ontology.</span>
@@ -556,8 +548,8 @@
 
 
     <span class="c1"># default</span>
-<div class="viewcode-block" id="AbstractOWLReasonerEx.all_data_property_values">
-<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasonerEx.all_data_property_values">[docs]</a>
+<div class="viewcode-block" id="AbstractOWLReasoner.all_data_property_values">
+<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner.all_data_property_values">[docs]</a>
     <span class="k">def</span> <span class="nf">all_data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all values for the given data property expression that appear in the knowledge base.</span>
 
@@ -582,8 +574,8 @@
 
 
     <span class="c1"># default</span>
-<div class="viewcode-block" id="AbstractOWLReasonerEx.ind_data_properties">
-<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasonerEx.ind_data_properties">[docs]</a>
+<div class="viewcode-block" id="AbstractOWLReasoner.ind_data_properties">
+<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner.ind_data_properties">[docs]</a>
     <span class="k">def</span> <span class="nf">ind_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all data properties for the given individual that appear in the knowledge base.</span>
 
@@ -610,8 +602,8 @@
 
 
     <span class="c1"># default</span>
-<div class="viewcode-block" id="AbstractOWLReasonerEx.ind_object_properties">
-<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasonerEx.ind_object_properties">[docs]</a>
+<div class="viewcode-block" id="AbstractOWLReasoner.ind_object_properties">
+<a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner.ind_object_properties">[docs]</a>
     <span class="k">def</span> <span class="nf">ind_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all object properties for the given individual that appear in the knowledge base.</span>
 
