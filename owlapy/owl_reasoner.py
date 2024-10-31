@@ -1025,9 +1025,9 @@ class StructuralReasoner(AbstractOWLReasoner):
         yield from relations
 
     def reset_and_disable_cache(self):
-        self.reset()
         self.class_cache = False
         self._property_cache = False
+        self.reset()
 
 
 class SyncReasoner(AbstractOWLReasoner):
