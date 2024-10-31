@@ -15,7 +15,7 @@ onto = manager.load_ontology(IRI.create("KGs/Family/father.owl"))
 In our Owlapy library, we provide two main reasoner classes:
 
 
-- [**StructuralReasoner**](owlapy.owl_reasoner.FastInstanceCheckerReasoner) (What used to be FastInstanceCheckerReasoner )
+- [**StructuralReasoner**](owlapy.owl_reasoner.StructuralReasoner) (What used to be FastInstanceCheckerReasoner )
 
     Structural Reasoner is the base reasoner in Owlapy. This reasoner works 
    under CWA/PCWA and the base library used for it is _owlready2_. The functionalities

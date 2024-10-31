@@ -306,6 +306,12 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
         # sub_property = True
         reasoner = StructuralReasoner(onto, sub_properties=True)
+        reasoner._ontology.is_modified = False  # This is done because, for sub_properties to work as expected it needs
+                                                # _property_cache of the reasoner to be True which would normally be
+                                                # False when the ontology is modified. Info: Cache needs to be reset and
+                                                # disabled when ontolgy modification is detected because the
+                                                # cached facts may not hold anymore. Hence, setting is_modified to False
+                                                # is an excepton to check this test.
 
         # object property
         ce = OWLObjectIntersectionOf([compound, OWLObjectSomeValuesFrom(super_has_structure, benzene)])

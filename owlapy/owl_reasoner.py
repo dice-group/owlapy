@@ -76,7 +76,7 @@ class StructuralReasoner(AbstractOWLReasoner):
             property_cache: Whether to cache property values.
             negation_default: Whether to assume a missing fact means it is false ("closed world view").
             sub_properties: Whether to take sub properties into account for the
-                :func:`OWLReasoner_FastInstanceChecker.instances` retrieval.
+                :func:`StructuralReasoner.instances` retrieval.
             """
         super().__init__(ontology)
         assert isinstance(ontology, Ontology)
@@ -692,7 +692,7 @@ class StructuralReasoner(AbstractOWLReasoner):
                           min_count: int = 1, max_count: Optional[int] = None) -> FrozenSet[OWLNamedIndividual]:
         """Get all individuals that have one of filler_inds as their object property value."""
         ret = set()
-        if self._ontology.is_modified:
+        if self._ontology.is_modified and (self.class_cache or self._property_cache):
             self.reset_and_disable_cache()
         if self._property_cache:
             self._lazy_cache_obj_prop(pe)
@@ -764,7 +764,7 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     @_find_instances.register
     def _(self, c: OWLClass) -> FrozenSet[OWLNamedIndividual]:
-        if self._ontology.is_modified:
+        if self._ontology.is_modified and (self.class_cache or self._property_cache):
             self.reset_and_disable_cache()
         if self.class_cache:
             self._lazy_cache_class(c)
@@ -883,7 +883,7 @@ class StructuralReasoner(AbstractOWLReasoner):
         filler = ce.get_filler()
         assert isinstance(pe, OWLDataProperty)
 
-        if self._ontology.is_modified:
+        if self._ontology.is_modified and (self.class_cache or self._property_cache):
             self.reset_and_disable_cache()
         property_cache = self._property_cache
 
