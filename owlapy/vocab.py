@@ -71,6 +71,10 @@ class XSDVocabulary(_Vocabulary, Enum, metaclass=_meta_Enum):
         super().__init__(namespaces.XSD, remainder)
     DECIMAL: Final = "decimal"  #:
     INTEGER: Final = "integer"  #:
+    NONNEGATIVEINTEGER: Final = "nonNegativeInteger"  #:
+    NONPOSITIVEINTEGER: Final = "nonPositiveInteger"  #:
+    POSITIVEINTEGER: Final = "positiveInteger"  #:
+    NEGATIVEINTEGER: Final = "negativeInteger"  #:
     LONG: Final = "long"  #:
     DOUBLE: Final = "double"  #:
     FLOAT: Final = "float"  #:
@@ -83,7 +87,6 @@ class XSDVocabulary(_Vocabulary, Enum, metaclass=_meta_Enum):
 
 
 _X = TypeVar('_X')
-
 
 # TODO: Add langRange facet
 class OWLFacet(_Vocabulary, Enum, metaclass=_meta_Enum):
