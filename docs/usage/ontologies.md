@@ -154,7 +154,7 @@ onto.add_axiom(dp_assertion_axiom)
 ```
 
 [OWLLiteral](owlapy.owl_literal.OWLLiteral) is a class that represents the literal values in
-Owlapy. We have stored the integer literal value of '18' in the variable `literal_17`.
+Owlapy. We have stored the integer literal value of '17' in the variable `literal_17`.
 Then we construct the `OWLDataPropertyAssertionAxiom` by passing as the first argument, the 
 individual `heinz`, as the second argument the data property `hasAge_dp`, and the third 
 argument the literal value `literal_17`. Finally, add it to the ontology by using `add_axiom` 

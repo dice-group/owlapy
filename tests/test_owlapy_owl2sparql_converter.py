@@ -5,7 +5,7 @@ from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLThing, \
 from owlapy.iri import IRI
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.owl_ontology_manager import OntologyManager
-from owlapy.owl_reasoner import OntologyReasoner, FastInstanceCheckerReasoner
+from owlapy.owl_reasoner import StructuralReasoner
 from owlapy.parser import DLSyntaxParser
 from rdflib import Graph
 from owlapy.converter import Owl2SparqlConverter
@@ -95,8 +95,7 @@ FILTER NOT EXISTS {
         # knowledge base - using OWLReasoner
         mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-        base_reasoner = OntologyReasoner(onto)
-        family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
+        family_kb_reasoner = StructuralReasoner(onto, negation_default=True)
 
         ce_str = "Brother"
         ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -139,8 +138,7 @@ FILTER NOT EXISTS {
         # knowledge base - using OWLReasoner
         mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-        base_reasoner = OntologyReasoner(onto)
-        family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
+        family_kb_reasoner = StructuralReasoner(onto, negation_default=True)
 
         ce_str = "Brother ⊓ Father"
         ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -167,8 +165,7 @@ FILTER NOT EXISTS {
         # knowledge base - using OWLReasoner
         mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-        base_reasoner = OntologyReasoner(onto)
-        family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
+        family_kb_reasoner = StructuralReasoner(onto, negation_default=True)
 
         ce_str = "Sister ⊔ Mother"
         ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -196,8 +193,7 @@ FILTER NOT EXISTS {
         # knowledge base - using OWLReasoner
         mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-        base_reasoner = OntologyReasoner(onto)
-        family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
+        family_kb_reasoner = StructuralReasoner(onto, negation_default=True)
 
         ce_str = "¬Mother"
         ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
@@ -225,8 +221,7 @@ FILTER NOT EXISTS {
         # knowledge base - using OWLReasoner
         mgr = OntologyManager()
         onto = mgr.load_ontology(IRI.create(PATH_FAMILY))
-        base_reasoner = OntologyReasoner(onto)
-        family_kb_reasoner = FastInstanceCheckerReasoner(onto, base_reasoner=base_reasoner, negation_default=True)
+        family_kb_reasoner = StructuralReasoner(onto, negation_default=True)
 
         ce_str = "∃hasChild.Male"
         ce_parsed = DLSyntaxParser(namespace="http://www.benchmark.org/family#").parse_expression(expression_str=ce_str)
