@@ -10,6 +10,31 @@ from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary
 from .owl_property import OWLObjectProperty, OWLDataProperty
 
 Literals = Union['OWLLiteral', int, float, bool, Timedelta, datetime, date, str]  #:
+#: the built in top object property
+OWLTopObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.iri)
+#: the built in bottom object property
+OWLBottomObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_BOTTOM_OBJECT_PROPERTY.iri)
+#: the built in top data property
+OWLTopDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_TOP_DATA_PROPERTY.iri)
+#: the built in bottom data property
+OWLBottomDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_BOTTOM_DATA_PROPERTY.iri)
+
+DoubleOWLDatatype: Final = OWLDatatype(XSDVocabulary.DOUBLE)  #: An object representing a double datatype.
+IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)  #: An object representing an integer datatype.
+NonNegativeIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NONNEGATIVEINTEGER)  #: An object representing a non negative integer datatype.
+NonPositiveIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NONPOSITIVEINTEGER)  #: An object representing a non positive integer datatype.
+NegativeIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NEGATIVEINTEGER)  #: An object representing a negative integer datatype.
+PositiveIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.POSITIVEINTEGER)  #: An object representing a positive integer datatype.
+BooleanOWLDatatype: Final = OWLDatatype(XSDVocabulary.BOOLEAN)  #: An object representing the boolean datatype.
+StringOWLDatatype: Final = OWLDatatype(XSDVocabulary.STRING)  #: An object representing the string datatype.
+DateOWLDatatype: Final = OWLDatatype(XSDVocabulary.DATE)  #: An object representing the date datatype.
+DateTimeOWLDatatype: Final = OWLDatatype(XSDVocabulary.DATE_TIME)  #: An object representing the dateTime datatype.
+DurationOWLDatatype: Final = OWLDatatype(XSDVocabulary.DURATION)  #: An object representing the duration datatype.
+#: The OWL Datatype corresponding to the top data type
+TopOWLDatatype: Final = OWLDatatype(OWLRDFVocabulary.RDFS_LITERAL)
+
+NUMERIC_DATATYPES: Final[Set[OWLDatatype]] = {DoubleOWLDatatype, IntegerOWLDatatype}
+TIME_DATATYPES: Final[Set[OWLDatatype]] = {DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype}
 
 
 class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
@@ -237,12 +262,14 @@ class _OWLLiteralIntegerInterface(OWLLiteral):
     __slots__ = '_v', '_type'
 
     _v: int
-    _type: type
+    _type: OWLDatatype
 
     def __init__(self, value, type_=None):
         assert type_ is None or type_ in [IntegerOWLDatatype,
                                           NonNegativeIntegerOWLDatatype,
-                                          NonPositiveIntegerOWLDatatype]
+                                          NonPositiveIntegerOWLDatatype,
+                                          NegativeIntegerOWLDatatype,
+                                          PositiveIntegerOWLDatatype]
         if not isinstance(value, int):
             value = int(value)
         self._v = value
@@ -280,39 +307,39 @@ class _OWLLiteralIntegerInterface(OWLLiteral):
 @total_ordering
 class _OWLLiteralImplInteger(_OWLLiteralIntegerInterface):
 
-    def __init__(self, value):
-        super().__init__(value, IntegerOWLDatatype)
+    def __init__(self, value, type_=IntegerOWLDatatype):
+        super().__init__(value, type_)
 
 
 @total_ordering
 class _OWLLiteralImplNonNegativeInteger(_OWLLiteralIntegerInterface):
 
-    def __init__(self, value):
+    def __init__(self, value, type_=NonNegativeIntegerOWLDatatype):
         assert value >= 0, "Negative value used to initialize a literal of type: " + str(type(self))
-        super().__init__(value, NonNegativeIntegerOWLDatatype)
+        super().__init__(value, type_)
 
 
 @total_ordering
 class _OWLLiteralImplNonPositiveInteger(_OWLLiteralIntegerInterface):
 
-    def __init__(self, value):
+    def __init__(self, value, type_=NonPositiveIntegerOWLDatatype):
         assert value <= 0, "Positive value used to initialize a literal of type: " + str(type(self))
-        super().__init__(value, NonPositiveIntegerOWLDatatype)
+        super().__init__(value, type_)
 
 
 @total_ordering
 class _OWLLiteralImplPositiveInteger(_OWLLiteralIntegerInterface):
 
-    def __init__(self, value):
+    def __init__(self, value, type_=PositiveIntegerOWLDatatype):
         assert value <= 0, "Non-Positive value used to initialize a literal of type: " + str(type(self))
-        super().__init__(value, PositiveIntegerOWLDatatype)
+        super().__init__(value, type_)
 
 
 @total_ordering
 class _OWLLiteralImplNegativeInteger(_OWLLiteralIntegerInterface):
-    def __init__(self, value):
+    def __init__(self, value, type_=NegativeIntegerOWLDatatype):
         assert value <= 0, "Non-Negative value used to initialize a literal of type: " + str(type(self))
-        super().__init__(value, NegativeIntegerOWLDatatype)
+        super().__init__(value, type_)
 
 
 class _OWLLiteralImplBoolean(OWLLiteral):
@@ -553,28 +580,4 @@ class _OWLLiteralImpl(OWLLiteral):
         return f'OWLLiteral({repr(self._v)}, {self._datatype})'
 
 
-#: the built in top object property
-OWLTopObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.iri)
-#: the built in bottom object property
-OWLBottomObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_BOTTOM_OBJECT_PROPERTY.iri)
-#: the built in top data property
-OWLTopDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_TOP_DATA_PROPERTY.iri)
-#: the built in bottom data property
-OWLBottomDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_BOTTOM_DATA_PROPERTY.iri)
 
-DoubleOWLDatatype: Final = OWLDatatype(XSDVocabulary.DOUBLE)  #: An object representing a double datatype.
-IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)  #: An object representing an integer datatype.
-NonNegativeIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NONNEGATIVEINTEGER)  #: An object representing a non negative integer datatype.
-NonPositiveIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NONPOSITIVEINTEGER)  #: An object representing a non positive integer datatype.
-NegativeIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NEGATIVEINTEGER)  #: An object representing a negative integer datatype.
-PositiveIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.POSITIVEINTEGER)  #: An object representing a positive integer datatype.
-BooleanOWLDatatype: Final = OWLDatatype(XSDVocabulary.BOOLEAN)  #: An object representing the boolean datatype.
-StringOWLDatatype: Final = OWLDatatype(XSDVocabulary.STRING)  #: An object representing the string datatype.
-DateOWLDatatype: Final = OWLDatatype(XSDVocabulary.DATE)  #: An object representing the date datatype.
-DateTimeOWLDatatype: Final = OWLDatatype(XSDVocabulary.DATE_TIME)  #: An object representing the dateTime datatype.
-DurationOWLDatatype: Final = OWLDatatype(XSDVocabulary.DURATION)  #: An object representing the duration datatype.
-#: The OWL Datatype corresponding to the top data type
-TopOWLDatatype: Final = OWLDatatype(OWLRDFVocabulary.RDFS_LITERAL)
-
-NUMERIC_DATATYPES: Final[Set[OWLDatatype]] = {DoubleOWLDatatype, IntegerOWLDatatype}
-TIME_DATATYPES: Final[Set[OWLDatatype]] = {DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype}
