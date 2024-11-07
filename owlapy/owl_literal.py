@@ -1,5 +1,7 @@
 """OWL Literals"""
+from decimal import Decimal
 from abc import ABCMeta, abstractmethod
+from enum import Enum
 from functools import total_ordering
 from .owl_annotation import OWLAnnotationValue
 from typing import Final, Optional, Union, Set
@@ -9,32 +11,77 @@ from pandas import Timedelta
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary
 from .owl_property import OWLObjectProperty, OWLDataProperty
 
-Literals = Union['OWLLiteral', int, float, bool, Timedelta, datetime, date, str]  #:
+Literals = Union['OWLLiteral', int, float, bool, Timedelta, datetime, date, str]
+
 #: the built in top object property
 OWLTopObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.iri)
+
 #: the built in bottom object property
 OWLBottomObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_BOTTOM_OBJECT_PROPERTY.iri)
+
 #: the built in top data property
 OWLTopDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_TOP_DATA_PROPERTY.iri)
+
 #: the built in bottom data property
 OWLBottomDataProperty: Final = OWLDataProperty(OWLRDFVocabulary.OWL_BOTTOM_DATA_PROPERTY.iri)
 
-DoubleOWLDatatype: Final = OWLDatatype(XSDVocabulary.DOUBLE)  #: An object representing a double datatype.
-IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)  #: An object representing an integer datatype.
-NonNegativeIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NONNEGATIVEINTEGER)  #: An object representing a non negative integer datatype.
-NonPositiveIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NONPOSITIVEINTEGER)  #: An object representing a non positive integer datatype.
-NegativeIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NEGATIVEINTEGER)  #: An object representing a negative integer datatype.
-PositiveIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.POSITIVEINTEGER)  #: An object representing a positive integer datatype.
-BooleanOWLDatatype: Final = OWLDatatype(XSDVocabulary.BOOLEAN)  #: An object representing the boolean datatype.
-StringOWLDatatype: Final = OWLDatatype(XSDVocabulary.STRING)  #: An object representing the string datatype.
-DateOWLDatatype: Final = OWLDatatype(XSDVocabulary.DATE)  #: An object representing the date datatype.
-DateTimeOWLDatatype: Final = OWLDatatype(XSDVocabulary.DATE_TIME)  #: An object representing the dateTime datatype.
-DurationOWLDatatype: Final = OWLDatatype(XSDVocabulary.DURATION)  #: An object representing the duration datatype.
+#: An object representing a double datatype.
+DoubleOWLDatatype: Final = OWLDatatype(XSDVocabulary.DOUBLE)
+
+#: An object representing a double datatype.
+FloatOWLDatatype: Final = OWLDatatype(XSDVocabulary.FLOAT)
+
+#: An object representing a double datatype.
+DecimalOWLDatatype: Final = OWLDatatype(XSDVocabulary.DECIMAL)
+
+#: An object representing an integer datatype.
+IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)
+
+#: An object representing a non negative integer datatype.
+NonNegativeIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NONNEGATIVEINTEGER)
+
+#: An object representing a non positive integer datatype.
+NonPositiveIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NONPOSITIVEINTEGER)
+
+#: An object representing a negative integer datatype.
+NegativeIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.NEGATIVEINTEGER)
+
+#: An object representing a positive integer datatype.
+PositiveIntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.POSITIVEINTEGER)
+
+#: An object representing the boolean datatype.
+BooleanOWLDatatype: Final = OWLDatatype(XSDVocabulary.BOOLEAN)
+
+#: An object representing the string datatype.
+StringOWLDatatype: Final = OWLDatatype(XSDVocabulary.STRING)
+
+#: An object representing the date datatype.
+DateOWLDatatype: Final = OWLDatatype(XSDVocabulary.DATE)
+
+#: An object representing the dateTime datatype.
+DateTimeOWLDatatype: Final = OWLDatatype(XSDVocabulary.DATE_TIME)
+
+#: An object representing the duration datatype.
+DurationOWLDatatype: Final = OWLDatatype(XSDVocabulary.DURATION)
+
 #: The OWL Datatype corresponding to the top data type
 TopOWLDatatype: Final = OWLDatatype(OWLRDFVocabulary.RDFS_LITERAL)
 
-NUMERIC_DATATYPES: Final[Set[OWLDatatype]] = {DoubleOWLDatatype, IntegerOWLDatatype}
+
+NUMERIC_DATATYPES: Final[Set[OWLDatatype]] = {FloatOWLDatatype, DoubleOWLDatatype, DecimalOWLDatatype,
+                                              IntegerOWLDatatype, PositiveIntegerOWLDatatype,
+                                              NegativeIntegerOWLDatatype, NonPositiveIntegerOWLDatatype,
+                                              NonNegativeIntegerOWLDatatype}
 TIME_DATATYPES: Final[Set[OWLDatatype]] = {DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype}
+
+
+class FloatSpecialValue(Enum):
+    NAN = "Nan"
+    POS_INF = "INF"
+    NEG_INF = "-INF"
+
+    def __str__(self):
+        return self.value
 
 
 class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
@@ -62,6 +109,10 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
                 return super().__new__(_OWLLiteralImplInteger)
             elif type_ == DoubleOWLDatatype:
                 return super().__new__(_OWLLiteralImplDouble)
+            elif type_ == FloatOWLDatatype:
+                return super().__new__(_OWLLiteralImplFloat)
+            elif type_ == DecimalOWLDatatype:
+                return super().__new__(_OWLLiteralImplDecimal)
             elif type_ == StringOWLDatatype:
                 return super().__new__(_OWLLiteralImplString)
             elif type_ == DateOWLDatatype:
@@ -80,12 +131,17 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
                 return super().__new__(_OWLLiteralImplNonNegativeInteger)
             else:
                 return super().__new__(_OWLLiteralImpl)
+        # If datatype not specified, find which literal type fits the value best
         if isinstance(value, bool):
             return super().__new__(_OWLLiteralImplBoolean)
         elif isinstance(value, int):
+            # default for integer values is xs:integer
             return super().__new__(_OWLLiteralImplInteger)
-        elif isinstance(value, float):
+        elif isinstance(value, float) or isinstance(value, FloatSpecialValue):
+            # default for float values and float special values is xs:double
             return super().__new__(_OWLLiteralImplDouble)
+        elif isinstance(value, Decimal):
+            return super().__new__(_OWLLiteralImplDecimal)
         elif isinstance(value, str):
             return super().__new__(_OWLLiteralImplString)
         elif isinstance(value, datetime):
@@ -123,10 +179,36 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
 
     def parse_double(self) -> float:
         """Parses the lexical value of this literal into a double. The lexical value of this literal should be in the
-        lexical space of the double datatype ("http://www.w3.org/2001/XMLSchema#double").
+        lexical space of the double datatype ("https://www.w3.org/TR/owl2-syntax/#Floating-Point_Numbers").
 
         Returns:
             A double value that is represented by this literal.
+        """
+        raise ValueError
+
+    def is_float(self) -> bool:
+        """Whether this literal is typed as float."""
+        return False
+
+    def parse_float(self) -> float:
+        """Parses the lexical value of this literal into a float. The lexical value of this literal should be in the
+        lexical space of the float datatype ("https://www.w3.org/TR/owl2-syntax/#Floating-Point_Numbers").
+
+        Returns:
+            A float value that is represented by this literal.
+        """
+        raise ValueError
+
+    def is_decimal(self) -> bool:
+        """Whether this literal is typed as decimal."""
+        return False
+
+    def parse_decimal(self) -> Decimal:
+        """Parses the lexical value of this literal into a decimal. The lexical value of this literal should be in the
+        lexical space of the decimal datatype ("https://www.w3.org/TR/owl2-syntax/#Floating-Point_Numbers").
+
+        Returns:
+            A decimal value that is represented by this literal.
         """
         raise ValueError
 
@@ -195,6 +277,11 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
         """
         raise ValueError
 
+    def has_float_special_value(self) -> bool:
+        """Whether this literal is using a float special value i.e. v ∈ ["NaN", "INF", "-INF"], defined by
+        and enumeration class (not pure string value)."""
+        return False
+
     # noinspection PyMethodMayBeStatic
     def is_literal(self) -> bool:
         # documented in parent
@@ -218,71 +305,63 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
 
 
 @total_ordering
-class _OWLLiteralImplDouble(OWLLiteral):
-    __slots__ = '_v'
-
-    _v: float
-
-    def __init__(self, value, type_=None):
-        assert type_ is None or type_ == DoubleOWLDatatype
-        if not isinstance(value, float):
-            value = float(value)
-        self._v = value
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self._v == other._v
-        return NotImplemented
-
-    def __lt__(self, other):
-        if type(other) is type(self):
-            return self._v < other._v
-        return NotImplemented
-
-    def __hash__(self):
-        return hash(self._v)
-
-    def __repr__(self):
-        return f'OWLLiteral({self._v})'
-
-    def is_double(self) -> bool:
-        return True
-
-    def parse_double(self) -> float:
-        # documented in parent
-        return self._v
-
-    # noinspection PyMethodMayBeStatic
-    def get_datatype(self) -> OWLDatatype:
-        # documented in parent
-        return DoubleOWLDatatype
-
-
-class _OWLLiteralIntegerInterface(OWLLiteral):
+class _OWLNumericLiteralInterface(OWLLiteral):
     __slots__ = '_v', '_type'
 
-    _v: int
+    _v: Union[int, float, Decimal, FloatSpecialValue]
     _type: OWLDatatype
 
     def __init__(self, value, type_=None):
-        assert type_ is None or type_ in [IntegerOWLDatatype,
-                                          NonNegativeIntegerOWLDatatype,
-                                          NonPositiveIntegerOWLDatatype,
-                                          NegativeIntegerOWLDatatype,
-                                          PositiveIntegerOWLDatatype]
-        if not isinstance(value, int):
+        if isinstance(value, int) or type_ in [IntegerOWLDatatype,
+                                               NonNegativeIntegerOWLDatatype,
+                                               NonPositiveIntegerOWLDatatype,
+                                               NegativeIntegerOWLDatatype,
+                                               PositiveIntegerOWLDatatype]:
             value = int(value)
+        elif isinstance(value, FloatSpecialValue):
+            assert type_ in [DoubleOWLDatatype, FloatOWLDatatype]
+        elif isinstance(value, float) or type_ in [DoubleOWLDatatype, FloatOWLDatatype]:
+            if type_ == FloatOWLDatatype:
+                # single-precision
+                value = round(float(value), 7)
+            else:
+                # double-precision
+                value = round(float(value), 15)
+        elif isinstance(value, Decimal) or type_ is DecimalOWLDatatype:
+            value = Decimal(value)
+        else:
+            raise TypeError("You either entered an unaccepted value type or an unaccepted datatype.")
         self._v = value
         self._type = type_
 
     def __eq__(self, other):
-        if type(other) is type(self):
+        if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
             return self._v == other._v
         return NotImplemented
 
     def __lt__(self, other):
-        if type(other) is type(self):
+        if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
             return self._v < other._v
+        return NotImplemented
+
+    def __gt__(self, other):
+        if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
+            return self._v > other._v
+        return NotImplemented
+
+    def __le__(self, other):
+        if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
+            return self._v <= other._v
+        return NotImplemented
+
+    def __ge__(self, other):
+        if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
+            return self._v >= other._v
+        return NotImplemented
+
+    def __ne__(self, other):
+        if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
+            return self._v != other._v
         return NotImplemented
 
     def __hash__(self):
@@ -291,13 +370,6 @@ class _OWLLiteralIntegerInterface(OWLLiteral):
     def __repr__(self):
         return f'OWLLiteral({self._v}, {self._type})'
 
-    def is_integer(self) -> bool:
-        return True
-
-    def parse_integer(self) -> int:
-        # documented in parent
-        return self._v
-
     # noinspection PyMethodMayBeStatic
     def get_datatype(self) -> OWLDatatype:
         # documented in parent
@@ -305,14 +377,75 @@ class _OWLLiteralIntegerInterface(OWLLiteral):
 
 
 @total_ordering
-class _OWLLiteralImplInteger(_OWLLiteralIntegerInterface):
+class _OWLIntegerLiteralInterface(_OWLNumericLiteralInterface):
+
+    def is_integer(self):
+        return True
+
+    def parse_int(self) -> int:
+        return self._v
+
+
+@total_ordering
+class _OWLLiteralImplFloat(_OWLNumericLiteralInterface):
+    """Represents floating-point numbers with single-precision (7 digits of precision)"""
+
+    def __init__(self, value, type_=FloatOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_float(self):
+        return True
+
+    def parse_float(self) -> Union[float, FloatSpecialValue]:
+        return self._v
+
+    def has_float_special_value(self):
+        if isinstance(self._v, FloatSpecialValue):
+            return True
+        return False
+
+
+@total_ordering
+class _OWLLiteralImplDouble(_OWLNumericLiteralInterface):
+    """Represents floating-point numbers with double-precision (15 digits of precision)"""
+    def __init__(self, value, type_=DoubleOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_double(self):
+        return True
+
+    def parse_double(self) -> Union[float, FloatSpecialValue]:
+        return self._v
+
+    def has_float_special_value(self):
+        if isinstance(self._v, FloatSpecialValue):
+            return True
+        return False
+
+
+@total_ordering
+class _OWLLiteralImplDecimal(_OWLNumericLiteralInterface):
+    """Represents floating-point numbers with arbitrary precision"""
+
+    def __init__(self, value, type_=DecimalOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_decimal(self):
+        return True
+
+    def parse_decimal(self) -> Decimal:
+        return self._v
+
+
+@total_ordering
+class _OWLLiteralImplInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=IntegerOWLDatatype):
         super().__init__(value, type_)
 
 
 @total_ordering
-class _OWLLiteralImplNonNegativeInteger(_OWLLiteralIntegerInterface):
+class _OWLLiteralImplNonNegativeInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=NonNegativeIntegerOWLDatatype):
         assert value >= 0, "Negative value used to initialize a literal of type: " + str(type(self))
@@ -320,7 +453,7 @@ class _OWLLiteralImplNonNegativeInteger(_OWLLiteralIntegerInterface):
 
 
 @total_ordering
-class _OWLLiteralImplNonPositiveInteger(_OWLLiteralIntegerInterface):
+class _OWLLiteralImplNonPositiveInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=NonPositiveIntegerOWLDatatype):
         assert value <= 0, "Positive value used to initialize a literal of type: " + str(type(self))
@@ -328,7 +461,7 @@ class _OWLLiteralImplNonPositiveInteger(_OWLLiteralIntegerInterface):
 
 
 @total_ordering
-class _OWLLiteralImplPositiveInteger(_OWLLiteralIntegerInterface):
+class _OWLLiteralImplPositiveInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=PositiveIntegerOWLDatatype):
         assert value <= 0, "Non-Positive value used to initialize a literal of type: " + str(type(self))
@@ -336,7 +469,7 @@ class _OWLLiteralImplPositiveInteger(_OWLLiteralIntegerInterface):
 
 
 @total_ordering
-class _OWLLiteralImplNegativeInteger(_OWLLiteralIntegerInterface):
+class _OWLLiteralImplNegativeInteger(_OWLIntegerLiteralInterface):
     def __init__(self, value, type_=NegativeIntegerOWLDatatype):
         assert value <= 0, "Non-Negative value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
