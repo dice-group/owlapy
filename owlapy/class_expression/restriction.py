@@ -403,7 +403,7 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
         else:
             for _ in values:
                 assert isinstance(_, OWLIndividual)
-            self._values = {i for i in values}
+            self._values = frozenset(values)
 
     def individuals(self) -> Iterable[OWLIndividual]:
         """Gets the individuals that are in the oneOf. These individuals represent the exact instances (extension)
