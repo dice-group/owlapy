@@ -36,15 +36,6 @@ _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
-    __slots__ = '_ontology', '_world', \
-                '_ind_set', '_cls_to_ind', \
-                '_has_prop', 'class_cache', \
-                '_objectsomevalues_cache', '_datasomevalues_cache', '_objectcardinality_cache', \
-                '_property_cache', \
-                '_obj_prop', '_obj_prop_inv', '_data_prop', \
-                '_negation_default', '_sub_properties', \
-                '__warned'
-
     _ontology: Ontology
     _world: owlready2.World
     _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
