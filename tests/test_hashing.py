@@ -46,8 +46,7 @@ class TestHashing:
             for op in properties:
                 # OWLObjectSomeValuesFrom can be used as a key.
                 memory[OWLObjectSomeValuesFrom(property=op, filler=ac)] = OWLObjectSomeValuesFrom(property=op, filler=ac)
-                # TODO: https://github.com/dice-group/owlapy/issues/103
-                # memory[OWLObjectAllValuesFrom(property=op, filler=ac)] = OWLObjectAllValuesFrom(property=op, filler=ac)
+                memory[OWLObjectAllValuesFrom(property=op, filler=ac)] = OWLObjectAllValuesFrom(property=op, filler=ac)
 
         for k, v in memory.items():
             assert k == v

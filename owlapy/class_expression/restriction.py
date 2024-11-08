@@ -276,7 +276,7 @@ class OWLObjectSomeValuesFrom(OWLQuantifiedObjectRestriction):
             raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
 
     def __hash__(self):
-        return hash((self._filler, self._property))
+        return hash(("OWLObjectSomeValuesFrom",self._filler, self._property))
 
     def get_property(self) -> OWLObjectPropertyExpression:
         # documented in parent
@@ -301,10 +301,10 @@ class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
         else:
-            return False
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
 
     def __hash__(self):
-        return hash((self._filler, self._property))
+        return hash(("OWLObjectAllValuesFrom",self._filler, self._property))
 
     def get_property(self) -> OWLObjectPropertyExpression:
         # documented in parent
@@ -340,10 +340,11 @@ class OWLObjectHasSelf(OWLObjectRestriction):
         if type(other) is type(self):
             return self._property == other._property
         else:
-            return False
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+
 
     def __hash__(self):
-        return hash(self._property)
+        return hash(("OWLObjectHasSelf", self._property))
 
     def __repr__(self):
         return f'OWLObjectHasSelf({self._property})'
@@ -431,13 +432,14 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
         return OWLObjectUnionOf(map(lambda _: OWLObjectOneOf(_), self.individuals()))
 
     def __hash__(self):
-        return hash(self._values)
+        return hash(("OWLObjectOneOf", self._values))
 
     def __eq__(self, other):
         if type(other) is type(self):
             return self._values == other._values
         else:
-            return False
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+
 
     def __repr__(self):
         return f'OWLObjectOneOf({self._values})'
@@ -500,10 +502,12 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
             return self._property == other._property \
                 and self._cardinality == other._cardinality \
                 and self._filler == other._filler
-        return NotImplemented
+        else:
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+
 
     def __hash__(self):
-        return hash((self._property, self._cardinality, self._filler))
+        return hash(("OWLDataCardinalityRestriction",self._property, self._cardinality, self._filler))
 
 
 class OWLDataMinCardinality(OWLDataCardinalityRestriction):
@@ -618,9 +622,10 @@ class OWLDataSomeValuesFrom(OWLQuantifiedDataRestriction):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
         else:
-            return False
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+
     def __hash__(self):
-        return hash((self._filler, self._property))
+        return hash(("OWLDataSomeValuesFrom",self._filler, self._property))
 
     def get_property(self) -> OWLDataPropertyExpression:
         # documented in parent
@@ -661,10 +666,10 @@ class OWLDataAllValuesFrom(OWLQuantifiedDataRestriction):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
         else:
-            return False
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
 
     def __hash__(self):
-        return hash((self._filler, self._property))
+        return hash(("OWLDataAllValuesFrom",self._filler, self._property))
 
     def get_property(self) -> OWLDataPropertyExpression:
         # documented in parent
@@ -707,7 +712,7 @@ class OWLDataHasValue(OWLHasValueRestriction[OWLLiteral], OWLDataRestriction):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._v, self._property))
+        return hash(("OWLDataHasValue",self._v, self._property))
 
     def as_some_values_from(self) -> OWLClassExpression:
         """A convenience method that obtains this restriction as an existential restriction with a nominal filler.
@@ -736,6 +741,18 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
             for _ in values:
                 assert isinstance(_, OWLLiteral)
             self._values = tuple(values)
+    def __repr__(self):
+        return f'OWLDataOneOf({self._values})'
+
+    def __hash__(self):
+        return hash(("OWLDataOneOf",self._values))
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return {i for i in self._values} == {j for j in other._values}
+        else:
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+
     # TODO:CD: define it as @property as the name of the class method does not correspond to an action
     def values(self) -> Iterable[OWLLiteral]:
         """Gets the values that are in the oneOf.
@@ -748,18 +765,6 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
     def operands(self) -> Iterable[OWLLiteral]:
         # documented in parent
         yield from self.values()
-
-    def __hash__(self):
-        return hash(self._values)
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return {i for i in self._values} == {j for j in other._values}
-        else:
-            return False
-
-    def __repr__(self):
-        return f'OWLDataOneOf({self._values})'
 
 
 class OWLDatatypeRestriction(OWLDataRange):
@@ -828,10 +833,12 @@ class OWLFacetRestriction(OWLObject):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._facet == other._facet and self._literal == other._literal
-        return NotImplemented
+        else:
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+
 
     def __hash__(self):
-        return hash((self._facet, self._literal))
+        return hash(("OWLFacetRestriction",self._facet, self._literal))
 
     def __repr__(self):
         return f'OWLFacetRestriction({self._facet}, {repr(self._literal)})'
