@@ -789,7 +789,7 @@ class OWLDatatypeRestriction(OWLDataRange):
         else:
             return False
     def __hash__(self):
-        return hash((self._type, self._facet_restrictions))
+        return hash(("OWLDatatypeRestriction", self._type, self._facet_restrictions))
 
     def __repr__(self):
         return f'OWLDatatypeRestriction({repr(self._type)}, {repr(self._facet_restrictions)})'
