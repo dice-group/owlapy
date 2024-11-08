@@ -53,14 +53,5 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
     for th, i in enumerate(expressions):
         cls_a = OWLClass(IRI.create(namespace, str(th)))
         equivalent_classes_axiom = OWLEquivalentClassesAxiom([cls_a, i])
-        try:
-            ontology.add_axiom(equivalent_classes_axiom)
-        except AttributeError:
-            print(traceback.format_exc())
-            print("Exception at creating OWLEquivalentClassesAxiom")
-            print(equivalent_classes_axiom)
-            print(cls_a)
-            print(i)
-            print(expressions)
-            exit(1)
+        ontology.add_axiom(equivalent_classes_axiom)
     ontology.save(path=path, inplace=False, rdf_format=rdf_format)

@@ -13,6 +13,7 @@ setup(
         "pandas>=1.5.0",
         "requests>=2.32.3",
         "rdflib>=6.0.2",
+        "ruff>=0.7.2",
         "parsimonious>=0.8.1",
         "pytest>=8.1.1",
         "sortedcontainers>=2.4.0",
