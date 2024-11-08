@@ -76,7 +76,8 @@ class OWLNamedObject(OWLObject, HasIRI, metaclass=ABCMeta):
         if type(other) is type(self):
             return self._iri == other._iri
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+            return False
+            # raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
 
     def __lt__(self, other):
         if type(other) is type(self):

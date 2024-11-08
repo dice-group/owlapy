@@ -10,7 +10,7 @@ from ..owl_literal import OWLLiteral
 from ..owl_individual import OWLIndividual
 from ..owl_datatype import OWLDatatype
 from ..owl_object import OWLObject
-from owlapy.vocab import OWLFacet
+from ..vocab import  OWLFacet
 from datetime import datetime, date
 from pandas import Timedelta
 
@@ -65,7 +65,7 @@ class OWLHasValueRestriction(Generic[_T], OWLRestriction, HasFiller[_T], metacla
     def __eq__(self, other):
         if type(other) is type(self):
             return self._v == other._v
-        return NotImplemented
+        return False
 
     def __hash__(self):
         return hash(self._v)
@@ -273,7 +273,7 @@ class OWLObjectSomeValuesFrom(OWLQuantifiedObjectRestriction):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+            return False
 
     def __hash__(self):
         return hash(("OWLObjectSomeValuesFrom",self._filler, self._property))
@@ -301,7 +301,7 @@ class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+            return False
 
     def __hash__(self):
         return hash(("OWLObjectAllValuesFrom",self._filler, self._property))
@@ -340,7 +340,7 @@ class OWLObjectHasSelf(OWLObjectRestriction):
         if type(other) is type(self):
             return self._property == other._property
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+            return False
 
 
     def __hash__(self):
@@ -430,17 +430,13 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
         if len(self._values) == 1:
             return self
         return OWLObjectUnionOf(map(lambda _: OWLObjectOneOf(_), self.individuals()))
-
     def __hash__(self):
         return hash(("OWLObjectOneOf", self._values))
-
     def __eq__(self, other):
         if type(other) is type(self):
             return self._values == other._values
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
-
-
+            return False
     def __repr__(self):
         return f'OWLObjectOneOf({self._values})'
 
@@ -488,27 +484,22 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
         assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
         super().__init__(cardinality, filler)
         self._property = property
-
-    def get_property(self) -> OWLDataPropertyExpression:
-        # documented in parent
-        return self._property
-
+    def __hash__(self):
+        return hash(("OWLDataCardinalityRestriction",self._property, self._cardinality, self._filler))
     def __repr__(self):
         return f"{type(self).__name__}(" \
                f"property={repr(self.get_property())},{self.get_cardinality()},filler={repr(self.get_filler())})"
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._property == other._property \
-                and self._cardinality == other._cardinality \
-                and self._filler == other._filler
+            return (self._property == other._property and self._cardinality == other._cardinality
+                    and self._filler == other._filler)
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+            return False
 
-
-    def __hash__(self):
-        return hash(("OWLDataCardinalityRestriction",self._property, self._cardinality, self._filler))
-
+    def get_property(self) -> OWLDataPropertyExpression:
+        # documented in parent
+        return self._property
 
 class OWLDataMinCardinality(OWLDataCardinalityRestriction):
     """A minimum cardinality expression DataMinCardinality( n DPE DR ) consists of a nonnegative integer n, a data
@@ -622,8 +613,7 @@ class OWLDataSomeValuesFrom(OWLQuantifiedDataRestriction):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
-
+            return False
     def __hash__(self):
         return hash(("OWLDataSomeValuesFrom",self._filler, self._property))
 
@@ -666,8 +656,7 @@ class OWLDataAllValuesFrom(OWLQuantifiedDataRestriction):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
-
+            return False
     def __hash__(self):
         return hash(("OWLDataAllValuesFrom",self._filler, self._property))
 
@@ -709,8 +698,8 @@ class OWLDataHasValue(OWLHasValueRestriction[OWLLiteral], OWLDataRestriction):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._v == other._v and self._property == other._property
-        return NotImplemented
-
+        else:
+            return False
     def __hash__(self):
         return hash(("OWLDataHasValue",self._v, self._property))
 
@@ -751,8 +740,7 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
         if type(other) is type(self):
             return {i for i in self._values} == {j for j in other._values}
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
-
+            return False
     # TODO:CD: define it as @property as the name of the class method does not correspond to an action
     def values(self) -> Iterable[OWLLiteral]:
         """Gets the values that are in the oneOf.
@@ -798,8 +786,8 @@ class OWLDatatypeRestriction(OWLDataRange):
         if type(other) is type(self):
             return self._type == other._type \
                 and self._facet_restrictions == other._facet_restrictions
-        return NotImplemented
-
+        else:
+            return False
     def __hash__(self):
         return hash((self._type, self._facet_restrictions))
 
@@ -834,8 +822,7 @@ class OWLFacetRestriction(OWLObject):
         if type(other) is type(self):
             return self._facet == other._facet and self._literal == other._literal
         else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
-
+            return False
 
     def __hash__(self):
         return hash(("OWLFacetRestriction",self._facet, self._literal))
