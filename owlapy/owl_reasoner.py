@@ -36,24 +36,6 @@ _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
-    _ontology: Ontology
-    _world: owlready2.World
-    _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
-    _has_prop: Mapping[Type[_P], LRUCache[_P, FrozenSet[OWLNamedIndividual]]]  # Type => Property => individuals
-    # ObjectSomeValuesFrom => individuals
-    # DataSomeValuesFrom => individuals
-    # ObjectCardinalityRestriction => individuals
-    # ObjectProperty => { individual => individuals }
-    _obj_prop: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
-    # ObjectProperty => { individual => individuals }
-    _obj_prop_inv: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
-    # DataProperty => { individual => literals }
-    _data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]]
-    class_cache: bool
-    _property_cache: bool
-    _negation_default: bool
-    _sub_properties: bool
-
     def __init__(self, ontology: AbstractOWLOntology, *, class_cache: bool = True,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
         """Fast instance checker.
@@ -67,31 +49,34 @@ class StructuralReasoner(AbstractOWLReasoner):
             """
         super().__init__(ontology)
         assert isinstance(ontology, Ontology)
-        self._world = ontology._world
-        self._ontology = ontology
-        self.class_cache = class_cache
-        self._property_cache = property_cache
-        self._negation_default = negation_default
-        self._sub_properties = sub_properties
-        self.__warned = 0
+        self._world: owlready2.World = ontology._world
+        self._ontology: Ontology = ontology
+        self.class_cache: bool = class_cache
+        self._property_cache: bool = property_cache
+        self._negation_default: bool = negation_default
+        self._sub_properties: bool = sub_properties
+        self.__warned: int = 0
         self._init()
 
-    def _init(self, cache_size=128):
+    def _init(self):
         if self.class_cache:
-            self._cls_to_ind = dict()
+            # Class => individuals
+            self._cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]] = {} 
 
         if self._property_cache:
-            self._obj_prop = dict()
-            self._obj_prop_inv = dict()
-            self._data_prop = dict()
+            # ObjectProperty => { individual => individuals }
+            self._obj_prop: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]] = dict()
+             # ObjectProperty => { individual => individuals }
+            self._obj_prop_inv: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]] = dict()
+            # DataProperty => { individual => literals }
+            self._data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]] = dict() 
         else:
-            self._has_prop = MappingProxyType({
-                OWLDataProperty: dict(),
-                OWLObjectProperty: dict(),
-                OWLObjectInverseOf: dict(),
-            })
-
-
+            self._has_prop: Mapping[Type[_P], Dict[_P, FrozenSet[OWLNamedIndividual]]] = {
+                OWLDataProperty: {},
+                OWLObjectProperty: {},
+                OWLObjectInverseOf: {},
+            }
+           
     def reset(self):
         """The reset method shall reset any cached state."""
         self._init()
