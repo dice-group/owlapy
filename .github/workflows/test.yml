@@ -19,6 +19,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
 
+      - name: Lint with ruff
+        run: |
+          ruff check owlapy --line-length=200
+
       - name: Test with pytest
         run: |
           wget https://files.dice-research.org/projects/Ontolearn/KGs.zip
