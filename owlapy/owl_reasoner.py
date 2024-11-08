@@ -40,13 +40,9 @@ class StructuralReasoner(AbstractOWLReasoner):
     _world: owlready2.World
     _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
     _has_prop: Mapping[Type[_P], LRUCache[_P, FrozenSet[OWLNamedIndividual]]]  # Type => Property => individuals
-    _ind_set: FrozenSet[OWLNamedIndividual]
     # ObjectSomeValuesFrom => individuals
-    _objectsomevalues_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
     # DataSomeValuesFrom => individuals
-    _datasomevalues_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
     # ObjectCardinalityRestriction => individuals
-    _objectcardinality_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
     # ObjectProperty => { individual => individuals }
     _obj_prop: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
     # ObjectProperty => { individual => individuals }
@@ -81,12 +77,6 @@ class StructuralReasoner(AbstractOWLReasoner):
         self._init()
 
     def _init(self, cache_size=128):
-
-        individuals = self._ontology.individuals_in_signature()
-        self._ind_set = frozenset(individuals)
-        self._objectsomevalues_cache = LRUCache(maxsize=cache_size)
-        self._datasomevalues_cache = LRUCache(maxsize=cache_size)
-        self._objectcardinality_cache = LRUCache(maxsize=cache_size)
         if self.class_cache:
             self._cls_to_ind = dict()
 
@@ -96,10 +86,11 @@ class StructuralReasoner(AbstractOWLReasoner):
             self._data_prop = dict()
         else:
             self._has_prop = MappingProxyType({
-                OWLDataProperty: LRUCache(maxsize=cache_size),
-                OWLObjectProperty: LRUCache(maxsize=cache_size),
-                OWLObjectInverseOf: LRUCache(maxsize=cache_size),
+                OWLDataProperty: dict(),
+                OWLObjectProperty: dict(),
+                OWLObjectInverseOf: dict(),
             })
+
 
     def reset(self):
         """The reset method shall reset any cached state."""
@@ -627,7 +618,8 @@ class StructuralReasoner(AbstractOWLReasoner):
                         opc[s] = set()
                     opc[s] |= {o}
         else:
-            for s in self._ind_set:
+            all_ = frozenset(self._ontology.individuals_in_signature())
+            for s in all_:
                 individuals = set(self.object_property_values(s, pe, not self._sub_properties))
                 if individuals:
                     opc[s] = individuals
@@ -667,8 +659,8 @@ class StructuralReasoner(AbstractOWLReasoner):
                     func = self.data_property_values
                 else:
                     func = self.object_property_values
-
-                for s in self._ind_set:
+                all_ = frozenset(self._ontology.individuals_in_signature())
+                for s in all_:
                     try:
                         next(iter(func(s, pe, not self._sub_properties)))
                         subs |= {s}
@@ -773,9 +765,6 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     @_find_instances.register
     def _(self, ce: OWLObjectSomeValuesFrom) -> FrozenSet[OWLNamedIndividual]:
-        if ce in self._objectsomevalues_cache:
-            return self._objectsomevalues_cache[ce]
-
         p = ce.get_property()
         assert isinstance(p, OWLObjectPropertyExpression)
         if not self._property_cache and ce.get_filler().is_owl_thing():
@@ -785,13 +774,12 @@ class StructuralReasoner(AbstractOWLReasoner):
 
         ind = self._find_some_values(p, filler_ind)
 
-        self._objectsomevalues_cache[ce] = ind
         return ind
 
     @_find_instances.register
     def _(self, ce: OWLObjectComplementOf) -> FrozenSet[OWLNamedIndividual]:
         if self._negation_default:
-            all_ = self._ind_set
+            all_ = frozenset(self._ontology.individuals_in_signature())
             complement_ind = self._find_instances(ce.get_operand())
             return all_ ^ complement_ind
         else:
@@ -827,7 +815,7 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     @_find_instances.register
     def _(self, ce: OWLObjectMaxCardinality) -> FrozenSet[OWLNamedIndividual]:
-        all_ = self._ind_set
+        all_ = frozenset(self._ontology.individuals_in_signature())
         min_ind = self._find_instances(OWLObjectMinCardinality(cardinality=ce.get_cardinality() + 1,
                                                                property=ce.get_property(),
                                                                filler=ce.get_filler()))
@@ -838,9 +826,6 @@ class StructuralReasoner(AbstractOWLReasoner):
         return self._get_instances_object_card_restriction(ce)
 
     def _get_instances_object_card_restriction(self, ce: OWLObjectCardinalityRestriction):
-        if ce in self._objectcardinality_cache:
-            return self._objectcardinality_cache[ce]
-
         p = ce.get_property()
         assert isinstance(p, OWLObjectPropertyExpression)
 
@@ -862,14 +847,10 @@ class StructuralReasoner(AbstractOWLReasoner):
 
         ind = self._find_some_values(p, filler_ind, min_count=min_count, max_count=max_count)
 
-        self._objectcardinality_cache[ce] = ind
         return ind
 
     @_find_instances.register
     def _(self, ce: OWLDataSomeValuesFrom) -> FrozenSet[OWLNamedIndividual]:
-        if ce in self._datasomevalues_cache:
-            return self._datasomevalues_cache[ce]
-
         pe = ce.get_property()
         filler = ce.get_filler()
         assert isinstance(pe, OWLDataProperty)
@@ -958,7 +939,6 @@ class StructuralReasoner(AbstractOWLReasoner):
             raise ValueError
 
         r = frozenset(ind)
-        self._datasomevalues_cache[ce] = r
         return r
 
     @_find_instances.register
