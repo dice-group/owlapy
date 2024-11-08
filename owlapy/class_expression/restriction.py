@@ -272,7 +272,8 @@ class OWLObjectSomeValuesFrom(OWLQuantifiedObjectRestriction):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._filler == other._filler and self._property == other._property
-        return NotImplemented
+        else:
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
 
     def __hash__(self):
         return hash((self._filler, self._property))
