@@ -1013,53 +1013,9 @@ class SyncReasoner(AbstractOWLReasoner):
 
         self._owlapi_manager = self.manager.get_owlapi_manager()
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
-        # super().__init__(self.ontology)
         self.mapper = self.ontology.mapper
-        from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
-                                                 InferredEquivalentClassAxiomGenerator,
-                                                 InferredDisjointClassesAxiomGenerator,
-                                                 InferredEquivalentDataPropertiesAxiomGenerator,
-                                                 InferredEquivalentObjectPropertyAxiomGenerator,
-                                                 InferredInverseObjectPropertiesAxiomGenerator,
-                                                 InferredSubDataPropertyAxiomGenerator,
-                                                 InferredSubObjectPropertyAxiomGenerator,
-                                                 InferredDataPropertyCharacteristicAxiomGenerator,
-                                                 InferredObjectPropertyCharacteristicAxiomGenerator)
-
-        self.inference_types_mapping = {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
-                                        "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
-                                        "InferredDisjointClassesAxiomGenerator": InferredDisjointClassesAxiomGenerator(),
-                                        "InferredEquivalentClassAxiomGenerator": InferredEquivalentClassAxiomGenerator(),
-                                        "InferredInverseObjectPropertiesAxiomGenerator": InferredInverseObjectPropertiesAxiomGenerator(),
-                                        "InferredEquivalentDataPropertiesAxiomGenerator": InferredEquivalentDataPropertiesAxiomGenerator(),
-                                        "InferredEquivalentObjectPropertyAxiomGenerator": InferredEquivalentObjectPropertyAxiomGenerator(),
-                                        "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
-                                        "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
-                                        "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
-                                        "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator(),
-                                        }
-
-        # () Create a reasoner using the ontology
-        if reasoner == "HermiT":
-            from org.semanticweb.HermiT import ReasonerFactory
-            self._owlapi_reasoner = ReasonerFactory().createReasoner(self._owlapi_ontology)
-            assert self._owlapi_reasoner.getReasonerName() == "HermiT"
-        elif reasoner == "JFact":
-            from uk.ac.manchester.cs.jfact import JFactFactory
-            self._owlapi_reasoner = JFactFactory().createReasoner(self._owlapi_ontology)
-        elif reasoner == "Pellet":
-            from openllet.owlapi import PelletReasonerFactory
-            self._owlapi_reasoner = PelletReasonerFactory().createReasoner(self._owlapi_ontology)
-        elif reasoner == "Openllet":
-            from openllet.owlapi import OpenlletReasonerFactory
-            self._owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(self._owlapi_ontology)
-        elif reasoner == "Structural":
-            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
-            self._owlapi_reasoner = StructuralReasonerFactory().createReasoner(self._owlapi_ontology)
-        else:
-            raise NotImplementedError("Not implemented")
-
-        self.reasoner = reasoner
+        self.inference_types_mapping = import_and_include_axioms_generators()
+        self._owlapi_reasoner = initialize_reasoner(reasoner,self._owlapi_ontology)
 
     def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
@@ -1378,11 +1334,11 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(pe) for pe in
                     self._owlapi_reasoner.getDisjointDataProperties(self.mapper.map_(p)).getFlattened()]
 
-    def types(self, i: OWLNamedIndividual, direct: bool = False):
+    def types(self, individual: OWLNamedIndividual, direct: bool = False):
         """Gets the named classes which are (potentially direct) types of the specified named individual.
 
         Args:
-            i: The individual whose types are to be retrieved.
+            individual: The individual whose types are to be retrieved.
             direct: Specifies if the direct types should be retrieved (True), or if all types should be retrieved
                 (False).
 
@@ -1392,7 +1348,7 @@ class SyncReasoner(AbstractOWLReasoner):
             entails ClassAssertion(C, ind).
         """
         yield from [self.mapper.map_(ind) for ind in
-                    self._owlapi_reasoner.getTypes(self.mapper.map_(i), direct).getFlattened()]
+                    self._owlapi_reasoner.getTypes(self.mapper.map_(individual), direct).getFlattened()]
 
     def has_consistent_ontology(self) -> bool:
         """
@@ -1544,3 +1500,48 @@ class SyncReasoner(AbstractOWLReasoner):
 
     def get_root_ontology(self) -> AbstractOWLOntology:
         return self.ontology
+
+def initialize_reasoner(reasoner:str, owlapi_ontology):
+    # () Create a reasoner using the ontology
+    if reasoner == "HermiT":
+        from org.semanticweb.HermiT import ReasonerFactory
+        owlapi_reasoner = ReasonerFactory().createReasoner(owlapi_ontology)
+        assert owlapi_reasoner.getReasonerName() == "HermiT"
+    elif reasoner == "JFact":
+        from uk.ac.manchester.cs.jfact import JFactFactory
+        owlapi_reasoner = JFactFactory().createReasoner(owlapi_ontology)
+    elif reasoner == "Pellet":
+        from openllet.owlapi import PelletReasonerFactory
+        owlapi_reasoner = PelletReasonerFactory().createReasoner(owlapi_ontology)
+    elif reasoner == "Openllet":
+        from openllet.owlapi import OpenlletReasonerFactory
+        owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(owlapi_ontology)
+    elif reasoner == "Structural":
+        from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
+        owlapi_reasoner = StructuralReasonerFactory().createReasoner(owlapi_ontology)
+    else:
+        raise NotImplementedError("Not implemented")
+    return owlapi_reasoner
+def import_and_include_axioms_generators():
+    from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
+                                             InferredEquivalentClassAxiomGenerator,
+                                             InferredDisjointClassesAxiomGenerator,
+                                             InferredEquivalentDataPropertiesAxiomGenerator,
+                                             InferredEquivalentObjectPropertyAxiomGenerator,
+                                             InferredInverseObjectPropertiesAxiomGenerator,
+                                             InferredSubDataPropertyAxiomGenerator,
+                                             InferredSubObjectPropertyAxiomGenerator,
+                                             InferredDataPropertyCharacteristicAxiomGenerator,
+                                             InferredObjectPropertyCharacteristicAxiomGenerator)
+
+    return {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
+                                    "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
+                                    "InferredDisjointClassesAxiomGenerator": InferredDisjointClassesAxiomGenerator(),
+                                    "InferredEquivalentClassAxiomGenerator": InferredEquivalentClassAxiomGenerator(),
+                                    "InferredInverseObjectPropertiesAxiomGenerator": InferredInverseObjectPropertiesAxiomGenerator(),
+                                    "InferredEquivalentDataPropertiesAxiomGenerator": InferredEquivalentDataPropertiesAxiomGenerator(),
+                                    "InferredEquivalentObjectPropertyAxiomGenerator": InferredEquivalentObjectPropertyAxiomGenerator(),
+                                    "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
+                                    "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
+                                    "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
+                                    "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator()}
