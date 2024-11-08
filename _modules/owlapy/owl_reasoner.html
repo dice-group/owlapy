@@ -1179,53 +1179,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">get_owlapi_manager</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">get_owlapi_ontology</span><span class="p">()</span>
-        <span class="c1"># super().__init__(self.ontology)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">mapper</span>
-        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">,</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">,</span>
-                                                 <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">inference_types_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredSubClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredDisjointClassesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredEquivalentClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredInverseObjectPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredEquivalentDataPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredEquivalentObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredSubDataPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredSubObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="s2">&quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
-                                        <span class="p">}</span>
-
-        <span class="c1"># () Create a reasoner using the ontology</span>
-        <span class="k">if</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">org.semanticweb.HermiT</span> <span class="kn">import</span> <span class="n">ReasonerFactory</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getReasonerName</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span>
-        <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">uk.ac.manchester.cs.jfact</span> <span class="kn">import</span> <span class="n">JFactFactory</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">openllet.owlapi</span> <span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">openllet.owlapi</span> <span class="kn">import</span> <span class="n">OpenlletReasonerFactory</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">OpenlletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.reasoner.structural</span> <span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">reasoner</span> <span class="o">=</span> <span class="n">reasoner</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inference_types_mapping</span> <span class="o">=</span> <span class="n">import_and_include_axioms_generators</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1606,11 +1562,11 @@
 
 <div class="viewcode-block" id="SyncReasoner.types">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.types">[docs]</a>
-    <span class="k">def</span> <span class="nf">types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">individual</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the named classes which are (potentially direct) types of the specified named individual.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            i: The individual whose types are to be retrieved.</span>
+<span class="sd">            individual: The individual whose types are to be retrieved.</span>
 <span class="sd">            direct: Specifies if the direct types should be retrieved (True), or if all types should be retrieved</span>
 <span class="sd">                (False).</span>
 
@@ -1620,7 +1576,7 @@
 <span class="sd">            entails ClassAssertion(C, ind).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getTypes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getTypes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">individual</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.has_consistent_ontology">
@@ -1797,6 +1753,57 @@
     <span class="k">def</span> <span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span></div>
 </div>
+
+
+<div class="viewcode-block" id="initialize_reasoner">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.initialize_reasoner">[docs]</a>
+<span class="k">def</span> <span class="nf">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">owlapi_ontology</span><span class="p">):</span>
+    <span class="c1"># () Create a reasoner using the ontology</span>
+    <span class="k">if</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.HermiT</span> <span class="kn">import</span> <span class="n">ReasonerFactory</span>
+        <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">owlapi_reasoner</span><span class="o">.</span><span class="n">getReasonerName</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span>
+    <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">uk.ac.manchester.cs.jfact</span> <span class="kn">import</span> <span class="n">JFactFactory</span>
+        <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">openllet.owlapi</span> <span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+        <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">openllet.owlapi</span> <span class="kn">import</span> <span class="n">OpenlletReasonerFactory</span>
+        <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">OpenlletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.reasoner.structural</span> <span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
+        <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">owlapi_reasoner</span></div>
+
+<div class="viewcode-block" id="import_and_include_axioms_generators">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.import_and_include_axioms_generators">[docs]</a>
+<span class="k">def</span> <span class="nf">import_and_include_axioms_generators</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">,</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">,</span>
+                                             <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredSubClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredDisjointClassesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredEquivalentClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredInverseObjectPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredEquivalentDataPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredEquivalentObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredSubDataPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredSubObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
+                                    <span class="s2">&quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">()}</span></div>
 
 </pre></div>
 

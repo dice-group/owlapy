@@ -806,6 +806,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_super_class</span> <span class="o">=</span> <span class="n">super_class</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sub_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_class</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">super_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_class</span>
+
 <div class="viewcode-block" id="OWLSubClassOfAxiom.get_sub_class">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLSubClassOfAxiom.get_sub_class">[docs]</a>
     <span class="k">def</span> <span class="nf">get_sub_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
@@ -824,7 +831,8 @@
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_class</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_class</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_class</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_sub_class</span> \
                 <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="OWLSubClassOfAxiom.__hash__">

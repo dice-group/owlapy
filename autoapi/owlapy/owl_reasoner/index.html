@@ -79,6 +79,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.owl_reasoner</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#attributes">Attributes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner.StructuralReasoner"><code class="docutils literal notranslate"><span class="pre">StructuralReasoner</span></code></a><ul>
@@ -114,7 +115,6 @@
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner"><code class="docutils literal notranslate"><span class="pre">SyncReasoner</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.mapper"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.mapper</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.inference_types_mapping"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.inference_types_mapping</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.reasoner"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.reasoner</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.instances"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.instances()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.equivalent_classes"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.equivalent_classes()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.disjoint_classes"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.disjoint_classes()</span></code></a></li>
@@ -146,6 +146,8 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.get_root_ontology"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.get_root_ontology()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner.initialize_reasoner"><code class="docutils literal notranslate"><span class="pre">initialize_reasoner()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner.import_and_include_axioms_generators"><code class="docutils literal notranslate"><span class="pre">import_and_include_axioms_generators()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -214,6 +216,19 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SyncReasoner</span></code></a></p></td>
 <td><p>An OWLReasoner reasons over a set of axioms (the set of reasoner axioms) that is based on the imports closure of</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_reasoner.initialize_reasoner" title="owlapy.owl_reasoner.initialize_reasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize_reasoner</span></code></a>(reasoner, owlapi_ontology)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_reasoner.import_and_include_axioms_generators" title="owlapy.owl_reasoner.import_and_include_axioms_generators"><code class="xref py py-obj docutils literal notranslate"><span class="pre">import_and_include_axioms_generators</span></code></a>()</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -710,11 +725,6 @@ a particular ontology - the “root” ontology.</p>
 <span class="sig-name descname"><span class="pre">inference_types_mapping</span></span><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.inference_types_mapping" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.reasoner">
-<span class="sig-name descname"><span class="pre">reasoner</span></span><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.reasoner" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.instances">
 <span class="sig-name descname"><span class="pre">instances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.instances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.instances" title="Link to this definition"></a></dt>
@@ -1102,12 +1112,12 @@ StrictSubDataPropertyOf(e DataPropertyComplementOf(dp)).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.types">
-<span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.types" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.types" title="Link to this definition"></a></dt>
 <dd><p>Gets the named classes which are (potentially direct) types of the specified named individual.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>i</strong> – The individual whose types are to be retrieved.</p></li>
+<li><p><strong>individual</strong> – The individual whose types are to be retrieved.</p></li>
 <li><p><strong>direct</strong> – Specifies if the direct types should be retrieved (True), or if all types should be retrieved
 (False).</p></li>
 </ul>
@@ -1270,6 +1280,16 @@ this ontology and its import’s closure.</p>
 </dd></dl>
 
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.initialize_reasoner">
+<span class="sig-prename descclassname"><span class="pre">owlapy.owl_reasoner.</span></span><span class="sig-name descname"><span class="pre">initialize_reasoner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reasoner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owlapi_ontology</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#initialize_reasoner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.initialize_reasoner" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.import_and_include_axioms_generators">
+<span class="sig-prename descclassname"><span class="pre">owlapy.owl_reasoner.</span></span><span class="sig-name descname"><span class="pre">import_and_include_axioms_generators</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#import_and_include_axioms_generators"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.import_and_include_axioms_generators" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </section>
 </section>

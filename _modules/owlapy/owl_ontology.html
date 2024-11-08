@@ -230,7 +230,6 @@
 
 <span class="k">def</span> <span class="nf">_check_expression</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">AbstractOWLOntology</span><span class="p">,</span> <span class="n">world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">World</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    @TODO:CD: Documentation</span>
 <span class="sd">    Creates all entities (individuals, classes, properties) that appear in the given (complex) class expression</span>
 <span class="sd">    and do not exist in the given ontology yet</span>
 
@@ -1246,7 +1245,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">imports</span> <span class="o">=</span> <span class="n">Imports</span><span class="o">.</span><span class="n">EXCLUDED</span>
         <span class="k">return</span> <span class="n">imports</span>
-
 <div class="viewcode-block" id="SyncOntology.get_signature">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.get_signature">[docs]</a>
     <span class="k">def</span> <span class="nf">get_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_imports_closure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
@@ -1258,6 +1256,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Entities in signature.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># @TODO: CD: Is this class method redundant given that we have the individuals_in_signature ?</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="o">.</span><span class="n">getSignature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_imports_enum</span><span class="p">(</span><span class="n">include_imports_closure</span><span class="p">)))</span></div>
 
 
@@ -1272,7 +1271,6 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            ABox axioms.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="o">.</span><span class="n">getABoxAxioms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_imports_enum</span><span class="p">(</span><span class="n">include_imports_closure</span><span class="p">)))</span></div>
 
 
@@ -1343,7 +1341,14 @@
 <div class="viewcode-block" id="SyncOntology.__repr__">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.__repr__">[docs]</a>
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;SyncOntology(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">new</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SyncOntology:&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Tbox|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_tbox_axioms</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Abox|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_abox_axioms</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Individuals|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Classes|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Object Properties|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Data Properties|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="si">}</span><span class="se">\t</span><span class="s1">Path:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="se">\t</span><span class="s1">New:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">new</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 </div>
 
 
