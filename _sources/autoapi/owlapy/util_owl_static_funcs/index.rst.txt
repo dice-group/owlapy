@@ -1,0 +1,49 @@
+owlapy.util_owl_static_funcs
+============================
+
+.. py:module:: owlapy.util_owl_static_funcs
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.util_owl_static_funcs.save_owl_class_expressions
+
+
+Module Contents
+---------------
+
+.. py:function:: save_owl_class_expressions(expressions: owlapy.class_expression.OWLClassExpression | List[owlapy.class_expression.OWLClassExpression], path: str = 'predictions', rdf_format: str = 'rdfxml', namespace: str = None) -> None
+
+   Saves a set of OWL class expressions to an ontology file in RDF/XML format.
+
+   This function takes one or more OWL class expressions, creates an ontology,
+   and saves the expressions as OWL equivalent class axioms in the specified RDF format.
+   By default, it saves the file to the specified path using the 'rdfxml' format.
+
+   :param expressions: A single or a list of OWL class expressions
+                       to be saved as equivalent class axioms.
+   :type expressions: OWLClassExpression | List[OWLClassExpression]
+   :param path: The file path where the ontology will be saved. Defaults to 'predictions'.
+   :type path: str, optional
+   :param rdf_format: RDF serialization format for saving the ontology. Currently only
+                      supports 'rdfxml'. Defaults to 'rdfxml'.
+   :type rdf_format: str, optional
+   :param namespace: The namespace URI used for the ontology. If None, defaults to
+                     'https://dice-research.org/predictions#'. Must end with '#'.
+   :type namespace: str, optional
+
+   :raises AssertionError: If `expressions` is neither an OWLClassExpression nor a list of OWLClassExpression.
+   :raises AssertionError: If `rdf_format` is not 'rdfxml'.
+   :raises AssertionError: If `namespace` does not end with a '#'.
+
+   .. rubric:: Example
+
+   >>> from some_module import OWLClassExpression
+   >>> expr1 = OWLClassExpression("SomeExpression1")
+   >>> expr2 = OWLClassExpression("SomeExpression2")
+   >>> save_owl_class_expressions([expr1, expr2], path="my_ontology.owl", rdf_format="rdfxml")
+
+
