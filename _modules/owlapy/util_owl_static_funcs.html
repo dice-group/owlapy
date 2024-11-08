@@ -95,9 +95,32 @@
                                <span class="n">rdf_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;rdfxml&#39;</span><span class="p">,</span>
                                <span class="n">namespace</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Saves a set of OWL class expressions to an ontology file in RDF/XML format.</span>
 
+<span class="sd">    This function takes one or more OWL class expressions, creates an ontology,</span>
+<span class="sd">    and saves the expressions as OWL equivalent class axioms in the specified RDF format.</span>
+<span class="sd">    By default, it saves the file to the specified path using the &#39;rdfxml&#39; format.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        expressions (OWLClassExpression | List[OWLClassExpression]): A single or a list of OWL class expressions</span>
+<span class="sd">            to be saved as equivalent class axioms.</span>
+<span class="sd">        path (str, optional): The file path where the ontology will be saved. Defaults to &#39;predictions&#39;.</span>
+<span class="sd">        rdf_format (str, optional): RDF serialization format for saving the ontology. Currently only</span>
+<span class="sd">            supports &#39;rdfxml&#39;. Defaults to &#39;rdfxml&#39;.</span>
+<span class="sd">        namespace (str, optional): The namespace URI used for the ontology. If None, defaults to</span>
+<span class="sd">            &#39;https://dice-research.org/predictions#&#39;. Must end with &#39;#&#39;.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: If `expressions` is neither an OWLClassExpression nor a list of OWLClassExpression.</span>
+<span class="sd">        AssertionError: If `rdf_format` is not &#39;rdfxml&#39;.</span>
+<span class="sd">        AssertionError: If `namespace` does not end with a &#39;#&#39;.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from some_module import OWLClassExpression</span>
+<span class="sd">        &gt;&gt;&gt; expr1 = OWLClassExpression(&quot;SomeExpression1&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; expr2 = OWLClassExpression(&quot;SomeExpression2&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; save_owl_class_expressions([expr1, expr2], path=&quot;my_ontology.owl&quot;, rdf_format=&quot;rdfxml&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expressions</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expressions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                                                      <span class="n">OWLClassExpression</span><span class="p">),</span> <span class="s2">&quot;expressions must be either OWLClassExpression or a list of OWLClassExpression&quot;</span>
     <span class="k">assert</span> <span class="n">rdf_format</span> <span class="o">==</span> <span class="s1">&#39;rdfxml&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Format </span><span class="si">{</span><span class="n">rdf_format</span><span class="si">}</span><span class="s1"> not implemented. Please use rdfxml&#39;</span>
@@ -125,11 +148,8 @@
             <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">expressions</span><span class="p">)</span>
             <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
     <span class="n">ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rdf_format</span><span class="o">=</span><span class="n">rdf_format</span><span class="p">)</span></div>
 
-
-    <span class="c1"># ontology.save(IRI.create(path))</span>
 </pre></div>
 
            </div>

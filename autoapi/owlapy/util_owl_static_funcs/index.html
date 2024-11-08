@@ -133,7 +133,7 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.save_owl_class_expressions" title="owlapy.util_owl_static_funcs.save_owl_class_expressions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_owl_class_expressions</span></code></a>(→ None)</p></td>
-<td><p></p></td>
+<td><p>Saves a set of OWL class expressions to an ontology file in RDF/XML format.</p></td>
 </tr>
 </tbody>
 </table>
@@ -143,7 +143,38 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="owlapy.util_owl_static_funcs.save_owl_class_expressions">
 <span class="sig-prename descclassname"><span class="pre">owlapy.util_owl_static_funcs.</span></span><span class="sig-name descname"><span class="pre">save_owl_class_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expressions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'predictions'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdf_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'rdfxml'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/owlapy/util_owl_static_funcs.html#save_owl_class_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.util_owl_static_funcs.save_owl_class_expressions" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Saves a set of OWL class expressions to an ontology file in RDF/XML format.</p>
+<p>This function takes one or more OWL class expressions, creates an ontology,
+and saves the expressions as OWL equivalent class axioms in the specified RDF format.
+By default, it saves the file to the specified path using the ‘rdfxml’ format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expressions</strong> (<a class="reference internal" href="../class_expression/class_expression/index.html#owlapy.class_expression.class_expression.OWLClassExpression" title="owlapy.class_expression.class_expression.OWLClassExpression"><em>OWLClassExpression</em></a><em> | </em><em>List</em><em>[</em><a class="reference internal" href="../class_expression/class_expression/index.html#owlapy.class_expression.class_expression.OWLClassExpression" title="owlapy.class_expression.class_expression.OWLClassExpression"><em>OWLClassExpression</em></a><em>]</em>) – A single or a list of OWL class expressions
+to be saved as equivalent class axioms.</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – The file path where the ontology will be saved. Defaults to ‘predictions’.</p></li>
+<li><p><strong>rdf_format</strong> (<em>str</em><em>, </em><em>optional</em>) – RDF serialization format for saving the ontology. Currently only
+supports ‘rdfxml’. Defaults to ‘rdfxml’.</p></li>
+<li><p><strong>namespace</strong> (<em>str</em><em>, </em><em>optional</em>) – The namespace URI used for the ontology. If None, defaults to
+‘<a class="reference external" href="https://dice-research.org">https://dice-research.org</a>/predictions#’. Must end with ‘#’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If <cite>expressions</cite> is neither an OWLClassExpression nor a list of OWLClassExpression.</p></li>
+<li><p><strong>AssertionError</strong> – If <cite>rdf_format</cite> is not ‘rdfxml’.</p></li>
+<li><p><strong>AssertionError</strong> – If <cite>namespace</cite> does not end with a ‘#’.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">some_module</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expr1</span> <span class="o">=</span> <span class="n">OWLClassExpression</span><span class="p">(</span><span class="s2">&quot;SomeExpression1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expr2</span> <span class="o">=</span> <span class="n">OWLClassExpression</span><span class="p">(</span><span class="s2">&quot;SomeExpression2&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">save_owl_class_expressions</span><span class="p">([</span><span class="n">expr1</span><span class="p">,</span> <span class="n">expr2</span><span class="p">],</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;my_ontology.owl&quot;</span><span class="p">,</span> <span class="n">rdf_format</span><span class="o">=</span><span class="s2">&quot;rdfxml&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </section>
 </section>
