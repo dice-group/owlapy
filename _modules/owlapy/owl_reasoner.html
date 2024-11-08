@@ -110,7 +110,7 @@
     <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
-<span class="kn">from</span> <span class="nn">owlapy.utils</span> <span class="kn">import</span> <span class="n">LRUCache</span><span class="p">,</span> <span class="n">run_with_timeout</span>
+<span class="kn">from</span> <span class="nn">owlapy.utils</span> <span class="kn">import</span> <span class="n">run_with_timeout</span>
 <span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_reasoner</span> <span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -121,37 +121,6 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner">[docs]</a>
 <span class="k">class</span> <span class="nc">StructuralReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Tries to check instances fast (but maybe incomplete).&quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_ontology&#39;</span><span class="p">,</span> <span class="s1">&#39;_world&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;_ind_set&#39;</span><span class="p">,</span> <span class="s1">&#39;_cls_to_ind&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;_has_prop&#39;</span><span class="p">,</span> <span class="s1">&#39;class_cache&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;_objectsomevalues_cache&#39;</span><span class="p">,</span> <span class="s1">&#39;_datasomevalues_cache&#39;</span><span class="p">,</span> <span class="s1">&#39;_objectcardinality_cache&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;_property_cache&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;_obj_prop&#39;</span><span class="p">,</span> <span class="s1">&#39;_obj_prop_inv&#39;</span><span class="p">,</span> <span class="s1">&#39;_data_prop&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;_negation_default&#39;</span><span class="p">,</span> <span class="s1">&#39;_sub_properties&#39;</span><span class="p">,</span> \
-                <span class="s1">&#39;__warned&#39;</span>
-
-    <span class="n">_ontology</span><span class="p">:</span> <span class="n">Ontology</span>
-    <span class="n">_world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span>
-    <span class="n">_cls_to_ind</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span>  <span class="c1"># Class =&gt; individuals</span>
-    <span class="n">_has_prop</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">LRUCache</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span>  <span class="c1"># Type =&gt; Property =&gt; individuals</span>
-    <span class="n">_ind_set</span><span class="p">:</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]</span>
-    <span class="c1"># ObjectSomeValuesFrom =&gt; individuals</span>
-    <span class="n">_objectsomevalues_cache</span><span class="p">:</span> <span class="n">LRUCache</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span>
-    <span class="c1"># DataSomeValuesFrom =&gt; individuals</span>
-    <span class="n">_datasomevalues_cache</span><span class="p">:</span> <span class="n">LRUCache</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span>
-    <span class="c1"># ObjectCardinalityRestriction =&gt; individuals</span>
-    <span class="n">_objectcardinality_cache</span><span class="p">:</span> <span class="n">LRUCache</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span>
-    <span class="c1"># ObjectProperty =&gt; { individual =&gt; individuals }</span>
-    <span class="n">_obj_prop</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span>
-    <span class="c1"># ObjectProperty =&gt; { individual =&gt; individuals }</span>
-    <span class="n">_obj_prop_inv</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span>
-    <span class="c1"># DataProperty =&gt; { individual =&gt; literals }</span>
-    <span class="n">_data_prop</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]]]</span>
-    <span class="n">class_cache</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">_property_cache</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">_negation_default</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">_sub_properties</span><span class="p">:</span> <span class="nb">bool</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">AbstractOWLOntology</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">class_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">property_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">negation_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sub_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fast instance checker.</span>
@@ -165,36 +134,34 @@
 <span class="sd">            &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_world</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span> <span class="o">=</span> <span class="n">ontology</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">class_cache</span> <span class="o">=</span> <span class="n">class_cache</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache</span> <span class="o">=</span> <span class="n">property_cache</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_negation_default</span> <span class="o">=</span> <span class="n">negation_default</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sub_properties</span> <span class="o">=</span> <span class="n">sub_properties</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__warned</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_world</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">:</span> <span class="n">Ontology</span> <span class="o">=</span> <span class="n">ontology</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">class_cache</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">property_cache</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_negation_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">negation_default</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">sub_properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__warned</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_size</span><span class="o">=</span><span class="mi">128</span><span class="p">):</span>
-
-        <span class="n">individuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ind_set</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">individuals</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_objectsomevalues_cache</span> <span class="o">=</span> <span class="n">LRUCache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">cache_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_datasomevalues_cache</span> <span class="o">=</span> <span class="n">LRUCache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">cache_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_objectcardinality_cache</span> <span class="o">=</span> <span class="n">LRUCache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">cache_size</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_cache</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="c1"># Class =&gt; individuals</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span> 
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_obj_prop</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_obj_prop_inv</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_prop</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="c1"># ObjectProperty =&gt; { individual =&gt; individuals }</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_obj_prop</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+             <span class="c1"># ObjectProperty =&gt; { individual =&gt; individuals }</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_obj_prop_inv</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="c1"># DataProperty =&gt; { individual =&gt; literals }</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_prop</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span> 
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_has_prop</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">({</span>
-                <span class="n">OWLDataProperty</span><span class="p">:</span> <span class="n">LRUCache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">cache_size</span><span class="p">),</span>
-                <span class="n">OWLObjectProperty</span><span class="p">:</span> <span class="n">LRUCache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">cache_size</span><span class="p">),</span>
-                <span class="n">OWLObjectInverseOf</span><span class="p">:</span> <span class="n">LRUCache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">cache_size</span><span class="p">),</span>
-            <span class="p">})</span>
-
+            <span class="bp">self</span><span class="o">.</span><span class="n">_has_prop</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">OWLDataProperty</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="n">OWLObjectProperty</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="n">OWLObjectInverseOf</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="p">}</span>
+           
 <div class="viewcode-block" id="StructuralReasoner.reset">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner.reset">[docs]</a>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -793,7 +760,8 @@
                         <span class="n">opc</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
                     <span class="n">opc</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">|=</span> <span class="p">{</span><span class="n">o</span><span class="p">}</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ind_set</span><span class="p">:</span>
+            <span class="n">all_</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">all_</span><span class="p">:</span>
                 <span class="n">individuals</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_properties</span><span class="p">))</span>
                 <span class="k">if</span> <span class="n">individuals</span><span class="p">:</span>
                     <span class="n">opc</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">individuals</span>
@@ -833,8 +801,8 @@
                     <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_property_values</span>
-
-                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ind_set</span><span class="p">:</span>
+                <span class="n">all_</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">all_</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_properties</span><span class="p">)))</span>
                         <span class="n">subs</span> <span class="o">|=</span> <span class="p">{</span><span class="n">s</span><span class="p">}</span>
@@ -939,9 +907,6 @@
 
     <span class="nd">@_find_instances</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">ce</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectsomevalues_cache</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectsomevalues_cache</span><span class="p">[</span><span class="n">ce</span><span class="p">]</span>
-
         <span class="n">p</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache</span> <span class="ow">and</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
@@ -951,13 +916,12 @@
 
         <span class="n">ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_some_values</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">filler_ind</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_objectsomevalues_cache</span><span class="p">[</span><span class="n">ce</span><span class="p">]</span> <span class="o">=</span> <span class="n">ind</span>
         <span class="k">return</span> <span class="n">ind</span>
 
     <span class="nd">@_find_instances</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_negation_default</span><span class="p">:</span>
-            <span class="n">all_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ind_set</span>
+            <span class="n">all_</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span>
             <span class="n">complement_ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_instances</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_operand</span><span class="p">())</span>
             <span class="k">return</span> <span class="n">all_</span> <span class="o">^</span> <span class="n">complement_ind</span>
         <span class="k">else</span><span class="p">:</span>
@@ -993,7 +957,7 @@
 
     <span class="nd">@_find_instances</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-        <span class="n">all_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ind_set</span>
+        <span class="n">all_</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span>
         <span class="n">min_ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_instances</span><span class="p">(</span><span class="n">OWLObjectMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
                                                                <span class="nb">property</span><span class="o">=</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
                                                                <span class="n">filler</span><span class="o">=</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
@@ -1004,9 +968,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_instances_object_card_restriction</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_instances_object_card_restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">ce</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectcardinality_cache</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectcardinality_cache</span><span class="p">[</span><span class="n">ce</span><span class="p">]</span>
-
         <span class="n">p</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span>
 
@@ -1028,14 +989,10 @@
 
         <span class="n">ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_some_values</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">filler_ind</span><span class="p">,</span> <span class="n">min_count</span><span class="o">=</span><span class="n">min_count</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="n">max_count</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_objectcardinality_cache</span><span class="p">[</span><span class="n">ce</span><span class="p">]</span> <span class="o">=</span> <span class="n">ind</span>
         <span class="k">return</span> <span class="n">ind</span>
 
     <span class="nd">@_find_instances</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">ce</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datasomevalues_cache</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datasomevalues_cache</span><span class="p">[</span><span class="n">ce</span><span class="p">]</span>
-
         <span class="n">pe</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
         <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
@@ -1124,7 +1081,6 @@
             <span class="k">raise</span> <span class="ne">ValueError</span>
 
         <span class="n">r</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_datasomevalues_cache</span><span class="p">[</span><span class="n">ce</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="nd">@_find_instances</span><span class="o">.</span><span class="n">register</span>
