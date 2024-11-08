@@ -27,7 +27,7 @@ from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OW
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.utils import LRUCache, run_with_timeout
+from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 logger = logging.getLogger(__name__)
 
