@@ -523,6 +523,13 @@ class OWLSubClassOfAxiom(OWLClassAxiom):
         self._super_class = super_class
         super().__init__(annotations=annotations)
 
+    @property
+    def sub_class(self) -> OWLClassExpression:
+        return self._sub_class
+    @property
+    def super_class(self) -> OWLClassExpression:
+        return self._super_class
+
     def get_sub_class(self) -> OWLClassExpression:
         return self._sub_class
 
@@ -533,7 +540,8 @@ class OWLSubClassOfAxiom(OWLClassAxiom):
         if type(other) is type(self):
             return self._super_class == other._super_class and self._sub_class == other._sub_class \
                 and self._annotations == other._annotations
-        return NotImplemented
+        else:
+            return False
 
     def __hash__(self):
         return hash((self._super_class, self._sub_class, *self._annotations))

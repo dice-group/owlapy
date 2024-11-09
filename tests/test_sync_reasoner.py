@@ -3,7 +3,7 @@ import unittest
 
 from jpype import JDouble
 from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIntersectionOf, OWLNothing, OWLThing, \
-    OWLClassExpression, OWLObjectSomeValuesFrom
+    OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectOneOf
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDisjointClassesAxiom, OWLDeclarationAxiom, OWLClassAssertionAxiom, OWLSubClassOfAxiom, \
     OWLEquivalentClassesAxiom, OWLSubDataPropertyOfAxiom, OWLSubObjectPropertyOfAxiom
@@ -14,6 +14,7 @@ from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.providers import owl_datatype_min_inclusive_restriction
+
 
 NS = 'http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#'
 
@@ -81,6 +82,26 @@ class TestSyncReasoner(unittest.TestCase):
     has_charge_more_than_0_85 = OWLDataSomeValuesFrom(charge, owl_datatype_min_inclusive_restriction(0.85))
     ce = OWLObjectIntersectionOf([nitrogen38, has_charge_more_than_0_85])
     reasoner = SyncReasoner(ontology_path)
+
+    def test_father_dataset(self):
+        ontology_path = "KGs/Family/father.owl"
+        # Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet'
+        owl_reasoners = dict()
+        owl_reasoners["HermiT"] = SyncReasoner(ontology=ontology_path, reasoner="HermiT")
+        owl_reasoners["Pellet"] = SyncReasoner(ontology=ontology_path, reasoner="Pellet")
+        owl_reasoners["JFact"] = SyncReasoner(ontology=ontology_path, reasoner="JFact")
+        owl_reasoners["Openllet"] = SyncReasoner(ontology=ontology_path, reasoner="Openllet")
+
+        for k, reasoner in owl_reasoners.items():
+            exist_haschild_female = OWLObjectSomeValuesFrom(
+                property=OWLObjectProperty('http://example.com/father#hasChild'),
+                filler=OWLClass('http://example.com/father#female'))
+
+            exist_haschild_anna = OWLObjectSomeValuesFrom(property=OWLObjectProperty('http://example.com/father#hasChild'),
+                                                          filler=OWLObjectOneOf(
+                                                              OWLNamedIndividual('http://example.com/father#anna')))
+            assert reasoner.instances(ce=exist_haschild_female) == reasoner.instances(ce=exist_haschild_anna) == {
+                OWLNamedIndividual('http://example.com/father#markus')}
 
     def test_consistency_check(self):
         self.assertEqual(self.reasoner.has_consistent_ontology(), True)
