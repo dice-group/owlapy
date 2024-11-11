@@ -1,8 +1,5 @@
-from owlready2 import owl_named_individual
-
 from .owl_ontology import Ontology
 from .owl_ontology_manager import OntologyManager
-from typing import List
 from .class_expression import OWLClassExpression, OWLClass
 from .owl_individual import OWLNamedIndividual
 from .iri import IRI
@@ -10,6 +7,7 @@ from .owl_axiom import OWLEquivalentClassesAxiom, OWLDataPropertyAssertionAxiom
 from .owl_property import OWLDataProperty
 from .owl_literal import OWLLiteral
 import os
+from typing import List
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
                                path: str = 'predictions',
