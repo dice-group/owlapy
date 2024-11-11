@@ -126,7 +126,6 @@ class OWLOntologyID:
 
 def _check_expression(expr: OWLObject, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     """
-    @TODO:CD: Documentation
     Creates all entities (individuals, classes, properties) that appear in the given (complex) class expression
     and do not exist in the given ontology yet
 
@@ -1035,7 +1034,6 @@ class SyncOntology(AbstractOWLOntology):
         else:
             imports = Imports.EXCLUDED
         return imports
-
     def get_signature(self, include_imports_closure: bool = True):
         """Gets the entities that are in the signature of this ontology.
 
@@ -1045,6 +1043,7 @@ class SyncOntology(AbstractOWLOntology):
         Returns:
             Entities in signature.
         """
+        # @TODO: CD: Is this class method redundant given that we have the individuals_in_signature ?
         return self.mapper.map_(self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
 
     def get_abox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
@@ -1056,7 +1055,6 @@ class SyncOntology(AbstractOWLOntology):
         Returns:
             ABox axioms.
         """
-
         return self.mapper.map_(self.owlapi_ontology.getABoxAxioms(self._get_imports_enum(include_imports_closure)))
 
     def get_tbox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
@@ -1100,7 +1098,14 @@ class SyncOntology(AbstractOWLOntology):
         return int(self.owlapi_ontology.getOntologyID().hashCode())
 
     def __repr__(self):
-        return f'SyncOntology({self.manager}, {self.path}, {self.new})'
+        return (f'SyncOntology:'
+                f'\t|Tbox|={len(self.get_tbox_axioms())}'
+                f'\t|Abox|={len(self.get_abox_axioms())}'
+                f'\t|Individuals|={len(self.individuals_in_signature())}'
+                f'\t|Classes|={len(self.classes_in_signature())}'
+                f'\t|Object Properties|={len(self.object_properties_in_signature())}'
+                f'\t|Data Properties|={len(self.data_properties_in_signature())}'
+                f'\n{self.manager}\tPath:{self.path}\tNew:{self.new}')
 
 
 OWLREADY2_FACET_KEYS = MappingProxyType({

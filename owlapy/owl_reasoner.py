@@ -27,7 +27,7 @@ from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OW
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.utils import LRUCache, run_with_timeout
+from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 logger = logging.getLogger(__name__)
 
@@ -36,37 +36,6 @@ _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
-    __slots__ = '_ontology', '_world', \
-                '_ind_set', '_cls_to_ind', \
-                '_has_prop', 'class_cache', \
-                '_objectsomevalues_cache', '_datasomevalues_cache', '_objectcardinality_cache', \
-                '_property_cache', \
-                '_obj_prop', '_obj_prop_inv', '_data_prop', \
-                '_negation_default', '_sub_properties', \
-                '__warned'
-
-    _ontology: Ontology
-    _world: owlready2.World
-    _cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]]  # Class => individuals
-    _has_prop: Mapping[Type[_P], LRUCache[_P, FrozenSet[OWLNamedIndividual]]]  # Type => Property => individuals
-    _ind_set: FrozenSet[OWLNamedIndividual]
-    # ObjectSomeValuesFrom => individuals
-    _objectsomevalues_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
-    # DataSomeValuesFrom => individuals
-    _datasomevalues_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
-    # ObjectCardinalityRestriction => individuals
-    _objectcardinality_cache: LRUCache[OWLClassExpression, FrozenSet[OWLNamedIndividual]]
-    # ObjectProperty => { individual => individuals }
-    _obj_prop: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
-    # ObjectProperty => { individual => individuals }
-    _obj_prop_inv: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]]
-    # DataProperty => { individual => literals }
-    _data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]]
-    class_cache: bool
-    _property_cache: bool
-    _negation_default: bool
-    _sub_properties: bool
-
     def __init__(self, ontology: AbstractOWLOntology, *, class_cache: bool = True,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
         """Fast instance checker.
@@ -80,36 +49,34 @@ class StructuralReasoner(AbstractOWLReasoner):
             """
         super().__init__(ontology)
         assert isinstance(ontology, Ontology)
-        self._world = ontology._world
-        self._ontology = ontology
-        self.class_cache = class_cache
-        self._property_cache = property_cache
-        self._negation_default = negation_default
-        self._sub_properties = sub_properties
-        self.__warned = 0
+        self._world: owlready2.World = ontology._world
+        self._ontology: Ontology = ontology
+        self.class_cache: bool = class_cache
+        self._property_cache: bool = property_cache
+        self._negation_default: bool = negation_default
+        self._sub_properties: bool = sub_properties
+        self.__warned: int = 0
         self._init()
 
-    def _init(self, cache_size=128):
-
-        individuals = self._ontology.individuals_in_signature()
-        self._ind_set = frozenset(individuals)
-        self._objectsomevalues_cache = LRUCache(maxsize=cache_size)
-        self._datasomevalues_cache = LRUCache(maxsize=cache_size)
-        self._objectcardinality_cache = LRUCache(maxsize=cache_size)
+    def _init(self):
         if self.class_cache:
-            self._cls_to_ind = dict()
+            # Class => individuals
+            self._cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]] = {} 
 
         if self._property_cache:
-            self._obj_prop = dict()
-            self._obj_prop_inv = dict()
-            self._data_prop = dict()
+            # ObjectProperty => { individual => individuals }
+            self._obj_prop: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]] = dict()
+             # ObjectProperty => { individual => individuals }
+            self._obj_prop_inv: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]] = dict()
+            # DataProperty => { individual => literals }
+            self._data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]] = dict() 
         else:
-            self._has_prop = MappingProxyType({
-                OWLDataProperty: LRUCache(maxsize=cache_size),
-                OWLObjectProperty: LRUCache(maxsize=cache_size),
-                OWLObjectInverseOf: LRUCache(maxsize=cache_size),
-            })
-
+            self._has_prop: Mapping[Type[_P], Dict[_P, FrozenSet[OWLNamedIndividual]]] = {
+                OWLDataProperty: {},
+                OWLObjectProperty: {},
+                OWLObjectInverseOf: {},
+            }
+           
     def reset(self):
         """The reset method shall reset any cached state."""
         self._init()
@@ -636,7 +603,8 @@ class StructuralReasoner(AbstractOWLReasoner):
                         opc[s] = set()
                     opc[s] |= {o}
         else:
-            for s in self._ind_set:
+            all_ = frozenset(self._ontology.individuals_in_signature())
+            for s in all_:
                 individuals = set(self.object_property_values(s, pe, not self._sub_properties))
                 if individuals:
                     opc[s] = individuals
@@ -676,8 +644,8 @@ class StructuralReasoner(AbstractOWLReasoner):
                     func = self.data_property_values
                 else:
                     func = self.object_property_values
-
-                for s in self._ind_set:
+                all_ = frozenset(self._ontology.individuals_in_signature())
+                for s in all_:
                     try:
                         next(iter(func(s, pe, not self._sub_properties)))
                         subs |= {s}
@@ -782,9 +750,6 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     @_find_instances.register
     def _(self, ce: OWLObjectSomeValuesFrom) -> FrozenSet[OWLNamedIndividual]:
-        if ce in self._objectsomevalues_cache:
-            return self._objectsomevalues_cache[ce]
-
         p = ce.get_property()
         assert isinstance(p, OWLObjectPropertyExpression)
         if not self._property_cache and ce.get_filler().is_owl_thing():
@@ -794,13 +759,12 @@ class StructuralReasoner(AbstractOWLReasoner):
 
         ind = self._find_some_values(p, filler_ind)
 
-        self._objectsomevalues_cache[ce] = ind
         return ind
 
     @_find_instances.register
     def _(self, ce: OWLObjectComplementOf) -> FrozenSet[OWLNamedIndividual]:
         if self._negation_default:
-            all_ = self._ind_set
+            all_ = frozenset(self._ontology.individuals_in_signature())
             complement_ind = self._find_instances(ce.get_operand())
             return all_ ^ complement_ind
         else:
@@ -836,7 +800,7 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     @_find_instances.register
     def _(self, ce: OWLObjectMaxCardinality) -> FrozenSet[OWLNamedIndividual]:
-        all_ = self._ind_set
+        all_ = frozenset(self._ontology.individuals_in_signature())
         min_ind = self._find_instances(OWLObjectMinCardinality(cardinality=ce.get_cardinality() + 1,
                                                                property=ce.get_property(),
                                                                filler=ce.get_filler()))
@@ -847,9 +811,6 @@ class StructuralReasoner(AbstractOWLReasoner):
         return self._get_instances_object_card_restriction(ce)
 
     def _get_instances_object_card_restriction(self, ce: OWLObjectCardinalityRestriction):
-        if ce in self._objectcardinality_cache:
-            return self._objectcardinality_cache[ce]
-
         p = ce.get_property()
         assert isinstance(p, OWLObjectPropertyExpression)
 
@@ -871,14 +832,10 @@ class StructuralReasoner(AbstractOWLReasoner):
 
         ind = self._find_some_values(p, filler_ind, min_count=min_count, max_count=max_count)
 
-        self._objectcardinality_cache[ce] = ind
         return ind
 
     @_find_instances.register
     def _(self, ce: OWLDataSomeValuesFrom) -> FrozenSet[OWLNamedIndividual]:
-        if ce in self._datasomevalues_cache:
-            return self._datasomevalues_cache[ce]
-
         pe = ce.get_property()
         filler = ce.get_filler()
         assert isinstance(pe, OWLDataProperty)
@@ -967,7 +924,6 @@ class StructuralReasoner(AbstractOWLReasoner):
             raise ValueError
 
         r = frozenset(ind)
-        self._datasomevalues_cache[ce] = r
         return r
 
     @_find_instances.register
@@ -1057,53 +1013,9 @@ class SyncReasoner(AbstractOWLReasoner):
 
         self._owlapi_manager = self.manager.get_owlapi_manager()
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
-        # super().__init__(self.ontology)
         self.mapper = self.ontology.mapper
-        from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
-                                                 InferredEquivalentClassAxiomGenerator,
-                                                 InferredDisjointClassesAxiomGenerator,
-                                                 InferredEquivalentDataPropertiesAxiomGenerator,
-                                                 InferredEquivalentObjectPropertyAxiomGenerator,
-                                                 InferredInverseObjectPropertiesAxiomGenerator,
-                                                 InferredSubDataPropertyAxiomGenerator,
-                                                 InferredSubObjectPropertyAxiomGenerator,
-                                                 InferredDataPropertyCharacteristicAxiomGenerator,
-                                                 InferredObjectPropertyCharacteristicAxiomGenerator)
-
-        self.inference_types_mapping = {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
-                                        "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
-                                        "InferredDisjointClassesAxiomGenerator": InferredDisjointClassesAxiomGenerator(),
-                                        "InferredEquivalentClassAxiomGenerator": InferredEquivalentClassAxiomGenerator(),
-                                        "InferredInverseObjectPropertiesAxiomGenerator": InferredInverseObjectPropertiesAxiomGenerator(),
-                                        "InferredEquivalentDataPropertiesAxiomGenerator": InferredEquivalentDataPropertiesAxiomGenerator(),
-                                        "InferredEquivalentObjectPropertyAxiomGenerator": InferredEquivalentObjectPropertyAxiomGenerator(),
-                                        "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
-                                        "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
-                                        "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
-                                        "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator(),
-                                        }
-
-        # () Create a reasoner using the ontology
-        if reasoner == "HermiT":
-            from org.semanticweb.HermiT import ReasonerFactory
-            self._owlapi_reasoner = ReasonerFactory().createReasoner(self._owlapi_ontology)
-            assert self._owlapi_reasoner.getReasonerName() == "HermiT"
-        elif reasoner == "JFact":
-            from uk.ac.manchester.cs.jfact import JFactFactory
-            self._owlapi_reasoner = JFactFactory().createReasoner(self._owlapi_ontology)
-        elif reasoner == "Pellet":
-            from openllet.owlapi import PelletReasonerFactory
-            self._owlapi_reasoner = PelletReasonerFactory().createReasoner(self._owlapi_ontology)
-        elif reasoner == "Openllet":
-            from openllet.owlapi import OpenlletReasonerFactory
-            self._owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(self._owlapi_ontology)
-        elif reasoner == "Structural":
-            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
-            self._owlapi_reasoner = StructuralReasonerFactory().createReasoner(self._owlapi_ontology)
-        else:
-            raise NotImplementedError("Not implemented")
-
-        self.reasoner = reasoner
+        self.inference_types_mapping = import_and_include_axioms_generators()
+        self._owlapi_reasoner = initialize_reasoner(reasoner,self._owlapi_ontology)
 
     def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
@@ -1422,11 +1334,11 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(pe) for pe in
                     self._owlapi_reasoner.getDisjointDataProperties(self.mapper.map_(p)).getFlattened()]
 
-    def types(self, i: OWLNamedIndividual, direct: bool = False):
+    def types(self, individual: OWLNamedIndividual, direct: bool = False):
         """Gets the named classes which are (potentially direct) types of the specified named individual.
 
         Args:
-            i: The individual whose types are to be retrieved.
+            individual: The individual whose types are to be retrieved.
             direct: Specifies if the direct types should be retrieved (True), or if all types should be retrieved
                 (False).
 
@@ -1436,7 +1348,7 @@ class SyncReasoner(AbstractOWLReasoner):
             entails ClassAssertion(C, ind).
         """
         yield from [self.mapper.map_(ind) for ind in
-                    self._owlapi_reasoner.getTypes(self.mapper.map_(i), direct).getFlattened()]
+                    self._owlapi_reasoner.getTypes(self.mapper.map_(individual), direct).getFlattened()]
 
     def has_consistent_ontology(self) -> bool:
         """
@@ -1588,3 +1500,48 @@ class SyncReasoner(AbstractOWLReasoner):
 
     def get_root_ontology(self) -> AbstractOWLOntology:
         return self.ontology
+
+def initialize_reasoner(reasoner:str, owlapi_ontology):
+    # () Create a reasoner using the ontology
+    if reasoner == "HermiT":
+        from org.semanticweb.HermiT import ReasonerFactory
+        owlapi_reasoner = ReasonerFactory().createReasoner(owlapi_ontology)
+        assert owlapi_reasoner.getReasonerName() == "HermiT"
+    elif reasoner == "JFact":
+        from uk.ac.manchester.cs.jfact import JFactFactory
+        owlapi_reasoner = JFactFactory().createReasoner(owlapi_ontology)
+    elif reasoner == "Pellet":
+        from openllet.owlapi import PelletReasonerFactory
+        owlapi_reasoner = PelletReasonerFactory().createReasoner(owlapi_ontology)
+    elif reasoner == "Openllet":
+        from openllet.owlapi import OpenlletReasonerFactory
+        owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(owlapi_ontology)
+    elif reasoner == "Structural":
+        from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
+        owlapi_reasoner = StructuralReasonerFactory().createReasoner(owlapi_ontology)
+    else:
+        raise NotImplementedError("Not implemented")
+    return owlapi_reasoner
+def import_and_include_axioms_generators():
+    from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
+                                             InferredEquivalentClassAxiomGenerator,
+                                             InferredDisjointClassesAxiomGenerator,
+                                             InferredEquivalentDataPropertiesAxiomGenerator,
+                                             InferredEquivalentObjectPropertyAxiomGenerator,
+                                             InferredInverseObjectPropertiesAxiomGenerator,
+                                             InferredSubDataPropertyAxiomGenerator,
+                                             InferredSubObjectPropertyAxiomGenerator,
+                                             InferredDataPropertyCharacteristicAxiomGenerator,
+                                             InferredObjectPropertyCharacteristicAxiomGenerator)
+
+    return {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
+                                    "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
+                                    "InferredDisjointClassesAxiomGenerator": InferredDisjointClassesAxiomGenerator(),
+                                    "InferredEquivalentClassAxiomGenerator": InferredEquivalentClassAxiomGenerator(),
+                                    "InferredInverseObjectPropertiesAxiomGenerator": InferredInverseObjectPropertiesAxiomGenerator(),
+                                    "InferredEquivalentDataPropertiesAxiomGenerator": InferredEquivalentDataPropertiesAxiomGenerator(),
+                                    "InferredEquivalentObjectPropertyAxiomGenerator": InferredEquivalentObjectPropertyAxiomGenerator(),
+                                    "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
+                                    "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
+                                    "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
+                                    "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator()}

@@ -35,11 +35,12 @@ class OWLNamedIndividual(OWLIndividual, OWLEntity):
             self._iri = iri
         else:
             self._iri = IRI.create(iri)
-
     @property
     def iri(self) -> IRI:
         return self._iri
-
     @property
     def str(self):
         return self._iri.as_str()
+    @property
+    def reminder(self):
+        return self._iri.reminder

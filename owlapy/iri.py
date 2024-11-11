@@ -45,6 +45,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         else:
             assert namespace[-1] in ("/", ":", "#"), "It should be a valid IRI based on /, :, and #"
         import sys
+        # https://docs.python.org/3.2/library/sys.html?highlight=sys.intern#sys.intern
         self._namespace = sys.intern(namespace)
         self._remainder = remainder
 
@@ -94,7 +95,8 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._namespace is other._namespace and self._remainder == other._remainder
-        return NotImplemented
+        else:
+            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
 
     def __hash__(self):
         return hash((self._namespace, self._remainder))
