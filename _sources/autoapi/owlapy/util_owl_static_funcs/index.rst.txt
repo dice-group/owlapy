@@ -10,6 +10,7 @@ Functions
 .. autoapisummary::
 
    owlapy.util_owl_static_funcs.save_owl_class_expressions
+   owlapy.util_owl_static_funcs.csv_to_rdf_kg
 
 
 Module Contents
@@ -45,5 +46,33 @@ Module Contents
    >>> expr1 = OWLClassExpression("SomeExpression1")
    >>> expr2 = OWLClassExpression("SomeExpression2")
    >>> save_owl_class_expressions([expr1, expr2], path="my_ontology.owl", rdf_format="rdfxml")
+
+
+.. py:function:: csv_to_rdf_kg(path_csv: str = None, path_kg: str = None, namespace: str = None)
+
+   Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.
+
+   :param path_csv: X
+   :type path_csv: str
+   :param path_kg: X
+   :type path_kg: str
+   :param namespace: X
+   :type namespace: str
+
+   :raises AssertionError:
+
+   .. rubric:: Example
+
+   >>> from sklearn.datasets import load_iris
+   >>> import pandas as pd
+   # Load the dataset
+   >>> data = load_iris()
+   # Convert to DataFrame
+   >>> df = pd.DataFrame(data.data, columns=data.feature_names)
+   >>> df['target'] = data.target
+   # Save as CSV
+   >>> df.to_csv("iris_dataset.csv", index=False)
+   >>> print("Dataset saved as iris_dataset.csv")
+   >>> csv_to_rdf_kg("iris_dataset.csv")
 
 
