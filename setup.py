@@ -10,6 +10,7 @@ setup(
     include_package_data=True,
     package_data={'owlapy': ['jar_dependencies/*.jar'],},
     install_requires=[
+        "scikit-learn>=1.5.2"
         "pandas>=1.5.0",
         "requests>=2.32.3",
         "rdflib>=6.0.2",
