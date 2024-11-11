@@ -1037,6 +1037,9 @@ class OWLDataPropertyAssertionAxiom(OWLPropertyAssertionAxiom[OWLDataPropertyExp
 
     def __init__(self, subject: OWLIndividual, property_: OWLDataPropertyExpression, object_: OWLLiteral,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        assert isinstance(subject,OWLIndividual), f"subject must be an OWLIndividual. Currently, {subject} of {type(subject)}"
+        assert isinstance(property_,OWLDataPropertyExpression), f"property_ must be an OWLDataPropertyExpression. Currently, {type(property_)}"
+        assert isinstance(object_,OWLLiteral), f"object_ must be an OWLLiteral. Currently, {type(object_)}"
         super().__init__(subject, property_, object_, annotations)
 
 
