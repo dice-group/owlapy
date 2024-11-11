@@ -62,8 +62,6 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
         ontology.add_axiom(equivalent_classes_axiom)
     ontology.save(path=path, inplace=False, rdf_format=rdf_format)
 
-
-
 def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
     """
     Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.
@@ -107,7 +105,6 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
         print(row.to_dict())
         i=OWLNamedIndividual(iri=f"{namespace}#{str(index)}")
         for column_name, value in row.to_dict().items():
-
             if isinstance(value, float):
                 axiom = OWLDataPropertyAssertionAxiom(subject=i,
                                                       property_=OWLDataProperty(iri=f"{namespace}#ID_{str(column_name)}"),
@@ -116,5 +113,4 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
 
             else:
                 raise NotImplementedError(f"How to represent value={value} has not been decided")
-
     ontology.save(path=path_kg, inplace=False)

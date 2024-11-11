@@ -1,10 +1,12 @@
-from owlapy.util_owl_static_funcs import save_owl_class_expressions
+from owlapy.util_owl_static_funcs import save_owl_class_expressions, csv_to_rdf_kg
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
 from owlapy.owl_property import OWLObjectProperty
 from owlapy import owl_expression_to_sparql, owl_expression_to_dl
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual, IRI
+from sklearn.datasets import load_iris
+import pandas as pd
 import rdflib
 
 class TestRunningExamples:
@@ -23,3 +25,12 @@ class TestRunningExamples:
                                    rdf_format= 'rdfxml')
         g=rdflib.Graph().parse("owl_class_expressions.owl")
         assert len(g)==22
+
+    def test_csv_to_kg(self):
+        data = load_iris()
+        # Convert to DataFrame
+        df = pd.DataFrame(data.data, columns=data.feature_names)
+        df['target'] = data.target
+        # Save as CSV
+        df.to_csv("iris_dataset.csv", index=False)
+        csv_to_rdf_kg("iris_dataset.csv", path_kg="iris_kg.owl", namespace="http://example.com/society")
