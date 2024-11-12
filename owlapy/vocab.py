@@ -84,6 +84,13 @@ class XSDVocabulary(_Vocabulary, Enum, metaclass=_meta_Enum):
     DATE_TIME: Final = "dateTime"  #:
     DATE_TIME_STAMP: Final = "dateTimeStamp"  #:
     DURATION: Final = "duration"  #:
+    TIME: Final = "time"
+    GYEARMONTH: Final = "gYearMonth"
+    GMONTHDAY: Final = "gMonthDay"
+    GYEAR: Final = "gYear"
+    GMONTH: Final = "gMonth"
+    GDAY: Final = "gDay"
+
 
 
 _X = TypeVar('_X')
