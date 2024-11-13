@@ -10,6 +10,7 @@ from datetime import datetime, date, time
 from pandas import Timedelta
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary
 from .owl_property import OWLObjectProperty, OWLDataProperty
+import re
 
 #: the built-in top object property
 OWLTopObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.iri)
@@ -63,10 +64,10 @@ TimeOWLDatatype: Final = OWLDatatype(XSDVocabulary.TIME)
 GYearMonthOWLDatatype: Final = OWLDatatype(XSDVocabulary.GYEARMONTH)
 
 #: An object representing the gMonthDay datatype.
-GMonthDayDatatype: Final = OWLDatatype(XSDVocabulary.GMONTHDAY)
+GMonthDayOWLDatatype: Final = OWLDatatype(XSDVocabulary.GMONTHDAY)
 
 #: An object representing the gYear datatype.
-GYearDatatype: Final = OWLDatatype(XSDVocabulary.GYEAR)
+GYearOWLDatatype: Final = OWLDatatype(XSDVocabulary.GYEAR)
 
 #: An object representing the gMonth datatype.
 GMonthOWLDatatype: Final = OWLDatatype(XSDVocabulary.GMONTH)
@@ -148,6 +149,18 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
                 return super().__new__(_OWLLiteralImplNonPositiveInteger)
             elif type_ == NonNegativeIntegerOWLDatatype:
                 return super().__new__(_OWLLiteralImplNonNegativeInteger)
+            elif type_ == TimeOWLDatatype:
+                return super().__new__(_OWLLiteralImplTime)
+            elif type_ == GYearMonthOWLDatatype:
+                return super().__new__(_OWLLiteralImplGYearMonth)
+            elif type_ == GMonthDayOWLDatatype:
+                return super().__new__(_OWLLiteralImplGMonthDay)
+            elif type_ == GYearOWLDatatype:
+                return super().__new__(_OWLLiteralImplGYear)
+            elif type_ == GMonthOWLDatatype:
+                return super().__new__(_OWLLiteralImplGMonth)
+            elif type_ == GDayOWLDatatype:
+                return super().__new__(_OWLLiteralImplGDay)
             else:
                 return super().__new__(_OWLLiteralImpl)
         # If datatype not specified, find which literal type fits the value best
@@ -169,6 +182,8 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
             return super().__new__(_OWLLiteralImplDate)
         elif isinstance(value, Timedelta):
             return super().__new__(_OWLLiteralImplDuration)
+        elif isinstance(value, time):
+            return super().__new__(_OWLLiteralImplTime)
         raise NotImplementedError(value)
 
     def get_literal(self) -> str:
@@ -296,10 +311,84 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
         """
         raise ValueError
 
+    def is_time(self) -> bool:
+        """Whether this literal is typed as time."""
+        return False
+
+    def parse_time(self) -> time:
+        """Parses the lexical value of this literal into time. The lexical value of this literal should be in the
+        lexical space of the time datatype ("http://www.w3.org/2001/XMLSchema#time").
+
+        Returns:
+            A time value that is represented by this literal.
+        """
+        raise ValueError
+
+    def is_gyearmonth(self) -> bool:
+        """Whether this literal is typed as gYearMonth."""
+        return False
+
+    def parse_gyearmonth(self) -> tuple:
+        """Parses the lexical value of this literal into gYearMonth.
+
+        Returns:
+            A tuple value of length 2 that is represented by this literal.
+        """
+        raise ValueError
+
+    def is_gmonthday(self) -> bool:
+        """Whether this literal is typed as gMonthDay."""
+        return False
+
+    def parse_gmonthday(self) -> tuple:
+        """Parses the lexical value of this literal into gMonthDay.
+
+        Returns:
+            A tuple value of length 2 that is represented by this literal.
+        """
+        raise ValueError
+
+    def is_gyear(self) -> bool:
+        """Whether this literal is typed as gYear."""
+        return False
+
+    def parse_gyear(self) -> tuple:
+        """Parses the lexical value of this literal into gYear.
+
+        Returns:
+            A integer value that is represented by this literal.
+        """
+        raise ValueError
+
+    def is_gmonth(self) -> bool:
+        """Whether this literal is typed as gMonth."""
+        return False
+
+    def parse_gmonth(self) -> tuple:
+        """Parses the lexical value of this literal into gMonth.
+
+        Returns:
+            A integer value that is represented by this literal.
+        """
+        raise ValueError
+
+    def is_gday(self) -> bool:
+        """Whether this literal is typed as gDay."""
+        return False
+
+    def parse_gday(self) -> tuple:
+        """Parses the lexical value of this literal into gDay.
+
+        Returns:
+            A integer value that is represented by this literal.
+        """
+        raise ValueError
+
     def has_float_special_value(self) -> bool:
         """Whether this literal is using a float special value i.e. v ∈ ["NaN", "INF", "-INF"], defined by
         and enumeration class (not pure string value)."""
         return False
+
 
     # noinspection PyMethodMayBeStatic
     def is_literal(self) -> bool:
@@ -510,6 +599,7 @@ class _OWLLiteralImplBoolean(OWLLiteral):
             from distutils.util import strtobool
             value = bool(strtobool(value))
         self._v = value
+        self._type = type_
 
     def get_literal(self) -> str:
         """Gets the lexical value of this literal. Note that the language tag is not included.
@@ -555,6 +645,7 @@ class _OWLLiteralImplString(OWLLiteral):
         if not isinstance(value, str):
             value = str(value)
         self._v = value
+        self._type = type_
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -590,22 +681,10 @@ class _OWLLiteralImplString(OWLLiteral):
 # ================================================== Dates and times ==================================================
 
 
-@total_ordering
-class _OWLDateAndTimeLiteralInterface(OWLLiteral):
+class _OWLLiteralBasicsInterface(OWLLiteral):
     __slots__ = '_v', '_type'
-    _v: Union[datetime, date, time, Timedelta]
+    _v: Union[datetime, date, time, Timedelta, tuple, int]
     _type: OWLDatatype
-
-    def __init__(self, value, type_=None):
-        if isinstance(value, datetime) or type_ is DateTimeOWLDatatype:
-            value = datetime.fromisoformat(value) if isinstance(value, str) else value
-        if isinstance(value, date) or type_ is DateOWLDatatype:
-            value = date.fromisoformat(value) if isinstance(value, str) else value
-        if isinstance(value, time) or type_ is TimeOWLDatatype:
-            value = time.fromisoformat(value) if isinstance(value, str) else value
-        if isinstance(value, Timedelta) or type_ is DurationOWLDatatype:
-            value = Timedelta(value) if isinstance(value, str) else value
-        self._v = value
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -648,6 +727,26 @@ class _OWLDateAndTimeLiteralInterface(OWLLiteral):
 
 
 @total_ordering
+class _OWLDateAndTimeLiteralInterface(_OWLLiteralBasicsInterface):
+    __slots__ = '_v', '_type'
+    _v: Union[datetime, date, time, Timedelta]
+    _type: OWLDatatype
+
+    def __init__(self, value, type_=None):
+        if isinstance(value, datetime) or type_ is DateTimeOWLDatatype:
+            value = datetime.fromisoformat(value) if isinstance(value, str) else value
+        if isinstance(value, date) or type_ is DateOWLDatatype:
+            value = date.fromisoformat(value) if isinstance(value, str) else value
+        if isinstance(value, time) or type_ is TimeOWLDatatype:
+            value = time.fromisoformat(value) if isinstance(value, str) else value
+        if isinstance(value, Timedelta) or type_ is DurationOWLDatatype:
+            value = Timedelta(value) if isinstance(value, str) else value
+        assert type(value) is [datetime, date, time, Timedelta]
+        self._v = value
+        self._type = type_
+
+
+@total_ordering
 class _OWLLiteralImplDate(_OWLDateAndTimeLiteralInterface):
 
     def __init__(self, value, type_=DateOWLDatatype):
@@ -657,7 +756,6 @@ class _OWLLiteralImplDate(_OWLDateAndTimeLiteralInterface):
         return True
 
     def parse_date(self) -> date:
-        # documented in parent
         return self._v
 
 
@@ -671,16 +769,11 @@ class _OWLLiteralImplDateTime(_OWLDateAndTimeLiteralInterface):
         return True
 
     def parse_datetime(self) -> datetime:
-        # documented in parent
         return self._v
 
 
 @total_ordering
 class _OWLLiteralImplDuration(_OWLDateAndTimeLiteralInterface):
-    __slots__ = '_v'
-
-    _v: Timedelta
-
     def __init__(self, value, type_=DurationOWLDatatype):
         super().__init__(value, type_)
 
@@ -691,7 +784,107 @@ class _OWLLiteralImplDuration(_OWLDateAndTimeLiteralInterface):
         return True
 
     def parse_duration(self) -> Timedelta:
-        # documented in parent
+        return self._v
+
+
+@total_ordering
+class _OWLLiteralImplTime(_OWLDateAndTimeLiteralInterface):
+
+    def __init__(self, value, type_=TimeOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_time(self) -> bool:
+        return True
+
+    def parse_time(self) -> datetime:
+        return self._v
+
+
+@total_ordering
+class _OWLGDatesInterface(_OWLLiteralBasicsInterface):
+    __slots__ = '_v', '_type'
+    # represent dual values as tuple of integers and single values as integers
+    _v: Union[tuple, int]
+    _type: OWLDatatype
+
+    def __init__(self, value, type_=None):
+
+        if isinstance(value, tuple) or type_ in [GYearMonthOWLDatatype, GMonthDayOWLDatatype]:
+            if isinstance(value, tuple):
+                assert len(value) == 2
+            if isinstance(value, str):
+                # expected string input examples: "2001-10", "--11-15"
+                splits = value.lstrip("-").split("-")
+                value = (int(splits[0]), int(splits[1][:2]))
+            else:
+                raise ValueError("Unsupported value type")
+        if isinstance(value, str) and type_ in [GYearOWLDatatype, GMonthOWLDatatype, GDayOWLDatatype]:
+            # expected string input examples: "2025", "-2001", "--05", "---01", "---31"
+            first_numerical_value = r'^\d+'
+            value = int(re.match(first_numerical_value, value.lstrip("-")).group())
+
+        assert type(value) in [tuple, int]
+        self._v = value
+        self._type = type_
+
+
+@total_ordering
+class _OWLLiteralImplGYearMonth(_OWLGDatesInterface):
+    def __init__(self, value, type_=GYearMonthOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_gyearmonth(self) -> bool:
+        return True
+
+    def parse_gyearmonth(self) -> tuple:
+        return self._v
+
+
+@total_ordering
+class _OWLLiteralImplGMonthDay(_OWLGDatesInterface):
+    def __init__(self, value, type_=GMonthDayOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_gmonthday(self) -> bool:
+        return True
+
+    def parse_gmonthday(self) -> tuple:
+        return self._v
+
+
+@total_ordering
+class _OWLLiteralImplGYear(_OWLGDatesInterface):
+    def __init__(self, value, type_=GYearOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_gyear(self) -> bool:
+        return True
+
+    def parse_gyear(self) -> int:
+        return self._v
+
+
+@total_ordering
+class _OWLLiteralImplGMonth(_OWLGDatesInterface):
+    def __init__(self, value, type_=GMonthOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_gmonth(self) -> bool:
+        return True
+
+    def parse_gmonth(self) -> int:
+        return self._v
+
+
+@total_ordering
+class _OWLLiteralImplGDay(_OWLGDatesInterface):
+    def __init__(self, value, type_=GDayOWLDatatype):
+        super().__init__(value, type_)
+
+    def is_gday(self) -> bool:
+        return True
+
+    def parse_gday(self) -> int:
         return self._v
 
 
