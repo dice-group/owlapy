@@ -741,7 +741,7 @@ class _OWLDateAndTimeLiteralInterface(_OWLLiteralBasicsInterface):
             value = time.fromisoformat(value) if isinstance(value, str) else value
         if isinstance(value, Timedelta) or type_ is DurationOWLDatatype:
             value = Timedelta(value) if isinstance(value, str) else value
-        assert type(value) is [datetime, date, time, Timedelta]
+        assert type(value) in [datetime, date, time, Timedelta]
         self._v = value
         self._type = type_
 
