@@ -550,7 +550,8 @@ class DLSyntaxParserTest(unittest.TestCase):
         self.assertEqual(p, c)
 
         p = self.parser.parse_expression('∃ hasFifeExamplesOfAcenthrylenes.{true ⊔ false ⊔ "false"^^xsd:boolean}')
-        filler = OWLDataOneOf((OWLLiteral(True), OWLLiteral(False), OWLLiteral(False)))
+        filler = OWLDataOneOf((OWLLiteral(True, BooleanOWLDatatype), OWLLiteral(False, BooleanOWLDatatype),
+                               OWLLiteral(False, BooleanOWLDatatype)))
         c = OWLDataSomeValuesFrom(self.has_fife_examples, filler)
         self.assertEqual(p, c)
 
