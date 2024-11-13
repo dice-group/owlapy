@@ -14,21 +14,33 @@ Attributes
 
 .. autoapisummary::
 
-   owlapy.owl_literal.Literals
    owlapy.owl_literal.OWLTopObjectProperty
    owlapy.owl_literal.OWLBottomObjectProperty
    owlapy.owl_literal.OWLTopDataProperty
    owlapy.owl_literal.OWLBottomDataProperty
    owlapy.owl_literal.DoubleOWLDatatype
+   owlapy.owl_literal.FloatOWLDatatype
+   owlapy.owl_literal.DecimalOWLDatatype
    owlapy.owl_literal.IntegerOWLDatatype
+   owlapy.owl_literal.NonNegativeIntegerOWLDatatype
+   owlapy.owl_literal.NonPositiveIntegerOWLDatatype
+   owlapy.owl_literal.NegativeIntegerOWLDatatype
+   owlapy.owl_literal.PositiveIntegerOWLDatatype
    owlapy.owl_literal.BooleanOWLDatatype
    owlapy.owl_literal.StringOWLDatatype
    owlapy.owl_literal.DateOWLDatatype
+   owlapy.owl_literal.TimeOWLDatatype
+   owlapy.owl_literal.GYearMonthOWLDatatype
+   owlapy.owl_literal.GMonthDayOWLDatatype
+   owlapy.owl_literal.GYearOWLDatatype
+   owlapy.owl_literal.GMonthOWLDatatype
+   owlapy.owl_literal.GDayOWLDatatype
    owlapy.owl_literal.DateTimeOWLDatatype
    owlapy.owl_literal.DurationOWLDatatype
    owlapy.owl_literal.TopOWLDatatype
    owlapy.owl_literal.NUMERIC_DATATYPES
    owlapy.owl_literal.TIME_DATATYPES
+   owlapy.owl_literal.Literals
 
 
 Classes
@@ -36,11 +48,118 @@ Classes
 
 .. autoapisummary::
 
+   owlapy.owl_literal.FloatSpecialValue
    owlapy.owl_literal.OWLLiteral
 
 
 Module Contents
 ---------------
+
+.. py:data:: OWLTopObjectProperty
+   :type:  Final
+
+.. py:data:: OWLBottomObjectProperty
+   :type:  Final
+
+.. py:data:: OWLTopDataProperty
+   :type:  Final
+
+.. py:data:: OWLBottomDataProperty
+   :type:  Final
+
+.. py:data:: DoubleOWLDatatype
+   :type:  Final
+
+.. py:data:: FloatOWLDatatype
+   :type:  Final
+
+.. py:data:: DecimalOWLDatatype
+   :type:  Final
+
+.. py:data:: IntegerOWLDatatype
+   :type:  Final
+
+.. py:data:: NonNegativeIntegerOWLDatatype
+   :type:  Final
+
+.. py:data:: NonPositiveIntegerOWLDatatype
+   :type:  Final
+
+.. py:data:: NegativeIntegerOWLDatatype
+   :type:  Final
+
+.. py:data:: PositiveIntegerOWLDatatype
+   :type:  Final
+
+.. py:data:: BooleanOWLDatatype
+   :type:  Final
+
+.. py:data:: StringOWLDatatype
+   :type:  Final
+
+.. py:data:: DateOWLDatatype
+   :type:  Final
+
+.. py:data:: TimeOWLDatatype
+   :type:  Final
+
+.. py:data:: GYearMonthOWLDatatype
+   :type:  Final
+
+.. py:data:: GMonthDayOWLDatatype
+   :type:  Final
+
+.. py:data:: GYearOWLDatatype
+   :type:  Final
+
+.. py:data:: GMonthOWLDatatype
+   :type:  Final
+
+.. py:data:: GDayOWLDatatype
+   :type:  Final
+
+.. py:data:: DateTimeOWLDatatype
+   :type:  Final
+
+.. py:data:: DurationOWLDatatype
+   :type:  Final
+
+.. py:data:: TopOWLDatatype
+   :type:  Final
+
+.. py:data:: NUMERIC_DATATYPES
+   :type:  Final[Set[owlapy.owl_datatype.OWLDatatype]]
+
+.. py:data:: TIME_DATATYPES
+   :type:  Final[Set[owlapy.owl_datatype.OWLDatatype]]
+
+.. py:class:: FloatSpecialValue
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+
+   .. py:attribute:: NAN
+      :value: 'Nan'
+
+
+
+   .. py:attribute:: POS_INF
+      :value: 'INF'
+
+
+
+   .. py:attribute:: NEG_INF
+      :value: '-INF'
+
+
+
+   .. py:method:: __str__()
+
 
 .. py:data:: Literals
 
@@ -50,8 +169,8 @@ Module Contents
 
 
    Literals represent data values such as particular strings or integers. They are analogous to typed RDF
-   literals and can also be understood as individuals denoting
-   data values. Each literal consists of a lexical form, which is a string, and a datatype.
+   literals and can also be understood as individuals denoting data values.
+   Each literal consists of a lexical form, which is a string, and a datatype.
 
     (https://www.w3.org/TR/owl2-syntax/#Literals)
 
@@ -100,9 +219,39 @@ Module Contents
    .. py:method:: parse_double() -> float
 
       Parses the lexical value of this literal into a double. The lexical value of this literal should be in the
-      lexical space of the double datatype ("http://www.w3.org/2001/XMLSchema#double").
+      lexical space of the double datatype ("https://www.w3.org/TR/owl2-syntax/#Floating-Point_Numbers").
 
       :returns: A double value that is represented by this literal.
+
+
+
+   .. py:method:: is_float() -> bool
+
+      Whether this literal is typed as float.
+
+
+
+   .. py:method:: parse_float() -> float
+
+      Parses the lexical value of this literal into a float. The lexical value of this literal should be in the
+      lexical space of the float datatype ("https://www.w3.org/TR/owl2-syntax/#Floating-Point_Numbers").
+
+      :returns: A float value that is represented by this literal.
+
+
+
+   .. py:method:: is_decimal() -> bool
+
+      Whether this literal is typed as decimal.
+
+
+
+   .. py:method:: parse_decimal() -> decimal.Decimal
+
+      Parses the lexical value of this literal into a decimal. The lexical value of this literal should be in the
+      lexical space of the decimal datatype ("https://www.w3.org/TR/owl2-syntax/#Floating-Point_Numbers").
+
+      :returns: A decimal value that is represented by this literal.
 
 
 
@@ -181,6 +330,98 @@ Module Contents
 
 
 
+   .. py:method:: is_time() -> bool
+
+      Whether this literal is typed as time.
+
+
+
+   .. py:method:: parse_time() -> datetime.time
+
+      Parses the lexical value of this literal into time. The lexical value of this literal should be in the
+      lexical space of the time datatype ("http://www.w3.org/2001/XMLSchema#time").
+
+      :returns: A time value that is represented by this literal.
+
+
+
+   .. py:method:: is_gyearmonth() -> bool
+
+      Whether this literal is typed as gYearMonth.
+
+
+
+   .. py:method:: parse_gyearmonth() -> tuple
+
+      Parses the lexical value of this literal into gYearMonth.
+
+      :returns: A tuple value of length 2 that is represented by this literal.
+
+
+
+   .. py:method:: is_gmonthday() -> bool
+
+      Whether this literal is typed as gMonthDay.
+
+
+
+   .. py:method:: parse_gmonthday() -> tuple
+
+      Parses the lexical value of this literal into gMonthDay.
+
+      :returns: A tuple value of length 2 that is represented by this literal.
+
+
+
+   .. py:method:: is_gyear() -> bool
+
+      Whether this literal is typed as gYear.
+
+
+
+   .. py:method:: parse_gyear() -> tuple
+
+      Parses the lexical value of this literal into gYear.
+
+      :returns: A integer value that is represented by this literal.
+
+
+
+   .. py:method:: is_gmonth() -> bool
+
+      Whether this literal is typed as gMonth.
+
+
+
+   .. py:method:: parse_gmonth() -> tuple
+
+      Parses the lexical value of this literal into gMonth.
+
+      :returns: A integer value that is represented by this literal.
+
+
+
+   .. py:method:: is_gday() -> bool
+
+      Whether this literal is typed as gDay.
+
+
+
+   .. py:method:: parse_gday() -> tuple
+
+      Parses the lexical value of this literal into gDay.
+
+      :returns: A integer value that is represented by this literal.
+
+
+
+   .. py:method:: has_float_special_value() -> bool
+
+      Whether this literal is using a float special value i.e. v ∈ ["NaN", "INF", "-INF"], defined by
+      and enumeration class (not pure string value).
+
+
+
    .. py:method:: is_literal() -> bool
 
       :returns: true if the annotation value is a literal
@@ -205,46 +446,4 @@ Module Contents
       :returns: The OWLDatatype that types this literal.
 
 
-
-.. py:data:: OWLTopObjectProperty
-   :type:  Final
-
-.. py:data:: OWLBottomObjectProperty
-   :type:  Final
-
-.. py:data:: OWLTopDataProperty
-   :type:  Final
-
-.. py:data:: OWLBottomDataProperty
-   :type:  Final
-
-.. py:data:: DoubleOWLDatatype
-   :type:  Final
-
-.. py:data:: IntegerOWLDatatype
-   :type:  Final
-
-.. py:data:: BooleanOWLDatatype
-   :type:  Final
-
-.. py:data:: StringOWLDatatype
-   :type:  Final
-
-.. py:data:: DateOWLDatatype
-   :type:  Final
-
-.. py:data:: DateTimeOWLDatatype
-   :type:  Final
-
-.. py:data:: DurationOWLDatatype
-   :type:  Final
-
-.. py:data:: TopOWLDatatype
-   :type:  Final
-
-.. py:data:: NUMERIC_DATATYPES
-   :type:  Final[Set[owlapy.owl_datatype.OWLDatatype]]
-
-.. py:data:: TIME_DATATYPES
-   :type:  Final[Set[owlapy.owl_datatype.OWLDatatype]]
 

@@ -86,7 +86,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.save_owl_class_expressions"><code class="docutils literal notranslate"><span class="pre">save_owl_class_expressions()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.csv_to_rdf_kg"><code class="docutils literal notranslate"><span class="pre">csv_to_rdf_kg()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -136,9 +135,6 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.save_owl_class_expressions" title="owlapy.util_owl_static_funcs.save_owl_class_expressions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_owl_class_expressions</span></code></a>(→ None)</p></td>
 <td><p>Saves a set of OWL class expressions to an ontology file in RDF/XML format.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.csv_to_rdf_kg" title="owlapy.util_owl_static_funcs.csv_to_rdf_kg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">csv_to_rdf_kg</span></code></a>([path_csv, path_kg, namespace])</p></td>
-<td><p>Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.</p></td>
-</tr>
 </tbody>
 </table>
 </section>
@@ -176,38 +172,6 @@ supports ‘rdfxml’. Defaults to ‘rdfxml’.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">expr1</span> <span class="o">=</span> <span class="n">OWLClassExpression</span><span class="p">(</span><span class="s2">&quot;SomeExpression1&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">expr2</span> <span class="o">=</span> <span class="n">OWLClassExpression</span><span class="p">(</span><span class="s2">&quot;SomeExpression2&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">save_owl_class_expressions</span><span class="p">([</span><span class="n">expr1</span><span class="p">,</span> <span class="n">expr2</span><span class="p">],</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;my_ontology.owl&quot;</span><span class="p">,</span> <span class="n">rdf_format</span><span class="o">=</span><span class="s2">&quot;rdfxml&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.util_owl_static_funcs.csv_to_rdf_kg">
-<span class="sig-prename descclassname"><span class="pre">owlapy.util_owl_static_funcs.</span></span><span class="sig-name descname"><span class="pre">csv_to_rdf_kg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_csv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_kg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/util_owl_static_funcs.html#csv_to_rdf_kg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.util_owl_static_funcs.csv_to_rdf_kg" title="Link to this definition"></a></dt>
-<dd><p>Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path_csv</strong> (<em>str</em>) – X</p></li>
-<li><p><strong>path_kg</strong> (<em>str</em>) – X</p></li>
-<li><p><strong>namespace</strong> (<em>str</em>) – X</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>AssertionError</strong> – </p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="go"># Load the dataset</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
-<span class="go"># Convert to DataFrame</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">feature_names</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">target</span>
-<span class="go"># Save as CSV</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;iris_dataset.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dataset saved as iris_dataset.csv&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">csv_to_rdf_kg</span><span class="p">(</span><span class="s2">&quot;iris_dataset.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
