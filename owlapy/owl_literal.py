@@ -618,7 +618,7 @@ class _OWLLiteralImplBoolean(OWLLiteral):
         return hash((self._v, self._type))
 
     def __repr__(self):
-        return f'OWLLiteral({self._v})'
+        return f'OWLLiteral({self._v, self._type})'
 
     def is_boolean(self) -> bool:
         return True
@@ -664,7 +664,7 @@ class _OWLLiteralImplString(OWLLiteral):
         return hash((self._v, self._type))
 
     def __repr__(self):
-        return f'OWLLiteral({self._v})'
+        return f'OWLLiteral({self._v}, {self._type})'
 
     def is_string(self) -> bool:
         return True
