@@ -734,11 +734,14 @@ class _OWLDateAndTimeLiteralInterface(_OWLLiteralBasicsInterface):
 
     def __init__(self, value, type_=None):
         if isinstance(value, datetime) or type_ is DateTimeOWLDatatype:
-            value = datetime.fromisoformat(value) if isinstance(value, str) else value
+            value = value.replace("Z", "+00:00") if isinstance(value, str) and value[-1] == "Z" else value
+            value = datetime.fromisoformat(value)
         if isinstance(value, date) or type_ is DateOWLDatatype:
-            value = date.fromisoformat(value) if isinstance(value, str) else value
+            value = value.replace("Z", "+00:00") if isinstance(value, str) and value[-1] == "Z" else value
+            value = date.fromisoformat(value)
         if isinstance(value, time) or type_ is TimeOWLDatatype:
-            value = time.fromisoformat(value) if isinstance(value, str) else value
+            value = value.replace("Z", "+00:00") if isinstance(value, str) and value[-1] == "Z" else value
+            value = time.fromisoformat(value)
         if isinstance(value, Timedelta) or type_ is DurationOWLDatatype:
             value = Timedelta(value) if isinstance(value, str) else value
         assert type(value) in [datetime, date, time, Timedelta]
