@@ -103,8 +103,7 @@ class OntologyManager(AbstractOWLOntologyManager):
             ont_x.imported_ontologies.append(
                 self._world.get_ontology(change.get_import_declaration().str))
         else:
-            # TODO XXX
-            raise NotImplementedError
+            raise NotImplementedError("Change is not yet implemented.")
 
     def save_world(self):
         """Saves the actual state of the quadstore in the SQLite3 file.
@@ -139,4 +138,4 @@ class SyncOntologyManager(AbstractOWLOntologyManager):
         return self.owlapi_manager
 
     def apply_change(self, change: AbstractOWLOntologyChange):
-        raise NotImplementedError()
+        raise NotImplementedError("A change cannot be applied at the moment.")

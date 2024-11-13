@@ -113,6 +113,10 @@ class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
 
     _iri: IRI
 
+    @property
+    def reminder(self):
+        return self._iri.reminder
+
     def get_named_property(self) -> 'OWLObjectProperty':
         # documented in parent
         return self

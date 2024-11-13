@@ -1,6 +1,6 @@
 # About owlapy
 
-**Version:** owlapy 1.3.1
+**Version:** owlapy 1.3.3
 
 **GitHub repository:** [https://github.com/dice-group/owlapy](https://github.com/dice-group/owlapy)
 

@@ -80,6 +80,13 @@ class TestSyncReasoner(unittest.TestCase):
     manager = SyncOntologyManager()
     onto = manager.load_ontology(ontology_path)
 
+    def test_interface_father_dataset(self):
+        ontology_path = "KGs/Family/father.owl"
+        onto = SyncOntologyManager().load_ontology(ontology_path)
+        assert {owl_class.reminder for owl_class in onto.classes_in_signature()}=={'male', 'female', 'Thing', 'person'}
+        assert {individual.reminder for individual in onto.individuals_in_signature()}=={'markus', 'anna', 'martin', 'stefan', 'heinz', 'michelle'}
+        assert {object_property.reminder for object_property in onto.object_properties_in_signature()}=={'hasChild'}
+
     # NOTE AB: The name of "assertCountEqual" may be misleading,but it's essentially an order-insensitive "assertEqual".
 
     def test_classes_in_signature(self):
