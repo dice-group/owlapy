@@ -1,5 +1,3 @@
-import rdflib
-
 from .owl_ontology import Ontology, SyncOntology
 from .owl_ontology_manager import OntologyManager
 from .class_expression import OWLClassExpression, OWLClass

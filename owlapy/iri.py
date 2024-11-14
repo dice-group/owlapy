@@ -1,7 +1,7 @@
 """OWL IRI"""
 import weakref
 from abc import ABCMeta
-from typing import Final, Union, overload
+from typing import Final, Union
 from weakref import WeakKeyDictionary
 
 from owlapy import namespaces
