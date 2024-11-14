@@ -25,7 +25,7 @@ pip3 install owlapy
 ```shell
 # To download RDF knowledge graphs
 wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
-pytest -p no:warnings -x # Running  142 tests ~ 30 secs
+pytest -p no:warnings -x # Running  147 tests ~ 35 secs
 ```
 
 ## Examples

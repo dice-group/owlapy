@@ -257,7 +257,7 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
         Returns:
             An integer value that is represented by this literal.
         """
-        raise ValueError
+        return int(self._v)
 
     def is_string(self) -> bool:
         """Whether this literal is typed as string."""
