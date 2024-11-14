@@ -9,6 +9,10 @@ from sklearn.datasets import load_iris
 import pandas as pd
 import rdflib
 
+from owlapy.owl_ontology_manager import SyncOntologyManager
+from sklearn.datasets import load_iris
+import pandas as pd
+
 class TestRunningExamples:
     def test_readme(self):
         # Using owl classes to create a complex class expression
@@ -28,9 +32,12 @@ class TestRunningExamples:
 
     def test_csv_to_kg(self):
         data = load_iris()
-        # Convert to DataFrame
         df = pd.DataFrame(data.data, columns=data.feature_names)
         df['target'] = data.target
-        # Save as CSV
         df.to_csv("iris_dataset.csv", index=False)
-        csv_to_rdf_kg("iris_dataset.csv", path_kg="iris_kg.owl", namespace="http://example.com/society")
+
+        assert len(df) == 150
+        path_kg = "iris_kg.owl"
+        csv_to_rdf_kg(path_csv="iris_dataset.csv", path_kg=path_kg, namespace="http://example.com/society")
+        onto = SyncOntologyManager().load_ontology(path_kg)
+        assert len(onto.get_abox_axioms()) == 750

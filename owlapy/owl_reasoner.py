@@ -1009,7 +1009,7 @@ class SyncReasoner(AbstractOWLReasoner):
             # https://owlcs.github.io/owlapi/apidocs_5/org/semanticweb/owlapi/apibinding/OWLManager.html
             self.manager = SyncOntologyManager()
             # OWLOntology
-            self.ontology = self.manager.load_ontology(iri=ontology)
+            self.ontology = self.manager.load_ontology(ontology)
 
         self._owlapi_manager = self.manager.get_owlapi_manager()
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()

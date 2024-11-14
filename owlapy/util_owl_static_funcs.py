@@ -1,4 +1,6 @@
-from .owl_ontology import Ontology
+import rdflib
+
+from .owl_ontology import Ontology, SyncOntology
 from .owl_ontology_manager import OntologyManager
 from .class_expression import OWLClassExpression, OWLClass
 from .owl_individual import OWLNamedIndividual
@@ -8,6 +10,8 @@ from .owl_property import OWLDataProperty
 from .owl_literal import OWLLiteral
 import os
 from typing import List
+from tqdm import tqdm
+import pandas as pd
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
                                path: str = 'predictions',
@@ -60,7 +64,7 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
         ontology.add_axiom(equivalent_classes_axiom)
     ontology.save(path=path, inplace=False, rdf_format=rdf_format)
 
-def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
+def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None,rdf_format:str=None):
     """
     Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.
 
@@ -68,6 +72,7 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
         path_csv (str): X
         path_kg (str): X
         namespace (str): X
+        rdf_format(str):X
 
     Raises:
         AssertionError:
@@ -85,30 +90,40 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
         >>> print("Dataset saved as iris_dataset.csv")
         >>> csv_to_rdf_kg("iris_dataset.csv")
     """
+    from owlapy.owl_ontology_manager import SyncOntologyManager
     assert path_csv is not None, "path cannot be None"
     assert os.path.exists(path_csv), f"path **{path_csv}**does not exist."
-    assert path_kg is not None, "path_kg cannot be None"
+    assert path_kg is not None, f"path_kg cannot be None.Currently {path_kg}"
     assert namespace is not None, "namespace cannot be None"
     assert namespace[:7]=="http://", "First characters of namespace must be 'http://'"
-    import pandas as pd
+    if rdf_format is None:
+        rdf_format="rdfxml"
+    else:
+        assert rdf_format in ["ntriples", "turtle"]
+
+    # Initialize an Ontology Manager.
+    manager = SyncOntologyManager()
+    # Create an ontology given an ontology manager.
+    ontology:SyncOntology = manager.create_ontology(namespace)
+
     # Read the CSV file
     df = pd.read_csv(path_csv)
-    # Initialize an Ontology Manager.
-    manager = OntologyManager()
-    # Create an ontology given an ontology manager.
-    ontology:Ontology = manager.create_ontology(namespace)
     # () Iterate over rows
-    for index, row in df.iterrows():
-        print(f"Row {index}:",end="\t")
-        print(row.to_dict())
-        i=OWLNamedIndividual(iri=f"{namespace}#{str(index)}")
+    for index, row in tqdm(df.iterrows()):
+        individual=OWLNamedIndividual(f"{namespace}#{str(index)}".replace(" ","_"))
         for column_name, value in row.to_dict().items():
             if isinstance(value, float):
-                axiom = OWLDataPropertyAssertionAxiom(subject=i,
-                                                      property_=OWLDataProperty(iri=f"{namespace}#ID_{str(column_name)}"),
+                # Create an IRI for the predicate
+                str_property_iri=f"{namespace}#{column_name}".replace(" ","_")
+                str_property_iri=str_property_iri.replace("(","/")
+                str_property_iri = str_property_iri.replace(")", "")
+
+                axiom = OWLDataPropertyAssertionAxiom(subject=individual,
+                                                      property_=OWLDataProperty(iri=str_property_iri),
                                                       object_=OWLLiteral(value=value))
                 ontology.add_axiom(axiom)
 
             else:
                 raise NotImplementedError(f"How to represent value={value} has not been decided")
-    ontology.save(path=path_kg, inplace=False)
+
+    ontology.save(path=path_kg)
