@@ -150,7 +150,7 @@
 
 <div class="viewcode-block" id="csv_to_rdf_kg">
 <a class="viewcode-back" href="../../autoapi/owlapy/util_owl_static_funcs/index.html#owlapy.util_owl_static_funcs.csv_to_rdf_kg">[docs]</a>
-<span class="k">def</span> <span class="nf">csv_to_rdf_kg</span><span class="p">(</span><span class="n">path_csv</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">path_kg</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">namespace</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">rdf_format</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">csv_to_rdf_kg</span><span class="p">(</span><span class="n">path_csv</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">path_kg</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">namespace</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.</span>
 
@@ -158,7 +158,6 @@
 <span class="sd">        path_csv (str): X</span>
 <span class="sd">        path_kg (str): X</span>
 <span class="sd">        namespace (str): X</span>
-<span class="sd">        rdf_format(str):X</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        AssertionError:</span>
@@ -182,10 +181,6 @@
     <span class="k">assert</span> <span class="n">path_kg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;path_kg cannot be None.Currently </span><span class="si">{</span><span class="n">path_kg</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">assert</span> <span class="n">namespace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;namespace cannot be None&quot;</span>
     <span class="k">assert</span> <span class="n">namespace</span><span class="p">[:</span><span class="mi">7</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;http://&quot;</span><span class="p">,</span> <span class="s2">&quot;First characters of namespace must be &#39;http://&#39;&quot;</span>
-    <span class="k">if</span> <span class="n">rdf_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rdf_format</span><span class="o">=</span><span class="s2">&quot;rdfxml&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">rdf_format</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ntriples&quot;</span><span class="p">,</span> <span class="s2">&quot;turtle&quot;</span><span class="p">]</span>
 
     <span class="c1"># Initialize an Ontology Manager.</span>
     <span class="n">manager</span> <span class="o">=</span> <span class="n">SyncOntologyManager</span><span class="p">()</span>
@@ -194,23 +189,28 @@
 
     <span class="c1"># Read the CSV file</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_csv</span><span class="p">)</span>
+
     <span class="c1"># () Iterate over rows</span>
     <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()):</span>
         <span class="n">individual</span><span class="o">=</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;_&quot;</span><span class="p">))</span>
+        <span class="c1"># column_name is considered as a predicate</span>
+        <span class="c1"># value is considered as a data property</span>
         <span class="k">for</span> <span class="n">column_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                <span class="c1"># Create an IRI for the predicate</span>
-                <span class="n">str_property_iri</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">column_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
-                <span class="n">str_property_iri</span><span class="o">=</span><span class="n">str_property_iri</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-                <span class="n">str_property_iri</span> <span class="o">=</span> <span class="n">str_property_iri</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="c1"># Create an IRI for the predicate</span>
+            <span class="n">str_property_iri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">column_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+            <span class="n">str_property_iri</span> <span class="o">=</span> <span class="n">str_property_iri</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="n">str_property_iri</span> <span class="o">=</span> <span class="n">str_property_iri</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
 
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">axiom</span> <span class="o">=</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="n">individual</span><span class="p">,</span>
                                                       <span class="n">property_</span><span class="o">=</span><span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">iri</span><span class="o">=</span><span class="n">str_property_iri</span><span class="p">),</span>
                                                       <span class="n">object_</span><span class="o">=</span><span class="n">OWLLiteral</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">))</span>
                 <span class="n">ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
-
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;How to represent value=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> has not been decided&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;How to represent</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                          <span class="sa">f</span><span class="s2">&quot;predicate=**</span><span class="si">{</span><span class="n">str_property_iri</span><span class="si">}</span><span class="s2">**</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                          <span class="sa">f</span><span class="s2">&quot;value=**</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">**</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                          <span class="sa">f</span><span class="s2">&quot;has not been decided&quot;</span><span class="p">)</span>
 
     <span class="n">ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path_kg</span><span class="p">)</span></div>
 
