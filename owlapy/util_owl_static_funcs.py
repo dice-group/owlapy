@@ -62,7 +62,7 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
         ontology.add_axiom(equivalent_classes_axiom)
     ontology.save(path=path, inplace=False, rdf_format=rdf_format)
 
-def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None,rdf_format:str=None):
+def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
     """
     Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.
 
@@ -70,7 +70,6 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None,rdf_form
         path_csv (str): X
         path_kg (str): X
         namespace (str): X
-        rdf_format(str):X
 
     Raises:
         AssertionError:
@@ -94,10 +93,6 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None,rdf_form
     assert path_kg is not None, f"path_kg cannot be None.Currently {path_kg}"
     assert namespace is not None, "namespace cannot be None"
     assert namespace[:7]=="http://", "First characters of namespace must be 'http://'"
-    if rdf_format is None:
-        rdf_format="rdfxml"
-    else:
-        assert rdf_format in ["ntriples", "turtle"]
 
     # Initialize an Ontology Manager.
     manager = SyncOntologyManager()
@@ -106,22 +101,27 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None,rdf_form
 
     # Read the CSV file
     df = pd.read_csv(path_csv)
-    # () Iterate over rows
-    for index, row in tqdm(df.iterrows()):
-        individual=OWLNamedIndividual(f"{namespace}#{str(index)}".replace(" ","_"))
-        for column_name, value in row.to_dict().items():
-            if isinstance(value, float):
-                # Create an IRI for the predicate
-                str_property_iri=f"{namespace}#{column_name}".replace(" ","_")
-                str_property_iri=str_property_iri.replace("(","/")
-                str_property_iri = str_property_iri.replace(")", "")
 
+    # () Iterate over rows
+    for index, row in (tqdm_bar := tqdm(df.iterrows()) ):
+        individual=OWLNamedIndividual(f"{namespace}#{str(index)}".replace(" ","_"))
+        tqdm_bar.set_description_str(f"Creating RDF Graph from Row:{index}")
+        # column_name is considered as a predicate
+        # value is considered as a data property
+        for column_name, value in row.to_dict().items():
+            # Create an IRI for the predicate
+            str_property_iri = f"{namespace}#{column_name}".replace(" ", "_")
+            str_property_iri = str_property_iri.replace("(", "/")
+            str_property_iri = str_property_iri.replace(")", "")
+
+            if isinstance(value, float) or isinstance(value, int) or isinstance(value, str):
                 axiom = OWLDataPropertyAssertionAxiom(subject=individual,
                                                       property_=OWLDataProperty(iri=str_property_iri),
                                                       object_=OWLLiteral(value=value))
                 ontology.add_axiom(axiom)
-
             else:
-                raise NotImplementedError(f"How to represent value={value} has not been decided")
-
+                raise NotImplementedError(f"How to represent\n"
+                                          f"predicate=**{str_property_iri}**\n"
+                                          f"value=**{value}**\n"
+                                          f"has not been decided")
     ontology.save(path=path_kg)
