@@ -1,3 +1,4 @@
+import os.path
 from typing import Union
 
 import jpype
@@ -131,11 +132,19 @@ class SyncOntologyManager(AbstractOWLOntologyManager):
             assert isinstance(iri, IRI), "iri either must be string or an instance of IRI Class"
         return SyncOntology(self, iri, new=True)
 
-    def load_ontology(self, iri: Union[IRI, str]) -> SyncOntology:
-        return SyncOntology(self, iri, new=False)
+    def load_ontology(self, path: str) -> SyncOntology:
+        assert isinstance(path, str), "path either must be string or an instance of IRI Class"
+        assert os.path.exists(path), "path does not lead to an RDF knowledge graph."
+        return SyncOntology(self, path, new=False)
 
     def get_owlapi_manager(self):
         return self.owlapi_manager
 
     def apply_change(self, change: AbstractOWLOntologyChange):
         raise NotImplementedError("A change cannot be applied at the moment.")
+
+    def getOntologyFormat(self,*args):
+        return self.owlapi_manager.getOntologyFormat(*args)
+
+    def saveOntology(self,*args)->None:
+        self.owlapi_manager.saveOntology(*args)

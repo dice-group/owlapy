@@ -174,6 +174,7 @@ class AbstractOWLOntology(OWLObject, metaclass=ABCMeta):
         """
         pass
 
+    @abstractmethod
     def save(self, document_iri: Optional[IRI] = None):
         """Saves this ontology, using its IRI to determine where/how the ontology should be
          saved.

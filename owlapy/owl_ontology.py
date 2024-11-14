@@ -53,7 +53,6 @@ _Datatype_map: Final = MappingProxyType({
 })
 
 
-
 _VERSION_IRI: Final = IRI.create(namespaces.OWL, "versionIRI")
 
 _M = TypeVar('_M', bound='OWLOntologyManager')  # noqa: F821
@@ -983,19 +982,39 @@ class SyncOntology(AbstractOWLOntology):
         self.manager = manager
         self.path = path
         self.new = new
+
+
         if isinstance(path, IRI):
             file_path = path.str
         else:
             file_path = path
         if new:  # create new ontology
             if isinstance(path, IRI):
-                self.owlapi_ontology = manager.get_owlapi_manager().createOntology(Stream.empty(),
+                self.owlapi_ontology = self.manager.get_owlapi_manager().createOntology(Stream.empty(),
                                                                                    owlapi_IRI.create(path.str))
             else:
                 raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
         else:  # means we are loading an existing ontology
-            self.owlapi_ontology = manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(file_path))
+            self.owlapi_ontology = self.manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(file_path))
         self.mapper = OWLAPIMapper(self)
+
+    def __eq__(self, other):
+        if isinstance(other, SyncOntology):
+            return other.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
+        return False
+
+    def __hash__(self):
+        return int(self.owlapi_ontology.getOntologyID().hashCode())
+
+    def __repr__(self):
+        return (f'SyncOntology:'
+                f'\t|Tbox|={len(self.get_tbox_axioms())}'
+                f'\t|Abox|={len(self.get_abox_axioms())}'
+                f'\t|Individuals|={len(self.individuals_in_signature())}'
+                f'\t|Classes|={len(self.classes_in_signature())}'
+                f'\t|Object Properties|={len(self.object_properties_in_signature())}'
+                f'\t|Data Properties|={len(self.data_properties_in_signature())}'
+                f'\n{self.manager}\tPath:{self.path}\tNew:{self.new}')
 
     def classes_in_signature(self) -> Iterable[OWLClass]:
         return self.mapper.map_(self.owlapi_ontology.getClassesInSignature())
@@ -1089,24 +1108,22 @@ class SyncOntology(AbstractOWLOntology):
         else:
             self.owlapi_ontology.removeAxioms(self.mapper.map_(axiom))
 
-    def __eq__(self, other):
-        if isinstance(other, SyncOntology):
-            return other.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
-        return False
-
-    def __hash__(self):
-        return int(self.owlapi_ontology.getOntologyID().hashCode())
-
-    def __repr__(self):
-        return (f'SyncOntology:'
-                f'\t|Tbox|={len(self.get_tbox_axioms())}'
-                f'\t|Abox|={len(self.get_abox_axioms())}'
-                f'\t|Individuals|={len(self.individuals_in_signature())}'
-                f'\t|Classes|={len(self.classes_in_signature())}'
-                f'\t|Object Properties|={len(self.object_properties_in_signature())}'
-                f'\t|Data Properties|={len(self.data_properties_in_signature())}'
-                f'\n{self.manager}\tPath:{self.path}\tNew:{self.new}')
-
+    def save(self, path:str=None, document_iri: Optional[IRI] = None):
+        """
+        https://github.com/phillord/owl-api/blob/b2a5bfb9a0c6730c8ff950776af8f9bf19c78eac/
+                contract/src/test/java/org/coode/owlapi/examples/Examples.java#L206
+        """
+        assert isinstance(path,str), "Path must be a string"
+        from java.io import File
+        import org.semanticweb.owlapi.model.IRI
+        # //Create a file for the new format
+        file = File(path)
+        print(f"Saving Ontology into {path}")
+        if document_iri is None:
+            document_iri = org.semanticweb.owlapi.model.IRI.create(file.toURI())
+        else:
+            raise NotImplementedError("document_iri must be None for the time being")
+        self.manager.saveOntology(self.owlapi_ontology, self.manager.getOntologyFormat(self.owlapi_ontology), document_iri)
 
 OWLREADY2_FACET_KEYS = MappingProxyType({
     OWLFacet.MIN_INCLUSIVE: "min_inclusive",

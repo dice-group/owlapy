@@ -1,9 +1,15 @@
-from .owl_ontology import Ontology
+from .owl_ontology import Ontology, SyncOntology
 from .owl_ontology_manager import OntologyManager
-from typing import List
 from .class_expression import OWLClassExpression, OWLClass
+from .owl_individual import OWLNamedIndividual
 from .iri import IRI
-from .owl_axiom import OWLEquivalentClassesAxiom
+from .owl_axiom import OWLEquivalentClassesAxiom, OWLDataPropertyAssertionAxiom
+from .owl_property import OWLDataProperty
+from .owl_literal import OWLLiteral
+import os
+from typing import List
+from tqdm import tqdm
+import pandas as pd
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
                                path: str = 'predictions',
@@ -45,9 +51,9 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
 
     namespace= 'https://dice-research.org/predictions#' if namespace is None else namespace
     assert "#" == namespace[-1], "namespace must end with #"
-    # ()
+    # Initialize an Ontology Manager.
     manager = OntologyManager()
-    # ()
+    # Create an ontology given an ontology manager.
     ontology:Ontology = manager.create_ontology(namespace)
     # () Iterate over concepts
     for th, i in enumerate(expressions):
@@ -55,3 +61,67 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
         equivalent_classes_axiom = OWLEquivalentClassesAxiom([cls_a, i])
         ontology.add_axiom(equivalent_classes_axiom)
     ontology.save(path=path, inplace=False, rdf_format=rdf_format)
+
+def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None,rdf_format:str=None):
+    """
+    Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.
+
+    Args:
+        path_csv (str): X
+        path_kg (str): X
+        namespace (str): X
+        rdf_format(str):X
+
+    Raises:
+        AssertionError:
+
+    Example:
+        >>> from sklearn.datasets import load_iris
+        >>> import pandas as pd
+        # Load the dataset
+        >>> data = load_iris()
+        # Convert to DataFrame
+        >>> df = pd.DataFrame(data.data, columns=data.feature_names)
+        >>> df['target'] = data.target
+        # Save as CSV
+        >>> df.to_csv("iris_dataset.csv", index=False)
+        >>> print("Dataset saved as iris_dataset.csv")
+        >>> csv_to_rdf_kg("iris_dataset.csv")
+    """
+    from owlapy.owl_ontology_manager import SyncOntologyManager
+    assert path_csv is not None, "path cannot be None"
+    assert os.path.exists(path_csv), f"path **{path_csv}**does not exist."
+    assert path_kg is not None, f"path_kg cannot be None.Currently {path_kg}"
+    assert namespace is not None, "namespace cannot be None"
+    assert namespace[:7]=="http://", "First characters of namespace must be 'http://'"
+    if rdf_format is None:
+        rdf_format="rdfxml"
+    else:
+        assert rdf_format in ["ntriples", "turtle"]
+
+    # Initialize an Ontology Manager.
+    manager = SyncOntologyManager()
+    # Create an ontology given an ontology manager.
+    ontology:SyncOntology = manager.create_ontology(namespace)
+
+    # Read the CSV file
+    df = pd.read_csv(path_csv)
+    # () Iterate over rows
+    for index, row in tqdm(df.iterrows()):
+        individual=OWLNamedIndividual(f"{namespace}#{str(index)}".replace(" ","_"))
+        for column_name, value in row.to_dict().items():
+            if isinstance(value, float):
+                # Create an IRI for the predicate
+                str_property_iri=f"{namespace}#{column_name}".replace(" ","_")
+                str_property_iri=str_property_iri.replace("(","/")
+                str_property_iri = str_property_iri.replace(")", "")
+
+                axiom = OWLDataPropertyAssertionAxiom(subject=individual,
+                                                      property_=OWLDataProperty(iri=str_property_iri),
+                                                      object_=OWLLiteral(value=value))
+                ontology.add_axiom(axiom)
+
+            else:
+                raise NotImplementedError(f"How to represent value={value} has not been decided")
+
+    ontology.save(path=path_kg)
