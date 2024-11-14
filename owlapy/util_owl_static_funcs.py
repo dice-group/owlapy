@@ -103,8 +103,9 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
     df = pd.read_csv(path_csv)
 
     # () Iterate over rows
-    for index, row in tqdm(df.iterrows()):
+    for index, row in (tqdm_bar := tqdm(df.iterrows()) ):
         individual=OWLNamedIndividual(f"{namespace}#{str(index)}".replace(" ","_"))
+        tqdm_bar.set_description_str(f"Creating RDF Graph from Row:{index}")
         # column_name is considered as a predicate
         # value is considered as a data property
         for column_name, value in row.to_dict().items():
@@ -123,5 +124,4 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
                                           f"predicate=**{str_property_iri}**\n"
                                           f"value=**{value}**\n"
                                           f"has not been decided")
-
     ontology.save(path=path_kg)
