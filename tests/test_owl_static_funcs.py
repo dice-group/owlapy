@@ -10,8 +10,6 @@ import pandas as pd
 import rdflib
 
 from owlapy.owl_ontology_manager import SyncOntologyManager
-from sklearn.datasets import load_iris
-import pandas as pd
 
 class TestRunningExamples:
     def test_readme(self):
@@ -35,7 +33,6 @@ class TestRunningExamples:
         df = pd.DataFrame(data.data, columns=data.feature_names)
         df['target'] = data.target
         df.to_csv("iris_dataset.csv", index=False)
-
         assert len(df) == 150
         path_kg = "iris_kg.owl"
         csv_to_rdf_kg(path_csv="iris_dataset.csv", path_kg=path_kg, namespace="http://example.com/society")

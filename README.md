@@ -30,6 +30,29 @@ pytest -p no:warnings -x # Running  147 tests ~ 35 secs
 
 ## Examples
 
+### Sklearn to OWL Ontology
+
+<details><summary> Click me! </summary>
+
+```python
+from owlapy.owl_ontology_manager import SyncOntologyManager
+from owlapy.util_owl_static_funcs import csv_to_rdf_kg
+import pandas as pd
+from sklearn.datasets import load_iris
+data = load_iris()
+df = pd.DataFrame(data.data, columns=data.feature_names)
+df.to_csv("iris_dataset.csv", index=False)
+path_kg = "iris_kg.owl"
+# Construct an RDF Knowledge Graph from a CSV file
+csv_to_rdf_kg(path_csv="iris_dataset.csv", path_kg=path_kg, namespace="http://owlapy.com/iris")
+onto = SyncOntologyManager().load_ontology(path_kg)
+assert len(onto.get_abox_axioms()) == 750
+
+```
+
+</details>
+
+
 ### Exploring OWL Ontology
 
 <details><summary> Click me! </summary>
