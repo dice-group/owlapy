@@ -57,3 +57,12 @@ def stopJVM() -> None:
     if jpype.isJVMStarted():
         jpype.detachThreadFromJVM()
         jpype.shutdownJVM()
+
+def create_ontology(iri,with_owlapi=False):
+    """ A convenient function"""
+    if with_owlapi:
+        from .owl_ontology_manager import SyncOntologyManager
+        return SyncOntologyManager().create_ontology(iri)
+    else:
+        from .owl_ontology_manager import OntologyManager
+        return OntologyManager().create_ontology(iri)
