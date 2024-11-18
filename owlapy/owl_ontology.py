@@ -1063,6 +1063,7 @@ class SyncOntology(AbstractOWLOntology):
             Entities in signature.
         """
         # @TODO: CD: Is this class method redundant given that we have the individuals_in_signature ?
+        # AB re: This method does not return only individuals.
         return self.mapper.map_(self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
 
     def get_abox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
