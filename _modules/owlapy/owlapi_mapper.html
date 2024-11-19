@@ -85,9 +85,11 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TypeVar</span>
 <span class="kn">import</span> <span class="nn">jpype.imports</span>
 
-<span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">owl_expression_to_manchester</span><span class="p">,</span> <span class="n">manchester_to_owl_expression</span>
-<span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> \
-    <span class="n">OWLClass</span>
+<span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> \
+    <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> \
+    <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> \
+    <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> \
+    <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span>
 <span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_axiom</span> <span class="kn">import</span> <span class="n">OWLDeclarationAxiom</span><span class="p">,</span> <span class="n">OWLAnnotation</span><span class="p">,</span> <span class="n">OWLAnnotationProperty</span><span class="p">,</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">,</span> \
     <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyDomainAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyDomainAxiom</span><span class="p">,</span> \
@@ -114,10 +116,6 @@
     <span class="n">startJVM</span><span class="p">()</span>
 <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.model</span> <span class="kn">import</span> <span class="n">IRI</span> <span class="k">as</span> <span class="n">owlapi_IRI</span><span class="p">,</span> <span class="n">OWLOntologyID</span> <span class="k">as</span> <span class="n">owlapi_OWLOntologyID</span>
 <span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span> <span class="k">as</span> <span class="n">owlapi_OWLFacet</span>
-<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.manchestersyntax.parser</span> <span class="kn">import</span> <span class="n">ManchesterOWLSyntaxClassExpressionParser</span>
-<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.manchestersyntax.renderer</span> <span class="kn">import</span> <span class="n">ManchesterOWLSyntaxOWLObjectRendererImpl</span>
-<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.util</span> <span class="kn">import</span> <span class="n">BidirectionalShortFormProviderAdapter</span><span class="p">,</span> <span class="n">SimpleShortFormProvider</span>
-<span class="kn">from</span> <span class="nn">org.semanticweb.owlapi.expression</span> <span class="kn">import</span> <span class="n">ShortFormEntityChecker</span>
 <span class="kn">from</span> <span class="nn">java.util</span> <span class="kn">import</span> <span class="n">HashSet</span><span class="p">,</span> <span class="n">ArrayList</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">LinkedHashSet</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">java.util.stream</span> <span class="kn">import</span> <span class="n">Stream</span>
 <span class="kn">from</span> <span class="nn">uk.ac.manchester.cs.owl.owlapi</span> <span class="kn">import</span> <span class="p">(</span><span class="n">OWLAnonymousClassExpressionImpl</span><span class="p">,</span> <span class="n">OWLCardinalityRestrictionImpl</span><span class="p">,</span>
@@ -166,6 +164,9 @@
 <div class="viewcode-block" id="init">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_mapper/index.html#owlapy.owlapi_mapper.init">[docs]</a>
 <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">the_class</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Since classes names in owlapi and owlapy are pretty much similar with the small difference that in owlapi they</span>
+<span class="sd">    usually have the &#39;Impl&#39; part then we can create the mapping class name dynamically reducing the amount of code</span>
+<span class="sd">    significantly. That&#39;s what this method does.&quot;&quot;&quot;</span>
     <span class="n">cls_name</span> <span class="o">=</span> <span class="n">the_class</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
     <span class="k">if</span> <span class="s2">&quot;Impl&quot;</span> <span class="ow">in</span> <span class="n">cls_name</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cls_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Impl&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
@@ -180,29 +181,7 @@
 <div class="viewcode-block" id="OWLAPIMapper">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_mapper/index.html#owlapy.owlapi_mapper.OWLAPIMapper">[docs]</a>
 <span class="k">class</span> <span class="nc">OWLAPIMapper</span><span class="p">:</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">_SO</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">get_owlapi_manager</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">get_owlapi_ontology</span><span class="p">()</span>
-
-        <span class="c1"># () Get the name space. (used for rendering class expressions)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">getOntologyID</span><span class="p">()</span><span class="o">.</span><span class="n">getOntologyIRI</span><span class="p">()</span><span class="o">.</span><span class="n">orElse</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">namespace</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">+=</span> <span class="s2">&quot;#&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="s2">&quot;http://www.anonymous.org/anonymous#&quot;</span>
-
-        <span class="c1"># () Create a manchester parser and a renderer using the given ontology.</span>
-        <span class="n">ontology_set</span> <span class="o">=</span> <span class="n">HashSet</span><span class="p">()</span>
-        <span class="n">ontology_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
-        <span class="n">bidi_provider</span> <span class="o">=</span> <span class="n">BidirectionalShortFormProviderAdapter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span> <span class="n">ontology_set</span><span class="p">,</span> <span class="n">SimpleShortFormProvider</span><span class="p">())</span>
-        <span class="n">entity_checker</span> <span class="o">=</span> <span class="n">ShortFormEntityChecker</span><span class="p">(</span><span class="n">bidi_provider</span><span class="p">)</span>
-        <span class="n">bidi_provider</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getOWLNothing</span><span class="p">())</span>
-        <span class="n">bidi_provider</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getOWLThing</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxClassExpressionParser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">(),</span> <span class="n">entity_checker</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="o">=</span> <span class="n">ManchesterOWLSyntaxOWLObjectRendererImpl</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A bridge between owlapy and owlapi owl-related classes.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="OWLAPIMapper.map_">
 <a class="viewcode-back" href="../../autoapi/owlapy/owlapi_mapper/index.html#owlapy.owlapi_mapper.OWLAPIMapper.map_">[docs]</a>
@@ -232,6 +211,7 @@
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectProperty</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDatatype</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnnotationProperty</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span>
 
@@ -240,47 +220,61 @@
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectPropertyImpl</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDatatypeImpl</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnnotationPropertyImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLClassImpl</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getIRI</span><span class="p">()))</span>
 
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">OWLClassImpl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">owl_expression_to_manchester</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()))</span>
 
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLAnonymousClassExpressionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLCardinalityRestrictionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLClassExpressionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLClassImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataAllValuesFromImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataCardinalityRestrictionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataExactCardinalityImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataHasValueImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataMaxCardinalityImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataMinCardinalityImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataSomeValuesFromImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpressionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectAllValuesFromImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectCardinalityRestrictionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectComplementOfImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectExactCardinalityImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectHasSelfImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectHasValueImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectIntersectionOfImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectMaxCardinalityImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectMinCardinalityImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectOneOfImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectSomeValuesFromImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectUnionOfImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLQuantifiedDataRestrictionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLQuantifiedObjectRestrictionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLQuantifiedRestrictionImpl</span><span class="p">)</span>
-    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLValueRestrictionImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectComplementOfImpl</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOperand</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectMinCardinality</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectMaxCardinality</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectExactCardinality</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataMinCardinality</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataMaxCardinality</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataExactCardinality</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
-        <span class="c1"># Cant recognize the classes as implementation of org.semanticweb.owlapi.model.OWLClassExpression, so we</span>
-        <span class="c1"># have to register all possible implementations</span>
-        <span class="k">return</span> <span class="n">manchester_to_owl_expression</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectMinCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectMaxCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectExactCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataMinCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataMaxCardinalityImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataExactCardinalityImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getCardinality</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getFiller</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectHasSelf</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectHasSelfImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectHasValue</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectSomeValuesFrom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectAllValuesFrom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataSomeValuesFrom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataAllValuesFrom</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataHasValue</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectHasValueImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectSomeValuesFromImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectAllValuesFromImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataSomeValuesFromImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataAllValuesFromImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataHasValueImpl</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getProperty</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getFiller</span><span class="p">()))</span>
 
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">):</span>
@@ -319,6 +313,8 @@
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataOneOf</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataUnionOf</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNaryDataRange</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectIntersectionOf</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectUnionOf</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
 
@@ -326,8 +322,15 @@
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataOneOfImpl</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataUnionOfImpl</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNaryDataRangeImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectIntersectionOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectUnionOfImpl</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectOneOfImpl</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getOperandsAsList</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectOneOf</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span><span class="o">.</span><span class="n">stream</span><span class="p">())</span>
 
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataComplementOfImpl</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
@@ -596,6 +599,7 @@
 
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
         <span class="n">java_list</span> <span class="o">=</span> <span class="n">ArrayList</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">e</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
