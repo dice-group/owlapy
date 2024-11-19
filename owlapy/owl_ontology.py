@@ -996,7 +996,7 @@ class SyncOntology(AbstractOWLOntology):
                 raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
         else:  # means we are loading an existing ontology
             self.owlapi_ontology = self.manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(file_path))
-        self.mapper = OWLAPIMapper(self)
+        self.mapper = OWLAPIMapper()
 
     def __eq__(self, other):
         if isinstance(other, SyncOntology):
