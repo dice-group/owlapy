@@ -33,22 +33,18 @@ if not jpype.isJVMStarted():
     startJVM()
 from org.semanticweb.owlapi.model import IRI as owlapi_IRI, OWLOntologyID as owlapi_OWLOntologyID
 from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
-from java.util import HashSet, ArrayList, List, Set, LinkedHashSet, Optional
+from java.util import ArrayList, List, Set, LinkedHashSet, Optional
 from java.util.stream import Stream
-from uk.ac.manchester.cs.owl.owlapi import (OWLAnonymousClassExpressionImpl, OWLCardinalityRestrictionImpl,
-                                            OWLClassExpressionImpl, OWLClassImpl, OWLDataAllValuesFromImpl,
-                                            OWLDataCardinalityRestrictionImpl, OWLDataExactCardinalityImpl,
-                                            OWLDataHasValueImpl, OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
+from uk.ac.manchester.cs.owl.owlapi import (OWLClassImpl, OWLDataAllValuesFromImpl, OWL2DatatypeImpl,
+                                            OWLDataExactCardinalityImpl,OWLDataHasValueImpl,
+                                            OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
                                             OWLDataMinCardinalityImpl, OWLDataSomeValuesFromImpl,
-                                            OWLNaryBooleanClassExpressionImpl, OWLObjectAllValuesFromImpl,
-                                            OWLObjectCardinalityRestrictionImpl, OWLObjectComplementOfImpl,
+                                            OWLObjectAllValuesFromImpl, OWLObjectComplementOfImpl,
                                             OWLObjectExactCardinalityImpl, OWLObjectHasSelfImpl,
                                             OWLObjectHasValueImpl, OWLObjectIntersectionOfImpl,
                                             OWLObjectMaxCardinalityImpl, OWLObjectMinCardinalityImpl,
                                             OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl, OWLNaryDataRangeImpl,
-                                            OWLObjectUnionOfImpl, OWLQuantifiedDataRestrictionImpl,
-                                            OWLQuantifiedObjectRestrictionImpl, OWLQuantifiedRestrictionImpl,
-                                            OWLValueRestrictionImpl, OWLLiteralImplBoolean, OWLLiteralImplString,
+                                            OWLObjectUnionOfImpl,OWLLiteralImplBoolean, OWLLiteralImplString,
                                             OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger,
                                             OWLDisjointClassesAxiomImpl, OWLDeclarationAxiomImpl, OWLAnnotationImpl,
                                             OWLAnnotationPropertyImpl, OWLClassAssertionAxiomImpl,
@@ -132,6 +128,10 @@ class OWLAPIMapper:
     @map_.register(OWLClassImpl)
     def _(self, e):
         return init(e)(self.map_(e.getIRI()))
+
+    @map_.register(OWL2DatatypeImpl)
+    def _(self, e):
+        return OWLDatatype(self.map_(e.getIRI()))
 
     @map_.register
     def _(self, e: OWLObjectComplementOf):
