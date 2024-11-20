@@ -148,7 +148,7 @@ class OWLAPIMapper:
     @map_.register(OWLDataMaxCardinality)
     @map_.register(OWLDataExactCardinality)
     def _(self, e):
-        return init(e)(self.map_(e.get_property()), self.map_(e.get_cardinality()), self.map_(e.get_filler()))
+        return init(e)(self.map_(e.get_property()), e.get_cardinality(), self.map_(e.get_filler()))
 
     @map_.register(OWLObjectMinCardinalityImpl)
     @map_.register(OWLObjectMaxCardinalityImpl)
@@ -157,7 +157,7 @@ class OWLAPIMapper:
     @map_.register(OWLDataMaxCardinalityImpl)
     @map_.register(OWLDataExactCardinalityImpl)
     def _(self, e):
-        return init(e)(self.map_(e.getCardinality()), self.map_(e.getProperty()), self.map_(e.getFiller()))
+        return init(e)(e.getCardinality(), self.map_(e.getProperty()), self.map_(e.getFiller()))
 
     @map_.register(OWLObjectHasSelf)
     def _(self, e):
