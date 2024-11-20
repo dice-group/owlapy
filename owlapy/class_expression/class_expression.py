@@ -63,6 +63,8 @@ class OWLAnonymousClassExpression(OWLClassExpression, metaclass=ABCMeta):
 
     def get_object_complement_of(self) -> 'OWLObjectComplementOf':
         # documented in parent
+        if isinstance(self, OWLObjectComplementOf):
+            return self.get_operand()
         return OWLObjectComplementOf(self)
 
     def get_nnf(self) -> 'OWLClassExpression':
