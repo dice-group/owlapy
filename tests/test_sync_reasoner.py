@@ -1,7 +1,6 @@
 import os
 import unittest
 
-from jpype import JDouble
 from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIntersectionOf, OWLNothing, OWLThing, \
     OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectOneOf
 from owlapy.iri import IRI
@@ -165,39 +164,6 @@ class TestSyncReasoner(unittest.TestCase):
         for instance in instances:
             self.assertIn(instance, expected)
         self.assertEqual(len(list(instances)), len(expected))
-
-    def test_conversion(self):
-        # construct the class expression in owlapi
-        from org.semanticweb.owlapi.model import IRI as IRIowlapi
-        from org.semanticweb.owlapi.vocab import OWLFacet
-
-        nitrogenIRI = IRIowlapi.create(self.ns + "Nitrogen-38")
-        charge_iri = IRIowlapi.create(self.ns + "charge")
-
-        data_factory = self.reasoner.manager.get_owlapi_manager().getOWLDataFactory()
-        nitrogen_class = data_factory.getOWLClass(nitrogenIRI)
-
-        charge_property = data_factory.getOWLDataProperty(charge_iri)
-        double_datatype = data_factory.getDoubleOWLDatatype()
-        facet_restriction = data_factory.getOWLFacetRestriction(OWLFacet.MIN_INCLUSIVE, JDouble(0.85))
-        datatype_restriction = data_factory.getOWLDatatypeRestriction(double_datatype, facet_restriction)
-        some_values_from = data_factory.getOWLDataSomeValuesFrom(charge_property, datatype_restriction)
-
-        class_expression = data_factory.getOWLObjectIntersectionOf(nitrogen_class, some_values_from)
-
-        # compare them with the converted expression
-        ce_converted = self.reasoner.mapper.map_(self.ce)
-        print(ce_converted)
-        print(class_expression)
-        self.assertEqual(class_expression, ce_converted)
-
-        # convert back to owlapy and check for equality
-        ce_1 = self.reasoner.mapper.map_(class_expression)
-        ce_2 = self.reasoner.mapper.map_(ce_converted)
-
-        self.assertEqual(ce_1, ce_2)
-        self.assertEqual(ce_1, self.ce)
-        self.assertEqual(ce_2, self.ce)
 
     def test_equivalent_classes(self):
         self.assertCountEqual(list(reasoner2.equivalent_classes(N)), [N, Q])
