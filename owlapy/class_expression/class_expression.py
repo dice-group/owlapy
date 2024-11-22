@@ -63,8 +63,6 @@ class OWLAnonymousClassExpression(OWLClassExpression, metaclass=ABCMeta):
 
     def get_object_complement_of(self) -> 'OWLObjectComplementOf':
         # documented in parent
-        if isinstance(self, OWLObjectComplementOf):
-            return self.get_operand()
         return OWLObjectComplementOf(self)
 
     def get_nnf(self) -> 'OWLClassExpression':
@@ -85,6 +83,15 @@ class OWLObjectComplementOf(OWLBooleanClassExpression, HasOperands[OWLClassExpre
     type_index: Final = 3003
 
     _operand: OWLClassExpression
+
+    def __new__(cls, op: OWLClassExpression):
+        """
+        Creates a new instance or returns the operand if op is already a complement.
+        """
+        if isinstance(op, OWLObjectComplementOf):
+            return op.get_operand()
+        else:
+            return super(OWLObjectComplementOf, cls).__new__(cls)
 
     def __init__(self, op: OWLClassExpression):
         """
