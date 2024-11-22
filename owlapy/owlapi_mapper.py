@@ -2,8 +2,11 @@ from functools import singledispatchmethod
 from typing import Iterable, TypeVar
 import jpype.imports
 
-from owlapy import owl_expression_to_manchester, manchester_to_owl_expression
-from owlapy.class_expression import OWLClassExpression, OWLDataOneOf, OWLFacetRestriction, OWLDatatypeRestriction
+from owlapy.class_expression import OWLDataOneOf, OWLFacetRestriction, OWLDatatypeRestriction, \
+    OWLClass, OWLObjectComplementOf, OWLObjectUnionOf, OWLObjectIntersectionOf, \
+    OWLObjectHasSelf, OWLObjectHasValue, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectMinCardinality, \
+    OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, \
+    OWLDataMinCardinality, OWLDataMaxCardinality, OWLDataExactCardinality, OWLObjectOneOf
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationProperty, OWLClassAssertionAxiom, \
     OWLDataPropertyAssertionAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, \
@@ -30,26 +33,18 @@ if not jpype.isJVMStarted():
     startJVM()
 from org.semanticweb.owlapi.model import IRI as owlapi_IRI, OWLOntologyID as owlapi_OWLOntologyID
 from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
-from org.semanticweb.owlapi.manchestersyntax.parser import ManchesterOWLSyntaxClassExpressionParser
-from org.semanticweb.owlapi.manchestersyntax.renderer import ManchesterOWLSyntaxOWLObjectRendererImpl
-from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
-from org.semanticweb.owlapi.expression import ShortFormEntityChecker
-from java.util import HashSet, ArrayList, List, Set, LinkedHashSet, Optional
+from java.util import ArrayList, List, Set, LinkedHashSet, Optional
 from java.util.stream import Stream
-from uk.ac.manchester.cs.owl.owlapi import (OWLAnonymousClassExpressionImpl, OWLCardinalityRestrictionImpl,
-                                            OWLClassExpressionImpl, OWLClassImpl, OWLDataAllValuesFromImpl,
-                                            OWLDataCardinalityRestrictionImpl, OWLDataExactCardinalityImpl,
-                                            OWLDataHasValueImpl, OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
+from uk.ac.manchester.cs.owl.owlapi import (OWLClassImpl, OWLDataAllValuesFromImpl, OWL2DatatypeImpl,
+                                            OWLDataExactCardinalityImpl,OWLDataHasValueImpl,
+                                            OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
                                             OWLDataMinCardinalityImpl, OWLDataSomeValuesFromImpl,
-                                            OWLNaryBooleanClassExpressionImpl, OWLObjectAllValuesFromImpl,
-                                            OWLObjectCardinalityRestrictionImpl, OWLObjectComplementOfImpl,
+                                            OWLObjectAllValuesFromImpl, OWLObjectComplementOfImpl,
                                             OWLObjectExactCardinalityImpl, OWLObjectHasSelfImpl,
                                             OWLObjectHasValueImpl, OWLObjectIntersectionOfImpl,
                                             OWLObjectMaxCardinalityImpl, OWLObjectMinCardinalityImpl,
                                             OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl, OWLNaryDataRangeImpl,
-                                            OWLObjectUnionOfImpl, OWLQuantifiedDataRestrictionImpl,
-                                            OWLQuantifiedObjectRestrictionImpl, OWLQuantifiedRestrictionImpl,
-                                            OWLValueRestrictionImpl, OWLLiteralImplBoolean, OWLLiteralImplString,
+                                            OWLObjectUnionOfImpl,OWLLiteralImplBoolean, OWLLiteralImplString,
                                             OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger,
                                             OWLDisjointClassesAxiomImpl, OWLDeclarationAxiomImpl, OWLAnnotationImpl,
                                             OWLAnnotationPropertyImpl, OWLClassAssertionAxiomImpl,
@@ -80,6 +75,9 @@ from uk.ac.manchester.cs.owl.owlapi import (OWLAnonymousClassExpressionImpl, OWL
 
 
 def init(the_class):
+    """Since classes names in owlapi and owlapy are pretty much similar with the small difference that in owlapi they
+    usually have the 'Impl' part then we can create the mapping class name dynamically reducing the amount of code
+    significantly. That's what this method does."""
     cls_name = the_class.__class__.__name__
     if "Impl" in cls_name:
         return globals().get(cls_name.split(".")[-1].replace("Impl", ""))
@@ -91,29 +89,7 @@ _SO = TypeVar('_SO', bound='SyncOntology')  # noqa: F821
 
 
 class OWLAPIMapper:
-
-    def __init__(self, ontology: _SO):
-        self.manager = ontology.manager.get_owlapi_manager()
-        self.ontology = ontology.get_owlapi_ontology()
-
-        # () Get the name space. (used for rendering class expressions)
-        self.namespace = self.ontology.getOntologyID().getOntologyIRI().orElse(None)
-        if self.namespace is not None:
-            self.namespace = str(self.namespace)
-            if self.namespace[-1] not in ["/", "#", ":"]:
-                self.namespace += "#"
-        else:
-            self.namespace = "http://www.anonymous.org/anonymous#"
-
-        # () Create a manchester parser and a renderer using the given ontology.
-        ontology_set = HashSet()
-        ontology_set.add(self.ontology)
-        bidi_provider = BidirectionalShortFormProviderAdapter(self.manager, ontology_set, SimpleShortFormProvider())
-        entity_checker = ShortFormEntityChecker(bidi_provider)
-        bidi_provider.add(self.manager.getOWLDataFactory().getOWLNothing())
-        bidi_provider.add(self.manager.getOWLDataFactory().getOWLThing())
-        self.parser = ManchesterOWLSyntaxClassExpressionParser(self.manager.getOWLDataFactory(), entity_checker)
-        self.renderer = ManchesterOWLSyntaxOWLObjectRendererImpl()
+    """A bridge between owlapy and owlapi owl-related classes."""
 
     @singledispatchmethod
     def map_(self, e):
@@ -140,6 +116,7 @@ class OWLAPIMapper:
     @map_.register(OWLObjectProperty)
     @map_.register(OWLDatatype)
     @map_.register(OWLAnnotationProperty)
+    @map_.register(OWLClass)
     def _(self, e):
         return init(e)(self.map_(e.iri))
 
@@ -148,45 +125,65 @@ class OWLAPIMapper:
     @map_.register(OWLObjectPropertyImpl)
     @map_.register(OWLDatatypeImpl)
     @map_.register(OWLAnnotationPropertyImpl)
+    @map_.register(OWLClassImpl)
     def _(self, e):
         return init(e)(self.map_(e.getIRI()))
 
-    @map_.register
-    def _(self, e: OWLClassExpression):
-        return self.parser.parse(owl_expression_to_manchester(e))
-
-    @map_.register(OWLAnonymousClassExpressionImpl)
-    @map_.register(OWLCardinalityRestrictionImpl)
-    @map_.register(OWLClassExpressionImpl)
-    @map_.register(OWLClassImpl)
-    @map_.register(OWLDataAllValuesFromImpl)
-    @map_.register(OWLDataCardinalityRestrictionImpl)
-    @map_.register(OWLDataExactCardinalityImpl)
-    @map_.register(OWLDataHasValueImpl)
-    @map_.register(OWLDataMaxCardinalityImpl)
-    @map_.register(OWLDataMinCardinalityImpl)
-    @map_.register(OWLDataSomeValuesFromImpl)
-    @map_.register(OWLNaryBooleanClassExpressionImpl)
-    @map_.register(OWLObjectAllValuesFromImpl)
-    @map_.register(OWLObjectCardinalityRestrictionImpl)
-    @map_.register(OWLObjectComplementOfImpl)
-    @map_.register(OWLObjectExactCardinalityImpl)
-    @map_.register(OWLObjectHasSelfImpl)
-    @map_.register(OWLObjectHasValueImpl)
-    @map_.register(OWLObjectIntersectionOfImpl)
-    @map_.register(OWLObjectMaxCardinalityImpl)
-    @map_.register(OWLObjectMinCardinalityImpl)
-    @map_.register(OWLObjectOneOfImpl)
-    @map_.register(OWLObjectSomeValuesFromImpl)
-    @map_.register(OWLObjectUnionOfImpl)
-    @map_.register(OWLQuantifiedDataRestrictionImpl)
-    @map_.register(OWLQuantifiedObjectRestrictionImpl)
-    @map_.register(OWLQuantifiedRestrictionImpl)
-    @map_.register(OWLValueRestrictionImpl)
+    @map_.register(OWL2DatatypeImpl)
     def _(self, e):
-        # Cant recognize the classes as implementation of org.semanticweb.owlapi.model.OWLClassExpression, so we
-        # have to register all possible implementations
-        return manchester_to_owl_expression(str(self.renderer.render(e)), self.namespace)
+        return OWLDatatype(self.map_(e.getIRI()))
+
+    @map_.register
+    def _(self, e: OWLObjectComplementOf):
+        return init(e)(self.map_(e.get_operand()))
+
+    @map_.register
+    def _(self, e: OWLObjectComplementOfImpl):
+        return init(e)(self.map_(e.getOperand()))
+
+    @map_.register(OWLObjectMinCardinality)
+    @map_.register(OWLObjectMaxCardinality)
+    @map_.register(OWLObjectExactCardinality)
+    @map_.register(OWLDataMinCardinality)
+    @map_.register(OWLDataMaxCardinality)
+    @map_.register(OWLDataExactCardinality)
+    def _(self, e):
+        return init(e)(self.map_(e.get_property()), e.get_cardinality(), self.map_(e.get_filler()))
+
+    @map_.register(OWLObjectMinCardinalityImpl)
+    @map_.register(OWLObjectMaxCardinalityImpl)
+    @map_.register(OWLObjectExactCardinalityImpl)
+    @map_.register(OWLDataMinCardinalityImpl)
+    @map_.register(OWLDataMaxCardinalityImpl)
+    @map_.register(OWLDataExactCardinalityImpl)
+    def _(self, e):
+        return init(e)(e.getCardinality(), self.map_(e.getProperty()), self.map_(e.getFiller()))
+
+    @map_.register(OWLObjectHasSelf)
+    def _(self, e):
+        return init(e)(self.map_(e.get_property()))
+
+    @map_.register(OWLObjectHasSelfImpl)
+    def _(self, e):
+        return init(e)(self.map_(e.getProperty()))
+
+    @map_.register(OWLObjectHasValue)
+    @map_.register(OWLObjectSomeValuesFrom)
+    @map_.register(OWLObjectAllValuesFrom)
+    @map_.register(OWLDataSomeValuesFrom)
+    @map_.register(OWLDataAllValuesFrom)
+    @map_.register(OWLDataHasValue)
+    def _(self, e):
+        return init(e)(self.map_(e.get_property()), self.map_(e.get_filler()))
+
+    @map_.register(OWLObjectHasValueImpl)
+    @map_.register(OWLObjectSomeValuesFromImpl)
+    @map_.register(OWLObjectAllValuesFromImpl)
+    @map_.register(OWLDataSomeValuesFromImpl)
+    @map_.register(OWLDataAllValuesFromImpl)
+    @map_.register(OWLDataHasValueImpl)
+    def _(self, e):
+        return init(e)(self.map_(e.getProperty()), self.map_(e.getFiller()))
 
     @map_.register
     def _(self, e: OWLLiteral):
@@ -225,6 +222,8 @@ class OWLAPIMapper:
     @map_.register(OWLDataOneOf)
     @map_.register(OWLDataUnionOf)
     @map_.register(OWLNaryDataRange)
+    @map_.register(OWLObjectIntersectionOf)
+    @map_.register(OWLObjectUnionOf)
     def _(self, e):
         return init(e)(self.map_(e.operands()))
 
@@ -232,8 +231,15 @@ class OWLAPIMapper:
     @map_.register(OWLDataOneOfImpl)
     @map_.register(OWLDataUnionOfImpl)
     @map_.register(OWLNaryDataRangeImpl)
+    @map_.register(OWLObjectIntersectionOfImpl)
+    @map_.register(OWLObjectUnionOfImpl)
+    @map_.register(OWLObjectOneOfImpl)
     def _(self, e):
         return init(e)(self.map_(e.getOperandsAsList()))
+
+    @map_.register(OWLObjectOneOf)
+    def _(self, e):
+        return init(e)(self.map_(e.operands()).stream())
 
     @map_.register(OWLDataComplementOfImpl)
     def _(self, e):
@@ -502,6 +508,7 @@ class OWLAPIMapper:
 
     @map_.register(list)
     @map_.register(set)
+    @map_.register(frozenset)
     def _(self, e):
         java_list = ArrayList()
         if e is not None and len(e) > 0:
