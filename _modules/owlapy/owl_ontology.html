@@ -890,7 +890,7 @@
     <span class="n">_world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span>
     <span class="n">is_modified</span><span class="p">:</span> <span class="nb">bool</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="p">:</span> <span class="n">_OM</span><span class="p">,</span> <span class="n">ontology_iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="p">:</span> <span class="n">_OM</span><span class="p">,</span> <span class="n">ontology_iri</span><span class="p">:</span> <span class="n">IRI</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents an Ontology in Ontolearn.</span>
 
 <span class="sd">        Args:</span>
@@ -902,7 +902,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">ontology_iri</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">_world</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_modified</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="n">ontology_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology_iri</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+            <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="n">ontology_iri</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="n">ontology_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
             <span class="n">onto</span> <span class="o">=</span> <span class="n">onto</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_onto</span> <span class="o">=</span> <span class="n">onto</span>
