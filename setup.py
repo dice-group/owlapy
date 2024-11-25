@@ -20,7 +20,7 @@ setup(
         "sortedcontainers>=2.4.0",
         "owlready2>=0.40",
         "JPype1>=1.5.0",
-        "tqdm>=4.66.5"
+        "tqdm>=4.66.5",
         "fastapi>=0.115.5"],
     author='Caglar Demir',
     author_email='caglardemir8@gmail.com',
