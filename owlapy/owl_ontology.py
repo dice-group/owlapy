@@ -996,7 +996,7 @@ class SyncOntology(AbstractOWLOntology):
                 raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
         else:  # means we are loading an existing ontology
             self.owlapi_ontology = self.manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(file_path))
-        self.mapper = OWLAPIMapper(self)
+        self.mapper = OWLAPIMapper()
 
     def __eq__(self, other):
         if isinstance(other, SyncOntology):
@@ -1063,6 +1063,7 @@ class SyncOntology(AbstractOWLOntology):
             Entities in signature.
         """
         # @TODO: CD: Is this class method redundant given that we have the individuals_in_signature ?
+        # AB re: This method does not return only individuals.
         return self.mapper.map_(self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
 
     def get_abox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:

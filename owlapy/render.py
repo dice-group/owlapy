@@ -21,9 +21,12 @@ from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnion
 from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
 from .owl_datatype import OWLDatatype
 from .abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from .owl_axiom import (OWLEquivalentClassesAxiom, OWLSubClassOfAxiom,
+                        OWLObjectPropertyRangeAxiom, OWLObjectPropertyDomainAxiom)
 import requests
 import warnings
 import abc
+
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
     EQUIVALENT_TO="≡",
@@ -45,8 +48,7 @@ _DL_SYNTAX = types.SimpleNamespace(
     WEDGE="⋀",
     IMPLIES="←",
     COMMA=",",
-    SELF="Self",
-)
+    SELF="Self")
 
 
 def _simple_short_form_provider(e: OWLEntity) -> str:
@@ -350,8 +352,8 @@ _MAN_SYNTAX = types.SimpleNamespace(
     COMMA=",",
     SELF="Self",
     VALUE="value",
-)
-
+    RANGE="Range",
+    DOMAIN="Domain")
 
 class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
     """Manchester Syntax renderer for OWL Objects"""
@@ -376,7 +378,7 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
     @singledispatchmethod
     def render(self, o: OWLObject) -> str:
         assert isinstance(o, OWLObject), f"Tried to render non-OWLObject {o} of {type(o)}"
-        raise NotImplementedError
+        raise NotImplementedError(f"We cannot render {o}\t{type(o)}")
 
     @render.register
     def _(self, o: OWLClass) -> str:
@@ -514,6 +516,29 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
     @render.register
     def _(self, t: OWLLiteral) -> str:
         return t.get_literal()
+
+    @render.register
+    def _(self, equiv: OWLEquivalentClassesAxiom) -> str:
+        # TODO:CD:Can we assume that the size of equiv will be 2 ?
+        return (" %s " % _MAN_SYNTAX.EQUIVALENT_TO).join([self.render(i) for i in equiv])
+
+    @render.register
+    def _(self, equiv: OWLSubClassOfAxiom) -> str:
+        return (" %s " % _MAN_SYNTAX.SUBCLASS).join([self.render(i) for i in [equiv.sub_class,equiv.super_class]])
+
+    @render.register
+    def _(self, axiom: OWLObjectPropertyRangeAxiom) -> str:
+        # objectPropertyFrame	ObjectProperty: IRI Range: annotations description	ObjectPropertyRange(T(annotations) IRI T(description))
+        return f"{self.render(axiom.prop)} {_MAN_SYNTAX.RANGE} {self.render(axiom.range)}"
+    @render.register
+    def _(self, axiom: OWLObjectPropertyDomainAxiom) -> str:
+        # objectPropertyFrame	ObjectProperty: IRI Domain: annotations description	ObjectPropertyDomain(T(annotations) IRI T(description))
+        return f"{self.render(axiom.prop)} {_MAN_SYNTAX.DOMAIN} {self.render(axiom.get_domain())}"
+
+    @render.register
+    def _(self, axiom: OWLObjectPropertyDomainAxiom) -> str:
+        # objectPropertyFrame	ObjectProperty: IRI Domain: annotations description	ObjectPropertyDomain(T(annotations) IRI T(description))
+        return f"{self.render(axiom.prop)} {_MAN_SYNTAX.DOMAIN} {self.render(axiom.get_domain())}"
 
     def _render_operands(self, c: OWLNaryBooleanClassExpression) -> List[str]:
         return [self._render_nested(_) for _ in c.operands()]

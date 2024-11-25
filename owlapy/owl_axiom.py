@@ -281,6 +281,9 @@ class OWLEquivalentClassesAxiom(OWLNaryClassAxiom):
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
         super().__init__(class_expressions=class_expressions, annotations=annotations)
 
+    def __iter__(self):
+        yield from self._class_expressions
+
     def contains_named_equivalent_class(self) -> bool:
         return any(isinstance(ce, OWLClass) for ce in self._class_expressions)
 
@@ -1259,6 +1262,14 @@ class OWLPropertyRangeAxiom(Generic[_P, _R], OWLUnaryPropertyAxiom[_P], metaclas
         self._range = range_
         super().__init__(property_=property_, annotations=annotations)
 
+    @property
+    def prop(self):
+        return self._property
+
+    @property
+    def range(self):
+        return self._range
+
     def get_range(self) -> _R:
         return self._range
 
@@ -1289,6 +1300,10 @@ class OWLObjectPropertyDomainAxiom(OWLPropertyDomainAxiom[OWLObjectPropertyExpre
     def __init__(self, property_: OWLObjectPropertyExpression, domain: OWLClassExpression,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
         super().__init__(property_=property_, domain=domain, annotations=annotations)
+
+    @property
+    def prop(self):
+        return self._property
 
 
 class OWLDataPropertyDomainAxiom(OWLPropertyDomainAxiom[OWLDataPropertyExpression]):

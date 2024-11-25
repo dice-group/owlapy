@@ -30,29 +30,6 @@ pytest -p no:warnings -x # Running  147 tests ~ 35 secs
 
 ## Examples
 
-### Sklearn to OWL Ontology
-
-<details><summary> Click me! </summary>
-
-```python
-from owlapy.owl_ontology_manager import SyncOntologyManager
-from owlapy.util_owl_static_funcs import csv_to_rdf_kg
-import pandas as pd
-from sklearn.datasets import load_iris
-data = load_iris()
-df = pd.DataFrame(data.data, columns=data.feature_names)
-df.to_csv("iris_dataset.csv", index=False)
-path_kg = "iris_kg.owl"
-# Construct an RDF Knowledge Graph from a CSV file
-csv_to_rdf_kg(path_csv="iris_dataset.csv", path_kg=path_kg, namespace="http://owlapy.com/iris")
-onto = SyncOntologyManager().load_ontology(path_kg)
-assert len(onto.get_abox_axioms()) == 750
-
-```
-
-</details>
-
-
 ### Exploring OWL Ontology
 
 <details><summary> Click me! </summary>
@@ -101,7 +78,8 @@ for axiom in onto.get_abox_axioms():
 
 </details>
 
-### Creating OWL Class Expressions
+### OWL Knowledge Engineering
+
 <details><summary> Click me! </summary>
 
 ```python
@@ -111,7 +89,7 @@ from owlapy import owl_expression_to_sparql, owl_expression_to_dl
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual, IRI
-
+from owlapy.static_funcs import create_ontology
 # Using owl classes to create a complex class expression
 male = OWLClass("http://example.com/society#male")
 hasChild = OWLObjectProperty("http://example.com/society#hasChild")
@@ -119,23 +97,19 @@ hasChild_male = OWLObjectSomeValuesFrom(hasChild, male)
 teacher = OWLClass("http://example.com/society#teacher")
 teacher_that_hasChild_male = OWLObjectIntersectionOf([hasChild_male, teacher])
 
-# You can render and print owl class expressions in Description Logics syntax or convert it to SPARQL for example. 
+# You can render and print owl class expressions in Description Logics syntax or convert it to SPARQL for example.
 print(owl_expression_to_dl(teacher_that_hasChild_male)) # (∃ hasChild.male) ⊓ teacher
 print(owl_expression_to_sparql(teacher_that_hasChild_male)) #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 
-# Create an Ontology, add the axioms and save the Ontology.
-manager = OntologyManager()
-new_iri = IRI.create("file:/example_ontology.owl")
-ontology = manager.create_ontology(new_iri)
-
+# Create an ontology via ontology manager directly
+ontology = create_ontology("file:/example_ontology.owl",with_owlapi=False)
 john = OWLNamedIndividual("http://example.com/society#john")
 male_declaration_axiom = OWLDeclarationAxiom(male)
 hasChild_declaration_axiom = OWLDeclarationAxiom(hasChild)
 john_declaration_axiom = OWLDeclarationAxiom(john)
 john_a_male_assertion_axiom = OWLClassAssertionAxiom(john, male)
 ontology.add_axiom([male_declaration_axiom, hasChild_declaration_axiom, john_declaration_axiom, john_a_male_assertion_axiom])
-ontology.save()
-
+ontology.save(inplace=True)
 ```
 
 Every OWL object that can be used to classify individuals, is considered a class expression and 
@@ -200,6 +174,30 @@ stopJVM()
 
 
 Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) and [tests](https://github.com/dice-group/owlapy/tree/develop/tests) folders.
+
+
+### Sklearn to OWL Ontology
+
+<details><summary> Click me! </summary>
+
+```python
+from owlapy.owl_ontology_manager import SyncOntologyManager
+from owlapy.util_owl_static_funcs import csv_to_rdf_kg
+import pandas as pd
+from sklearn.datasets import load_iris
+data = load_iris()
+df = pd.DataFrame(data.data, columns=data.feature_names)
+df.to_csv("iris_dataset.csv", index=False)
+path_kg = "iris_kg.owl"
+# Construct an RDF Knowledge Graph from a CSV file
+csv_to_rdf_kg(path_csv="iris_dataset.csv", path_kg=path_kg, namespace="http://owlapy.com/iris")
+onto = SyncOntologyManager().load_ontology(path_kg)
+assert len(onto.get_abox_axioms()) == 750
+
+```
+
+</details>
+
 
 ## How to cite
 Currently, we are working on our manuscript describing our framework.
