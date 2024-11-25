@@ -11,7 +11,13 @@ reasoner_name = "HermiT"
 ontology = SyncOntologyManager().load_ontology(ontology_path)
 reasoner = SyncReasoner(ontology=ontology, reasoner=reasoner_name)
 
-@patch("owlapy.scripts.owlapy_serve.stopJVM")
+@pytest.fixture()
+def mock_stop_jvm():
+    patcher = patch("owlapy.scripts.owlapy_serve.stopJVM")
+    patcher.start()
+    yield 
+    patcher.stop()
+
 def test_get_classes (mock_stop_jvm):
     with TestClient(create_app(ontology_path, reasoner_name)) as client:
         response = client.get("/classes")
@@ -19,7 +25,6 @@ def test_get_classes (mock_stop_jvm):
         assert response.status_code == 200
         assert set(response.json()["classes"]) == set(expected_classes)
 
-@patch("owlapy.scripts.owlapy_serve.stopJVM")
 def test_get_individuals(mock_stop_jvm):
     with TestClient(create_app(ontology_path, reasoner_name)) as client:
         response = client.get("/individuals")
@@ -27,7 +32,6 @@ def test_get_individuals(mock_stop_jvm):
         assert response.status_code == 200
         assert set(response.json()["individuals"]) == set(expected_individuals)
 
-@patch("owlapy.scripts.owlapy_serve.stopJVM")
 def test_get_abox(mock_stop_jvm):
     with TestClient(create_app(ontology_path, reasoner_name)) as client:
         response = client.get("/abox")
@@ -35,7 +39,6 @@ def test_get_abox(mock_stop_jvm):
         assert response.status_code == 200
         assert set(response.json()["abox"]) == set(expected_abox)
 
-@patch("owlapy.scripts.owlapy_serve.stopJVM")
 def test_get_tbox(mock_stop_jvm):
     with TestClient(create_app(ontology_path, reasoner_name)) as client:
         response = client.get("/tbox")
@@ -43,7 +46,6 @@ def test_get_tbox(mock_stop_jvm):
         assert response.status_code == 200
         assert set(response.json()["tbox"]) == set(expected_tbox)
 
-@patch("owlapy.scripts.owlapy_serve.stopJVM")
 def test_get_instances(mock_stop_jvm):
     with TestClient(create_app(ontology_path, reasoner_name)) as client:
         test_class_iri = "http://www.benchmark.org/family#Child"  
