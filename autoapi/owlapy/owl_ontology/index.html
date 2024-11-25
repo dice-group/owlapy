@@ -97,9 +97,10 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.object_properties_in_signature"><code class="docutils literal notranslate"><span class="pre">Ontology.object_properties_in_signature()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.properties_in_signature"><code class="docutils literal notranslate"><span class="pre">Ontology.properties_in_signature()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.individuals_in_signature"><code class="docutils literal notranslate"><span class="pre">Ontology.individuals_in_signature()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.tbox_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.tbox_axioms()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.abox_axioms_between_individuals"><code class="docutils literal notranslate"><span class="pre">Ontology.abox_axioms_between_individuals()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.abox_axioms_between_individuals_and_classes"><code class="docutils literal notranslate"><span class="pre">Ontology.abox_axioms_between_individuals_and_classes()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.get_abox_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.get_abox_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.get_tbox_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.get_tbox_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals"><code class="docutils literal notranslate"><span class="pre">Ontology.get_abox_axioms_between_individuals()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals_and_classes"><code class="docutils literal notranslate"><span class="pre">Ontology.get_abox_axioms_between_individuals_and_classes()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.equivalent_classes_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.equivalent_classes_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.general_class_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.general_class_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.get_owl_ontology_manager"><code class="docutils literal notranslate"><span class="pre">Ontology.get_owl_ontology_manager()</span></code></a></li>
@@ -125,6 +126,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.__eq__"><code class="docutils literal notranslate"><span class="pre">SyncOntology.__eq__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.__hash__"><code class="docutils literal notranslate"><span class="pre">SyncOntology.__hash__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.__repr__"><code class="docutils literal notranslate"><span class="pre">SyncOntology.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.__len__"><code class="docutils literal notranslate"><span class="pre">SyncOntology.__len__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.classes_in_signature"><code class="docutils literal notranslate"><span class="pre">SyncOntology.classes_in_signature()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.data_properties_in_signature"><code class="docutils literal notranslate"><span class="pre">SyncOntology.data_properties_in_signature()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.object_properties_in_signature"><code class="docutils literal notranslate"><span class="pre">SyncOntology.object_properties_in_signature()</span></code></a></li>
@@ -394,18 +396,23 @@ Structural Specification).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.tbox_axioms">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tbox_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.tbox_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.tbox_axioms" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.get_abox_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_abox_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.get_abox_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.get_abox_axioms" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.abox_axioms_between_individuals">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">abox_axioms_between_individuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.abox_axioms_between_individuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.abox_axioms_between_individuals" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.get_tbox_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_tbox_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.get_tbox_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.get_tbox_axioms" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.abox_axioms_between_individuals_and_classes">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">abox_axioms_between_individuals_and_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.abox_axioms_between_individuals_and_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.abox_axioms_between_individuals_and_classes" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_abox_axioms_between_individuals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.get_abox_axioms_between_individuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals_and_classes">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_abox_axioms_between_individuals_and_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.get_abox_axioms_between_individuals_and_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals_and_classes" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -615,6 +622,11 @@ Structural Specification).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.__len__">
+<span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.__len__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.__len__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

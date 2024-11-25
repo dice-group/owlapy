@@ -950,25 +950,29 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_onto</span><span class="o">.</span><span class="n">individuals</span><span class="p">():</span>
             <span class="k">yield</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span></div>
 
-
-<div class="viewcode-block" id="Ontology.tbox_axioms">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.tbox_axioms">[docs]</a>
-    <span class="k">def</span> <span class="nf">tbox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+<div class="viewcode-block" id="Ontology.get_abox_axioms">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_abox_axioms">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_abox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
         <span class="c1"># @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Ontology.abox_axioms_between_individuals">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.abox_axioms_between_individuals">[docs]</a>
-    <span class="k">def</span> <span class="nf">abox_axioms_between_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+<div class="viewcode-block" id="Ontology.get_tbox_axioms">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_tbox_axioms">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tbox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+        <span class="c1"># @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Ontology.get_abox_axioms_between_individuals">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_abox_axioms_between_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
         <span class="c1"># @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Ontology.abox_axioms_between_individuals_and_classes">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.abox_axioms_between_individuals_and_classes">[docs]</a>
-    <span class="k">def</span> <span class="nf">abox_axioms_between_individuals_and_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+<div class="viewcode-block" id="Ontology.get_abox_axioms_between_individuals_and_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals_and_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_abox_axioms_between_individuals_and_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
         <span class="c1"># @TODO: CD: Return all type information about individuals, i.e., individual type Class</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
-
 
     <span class="c1"># @TODO:CD:Unsure it is working</span>
 <div class="viewcode-block" id="Ontology.equivalent_classes_axioms">
@@ -1209,6 +1213,12 @@
                 <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="si">}</span><span class="se">\t</span><span class="s1">Path:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="se">\t</span><span class="s1">New:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">new</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="SyncOntology.__len__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.__len__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_abox_axioms</span><span class="p">()]</span> <span class="o">+</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_abox_axioms</span><span class="p">()])</span></div>
+
+
 <div class="viewcode-block" id="SyncOntology.classes_in_signature">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.classes_in_signature">[docs]</a>
     <span class="k">def</span> <span class="nf">classes_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
@@ -1276,6 +1286,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">imports</span> <span class="o">=</span> <span class="n">Imports</span><span class="o">.</span><span class="n">EXCLUDED</span>
         <span class="k">return</span> <span class="n">imports</span>
+
 <div class="viewcode-block" id="SyncOntology.get_signature">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.get_signature">[docs]</a>
     <span class="k">def</span> <span class="nf">get_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_imports_closure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
@@ -1287,8 +1298,6 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Entities in signature.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># @TODO: CD: Is this class method redundant given that we have the individuals_in_signature ?</span>
-        <span class="c1"># AB re: This method does not return only individuals.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="o">.</span><span class="n">getSignature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_imports_enum</span><span class="p">(</span><span class="n">include_imports_closure</span><span class="p">)))</span></div>
 
 
