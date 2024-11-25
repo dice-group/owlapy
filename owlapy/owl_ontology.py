@@ -826,17 +826,18 @@ class Ontology(AbstractOWLOntology):
     def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
         for i in self._onto.individuals():
             yield OWLNamedIndividual(IRI.create(i.iri))
-
-    def tbox_axioms(self)->Iterable:
+    def get_abox_axioms(self)->Iterable:
         # @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint
         raise NotImplementedError("will be implemented in future")
-    def abox_axioms_between_individuals(self)->Iterable:
+    def get_tbox_axioms(self)->Iterable:
+        # @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint
+        raise NotImplementedError("will be implemented in future")
+    def get_abox_axioms_between_individuals(self)->Iterable:
         # @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties
         raise NotImplementedError("will be implemented in future")
-    def abox_axioms_between_individuals_and_classes(self)->Iterable:
+    def get_abox_axioms_between_individuals_and_classes(self)->Iterable:
         # @TODO: CD: Return all type information about individuals, i.e., individual type Class
         raise NotImplementedError("will be implemented in future")
-
     # @TODO:CD:Unsure it is working
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
         c_x: owlready2.ThingClass = self._world[c.str]
@@ -1019,6 +1020,9 @@ class SyncOntology(AbstractOWLOntology):
                 f'\t|Data Properties|={len(self.data_properties_in_signature())}'
                 f'\n{self.manager}\tPath:{self.path}\tNew:{self.new}')
 
+    def __len__(self):
+        return len([i for i in self.get_abox_axioms()] + [i for i in self.get_abox_axioms()])
+
     def classes_in_signature(self) -> Iterable[OWLClass]:
         return self.mapper.map_(self.owlapi_ontology.getClassesInSignature())
 
@@ -1056,6 +1060,7 @@ class SyncOntology(AbstractOWLOntology):
         else:
             imports = Imports.EXCLUDED
         return imports
+
     def get_signature(self, include_imports_closure: bool = True):
         """Gets the entities that are in the signature of this ontology.
 
@@ -1065,8 +1070,6 @@ class SyncOntology(AbstractOWLOntology):
         Returns:
             Entities in signature.
         """
-        # @TODO: CD: Is this class method redundant given that we have the individuals_in_signature ?
-        # AB re: This method does not return only individuals.
         return self.mapper.map_(self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
 
     def get_abox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
