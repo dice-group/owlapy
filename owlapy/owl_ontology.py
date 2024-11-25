@@ -784,7 +784,7 @@ class Ontology(AbstractOWLOntology):
     _world: owlready2.World
     is_modified: bool
 
-    def __init__(self, manager: _OM, ontology_iri: IRI, load: bool):
+    def __init__(self, manager: _OM, ontology_iri: IRI | str, load: bool):
         """Represents an Ontology in Ontolearn.
 
         Args:
@@ -796,7 +796,10 @@ class Ontology(AbstractOWLOntology):
         self._iri = ontology_iri
         self._world = manager._world
         self.is_modified = False
-        onto = self._world.get_ontology(ontology_iri.as_str())
+        if isinstance(ontology_iri,str):
+            onto = self._world.get_ontology(ontology_iri)
+        else:
+            onto = self._world.get_ontology(ontology_iri.as_str())
         if load:
             onto = onto.load()
         self._onto = onto
