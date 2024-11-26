@@ -59,7 +59,7 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
             assert isinstance(iri, str) and remainder is None, \
                 f"iri must be string if remainder is None. Currently, {type(iri)} and {type(remainder)}"
             # Extract reminder from input string
-            assert "/" in iri, "Input must contain /"
+            assert "/" in iri, f"Input must contain /\tCurrently, {iri}"
             # assert ":" in iri, "Input must contain :"
             assert " " not in iri, f"Input must not contain whitespace. Currently:{iri}."
             index = 1 + max(iri.rfind("/"), iri.rfind(":"), iri.rfind("#"))
