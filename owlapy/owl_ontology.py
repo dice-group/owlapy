@@ -1141,64 +1141,99 @@ class RDFLibOntology(AbstractOWLOntology):
         import rdflib
 
         self.rdflib_graph=rdflib.Graph().parse(path)
+        self.str_owl_classes=[ x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class) if not isinstance(x,rdflib.term.BNode)]
+        self.str_owl_individuals=[ x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual) if not isinstance(x,rdflib.term.BNode)]
 
     def __len__(self) -> int:
-        return len([t for t in self._onto.get_triples()])
+        return len(self.rdflib_graph)
+
+    def get_tbox_axioms(self) -> Iterable[OWLSubClassOfAxiom | OWLEquivalentClassesAxiom]:
+        results = []
+        for owl_class in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class):
+            if isinstance(owl_class, rdflib.term.URIRef):
+                str_owl_class = owl_class.n3()[1:-1]
+                for (_, p, o) in self.rdflib_graph.triples(triple=(owl_class, None, None)):
+                    if isinstance(o, rdflib.term.BNode):
+                        continue
+                    str_iri_predicate = p.n3()
+                    str_iri_object = o.n3()[1:-1]
+                    if str_iri_predicate == "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>":
+                        # Ignore for the timebing
+                        axiom = OWLDeclarationAxiom(OWLClass(str_owl_class))
+                    elif str_iri_predicate == "<http://www.w3.org/2000/01/rdf-schema#subClassOf>":
+                        axiom = OWLSubClassOfAxiom(sub_class=OWLClass(str_owl_class),
+                                                   super_class=OWLClass(str_iri_object))
+
+                    elif str_iri_predicate == "<http://www.w3.org/2002/07/owl#equivalentClass>":
+                        axiom = OWLEquivalentClassesAxiom([OWLClass(str_owl_class), OWLClass(str_iri_object)])
+                    else:
+                        raise NotImplementedError(f"{str_iri_predicate} unsure")
+                    if axiom:
+                        results.append(axiom)
+        return results
+
+    def get_abox_axioms(self)->Iterable:
+        results=[]
+        for owl_individual in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
+            if isinstance(owl_individual, rdflib.term.URIRef):
+                str_owl_individual=owl_individual.n3()[1:-1]
+                for (_,p,o) in self.rdflib_graph.triples(triple=(owl_individual,None, None)):
+                    if isinstance(o, rdflib.term.BNode):
+                        continue
+                    str_iri_predicate=p.n3()[1:-1]
+                    str_iri_object = o.n3()[1:-1]
+                    axiom=None
+                    if str_iri_predicate=="http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
+                        if str_iri_object in self.str_owl_classes:
+                            axiom = OWLClassAssertionAxiom(OWLNamedIndividual(str_owl_individual), OWLClass(str_iri_object))
+                        elif str_iri_object=="http://www.w3.org/2002/07/owl#NamedIndividual":
+                            # axiom= OWLDeclarationAxiom(OWLNamedIndividual(str_owl_individual))
+                            continue
+                        else:
+                            raise RuntimeError(f"Incorrect Parsing:\t{str_owl_individual}\t{str_iri_predicate}\t{str_iri_object}")
+                    elif str_iri_object in self.str_owl_individuals:
+                        axiom = OWLObjectPropertyAssertionAxiom(OWLNamedIndividual(str_owl_individual),
+                                                                             OWLObjectProperty(str_iri_predicate),
+                                                                             OWLNamedIndividual(str_iri_object))
+                    else:
+
+                        raise NotImplementedError("")
+                    if axiom:
+                        results.append(axiom)
+        return results
 
     def classes_in_signature(self) -> Iterable[OWLClass]:
+        raise NotImplementedError()
         for c in self._onto.classes():
             yield OWLClass(IRI.create(c.iri))
 
     def data_properties_in_signature(self) -> Iterable[OWLDataProperty]:
+        raise NotImplementedError()
+
         for dp in self._onto.data_properties():
             yield OWLDataProperty(IRI.create(dp.iri))
 
     def object_properties_in_signature(self) -> Iterable[OWLObjectProperty]:
+        raise NotImplementedError()
+
         for op in self._onto.object_properties():
             yield OWLObjectProperty(IRI.create(op.iri))
 
     def properties_in_signature(self) -> Iterable[OWLProperty]:
+        raise NotImplementedError()
+
         yield from self.object_properties_in_signature()
         yield from self.data_properties_in_signature()
 
     def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
+        raise NotImplementedError()
+
         for (s,p,o) in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
             print(s,p,o)
         # for i in self._onto.individuals():
         #    yield OWLNamedIndividual(IRI.create(i.iri))
 
-    def get_abox_axioms(self)->Iterable:
-        results=[]
-        for owl_class in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class):
-            if isinstance(owl_class, rdflib.term.URIRef):
-                str_owl_class=owl_class.n3()[1:-1]
-                for (_,p,o) in self.rdflib_graph.triples(triple=(owl_class,None, None)):
-                    if isinstance(o, rdflib.term.BNode):
-                        continue
-                    str_iri_predicate=p.n3()
-                    str_iri_object = o.n3()[1:-1]
-                    axiom=None
-                    if str_iri_predicate=="<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>":
-                        # Ignore for the timebing
-                        pass
-                    elif str_iri_predicate=="<http://www.w3.org/2000/01/rdf-schema#subClassOf>":
-                        axiom=OWLSubClassOfAxiom(sub_class=OWLClass(str_owl_class),super_class=OWLClass(str_iri_object))
 
-                    elif str_iri_predicate=="<http://www.w3.org/2002/07/owl#equivalentClass>":
-                        axiom=OWLEquivalentClassesAxiom([OWLClass(str_owl_class), OWLClass(str_iri_object)])
-                    else:
-                        raise NotImplementedError(f"{str_iri_predicate} unsure")
-                    if axiom:
-                        results.append(axiom)
-
-
-
-        return results
-
-
-    def get_tbox_axioms(self)->Iterable:
-        # @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint
-        raise NotImplementedError("will be implemented in future")
     def get_abox_axioms_between_individuals(self)->Iterable:
         # @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties
         raise NotImplementedError("will be implemented in future")
