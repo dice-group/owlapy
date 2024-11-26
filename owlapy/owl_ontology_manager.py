@@ -7,7 +7,7 @@ import owlready2
 from owlapy.abstracts.abstract_owl_ontology_manager import AbstractOWLOntologyChange, AbstractOWLOntologyManager
 from owlapy.iri import IRI
 from owlapy.meta_classes import HasIRI
-from owlapy.owl_ontology import Ontology, SyncOntology
+from .owl_ontology import Ontology, SyncOntology, RDFLibOntology
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.static_funcs import startJVM
 
@@ -143,3 +143,21 @@ class SyncOntologyManager(AbstractOWLOntologyManager):
 
     def saveOntology(self,*args)->None:
         self.owlapi_manager.saveOntology(*args)
+
+
+
+class RDFLibOntologyManager(AbstractOWLOntologyManager):
+
+    def __init__(self):
+        pass
+    def create_ontology(self, iri: str = None) -> RDFLibOntology:
+        assert isinstance(iri,str)
+        return RDFLibOntology(iri)
+    def load_ontology(self, path: str = None) -> Ontology:
+        assert isinstance(path,str)
+        assert os.path.exists(path)
+        return RDFLibOntology(path)
+    def apply_change(self, change: AbstractOWLOntologyChange):
+        raise NotImplementedError("Change is not yet implemented.")
+    def save_world(self):
+        raise NotImplementedError("Change is not yet implemented.")
