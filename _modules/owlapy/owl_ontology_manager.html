@@ -90,7 +90,7 @@
 <span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_ontology_manager</span> <span class="kn">import</span> <span class="n">AbstractOWLOntologyChange</span><span class="p">,</span> <span class="n">AbstractOWLOntologyManager</span>
 <span class="kn">from</span> <span class="nn">owlapy.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
 <span class="kn">from</span> <span class="nn">owlapy.meta_classes</span> <span class="kn">import</span> <span class="n">HasIRI</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">SyncOntology</span>
+<span class="kn">from</span> <span class="nn">.owl_ontology</span> <span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">,</span> <span class="n">RDFLibOntology</span>
 <span class="kn">from</span> <span class="nn">owlapy.abstracts.abstract_owl_ontology</span> <span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
 <span class="kn">from</span> <span class="nn">owlapy.static_funcs</span> <span class="kn">import</span> <span class="n">startJVM</span>
 
@@ -269,6 +269,39 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.SyncOntologyManager.saveOntology">[docs]</a>
     <span class="k">def</span> <span class="nf">saveOntology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_manager</span><span class="o">.</span><span class="n">saveOntology</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+</div>
+
+
+
+
+<div class="viewcode-block" id="RDFLibOntologyManager">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.RDFLibOntologyManager">[docs]</a>
+<span class="k">class</span> <span class="nc">RDFLibOntologyManager</span><span class="p">(</span><span class="n">AbstractOWLOntologyManager</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+<div class="viewcode-block" id="RDFLibOntologyManager.create_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.RDFLibOntologyManager.create_ontology">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RDFLibOntology</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RDFLibOntology</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RDFLibOntologyManager.load_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.RDFLibOntologyManager.load_ontology">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Ontology</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RDFLibOntology</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RDFLibOntologyManager.apply_change">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.RDFLibOntologyManager.apply_change">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">:</span> <span class="n">AbstractOWLOntologyChange</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Change is not yet implemented.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RDFLibOntologyManager.save_world">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.RDFLibOntologyManager.save_world">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_world</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Change is not yet implemented.&quot;</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

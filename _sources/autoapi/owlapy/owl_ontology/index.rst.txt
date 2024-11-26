@@ -26,6 +26,7 @@ Classes
    owlapy.owl_ontology.OWLOntologyID
    owlapy.owl_ontology.Ontology
    owlapy.owl_ontology.SyncOntology
+   owlapy.owl_ontology.RDFLibOntology
    owlapy.owl_ontology.ToOwlready2
    owlapy.owl_ontology.FromOwlready2
 
@@ -484,6 +485,233 @@ Module Contents
 
       https://github.com/phillord/owl-api/blob/b2a5bfb9a0c6730c8ff950776af8f9bf19c78eac/
               contract/src/test/java/org/coode/owlapi/examples/Examples.java#L206
+
+
+
+.. py:class:: RDFLibOntology(path: str)
+
+   Bases: :py:obj:`owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology`
+
+
+   Represents an OWL 2 Ontology  in the OWL 2 specification.
+
+   An OWLOntology consists of a possibly empty set of OWLAxioms and a possibly empty set of OWLAnnotations.
+   An ontology can have an ontology IRI which can be used to identify the ontology. If it has an ontology IRI then
+   it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
+   Structural Specification).
+
+   An ontology cannot be modified directly. Changes must be applied via its OWLOntologyManager.
+
+
+   .. py:attribute:: rdflib_graph
+
+
+   .. py:attribute:: str_owl_classes
+
+
+   .. py:attribute:: str_owl_individuals
+
+
+   .. py:method:: __len__() -> int
+
+
+   .. py:method:: get_tbox_axioms() -> Iterable[owlapy.owl_axiom.OWLSubClassOfAxiom | owlapy.owl_axiom.OWLEquivalentClassesAxiom]
+
+
+   .. py:method:: get_abox_axioms() -> Iterable
+
+
+   .. py:method:: classes_in_signature() -> Iterable[owlapy.class_expression.OWLClass]
+      :abstractmethod:
+
+
+      Gets the classes in the signature of this object.
+
+      :returns: Classes in the signature of this object.
+
+
+
+   .. py:method:: data_properties_in_signature() -> Iterable[owlapy.owl_property.OWLDataProperty]
+      :abstractmethod:
+
+
+      Get the data properties that are in the signature of this object.
+
+      :returns: Data properties that are in the signature of this object.
+
+
+
+   .. py:method:: object_properties_in_signature() -> Iterable[owlapy.owl_property.OWLObjectProperty]
+      :abstractmethod:
+
+
+      A convenience method that obtains the object properties that are in the signature of this object.
+
+      :returns: Object properties that are in the signature of this object.
+
+
+
+   .. py:method:: properties_in_signature() -> Iterable[owlapy.owl_property.OWLProperty]
+      :abstractmethod:
+
+
+
+   .. py:method:: individuals_in_signature() -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+      :abstractmethod:
+
+
+      A convenience method that obtains the individuals that are in the signature of this object.
+
+      :returns: Individuals that are in the signature of this object.
+
+
+
+   .. py:method:: get_abox_axioms_between_individuals() -> Iterable
+      :abstractmethod:
+
+
+
+   .. py:method:: get_abox_axioms_between_individuals_and_classes() -> Iterable
+      :abstractmethod:
+
+
+
+   .. py:method:: equivalent_classes_axioms(c: owlapy.class_expression.OWLClass) -> Iterable[owlapy.owl_axiom.OWLEquivalentClassesAxiom]
+      :abstractmethod:
+
+
+      Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.
+
+      :param c: The class for which the EquivalentClasses axioms should be retrieved.
+
+      :returns: EquivalentClasses axioms contained in this ontology.
+
+
+
+   .. py:method:: general_class_axioms() -> Iterable[owlapy.owl_axiom.OWLClassAxiom]
+      :abstractmethod:
+
+
+      Get the general class axioms of this ontology. This includes SubClass axioms with a complex class expression
+         as the sub class and EquivalentClass axioms and DisjointClass axioms with only complex class expressions.
+
+      :returns: General class axioms contained in this ontology.
+
+
+
+   .. py:method:: data_property_domain_axioms(pe: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_axiom.OWLDataPropertyDomainAxiom]
+      :abstractmethod:
+
+
+      Gets the OWLDataPropertyDomainAxiom objects where the property is equal to the specified property.
+
+      :param property: The property which is equal to the property of the retrieved axioms.
+
+      :returns: The axioms matching the search.
+
+
+
+   .. py:method:: data_property_range_axioms(pe: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_axiom.OWLDataPropertyRangeAxiom]
+      :abstractmethod:
+
+
+      Gets the OWLDataPropertyRangeAxiom objects where the property is equal to the specified property.
+
+      :param property: The property which is equal to the property of the retrieved axioms.
+
+      :returns: The axioms matching the search.
+
+
+
+   .. py:method:: object_property_domain_axioms(pe: owlapy.owl_property.OWLObjectProperty) -> Iterable[owlapy.owl_axiom.OWLObjectPropertyDomainAxiom]
+      :abstractmethod:
+
+
+      Gets the OWLObjectPropertyDomainAxiom objects where the property is equal to the specified property.
+
+      :param property: The property which is equal to the property of the retrieved axioms.
+
+      :returns: The axioms matching the search.
+
+
+
+   .. py:method:: object_property_range_axioms(pe: owlapy.owl_property.OWLObjectProperty) -> Iterable[owlapy.owl_axiom.OWLObjectPropertyRangeAxiom]
+      :abstractmethod:
+
+
+      Gets the OWLObjectPropertyRangeAxiom objects where the property is equal to the specified property.
+
+      :param property: The property which is equal to the property of the retrieved axioms.
+
+      :returns: The axioms matching the search.
+
+
+
+   .. py:method:: add_axiom(axiom: Union[owlapy.owl_axiom.OWLAxiom, Iterable[owlapy.owl_axiom.OWLAxiom]])
+      :abstractmethod:
+
+
+      Add the specified axiom/axioms to the ontology.
+
+      :param axiom: Can be a single axiom or a collection of axioms.
+
+      :returns: Nothing.
+
+
+
+   .. py:method:: remove_axiom(axiom: Union[owlapy.owl_axiom.OWLAxiom, Iterable[owlapy.owl_axiom.OWLAxiom]])
+      :abstractmethod:
+
+
+      Removes the specified axiom/axioms to the ontology.
+
+      :param axiom: Can be a single axiom or a collection of axioms.
+
+      :returns: Nothing.
+
+
+
+   .. py:method:: save(path: Union[str, owlapy.iri.IRI] = None, inplace: bool = False, rdf_format='rdfxml')
+      :abstractmethod:
+
+
+      Saves this ontology, using its IRI to determine where/how the ontology should be
+      saved.
+
+      :param document_iri: Whether you want to save in a different location.
+
+
+
+   .. py:method:: get_ontology_id()
+      :abstractmethod:
+
+
+      Gets the OWLOntologyID belonging to this object.
+
+      :returns: The OWLOntologyID.
+
+
+
+   .. py:method:: get_owl_ontology_manager()
+      :abstractmethod:
+
+
+      Gets the manager that manages this ontology.
+
+
+
+   .. py:method:: __eq__(other)
+      :abstractmethod:
+
+
+
+   .. py:method:: __hash__()
+      :abstractmethod:
+
+
+
+   .. py:method:: __repr__()
+      :abstractmethod:
 
 
 

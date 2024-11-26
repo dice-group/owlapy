@@ -106,6 +106,13 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.SyncOntologyManager.saveOntology"><code class="docutils literal notranslate"><span class="pre">SyncOntologyManager.saveOntology()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager"><code class="docutils literal notranslate"><span class="pre">RDFLibOntologyManager</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager.create_ontology"><code class="docutils literal notranslate"><span class="pre">RDFLibOntologyManager.create_ontology()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager.load_ontology"><code class="docutils literal notranslate"><span class="pre">RDFLibOntologyManager.load_ontology()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager.apply_change"><code class="docutils literal notranslate"><span class="pre">RDFLibOntologyManager.apply_change()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager.save_world"><code class="docutils literal notranslate"><span class="pre">RDFLibOntologyManager.save_world()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -171,6 +178,9 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_ontology_manager.SyncOntologyManager" title="owlapy.owl_ontology_manager.SyncOntologyManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SyncOntologyManager</span></code></a></p></td>
 <td><p>Create OWLManager in Python</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager" title="owlapy.owl_ontology_manager.RDFLibOntologyManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RDFLibOntologyManager</span></code></a></p></td>
+<td><p>An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing</p></td>
 </tr>
 </tbody>
 </table>
@@ -379,6 +389,69 @@ get_owl_ontology_manager() call.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology_manager.SyncOntologyManager.saveOntology">
 <span class="sig-name descname"><span class="pre">saveOntology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#SyncOntologyManager.saveOntology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.SyncOntologyManager.saveOntology" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.RDFLibOntologyManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology_manager.</span></span><span class="sig-name descname"><span class="pre">RDFLibOntologyManager</span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#RDFLibOntologyManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../abstracts/abstract_owl_ontology_manager/index.html#owlapy.abstracts.abstract_owl_ontology_manager.AbstractOWLOntologyManager" title="owlapy.abstracts.abstract_owl_ontology_manager.AbstractOWLOntologyManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.abstracts.abstract_owl_ontology_manager.AbstractOWLOntologyManager</span></code></a></p>
+<p>An OWLOntologyManager manages a set of ontologies. It is the main point for creating, loading and accessing
+ontologies.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.RDFLibOntologyManager.create_ontology">
+<span class="sig-name descname"><span class="pre">create_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.RDFLibOntology" title="owlapy.owl_ontology.RDFLibOntology"><span class="pre">owlapy.owl_ontology.RDFLibOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#RDFLibOntologyManager.create_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager.create_ontology" title="Link to this definition"></a></dt>
+<dd><p>Creates a new (empty) ontology that that has the specified ontology IRI (and no version IRI).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iri</strong> – The IRI of the ontology to be created, can also be a string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The newly created ontology.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.RDFLibOntologyManager.load_ontology">
+<span class="sig-name descname"><span class="pre">load_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="pre">owlapy.owl_ontology.Ontology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#RDFLibOntologyManager.load_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager.load_ontology" title="Link to this definition"></a></dt>
+<dd><p>Loads an ontology that is assumed to have the specified ontology IRI as its IRI or version IRI. The ontology
+IRI will be mapped to an ontology document IRI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iri</strong> – <dl class="simple">
+<dt>The IRI that identifies the ontology, can also be a string.</dt><dd><p>It is expected that the ontology will also have this IRI</p>
+</dd>
+</dl>
+<p>(although the OWL API should tolerate situations where this is not the case).</p>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The OWLOntology representation of the ontology that was loaded.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.RDFLibOntologyManager.apply_change">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../abstracts/abstract_owl_ontology_manager/index.html#owlapy.abstracts.abstract_owl_ontology_manager.AbstractOWLOntologyChange" title="owlapy.abstracts.abstract_owl_ontology_manager.AbstractOWLOntologyChange"><span class="pre">owlapy.abstracts.abstract_owl_ontology_manager.AbstractOWLOntologyChange</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#RDFLibOntologyManager.apply_change"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager.apply_change" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that applies just one change to an ontology. When this method is used through an
+OWLOntologyManager implementation, the instance used should be the one that the ontology returns through the
+get_owl_ontology_manager() call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>change</strong> – The change to be applied.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ChangeApplied.UNSUCCESSFULLY</strong> – if the change was not applied successfully.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology_manager.RDFLibOntologyManager.save_world">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_world</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology_manager.html#RDFLibOntologyManager.save_world"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology_manager.RDFLibOntologyManager.save_world" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
