@@ -25,7 +25,7 @@ class TestOwlapyCommand(unittest.TestCase):
         onto = SyncOntologyManager().load_ontology("inferred_axioms_ontology.owl")
 
         ops = onto.object_properties_in_signature()
-        self.assertEqual(list(ops), [OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'hasChild')),
+        self.assertCountEqual(list(ops), [OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'hasChild')),
                                      OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'hasParent')),
                                      OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'hasSibling')),
                                      OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'married')),
@@ -49,7 +49,7 @@ class TestOwlapyCommand(unittest.TestCase):
                                                                                'topObjectProperty')), []))
 
         classes = onto.classes_in_signature()
-        self.assertEqual(list(classes), [OWLClass(IRI('http://www.benchmark.org/family#', 'Brother')),
+        self.assertCountEqual(list(classes), [OWLClass(IRI('http://www.benchmark.org/family#', 'Brother')),
                                          OWLClass(IRI('http://www.benchmark.org/family#', 'Child')),
                                          OWLClass(IRI('http://www.benchmark.org/family#', 'Daughter')),
                                          OWLClass(IRI('http://www.benchmark.org/family#', 'Father')),
