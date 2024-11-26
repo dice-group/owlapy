@@ -6,9 +6,20 @@ from owlapy.class_expression import OWLClass, OWLDataSomeValuesFrom, OWLObjectIn
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLDataMinCardinality, \
     OWLDataMaxCardinality, OWLDataExactCardinality, OWLObjectHasSelf, OWLObjectHasValue, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, OWLObjectUnionOf, OWLObjectOneOf, \
-    OWLFacetRestriction, OWLDatatypeRestriction, OWLDataOneOf
+    OWLFacetRestriction, OWLDatatypeRestriction, OWLDataOneOf, OWLThing
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLAnnotationProperty, OWLAnnotation, OWLAnnotationAssertionAxiom
+from owlapy.owl_axiom import OWLAnnotationProperty, OWLAnnotation, OWLAnnotationAssertionAxiom, OWLDeclarationAxiom, \
+    OWLClassAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLDataPropertyAssertionAxiom, \
+    OWLNegativeDataPropertyAssertionAxiom, OWLNegativeObjectPropertyAssertionAxiom, OWLObjectPropertyDomainAxiom, \
+    OWLDataPropertyDomainAxiom, OWLAnnotationPropertyDomainAxiom, OWLAnnotationPropertyRangeAxiom, \
+    OWLObjectPropertyRangeAxiom, OWLDataPropertyRangeAxiom, OWLEquivalentDataPropertiesAxiom, \
+    OWLEquivalentObjectPropertiesAxiom, OWLEquivalentClassesAxiom, OWLDisjointClassesAxiom, \
+    OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLHasKeyAxiom, OWLSubClassOfAxiom, \
+    OWLSubDataPropertyOfAxiom, OWLSubObjectPropertyOfAxiom, OWLSubAnnotationPropertyOfAxiom, \
+    OWLAsymmetricObjectPropertyAxiom, OWLFunctionalObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, \
+    OWLIrreflexiveObjectPropertyAxiom, OWLReflexiveObjectPropertyAxiom, OWLSymmetricObjectPropertyAxiom, \
+    OWLTransitiveObjectPropertyAxiom, OWLFunctionalDataPropertyAxiom, OWLDatatypeDefinitionAxiom, \
+    OWLDifferentIndividualsAxiom, OWLSameIndividualAxiom, OWLDisjointUnionAxiom, OWLInverseObjectPropertiesAxiom
 from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
@@ -140,20 +151,98 @@ class TestOWLAPIMapper(unittest.TestCase):
         self.assertEqual(f, self.mapper.map_(self.mapper.map_(f)))
         self.assertEqual(fr, self.mapper.map_(self.mapper.map_(fr)))
         self.assertEqual(dtr, self.mapper.map_(self.mapper.map_(dtr)))
-        self.assertCountEqual(list(dio.operands()), list(self.mapper.map_(self.mapper.map_(dio)).operands()))
-        self.assertCountEqual(list(doo.operands()), list(self.mapper.map_(self.mapper.map_(doo)).operands()))
+        self.assertEqual(dio, self.mapper.map_(self.mapper.map_(dio)))
+        self.assertEqual(doo, self.mapper.map_(self.mapper.map_(doo)))
         self.assertCountEqual(list(duo.operands()), list(self.mapper.map_(self.mapper.map_(duo)).operands()))
         self.assertEqual(dco, self.mapper.map_(self.mapper.map_(dco)))
 
     def test_axiom_mapping(self):
 
         ap = OWLAnnotationProperty(IRI.create(self.test_ns + "test_annotation"))
+        new_ap = OWLAnnotationProperty(IRI.create(self.test_ns + "new_ap"))
         av = OWLLiteral("Value of annotation")
+        test_iri = IRI.create(self.test_ns + "test_iri")
         a = OWLAnnotation(ap, av)
         aa = OWLAnnotationAssertionAxiom(IRI.create(self.test_ns + "test_annotation_subject"), a)
-
+        new_class = OWLClass(self.test_ns + "new_class")
+        new_ind = OWLNamedIndividual(self.test_ns + "new_ind")
+        new_dp = OWLDataProperty(self.test_ns + "new_dp")
+        new_op = OWLObjectProperty(self.test_ns + "new_op")
+        dtr = OWLDatatypeRestriction(DoubleOWLDatatype, OWLFacetRestriction(OWLFacet.MAX_EXCLUSIVE, OWLLiteral(0.1)))
+        da = OWLDeclarationAxiom(new_class, [a])
+        caa = OWLClassAssertionAxiom(self.i, new_class, [a])
+        opaa = OWLObjectPropertyAssertionAxiom(self.i, self.op, new_ind, [a])
+        dpaa = OWLDataPropertyAssertionAxiom(self.i, self.dp, OWLLiteral(1), [a])
+        ndpaa = OWLNegativeDataPropertyAssertionAxiom(self.i, self.dp, OWLLiteral(1), [a])
+        nopaa = OWLNegativeObjectPropertyAssertionAxiom(self.i, self.op, new_ind, [a])
+        opda = OWLObjectPropertyDomainAxiom(self.op, OWLThing, [a])
+        opra = OWLObjectPropertyRangeAxiom(self.op, OWLThing, [a])
+        dpda = OWLDataPropertyDomainAxiom(self.dp, OWLThing, [a])
+        dpra = OWLDataPropertyRangeAxiom(self.dp, IntegerOWLDatatype, [a])
+        apda = OWLAnnotationPropertyDomainAxiom(ap, test_iri, [a])
+        apra = OWLAnnotationPropertyRangeAxiom(ap, test_iri, [a])
+        edpa = OWLEquivalentDataPropertiesAxiom([self.dp, new_dp], [a])
+        eopa = OWLEquivalentObjectPropertiesAxiom([self.op, new_op], [a])
+        dopa = OWLDisjointObjectPropertiesAxiom([self.op, new_op], [a])
+        ddpa = OWLDisjointDataPropertiesAxiom([self.dp, new_dp], [a])
+        eca = OWLEquivalentClassesAxiom([self.c, new_class], [a])
+        dca = OWLDisjointClassesAxiom([self.c, new_class], [a])
+        hka = OWLHasKeyAxiom(self.c, [self.op, new_op], [a])
+        sca = OWLSubClassOfAxiom(self.c, new_class, [a])
+        sdpa = OWLSubDataPropertyOfAxiom(self.dp, new_dp, [a])
+        sopa = OWLSubObjectPropertyOfAxiom(self.op, new_op, [a])
+        sapa = OWLSubAnnotationPropertyOfAxiom(ap, new_ap, [a])
+        aopa = OWLAsymmetricObjectPropertyAxiom(self.op, [a])
+        fopa = OWLFunctionalObjectPropertyAxiom(self.op, [a])
+        ifopa = OWLInverseFunctionalObjectPropertyAxiom(self.op, [a])
+        iopa = OWLIrreflexiveObjectPropertyAxiom(self.op, [a])
+        ropa = OWLReflexiveObjectPropertyAxiom(self.op, [a])
+        smopa = OWLSymmetricObjectPropertyAxiom(self.op, [a])
+        topa = OWLTransitiveObjectPropertyAxiom(self.op, [a])
+        fdpa = OWLFunctionalDataPropertyAxiom(self.dp, [a])
+        dda = OWLDatatypeDefinitionAxiom(DoubleOWLDatatype, dtr, [a])
+        dia = OWLDifferentIndividualsAxiom([self.i, new_ind], [a])
+        sia = OWLSameIndividualAxiom([self.i, new_ind], [a])
+        dua = OWLDisjointUnionAxiom(self.c, [new_class], [a])
+        inopa = OWLInverseObjectPropertiesAxiom(self.op, new_op, [a])
 
         self.assertEqual(ap, self.mapper.map_(self.mapper.map_(ap)))
         self.assertEqual(av, self.mapper.map_(self.mapper.map_(av)))
         self.assertEqual(a, self.mapper.map_(self.mapper.map_(a)))
         self.assertEqual(aa, self.mapper.map_(self.mapper.map_(aa)))
+        self.assertEqual(da, self.mapper.map_(self.mapper.map_(da)))
+        self.assertEqual(caa, self.mapper.map_(self.mapper.map_(caa)))
+        self.assertEqual(opaa, self.mapper.map_(self.mapper.map_(opaa)))
+        self.assertEqual(dpaa, self.mapper.map_(self.mapper.map_(dpaa)))
+        self.assertEqual(ndpaa, self.mapper.map_(self.mapper.map_(ndpaa)))
+        self.assertEqual(nopaa, self.mapper.map_(self.mapper.map_(nopaa)))
+        self.assertEqual(opda, self.mapper.map_(self.mapper.map_(opda)))
+        self.assertEqual(opra, self.mapper.map_(self.mapper.map_(opra)))
+        self.assertEqual(dpda, self.mapper.map_(self.mapper.map_(dpda)))
+        self.assertEqual(dpra, self.mapper.map_(self.mapper.map_(dpra)))
+        self.assertEqual(apda, self.mapper.map_(self.mapper.map_(apda)))
+        self.assertEqual(apra, self.mapper.map_(self.mapper.map_(apra)))
+        self.assertEqual(edpa, self.mapper.map_(self.mapper.map_(edpa)))
+        self.assertEqual(eopa, self.mapper.map_(self.mapper.map_(eopa)))
+        self.assertEqual(dopa, self.mapper.map_(self.mapper.map_(dopa)))
+        self.assertEqual(ddpa, self.mapper.map_(self.mapper.map_(ddpa)))
+        self.assertEqual(eca, self.mapper.map_(self.mapper.map_(eca)))
+        self.assertEqual(dca, self.mapper.map_(self.mapper.map_(dca)))
+        self.assertEqual(hka, self.mapper.map_(self.mapper.map_(hka)))
+        self.assertEqual(sca, self.mapper.map_(self.mapper.map_(sca)))
+        self.assertEqual(sdpa, self.mapper.map_(self.mapper.map_(sdpa)))
+        self.assertEqual(sopa, self.mapper.map_(self.mapper.map_(sopa)))
+        self.assertEqual(sapa, self.mapper.map_(self.mapper.map_(sapa)))
+        self.assertEqual(aopa, self.mapper.map_(self.mapper.map_(aopa)))
+        self.assertEqual(fopa, self.mapper.map_(self.mapper.map_(fopa)))
+        self.assertEqual(ifopa, self.mapper.map_(self.mapper.map_(ifopa)))
+        self.assertEqual(iopa, self.mapper.map_(self.mapper.map_(iopa)))
+        self.assertEqual(ropa, self.mapper.map_(self.mapper.map_(ropa)))
+        self.assertEqual(smopa, self.mapper.map_(self.mapper.map_(smopa)))
+        self.assertEqual(topa, self.mapper.map_(self.mapper.map_(topa)))
+        self.assertEqual(fdpa, self.mapper.map_(self.mapper.map_(fdpa)))
+        self.assertEqual(dda, self.mapper.map_(self.mapper.map_(dda)))
+        self.assertEqual(dia, self.mapper.map_(self.mapper.map_(dia)))
+        self.assertEqual(sia, self.mapper.map_(self.mapper.map_(sia)))
+        self.assertEqual(dua, self.mapper.map_(self.mapper.map_(dua)))
+        self.assertEqual(inopa, self.mapper.map_(self.mapper.map_(inopa)))
