@@ -33,6 +33,9 @@ class InfrenceTypeRequest(BaseModel):
 class ClassIRIRequest(BaseModel):
     class_iri: str
 
+class AxiomRequest(BaseModel):
+    axiom: str
+
 def create_app(ontology_path: str, reasoner_name: str):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -67,6 +70,16 @@ def create_app(ontology_path: str, reasoner_name: str):
         classes = [cls.__str__() for cls in ontology.classes_in_signature()]
         return {"classes": classes}
 
+    @app.get("/object_properties")
+    async def get_object_properties():
+        object_properties = [op.__str__() for op in ontology.object_properties_in_signature()]
+        return {"object_properties": object_properties}
+    
+    @app.get("/data_properties")
+    async def get_data_properties():
+        data_properties = [dp.__str__() for dp in ontology.data_properties_in_signature()]
+        return {"data_properties": data_properties}
+    
     @app.get("/individuals")
     async def get_individuals():
         individuals = [ind.__str__() for ind in ontology.individuals_in_signature()]

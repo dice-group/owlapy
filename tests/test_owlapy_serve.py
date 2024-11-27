@@ -26,6 +26,20 @@ def test_get_classes (mock_stop_jvm):
         assert response.status_code == 200
         assert set(response.json()["classes"]) == set(expected_classes)
 
+def test_get_object_properties(mock_stop_jvm):
+    with TestClient(create_app(ontology_path, reasoner_name)) as client:
+        response = client.get("/object_properties")
+        expected_object_properties = [op.__str__() for op in ontology.object_properties_in_signature()]
+        assert response.status_code == 200
+        assert set(response.json()["object_properties"]) == set(expected_object_properties)
+
+def test_get_data_properties(mock_stop_jvm):
+    with TestClient(create_app(ontology_path, reasoner_name)) as client:
+        response = client.get("/data_properties")
+        expected_data_properties = [dp.__str__() for dp in ontology.data_properties_in_signature()]
+        assert response.status_code == 200
+        assert set(response.json()["data_properties"]) == set(expected_data_properties)
+
 def test_get_individuals(mock_stop_jvm):
     with TestClient(create_app(ontology_path, reasoner_name)) as client:
         response = client.get("/individuals")
