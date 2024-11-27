@@ -8,14 +8,32 @@ from owlapy.owl_reasoner import SyncReasoner
 from owlapy.class_expression import OWLClass
 from owlapy.static_funcs import stopJVM
 from contextlib import asynccontextmanager
-
+from enum import Enum
 
 ontology = None
 reasoner = None
 
+class InferenceType(str, Enum):
+    InferredClassAssertionAxiomGenerator = "InferredClassAssertionAxiomGenerator"
+    InferredSubClassAxiomGenerator = "InferredSubClassAxiomGenerator"
+    InferredDisjointClassesAxiomGenerator = "InferredDisjointClassesAxiomGenerator"
+    InferredEquivalentClassAxiomGenerator = "InferredEquivalentClassAxiomGenerator"
+    InferredEquivalentDataPropertiesAxiomGenerator = "InferredEquivalentDataPropertiesAxiomGenerator"
+    InferredEquivalentObjectPropertyAxiomGenerator = "InferredEquivalentObjectPropertyAxiomGenerator"
+    InferredInverseObjectPropertiesAxiomGenerator = "InferredInverseObjectPropertiesAxiomGenerator"
+    InferredSubDataPropertyAxiomGenerator = "InferredSubDataPropertyAxiomGenerator"
+    InferredSubObjectPropertyAxiomGenerator = "InferredSubObjectPropertyAxiomGenerator"
+    InferredDataPropertyCharacteristicAxiomGenerator = "InferredDataPropertyCharacteristicAxiomGenerator"
+    InferredObjectPropertyCharacteristicAxiomGenerator = "InferredObjectPropertyCharacteristicAxiomGenerator"
+    All = "all"
+
+class InfrenceTypeRequest(BaseModel):
+    inference_type: InferenceType
+
+class ClassIRIRequest(BaseModel):
+    class_iri: str
+
 def create_app(ontology_path: str, reasoner_name: str):
-
-
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         global ontology, reasoner
@@ -35,9 +53,6 @@ def create_app(ontology_path: str, reasoner_name: str):
         stopJVM()
 
     app = FastAPI(title="OWLAPY API", lifespan=lifespan)
-
-    class ClassIRIRequest(BaseModel):
-        class_iri: str
 
     @app.post("/instances")
     async def get_instances(request: ClassIRIRequest):
@@ -66,6 +81,18 @@ def create_app(ontology_path: str, reasoner_name: str):
     async def get_tbox():
         tbox = ontology.get_tbox_axioms()
         return {"tbox": [axiom.__str__() for axiom in tbox]}
+        
+    @app.post("/infer_axioms")
+    async def infer_axioms(request: InfrenceTypeRequest):
+        inference_type = request.inference_type
+        if inference_type == InferenceType.All:
+            inferred_axioms = []
+            for inference_type in {it for it in InferenceType if it != InferenceType.All}:
+                inferred_axioms.extend(reasoner.infer_axioms(inference_type.value))
+        else:
+            inferred_axioms = reasoner.infer_axioms(request.inference_type.value)
+
+        return {"inferred_axioms": [axiom.__str__() for axiom in inferred_axioms]}
 
     return app
 

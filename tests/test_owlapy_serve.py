@@ -5,6 +5,7 @@ from owlapy.owl_ontology_manager import SyncOntologyManager
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.class_expression import OWLClass
 from owlapy.scripts.owlapy_serve import create_app
+from owlapy.scripts.owlapy_serve import InferenceType
 
 ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
 reasoner_name = "HermiT"
@@ -54,3 +55,34 @@ def test_get_instances(mock_stop_jvm):
         response = client.post("/instances", json={"class_iri": test_class_iri})
         assert response.status_code == 200
         assert set(response.json()["instances"]) == set(expected_instances)
+
+def test_infer_axioms(mock_stop_jvm):
+    with TestClient(create_app(ontology_path, reasoner_name)) as client:
+        valid_inference_type = "InferredClassAssertionAxiomGenerator"
+        response = client.post(
+            "/infer_axioms", 
+            json={"inference_type": valid_inference_type}
+        )
+        assert response.status_code == 200
+        expected_axioms = [
+            axiom.__str__() for axiom in reasoner.infer_axioms(valid_inference_type)
+        ]
+        assert set(response.json()["inferred_axioms"]) == set(expected_axioms)
+        invalid_inference_type = "InvalidAxiomGenerator"
+        response = client.post(
+            "/infer_axioms", 
+            json={"inference_type": invalid_inference_type}
+        )
+        assert response.status_code == 422
+
+def test_infer_axioms_all(mock_stop_jvm):
+    with TestClient(create_app(ontology_path, reasoner_name)) as client:
+        response = client.post("/infer_axioms", json={"inference_type": "all"})
+        assert response.status_code == 200
+        
+        expected_axioms = []
+        for inference_type in InferenceType:
+            if inference_type != InferenceType.All:
+                expected_axioms.extend(reasoner.infer_axioms(inference_type.value))
+        
+        assert set(response.json()["inferred_axioms"]) == set([axiom.__str__() for axiom in expected_axioms])
