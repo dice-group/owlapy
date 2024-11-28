@@ -360,9 +360,10 @@
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expression</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expression</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property_expressions</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+                <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_property_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_property_expressions</span><span class="p">)</span> \
+                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_property_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_property_expressions</span><span class="p">)</span> \
+                <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="OWLHasKeyAxiom.__hash__">
@@ -446,8 +447,11 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLNaryClassAxiom.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expressions</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+            <span class="c1"># parsed to set to have order-insensitive comparison</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="OWLNaryClassAxiom.__hash__">
@@ -567,8 +571,10 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLNaryIndividualAxiom.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_individuals</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_individuals</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_individuals</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_individuals</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_individuals</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_individuals</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="OWLNaryIndividualAxiom.__hash__">
@@ -657,8 +663,10 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLNaryPropertyAxiom.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_properties</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+            <span class="c1"># parsed to set to have order-insensitive comparison</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_properties</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_properties</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="OWLNaryPropertyAxiom.__hash__">
@@ -905,9 +913,10 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLDisjointUnionAxiom.__eq__">[docs]</a>
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cls</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cls</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_class_expressions</span> \
-                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cls</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_cls</span> <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="OWLDisjointUnionAxiom.__hash__">
