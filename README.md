@@ -1,4 +1,6 @@
 # OWLAPY
+[![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
+[![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
 [![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
 [![Pypi](https://img.shields.io/badge/pypi-1.3.3-blue)](https://pypi.org/project/owlapy/1.3.3/)
 [![Docs](https://img.shields.io/badge/documentation-1.3.3-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
@@ -20,8 +22,6 @@ or
 ```bash
 pip3 install owlapy
 ```
-
-
 ```shell
 # To download RDF knowledge graphs
 wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
@@ -29,6 +29,32 @@ pytest -p no:warnings -x # Running  147 tests ~ 35 secs
 ```
 
 ## Examples
+
+### OWL Reasoning from Command line
+
+<details><summary> Click me! </summary>
+
+```shell
+owlapy --path_ontology "KGs/Family/family-benchmark_rich_background.owl" --inference_types "all" --out_ontology "enriched_family.owl"
+```
+
+```--inference_types``` can be specified by selecting one from 
+
+``` 
+["InferredClassAssertionAxiomGenerator",
+"InferredSubClassAxiomGenerator",
+"InferredDisjointClassesAxiomGenerator",
+"InferredEquivalentClassAxiomGenerator",
+"InferredEquivalentDataPropertiesAxiomGenerator",
+"InferredEquivalentObjectPropertyAxiomGenerator",
+"InferredInverseObjectPropertiesAxiomGenerator",
+"InferredSubDataPropertyAxiomGenerator",
+"InferredSubObjectPropertyAxiomGenerator",
+"InferredDataPropertyCharacteristicAxiomGenerator",
+"InferredObjectPropertyCharacteristicAxiomGenerator"]
+```
+
+</details>
 
 ### Exploring OWL Ontology
 
@@ -174,7 +200,6 @@ stopJVM()
 
 
 Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) and [tests](https://github.com/dice-group/owlapy/tree/develop/tests) folders.
-
 
 ### Sklearn to OWL Ontology
 
