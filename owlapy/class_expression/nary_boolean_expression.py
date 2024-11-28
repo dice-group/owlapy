@@ -1,6 +1,4 @@
 """OWL nary boolean expressions"""
-from more_itertools import ilen
-
 from .class_expression import OWLClassExpression, OWLBooleanClassExpression
 from ..meta_classes import HasOperands
 from typing import Final, Sequence, Iterable
@@ -31,7 +29,8 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return set(self._operands) == set(other.operands()) and ilen(self._operands) == ilen(other.operands())
+            return (set(self._operands) == set(other.operands())
+                    and len(list(self._operands)) == len(list(other.operands())))
         return False
 
     def __hash__(self):
