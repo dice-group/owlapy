@@ -29,9 +29,9 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return {i for i in self._operands} == { j for j in other.operands()}
-        else:
-            return False
+            return (set(self._operands) == set(other.operands())
+                    and len(list(self._operands)) == len(list(other.operands())))
+        return False
 
     def __hash__(self):
         return hash(self._operands)

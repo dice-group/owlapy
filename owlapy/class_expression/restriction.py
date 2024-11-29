@@ -438,9 +438,11 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._values == other._values
-        else:
-            return False
+            if isinstance(self._values, OWLIndividual):
+                return self._values == other._values
+            else:
+                return set(self._values) == set(other._values) and len(self._values) == len(other._values)
+        return False
 
     def __repr__(self):
         return f'OWLObjectOneOf({self._values})'

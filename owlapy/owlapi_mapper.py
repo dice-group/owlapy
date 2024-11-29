@@ -33,7 +33,7 @@ if not jpype.isJVMStarted():
     startJVM()
 from org.semanticweb.owlapi.model import IRI as owlapi_IRI, OWLOntologyID as owlapi_OWLOntologyID
 from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
-from java.util import ArrayList, List, Set, LinkedHashSet, Optional
+from java.util import ArrayList, List, Set, LinkedHashSet, Optional, Collections
 from java.util.stream import Stream
 from uk.ac.manchester.cs.owl.owlapi import (OWLClassImpl, OWLDataAllValuesFromImpl, OWL2DatatypeImpl,
                                             OWLDataExactCardinalityImpl,OWLDataHasValueImpl,
@@ -329,24 +329,24 @@ class OWLAPIMapper:
     @map_.register(OWLObjectPropertyDomainAxiom)
     @map_.register(OWLDataPropertyDomainAxiom)
     @map_.register(OWLAnnotationPropertyDomainAxiom)
-    @map_.register(OWLAnnotationPropertyRangeAxiom)
     def _(self, e):
         return init(e)(self.map_(e.get_property()), self.map_(e.get_domain()), self.map_(e.annotations()))
 
     @map_.register(OWLObjectPropertyDomainAxiomImpl)
     @map_.register(OWLDataPropertyDomainAxiomImpl)
     @map_.register(OWLAnnotationPropertyDomainAxiomImpl)
-    @map_.register(OWLAnnotationPropertyRangeAxiomImpl)
     def _(self, e):
         return init(e)(self.map_(e.getProperty()), self.map_(e.getDomain()), self.map_(e.annotationsAsList()))
 
     @map_.register(OWLObjectPropertyRangeAxiom)
     @map_.register(OWLDataPropertyRangeAxiom)
+    @map_.register(OWLAnnotationPropertyRangeAxiom)
     def _(self, e):
         return init(e)(self.map_(e.get_property()), self.map_(e.get_range()), self.map_(e.annotations()))
 
     @map_.register(OWLObjectPropertyRangeAxiomImpl)
     @map_.register(OWLDataPropertyRangeAxiomImpl)
+    @map_.register(OWLAnnotationPropertyRangeAxiomImpl)
     def _(self, e):
         return init(e)(self.map_(e.getProperty()), self.map_(e.getRange()), self.map_(e.annotationsAsList()))
 
@@ -445,12 +445,12 @@ class OWLAPIMapper:
     @map_.register(OWLDifferentIndividualsAxiom)
     @map_.register(OWLSameIndividualAxiom)
     def _(self, e):
-        return OWLDifferentIndividualsAxiomImpl(self.map_(e.individuals()), self.map_(e.annotations()))
+        return init(e)(self.map_(e.individuals()), self.map_(e.annotations()))
 
     @map_.register(OWLDifferentIndividualsAxiomImpl)
     @map_.register(OWLSameIndividualAxiomImpl)
     def _(self, e):
-        return OWLDifferentIndividualsAxiom(self.map_(e.getIndividualsAsList()), self.map_(e.annotationsAsList()))
+        return init(e)(self.map_(e.getIndividualsAsList()), self.map_(e.annotationsAsList()))
 
     @map_.register(OWLDisjointUnionAxiom)
     def _(self, e):
@@ -504,6 +504,8 @@ class OWLAPIMapper:
         if e and len(casted_list) > 0:
             for obj in list(e):
                 python_list.append(self.map_(obj))
+            # reverse to have the same order as the mapped iterable object
+            python_list.reverse()
         return python_list
 
     @map_.register(list)
@@ -514,6 +516,8 @@ class OWLAPIMapper:
         if e is not None and len(e) > 0:
             for item in e:
                 java_list.add(self.map_(item))
+            # reverse to have the same order as the mapped iterable object
+            Collections.reverse(java_list)
         return java_list
 
     @map_.register(Stream)

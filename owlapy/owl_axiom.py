@@ -195,9 +195,10 @@ class OWLHasKeyAxiom(OWLLogicalAxiom, HasOperands[OWLPropertyExpression]):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._class_expression == other._class_expression \
-                and self._property_expressions == other._property_expressions \
-                and self._annotations == other._annotations
-        return NotImplemented
+                and set(self._property_expressions) == set(other._property_expressions) \
+                and len(self._property_expressions) == len(other._property_expressions) \
+                and set(self._annotations) == set(other._annotations)
+        return False
 
     def __hash__(self):
         return hash((self._class_expression, *self._property_expressions, *self._annotations))
@@ -257,8 +258,11 @@ class OWLNaryClassAxiom(OWLClassAxiom, OWLNaryAxiom[OWLClassExpression], metacla
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._class_expressions == other._class_expressions and self._annotations == other._annotations
-        return NotImplemented
+            # parsed to set to have order-insensitive comparison
+            return (set(self._class_expressions) == set(other._class_expressions)
+                    and len(self._class_expressions) == len(other._class_expressions)
+                    and set(self._annotations) == set(other._annotations))
+        return False
 
     def __hash__(self):
         return hash((*self._class_expressions, *self._annotations))
@@ -339,8 +343,10 @@ class OWLNaryIndividualAxiom(OWLIndividualAxiom, OWLNaryAxiom[OWLIndividual], me
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._individuals == other._individuals and self._annotations == other._annotations
-        return NotImplemented
+            return (set(self._individuals) == set(other._individuals)
+                    and len(self._individuals) == len(other._individuals)
+                    and set(self._annotations) == set(other._annotations))
+        return False
 
     def __hash__(self):
         return hash((*self._individuals, *self._annotations))
@@ -405,8 +411,10 @@ class OWLNaryPropertyAxiom(Generic[_P], OWLPropertyAxiom, OWLNaryAxiom[_P], meta
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._properties == other._properties and self._annotations == other._annotations
-        return NotImplemented
+            # parsed to set to have order-insensitive comparison
+            return (set(self._properties) == set(other._properties) and len(self._properties) == len(other._properties)
+                    and set(self._annotations) == set(other._annotations))
+        return False
 
     def __hash__(self):
         return hash((*self._properties, *self._annotations))
@@ -587,9 +595,10 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._cls == other._cls and self._class_expressions == other._class_expressions \
-                and self._annotations == other._annotations
-        return NotImplemented
+            return (self._cls == other._cls and set(self._class_expressions) == set(other._class_expressions)
+                    and self._annotations == other._annotations
+                    and len(self._class_expressions) == len(other._class_expressions))
+        return False
 
     def __hash__(self):
         return hash((self._cls, *self._class_expressions, *self._annotations))
