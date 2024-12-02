@@ -108,7 +108,7 @@
 <span class="kn">from</span> <span class="nn">owlapy.owl_individual</span> <span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span> <span class="nn">owlapy.owl_ontology</span> <span class="kn">import</span> <span class="n">OWLOntologyID</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
+<span class="kn">from</span> <span class="nn">owlapy.owl_property</span> <span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span>
 <span class="kn">from</span> <span class="nn">owlapy.static_funcs</span> <span class="kn">import</span> <span class="n">startJVM</span>
 <span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLFacet</span>
 
@@ -119,7 +119,7 @@
 <span class="kn">from</span> <span class="nn">java.util</span> <span class="kn">import</span> <span class="n">ArrayList</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">LinkedHashSet</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Collections</span>
 <span class="kn">from</span> <span class="nn">java.util.stream</span> <span class="kn">import</span> <span class="n">Stream</span>
 <span class="kn">from</span> <span class="nn">uk.ac.manchester.cs.owl.owlapi</span> <span class="kn">import</span> <span class="p">(</span><span class="n">OWLClassImpl</span><span class="p">,</span> <span class="n">OWLDataAllValuesFromImpl</span><span class="p">,</span> <span class="n">OWL2DatatypeImpl</span><span class="p">,</span>
-                                            <span class="n">OWLDataExactCardinalityImpl</span><span class="p">,</span><span class="n">OWLDataHasValueImpl</span><span class="p">,</span>
+                                            <span class="n">OWLDataExactCardinalityImpl</span><span class="p">,</span><span class="n">OWLDataHasValueImpl</span><span class="p">,</span> <span class="n">OWLObjectInverseOfImpl</span><span class="p">,</span>
                                             <span class="n">OWLDataMaxCardinalityImpl</span><span class="p">,</span> <span class="n">OWLDataUnionOfImpl</span><span class="p">,</span>
                                             <span class="n">OWLDataMinCardinalityImpl</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFromImpl</span><span class="p">,</span>
                                             <span class="n">OWLObjectAllValuesFromImpl</span><span class="p">,</span> <span class="n">OWLObjectComplementOfImpl</span><span class="p">,</span>
@@ -308,6 +308,14 @@
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLLiteralImplInteger</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getLiteral</span><span class="p">())))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectInverseOf</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">()))</span>
+
+    <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectInverseOfImpl</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getNamedProperty</span><span class="p">()))</span>
 
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataIntersectionOf</span><span class="p">)</span>
     <span class="nd">@map_</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataOneOf</span><span class="p">)</span>
