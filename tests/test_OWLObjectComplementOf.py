@@ -20,7 +20,6 @@ def test_complement_of_owl_thing_is_owl_nothing():
     individuals_complement_of_nothing = reasoner.instances(complement_of_nothing)
     assert individuals_thing == individuals_complement_of_nothing
 
-
 def test_complement_of_owl_nothing_is_owl_thing():
     owl_thing = OWLClass(IRI.create('http://www.w3.org/2002/07/owl#Thing'))
     owl_nothing = OWLClass(IRI.create('http://www.w3.org/2002/07/owl#Nothing'))
