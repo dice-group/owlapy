@@ -24,7 +24,7 @@ from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataUnionOf, OWLDat
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, IntegerOWLDatatype, BooleanOWLDatatype, DoubleOWLDatatype
-from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf
 from owlapy.owlapi_mapper import OWLAPIMapper
 from owlapy.providers import owl_datatype_min_inclusive_restriction
 from owlapy.vocab import OWLFacet
@@ -83,7 +83,8 @@ class TestOWLAPIMapper(unittest.TestCase):
     def test_entity_mapping(self):
 
         iri = IRI.create(self.test_ns + "test")
-
+        ip = OWLObjectInverseOf(self.op)
+        self.assertEqual(ip, self.mapper.map_(self.mapper.map_(ip)))
         self.assertEqual(iri, self.mapper.map_(self.mapper.map_(iri)))
         self.assertEqual(self.i, self.mapper.map_(self.mapper.map_(self.i)))
         self.assertEqual(self.c, self.mapper.map_(self.mapper.map_(self.c)))
