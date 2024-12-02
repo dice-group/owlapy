@@ -25,7 +25,7 @@ from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import OWLOntologyID
-from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
+from owlapy.owl_property import OWLObjectProperty, OWLDataProperty, OWLObjectInverseOf
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
 
@@ -36,7 +36,7 @@ from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
 from java.util import ArrayList, List, Set, LinkedHashSet, Optional, Collections
 from java.util.stream import Stream
 from uk.ac.manchester.cs.owl.owlapi import (OWLClassImpl, OWLDataAllValuesFromImpl, OWL2DatatypeImpl,
-                                            OWLDataExactCardinalityImpl,OWLDataHasValueImpl,
+                                            OWLDataExactCardinalityImpl,OWLDataHasValueImpl, OWLObjectInverseOfImpl,
                                             OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
                                             OWLDataMinCardinalityImpl, OWLDataSomeValuesFromImpl,
                                             OWLObjectAllValuesFromImpl, OWLObjectComplementOfImpl,
@@ -217,6 +217,14 @@ class OWLAPIMapper:
     @map_.register
     def _(self, e: OWLLiteralImplInteger):
         return OWLLiteral(int(str(e.getLiteral())))
+
+    @map_.register
+    def _(self, e: OWLObjectInverseOf):
+        return init(e)(self.map_(e.get_named_property()))
+
+    @map_.register
+    def _(self, e: OWLObjectInverseOfImpl):
+        return init(e)(self.map_(e.getNamedProperty()))
 
     @map_.register(OWLDataIntersectionOf)
     @map_.register(OWLDataOneOf)
