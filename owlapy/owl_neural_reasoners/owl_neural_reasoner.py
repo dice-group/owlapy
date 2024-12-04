@@ -12,7 +12,6 @@ from dicee.knowledge_graph_embeddings import KGE
 import os
 import re
 from collections import Counter, OrderedDict
-from owlapy.iri import IRI
 from functools import lru_cache
 from owlapy.owl_neural_reasoners.abstract import AbstractNeuralReasoner
 
@@ -128,8 +127,7 @@ class OWLNeuralReasoner(AbstractNeuralReasoner):
         for c in owl_classes:
             assert isinstance(c, OWLClass)
             top_entity:str
-            score:float
-            for top_entity, score in self.predict(h=None,
+            for top_entity, _ in self.predict(h=None,
                                                   r=self.str_iri_type,
                                                   t=c.iri.str):
                 top_entities.add(top_entity)
@@ -158,11 +156,11 @@ class OWLNeuralReasoner(AbstractNeuralReasoner):
         #         yield subject_, dp, l
 
     def classes_in_signature(self) -> List[OWLClass]:
-        return [OWLClass(top_entity) for top_entity, score in self.predict(h=None,
+        return [OWLClass(top_entity) for top_entity, _ in self.predict(h=None,
                                                                    r=self.str_iri_type,
                                                                    t=self.str_iri_owl_class)]
     def direct_subconcepts(self, named_concept: OWLClass) -> List[OWLClass]:
-        return [OWLClass(top_entity) for top_entity, score in self.predict(h=None,
+        return [OWLClass(top_entity) for top_entity, _ in self.predict(h=None,
                                                                            r=self.str_iri_subclassof,
                                                                            t=named_concept.str)]
 
@@ -200,48 +198,48 @@ class OWLNeuralReasoner(AbstractNeuralReasoner):
     def least_general_named_concepts(self) -> Generator[OWLClass, None, None]:  # pragma: no cover
         """At least it has single superclass and there is no subclass"""
         for _class in self.classes_in_signature():
-            for concept in self.subconcepts(
+            for _ in self.subconcepts(
                     named_concept=_class
             ):
                 break
             else:
                 # checks if superclasses is not empty -> there is at least one superclass
-                if superclasses := list(
+                if list(
                         self.get_direct_parents(_class)
                 ):
                     yield _class
 
     def get_direct_parents(self, named_concept: OWLClass)-> List[OWLClass] :  # pragma: no cover
-        return [OWLClass(entity) for entity, score in self.predict(h=named_concept.str, r=self.str_iri_subclassof,
+        return [OWLClass(entity) for entity, _ in self.predict(h=named_concept.str, r=self.str_iri_subclassof,
                                                                    t=None)]
 
     def get_type_individuals(self, individual: str) -> List[OWLClass]:
-        return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual, r=self.str_iri_type, t=None)]
+        return [OWLClass(top_entity) for top_entity, _ in self.predict(h=individual, r=self.str_iri_type, t=None)]
     def individuals_in_signature(self) -> List[OWLNamedIndividual]:
         set_str_entities=set()
         for owl_class in self.classes_in_signature():
-            for top_entity, score in self.predict(h=None,
+            for top_entity, _ in self.predict(h=None,
                                                   r=self.str_iri_type,
                                                   t=owl_class.iri.str):
                 set_str_entities.add(top_entity)
         return [OWLNamedIndividual(entity) for entity in set_str_entities]
 
     def data_properties_in_signature(self) -> List[OWLDataProperty]:
-        return [OWLDataProperty(top_entity) for top_entity, score in self.predict(h=None,
+        return [OWLDataProperty(top_entity) for top_entity, _ in self.predict(h=None,
                                                      r=self.str_iri_type,
                                                      t=self.str_iri_data_property)]
 
     def object_properties_in_signature(self) -> List[OWLObjectProperty]:
-        return [OWLObjectProperty(top_entity) for top_entity, score in self.predict(h=None,
+        return [OWLObjectProperty(top_entity) for top_entity, _ in self.predict(h=None,
                                                      r=self.str_iri_type,
                                                      t=self.str_iri_object_property)]
 
     def boolean_data_properties(self) -> Generator[OWLDataProperty, None, None]:  # pragma: no cover
-        return [OWLDataProperty(top_entity) for top_entity,score  in self.predict(h=None, r=self.str_iri_range,
+        return [OWLDataProperty(top_entity) for top_entity, _  in self.predict(h=None, r=self.str_iri_range,
                                                                                   t=self.str_iri_boolean)]
 
     def double_data_properties(self) -> List[OWLDataProperty]:  # pragma: no cover
-        return [OWLDataProperty(top_entity) for top_entity, score in self.predict(
+        return [OWLDataProperty(top_entity) for top_entity, _ in self.predict(
                 h=None,
                 r=self.str_iri_range,
                 t=self.str_iri_double)]
@@ -329,12 +327,10 @@ class OWLNeuralReasoner(AbstractNeuralReasoner):
             cardinality = expression.get_cardinality()
 
             # Get all individuals that are instances of the filler expression.
-            owl_individual:OWLNamedIndividual
             object_individuals = { owl_individual for owl_individual
                                    in self.instances(filler_expression)}
 
             # Initialize a dictionary to keep track of counts of related individuals for each entity.
-            owl_individual:OWLNamedIndividual
             str_subject_individuals_to_count = {owl_individual.str: (owl_individual,0) for owl_individual in self.individuals_in_signature()}
 
             for object_individual in object_individuals:
@@ -350,7 +346,7 @@ class OWLNeuralReasoner(AbstractNeuralReasoner):
                         str_subject_individuals_to_count[subject_individual.str] = (owl_obj, count+1)
 
             # Filter out individuals who exceed the specified cardinality.
-            yield from  {ind for str_ind, (ind, count) in str_subject_individuals_to_count.items() if count <= cardinality}
+            yield from  {ind for _, (ind, count) in str_subject_individuals_to_count.items() if count <= cardinality}
 
         # Handling union of class expressions
         elif isinstance(expression, OWLObjectUnionOf):
@@ -378,7 +374,7 @@ class OWLNeuralReasoner(AbstractNeuralReasoner):
         assert isinstance(object_property, OWLObjectProperty) or isinstance(object_property, OWLObjectInverseOf)
         if is_inverse := isinstance(object_property, OWLObjectInverseOf):
             object_property = object_property.get_inverse()
-        return [OWLNamedIndividual(top_entity) for top_entity, score in self.predict(
+        return [OWLNamedIndividual(top_entity) for top_entity, _ in self.predict(
                 h=None if is_inverse else subject,
                 r=object_property.iri.str,
                 t=subject if is_inverse else None)]
@@ -410,7 +406,7 @@ class OWLNeuralReasoner(AbstractNeuralReasoner):
         if is_inverse:
             object_property = object_property.get_inverse()
 
-        for entity, score in self.predict(
+        for entity, _ in self.predict(
                 h=obj.str if is_inverse else None,
                 r=object_property.str,
                 t=None if is_inverse else obj.str):
