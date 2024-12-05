@@ -13,7 +13,6 @@ from owlapy.class_expression import (
 )
 import time
 from typing import Tuple, Set
-import pandas as pd
 import random
 import itertools
 
@@ -174,25 +173,21 @@ def test_retrieval_performance():
     )
     random.shuffle(concepts)
 
-    data = []
+    total_jaccard_similarity = 0
+    total_f1_score = 0
 
     for expression in concepts:
         retrieval_y, _ = concept_retrieval(symbolic_kb, expression)
         retrieval_neural_y, _ = concept_retrieval(neural_owl_reasoner, expression)
-        jaccard_sim = jaccard_similarity(retrieval_y, retrieval_neural_y)
-        f1_sim = f1_set_similarity(retrieval_y, retrieval_neural_y)
-        data.append({
-            "Jaccard Similarity": jaccard_sim,
-            "F1": f1_sim,
-        })
+        total_jaccard_similarity += jaccard_similarity(retrieval_y, retrieval_neural_y)
+        total_f1_score += f1_set_similarity(retrieval_y, retrieval_neural_y)
 
-    df = pd.DataFrame(data)
-
-    mean_jaccard_similarity = df["Jaccard Similarity"].mean()
+    mean_jaccard_similarity = total_jaccard_similarity / len(concepts)
     assert mean_jaccard_similarity >= min_jaccard_similarity, \
         f"Mean Jaccard Similarity {mean_jaccard_similarity} is less than the threshold {min_jaccard_similarity}"
 
-    mean_f1_score = df["F1"].mean()
+    mean_f1_score = total_f1_score / len(concepts)
     assert mean_f1_score >= min_f1_score, \
         f"Mean F1 Score {mean_f1_score} is less than the threshold {min_f1_score}"
+
 
