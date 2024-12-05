@@ -21,7 +21,7 @@ def is_valid_entity(text_input: str):
 
 class OWLNeuralReasoner(AbstractNeuralReasoner):
     """ OWL Neural Reasoner uses a neural link predictor to retrieve instances of an OWL Class Expression"""
-    def __init__(self, path_of_kb: str = None, path_neural_embedding: str = None, gamma: float = 0.25, max_cache_size: int = 0):
+    def __init__(self, path_of_kb: str = None, path_neural_embedding: str = None, gamma: float = 0.25, max_cache_size: int = 2**20):
         assert gamma is None or 0 <= gamma <= 1, "Confidence threshold (gamma) must be in the range [0, 1]."
         self.gamma = gamma
         self._prediction_cache = OrderedDict()

@@ -24,7 +24,7 @@ def test_retrieval_performance():
     seed = 42
     ratio_sample_object_prop = 1.0
     ratio_sample_nc = 1.0
-    num_nominals = 5
+    num_nominals = 10
     min_jaccard_similarity = 1.0  
     min_f1_score = 1.0
 
