@@ -33,9 +33,9 @@ def test_retrieval_performance():
 
     # (2) Initialize Neural OWL Reasoner.
     if path_kge_model:
-        neural_owl_reasoner = OWLNeuralReasoner(path_neural_embedding=path_kge_model, gamma=gamma)
+        neural_owl_reasoner = OWLNeuralReasoner(path_neural_embedding=path_kge_model, gamma=gamma, max_cache_size=0)
     else:
-        neural_owl_reasoner = OWLNeuralReasoner(path_of_kb=path_kg, gamma=gamma)
+        neural_owl_reasoner = OWLNeuralReasoner(path_of_kb=path_kg, gamma=gamma, max_cache_size=0)
 
     # Fix the random seed.
     random.seed(seed)
