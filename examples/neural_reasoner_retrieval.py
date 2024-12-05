@@ -117,7 +117,6 @@ def execute(args):
         nominals = inds_in_sig
     # (10) All combinations of 3 for Nominals, e.g. {martin, heinz, markus}
     nominal_combinations = set( OWLObjectOneOf(combination)for combination in itertools.combinations(nominals, 3))
-
     # (11) NC UNION NC.
     unions = concept_reducer(nc, opt=OWLObjectUnionOf)
     # (12) NC INTERSECTION NC.
