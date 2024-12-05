@@ -3,7 +3,7 @@ from collections import Counter
 from owlapy.owl_individual import OWLNamedIndividual
 from sortedcontainers import SortedSet
 from functools import singledispatchmethod, total_ordering
-from typing import Iterable, List, Type,Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, ClassVar
+from typing import Iterable, List, Type,Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, ClassVar, Set
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
 from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
@@ -30,6 +30,43 @@ def run_with_timeout(func, timeout, args=(), **kwargs):
         except concurrent.futures.TimeoutError:
             return set()
 
+def f1_set_similarity(y: Set[str], yhat: Set[str]) -> float:
+    """
+    Compute F1 score for two set
+    :param y: A set of URIs
+    :param yhat: A set of URIs
+    :return:
+    """
+    if len(yhat) == len(y) == 0:
+        return 1.0
+    if len(yhat) == 0 or len(y) == 0:
+        return 0.0
+
+    tp = len(y.intersection(yhat))
+    fp = len(yhat.difference(y))
+    fn = len(y.difference(yhat))
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+
+
+    if precision == 0 and recall == 0:
+        return 0.0
+    
+    return (2 * precision * recall) / (precision + recall)
+
+def jaccard_similarity(y: Set[str], yhat: Set[str]) -> float:
+    """
+    Compute Jaccard Similarity
+    :param y: A set of URIs
+    :param yhat: A set of URIs
+    :return:
+    """
+    if len(yhat) == len(y) == 0:
+        return 1.0
+    if len(yhat) == 0 or len(y) == 0:
+        return 0.0
+    return len(y.intersection(yhat)) / len(y.union(yhat))
 
 def concept_reducer(concepts:Iterable, opt:Callable):
     """

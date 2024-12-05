@@ -41,9 +41,9 @@ OWLObjectUnionOf                        1.0  1.0         -0.002939
 
 """
 from owlapy.owl_neural_reasoners.owl_neural_reasoner import OWLNeuralReasoner
-from ontolearn.knowledge_base import KnowledgeBase
-from ontolearn.triple_store import TripleStore
-from ontolearn.utils import jaccard_similarity, f1_set_similarity, concept_reducer, concept_reducer_properties
+from owlapy.owl_reasoner import StructuralReasoner
+from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.utils import concept_reducer, concept_reducer_properties, jaccard_similarity, f1_set_similarity
 from owlapy.class_expression import (
     OWLObjectUnionOf,
     OWLObjectIntersectionOf,
@@ -74,10 +74,7 @@ pd.set_option('display.expand_frame_repr', False)
 def execute(args):
     # (1) Initialize knowledge base.
     assert os.path.isfile(args.path_kg)
-    if args.endpoint_triple_store:
-        symbolic_kb = TripleStore(url="http://localhost:3030/family")
-    else:
-        symbolic_kb = KnowledgeBase(path=args.path_kg)
+    symbolic_kb = StructuralReasoner(ontology=OntologyManager().load_ontology(path=args.path_kg))
     # (2) Initialize Neural OWL Reasoner.
     if args.path_kge_model:
         neural_owl_reasoner = OWLNeuralReasoner(path_neural_embedding=args.path_kge_model, gamma=args.gamma)
@@ -88,7 +85,7 @@ def execute(args):
     ###################################################################
     # GENERATE DL CONCEPTS TO EVALUATE RETRIEVAL PERFORMANCES
     # (3) R: Extract object properties.
-    object_properties = {i for i in symbolic_kb.get_object_properties()}
+    object_properties = {i for i in symbolic_kb.get_root_ontology().object_properties_in_signature()}
     
     # (3.1) Subsample if required.
     if args.ratio_sample_object_prop and len(object_properties) > 0:
@@ -101,7 +98,7 @@ def execute(args):
     # (5) R*: R UNION R⁻.
     object_properties_and_inverse = object_properties.union(object_properties_inverse)
     # (6) NC: Named owl concepts.
-    nc = {i for i in symbolic_kb.get_concepts()}
+    nc = {i for i in symbolic_kb.get_root_ontology().classes_in_signature()}
    
     if args.ratio_sample_nc and len(nc) > 0:
         # (6.1) Subsample if required.
@@ -113,10 +110,11 @@ def execute(args):
     # (8) NC*: NC UNION NC⁻.
     nc_star = nc.union(nnc)
     # (9) Retrieve 10 random Nominals.
-    if len(symbolic_kb.all_individuals_set())>args.num_nominals:
-        nominals = set(random.sample(symbolic_kb.all_individuals_set(), args.num_nominals))
+    inds_in_sig = list(symbolic_kb.get_root_ontology().individuals_in_signature())
+    if len(inds_in_sig)>args.num_nominals:
+        nominals = set(random.sample(inds_in_sig, args.num_nominals))
     else:
-        nominals = symbolic_kb.all_individuals_set()
+        nominals = inds_in_sig
     # (10) All combinations of 3 for Nominals, e.g. {martin, heinz, markus}
     nominal_combinations = set( OWLObjectOneOf(combination)for combination in itertools.combinations(nominals, 3))
 
@@ -167,14 +165,11 @@ def execute(args):
     )
 
     ###################################################################
-
     # Retrieval Results
     def concept_retrieval(retriever_func, c) -> Tuple[Set[str], float]:
         start_time = time.time()
-        return {i.str for i in retriever_func.individuals(c)}, time.time() - start_time
+        return {i.str for i in retriever_func.instances(c)}, time.time() - start_time
 
-    # () Collect the data.
-    data = []
     # () Converted to list so that the progress bar works.
     concepts = list(
         chain(
@@ -271,7 +266,6 @@ def get_default_arguments():
     parser = ArgumentParser()
     parser.add_argument("--path_kg", type=str, default="KGs/Family/family-benchmark_rich_background.owl")
     parser.add_argument("--path_kge_model", type=str, default=None)
-    parser.add_argument("--endpoint_triple_store", type=str, default=None)
     parser.add_argument("--gamma", type=float, default=0.9)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--ratio_sample_nc", type=float, default=1, help="To sample OWL Classes.")
