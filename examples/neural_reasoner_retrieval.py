@@ -41,6 +41,7 @@ OWLObjectUnionOf                        1.0  1.0         -0.002939
 
 """
 from owlapy.owl_neural_reasoners.owl_neural_reasoner import OWLNeuralReasoner
+from owlapy.owl_neural_reasoners.neural_ontology_manager import NeuralOntologyManager
 from owlapy.owl_reasoner import StructuralReasoner
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.utils import concept_reducer, concept_reducer_properties, jaccard_similarity, f1_set_similarity
@@ -77,9 +78,13 @@ def execute(args):
     symbolic_kb = StructuralReasoner(ontology=OntologyManager().load_ontology(path=args.path_kg))
     # (2) Initialize Neural OWL Reasoner.
     if args.path_kge_model:
-        neural_owl_reasoner = OWLNeuralReasoner(path_neural_embedding=args.path_kge_model, gamma=args.gamma)
+        neural_manager = NeuralOntologyManager()
+        neural_manager.load_neural_embedding(path=args.path_kge_model)
+        neural_owl_reasoner = OWLNeuralReasoner(ontology=neural_manager, gamma=args.gamma)
     else:
-        neural_owl_reasoner = OWLNeuralReasoner(path_of_kb=args.path_kg, gamma=args.gamma)
+        neural_manager = NeuralOntologyManager()
+        neural_manager.load_ontology(path=args.path_kg)
+        neural_owl_reasoner = OWLNeuralReasoner(ontology=neural_manager, gamma=args.gamma)
     # Fix the random seed.
     random.seed(args.seed)
     ###################################################################

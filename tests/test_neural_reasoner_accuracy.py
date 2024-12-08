@@ -1,4 +1,5 @@
 from owlapy.owl_neural_reasoners.owl_neural_reasoner import OWLNeuralReasoner
+from owlapy.owl_neural_reasoners.neural_ontology_manager import NeuralOntologyManager
 from owlapy.owl_reasoner import StructuralReasoner
 from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.utils import concept_reducer, concept_reducer_properties, jaccard_similarity, f1_set_similarity
@@ -31,12 +32,15 @@ def test_retrieval_performance():
     # (1) Initialize knowledge base.
     symbolic_kb = StructuralReasoner(ontology=OntologyManager().load_ontology(path=path_kg))
 
-    # (2) Initialize Neural OWL Reasoner.
+    # (2) Initialize Neural OWL Reasoner. 
     if path_kge_model:
-        neural_owl_reasoner = OWLNeuralReasoner(path_neural_embedding=path_kge_model, gamma=gamma)
+        neural_manager = NeuralOntologyManager()
+        neural_manager.load_neural_embedding(path=path_kge_model)
+        neural_owl_reasoner = OWLNeuralReasoner(ontology=neural_manager, gamma=gamma)
     else:
-        neural_owl_reasoner = OWLNeuralReasoner(path_of_kb=path_kg, gamma=gamma)
-
+        neural_manager = NeuralOntologyManager()
+        neural_manager.load_ontology(path=path_kg)
+        neural_owl_reasoner = OWLNeuralReasoner(ontology=neural_manager, gamma=gamma)
     # Fix the random seed.
     random.seed(seed)
 
