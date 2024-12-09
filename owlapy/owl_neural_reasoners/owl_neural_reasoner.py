@@ -14,7 +14,6 @@ import re
 from collections import Counter, OrderedDict
 from functools import lru_cache
 from owlapy.owl_neural_reasoners.abstract import AbstractNeuralReasoner
-from owlapy.owl_ontology import Ontology
 from owlapy.owl_neural_reasoners.neural_ontology_manager import NeuralOntologyManager
 
 # TODO:
