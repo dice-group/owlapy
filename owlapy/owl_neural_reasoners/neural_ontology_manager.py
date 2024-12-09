@@ -1,5 +1,4 @@
-from owlapy.owl_ontology import Ontology
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology_manager import OntologyManager, Ontology
 from dicee.knowledge_graph_embeddings import KGE
 
 # LF: for now functions same as normal OntologyManager (+ can return path)
