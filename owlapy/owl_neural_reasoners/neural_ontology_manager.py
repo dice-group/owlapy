@@ -1,4 +1,4 @@
-from owlapy.owl_ontology_manager import OntologyManager, Ontology
+from owlapy.owl_ontology_manager import OntologyManager
 from dicee.knowledge_graph_embeddings import KGE
 
 # LF: for now functions same as normal OntologyManager (+ can return path)
@@ -6,7 +6,7 @@ class NeuralOntologyManager(OntologyManager):
 	def __init__(self, world_store=None):
 		super().__init__(world_store) 
 	
-	def load_ontology(self, path: str = None) -> Ontology:
+	def load_ontology(self, path: str = None):
 		self._path = path
 		return super().load_ontology(path)
 
