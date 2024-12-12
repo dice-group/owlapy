@@ -14,7 +14,6 @@ import re
 from collections import Counter, OrderedDict
 from functools import lru_cache
 from owlapy.owl_neural_reasoners.abstract import AbstractNeuralReasoner
-from owlapy.owl_neural_reasoners.neural_ontology_manager import NeuralOntologyManager
 
 # TODO:
 def is_valid_entity(text_input: str):
@@ -22,10 +21,8 @@ def is_valid_entity(text_input: str):
 
 class OWLNeuralReasoner(AbstractNeuralReasoner):
     """ OWL Neural Reasoner uses a neural link predictor to retrieve instances of an OWL Class Expression"""
-    def __init__(self, ontology: NeuralOntologyManager, gamma: float = 0.25, max_cache_size: int = 2**20):
+    def __init__(self, path_of_kb: str = None, path_neural_embedding: str = None, gamma: float = 0.25, max_cache_size: int = 2**20):
         assert gamma is None or 0 <= gamma <= 1, "Confidence threshold (gamma) must be in the range [0, 1]."
-        path_of_kb = ontology.get_path()
-        path_neural_embedding = ontology.get_path_neural_embedding( )
         self.gamma = gamma
         self._prediction_cache = OrderedDict()
         self._max_cache_size = max_cache_size

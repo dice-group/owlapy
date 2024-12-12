@@ -1,13 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Generator, Union
+from typing import List, Tuple, Generator
 from owlapy.class_expression import OWLClassExpression
-from owlapy.owl_neural_reasoners.neural_ontology_manager import NeuralOntologyManager
-from owlapy.owl_ontology import AbstractOWLOntology
 
 class AbstractNeuralReasoner(ABC):
     """Abstract class for Neural Reasoners that operate on OWL Class Expressions using embeddings."""
     @abstractmethod
-    def __init__(self, ontology: Union[NeuralOntologyManager, AbstractOWLOntology], **kwargs):
+    def __init__(self, **kwargs):
         pass 
 
     @abstractmethod
