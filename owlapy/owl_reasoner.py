@@ -83,24 +83,31 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         domains = {d.get_domain() for d in self.get_root_ontology().data_property_domain_axioms(pe)}
-        super_domains = set(chain.from_iterable([self.super_classes(d) for d in domains]))
-        yield from domains - super_domains
+        sub_domains = set(chain.from_iterable([self.sub_classes(d) for d in domains]))
+        yield from domains - sub_domains
         if not direct:
-            yield from super_domains
+            yield from sub_domains
 
     def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         domains = {d.get_domain() for d in self.get_root_ontology().object_property_domain_axioms(pe)}
-        super_domains = set(chain.from_iterable([self.super_classes(d) for d in domains]))
-        yield from domains - super_domains
+        sub_domains = set(chain.from_iterable([self.sub_classes(d) for d in domains]))
+        yield from domains - sub_domains
         if not direct:
-            yield from super_domains
+            yield from sub_domains
 
     def object_property_ranges(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         ranges = {r.get_range() for r in self.get_root_ontology().object_property_range_axioms(pe)}
-        super_ranges = set(chain.from_iterable([self.super_classes(d) for d in ranges]))
-        yield from ranges - super_ranges
+        sub_ranges = set(chain.from_iterable([self.sub_classes(d) for d in ranges]))
+        yield from ranges - sub_ranges
         if not direct:
-            yield from super_ranges
+            yield from sub_ranges
+
+    def data_property_ranges(self, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLClassExpression]:
+        if direct:
+            yield from [r.get_range() for r in self.get_root_ontology().data_property_range_axioms(pe)]
+        else:
+            # hierarchy of data types is not considered.
+            return NotImplemented()
 
     def equivalent_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
         seen_set = {ce}
