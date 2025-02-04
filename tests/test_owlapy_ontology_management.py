@@ -492,17 +492,17 @@ class Owlapy_Owlready2_Test(unittest.TestCase):
         self.assertNotIn(OWLObjectUnionOf([person, person_sibling]),
                          list(reasoner.object_property_domains(has_sibling, direct=True)))
 
-        self.assertNotIn(sister, list(reasoner.object_property_ranges(has_sibling)))
+        self.assertNotIn(sister, list(reasoner.object_property_ranges(has_sibling, direct=True)))
         onto.add_axiom(OWLObjectPropertyRangeAxiom(has_sibling, sister))
         self.assertIn(sister, list(reasoner.object_property_ranges(has_sibling)))
         onto.remove_axiom(OWLObjectPropertyRangeAxiom(has_sibling, sister))
-        self.assertNotIn(sister, list(reasoner.object_property_ranges(has_sibling)))
+        self.assertNotIn(sister, list(reasoner.object_property_ranges(has_sibling, direct=True)))
 
-        self.assertNotIn(person, list(reasoner.data_property_domains(age)))
+        self.assertNotIn(person, list(reasoner.data_property_domains(age, True)))
         onto.add_axiom(OWLDataPropertyDomainAxiom(age, person))
-        self.assertIn(person, list(reasoner.data_property_domains(age)))
+        self.assertIn(person, list(reasoner.data_property_domains(age, True)))
         onto.remove_axiom(OWLDataPropertyDomainAxiom(age, person))
-        self.assertNotIn(person, list(reasoner.data_property_domains(age)))
+        self.assertNotIn(person, list(reasoner.data_property_domains(age, True)))
 
         self.assertFalse(list(reasoner.data_property_ranges(age)))
         onto.add_axiom(OWLDataPropertyRangeAxiom(age, OWLDataUnionOf([IntegerOWLDatatype, DateOWLDatatype])))
