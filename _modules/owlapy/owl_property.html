@@ -5,19 +5,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_property &mdash; OWLAPY 1.3.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+  <title>owlapy.owl_property &mdash; OWLAPY 1.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=28d163b9"></script>
+      <script src="../../_static/documentation_options.js?v=9172181d"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -82,21 +82,21 @@
              
   <h1>Source code for owlapy.owl_property</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;OWL Properties&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">.owl_object</span> <span class="kn">import</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLEntity</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">.iri</span> <span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLEntity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
 
 
 <div class="viewcode-block" id="OWLPropertyExpression">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLPropertyExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLPropertyExpression</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLPropertyExpression</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a property or possibly the inverse of a property.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="OWLPropertyExpression.is_data_property_expression">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLPropertyExpression.is_data_property_expression">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_data_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_data_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            True if this is a data property.</span>
@@ -106,7 +106,7 @@
 
 <div class="viewcode-block" id="OWLPropertyExpression.is_object_property_expression">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLPropertyExpression.is_object_property_expression">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_object_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_object_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            True if this is an object property.</span>
@@ -116,7 +116,7 @@
 
 <div class="viewcode-block" id="OWLPropertyExpression.is_owl_top_object_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLPropertyExpression.is_owl_top_object_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_top_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_owl_top_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this is the owl:topObjectProperty.</span>
 
 <span class="sd">        Returns:</span>
@@ -127,7 +127,7 @@
 
 <div class="viewcode-block" id="OWLPropertyExpression.is_owl_top_data_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLPropertyExpression.is_owl_top_data_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_top_data_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_owl_top_data_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this is the owl:topDataProperty.</span>
 
 <span class="sd">        Returns:</span>
@@ -140,14 +140,14 @@
 
 <div class="viewcode-block" id="OWLObjectPropertyExpression">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectPropertyExpression</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLObjectPropertyExpression</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A high level interface to describe different types of object properties.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="OWLObjectPropertyExpression.get_inverse_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression.get_inverse_property">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectPropertyExpression&#39;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectPropertyExpression&#39;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtains the property that corresponds to the inverse of this property.</span>
 
 <span class="sd">        Returns:</span>
@@ -159,7 +159,7 @@
 <div class="viewcode-block" id="OWLObjectPropertyExpression.get_named_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression.get_named_property">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectProperty&#39;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectProperty&#39;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the named object property used in this property expression.</span>
 
 <span class="sd">        Returns:</span>
@@ -170,7 +170,7 @@
 
 <div class="viewcode-block" id="OWLObjectPropertyExpression.is_object_property_expression">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression.is_object_property_expression">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_object_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_object_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 </div>
@@ -179,13 +179,13 @@
 
 <div class="viewcode-block" id="OWLDataPropertyExpression">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLDataPropertyExpression">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLDataPropertyExpression</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLDataPropertyExpression</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A high level interface to describe different types of data properties.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="OWLDataPropertyExpression.is_data_property_expression">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLDataPropertyExpression.is_data_property_expression">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_data_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_data_property_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 </div>
@@ -194,14 +194,14 @@
 
 <div class="viewcode-block" id="OWLProperty">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLProperty">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLProperty</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLEntity</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLProperty</span><span class="p">(</span><span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLEntity</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A base class for properties that aren&#39;t expression i.e. named properties. By definition, properties</span>
 <span class="sd">    are either data properties or object properties.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_iri&#39;</span>
 
     <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;IRI&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;IRI&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLObjectProperty that has the specified IRI.</span>
 
 <span class="sd">        Args:</span>
@@ -213,18 +213,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IRI</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span></div>
 
 
 
 <div class="viewcode-block" id="OWLObjectProperty">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectProperty">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectProperty</span><span class="p">(</span><span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLObjectProperty</span><span class="p">(</span><span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an Object Property in the OWL 2 Specification. Object properties connect pairs of individuals.</span>
 
 <span class="sd">    (https://www.w3.org/TR/owl2-syntax/#Object_Properties)</span>
@@ -235,26 +235,26 @@
     <span class="n">_iri</span><span class="p">:</span> <span class="n">IRI</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">reminder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reminder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">reminder</span>
 
 <div class="viewcode-block" id="OWLObjectProperty.get_named_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectProperty.get_named_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectProperty&#39;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectProperty&#39;</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="OWLObjectProperty.get_inverse_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectProperty.get_inverse_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectInverseOf&#39;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLObjectInverseOf&#39;</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="n">OWLObjectInverseOf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OWLObjectProperty.is_owl_top_object_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectProperty.is_owl_top_object_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_top_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_owl_top_object_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">str</span> <span class="o">==</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#topObjectProperty&quot;</span></div>
 </div>
@@ -263,7 +263,7 @@
 
 <div class="viewcode-block" id="OWLObjectInverseOf">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectInverseOf">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLObjectInverseOf</span><span class="p">(</span><span class="n">OWLObjectPropertyExpression</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLObjectInverseOf</span><span class="p">(</span><span class="n">OWLObjectPropertyExpression</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents the inverse of a property expression (ObjectInverseOf). An inverse object property expression</span>
 <span class="sd">    ObjectInverseOf( P ) connects an individual I1 with I2 if and only if the object property P connects I2 with I1.</span>
 <span class="sd">    This can be used to refer to the inverse of a property, without actually naming the property.</span>
@@ -278,7 +278,7 @@
 
     <span class="n">_inverse_property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the inverse of an object property.</span>
 
 <span class="sd">        Args:</span>
@@ -288,7 +288,7 @@
 
 <div class="viewcode-block" id="OWLObjectInverseOf.get_inverse">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectInverseOf.get_inverse">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the property expression that this is the inverse of.</span>
 
 <span class="sd">        Returns:</span>
@@ -299,27 +299,27 @@
 
 <div class="viewcode-block" id="OWLObjectInverseOf.get_inverse_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectInverseOf.get_inverse_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_inverse_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="OWLObjectInverseOf.get_named_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectInverseOf.get_named_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_named_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span></div>
 
 
 <div class="viewcode-block" id="OWLObjectInverseOf.__repr__">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectInverseOf.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OWLObjectInverseOf(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 
 <div class="viewcode-block" id="OWLObjectInverseOf.__eq__">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectInverseOf.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_inverse_property</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
@@ -327,7 +327,7 @@
 
 <div class="viewcode-block" id="OWLObjectInverseOf.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLObjectInverseOf.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_inverse_property</span><span class="p">)</span></div>
 </div>
 
@@ -335,7 +335,7 @@
 
 <div class="viewcode-block" id="OWLDataProperty">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLDataProperty">[docs]</a>
-<span class="k">class</span> <span class="nc">OWLDataProperty</span><span class="p">(</span><span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLDataProperty</span><span class="p">(</span><span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a Data Property in the OWL 2 Specification. Data properties connect individuals with literals.</span>
 <span class="sd">    In some knowledge representation systems, functional data properties are called attributes.</span>
 
@@ -348,7 +348,7 @@
 
 <div class="viewcode-block" id="OWLDataProperty.is_owl_top_data_property">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_property/index.html#owlapy.owl_property.OWLDataProperty.is_owl_top_data_property">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_owl_top_data_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_owl_top_data_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">str</span> <span class="o">==</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#topDataProperty&quot;</span></div>
 </div>

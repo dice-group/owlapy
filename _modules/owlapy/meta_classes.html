@@ -5,19 +5,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.meta_classes &mdash; OWLAPY 1.3.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+  <title>owlapy.meta_classes &mdash; OWLAPY 1.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=28d163b9"></script>
+      <script src="../../_static/documentation_options.js?v=9172181d"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -84,21 +84,21 @@
 <span></span><span class="sd">&quot;&quot;&quot;Meta classes for OWL objects.&quot;&quot;&quot;</span>
 
 <span class="c1"># https://docs.python.org/3/reference/datamodel.html#metaclasses</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
 <span class="n">_T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_T&#39;</span><span class="p">)</span>  <span class="c1">#:</span>
 
 
 <div class="viewcode-block" id="HasIRI">
 <a class="viewcode-back" href="../../autoapi/owlapy/meta_classes/index.html#owlapy.meta_classes.HasIRI">[docs]</a>
-<span class="k">class</span> <span class="nc">HasIRI</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HasIRI</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple class to access the IRI.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">iri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the IRI of this object.</span>
 
 <span class="sd">        Returns:</span>
@@ -108,7 +108,7 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the string representation of this object</span>
 
 <span class="sd">        Returns:</span>
@@ -120,7 +120,7 @@
 
 <div class="viewcode-block" id="HasOperands">
 <a class="viewcode-back" href="../../autoapi/owlapy/meta_classes/index.html#owlapy.meta_classes.HasOperands">[docs]</a>
-<span class="k">class</span> <span class="nc">HasOperands</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HasOperands</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An interface to objects that have a collection of operands.</span>
 
 <span class="sd">    Args:</span>
@@ -131,7 +131,7 @@
 <div class="viewcode-block" id="HasOperands.operands">
 <a class="viewcode-back" href="../../autoapi/owlapy/meta_classes/index.html#owlapy.meta_classes.HasOperands.operands">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">operands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_T</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">operands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_T</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent</span>
 <span class="sd">        classes axiom.</span>
 
@@ -145,7 +145,7 @@
 
 <div class="viewcode-block" id="HasFiller">
 <a class="viewcode-back" href="../../autoapi/owlapy/meta_classes/index.html#owlapy.meta_classes.HasFiller">[docs]</a>
-<span class="k">class</span> <span class="nc">HasFiller</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HasFiller</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">],</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An interface to objects that have a filler.</span>
 
 <span class="sd">    Args:</span>
@@ -156,7 +156,7 @@
 <div class="viewcode-block" id="HasFiller.get_filler">
 <a class="viewcode-back" href="../../autoapi/owlapy/meta_classes/index.html#owlapy.meta_classes.HasFiller.get_filler">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_filler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_T</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_filler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_T</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the filler for this restriction. In the case of an object restriction this will be an individual, in</span>
 <span class="sd">        the case of a data restriction this will be a constant (data value). For quantified restriction this will be</span>
 <span class="sd">        a class expression or a data range.</span>
@@ -171,14 +171,14 @@
 
 <div class="viewcode-block" id="HasCardinality">
 <a class="viewcode-back" href="../../autoapi/owlapy/meta_classes/index.html#owlapy.meta_classes.HasCardinality">[docs]</a>
-<span class="k">class</span> <span class="nc">HasCardinality</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HasCardinality</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An interface to objects that have a cardinality.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="HasCardinality.get_cardinality">
 <a class="viewcode-back" href="../../autoapi/owlapy/meta_classes/index.html#owlapy.meta_classes.HasCardinality.get_cardinality">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_cardinality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cardinality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the cardinality of a restriction.</span>
 
 <span class="sd">        Returns:</span>

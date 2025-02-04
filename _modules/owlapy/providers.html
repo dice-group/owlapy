@@ -5,19 +5,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.providers &mdash; OWLAPY 1.3.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+  <title>owlapy.providers &mdash; OWLAPY 1.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=28d163b9"></script>
+      <script src="../../_static/documentation_options.js?v=9172181d"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -82,18 +82,18 @@
              
   <h1>Source code for owlapy.providers</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;OWL Datatype restriction constructors.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span>
-<span class="kn">from</span> <span class="nn">owlapy.owl_literal</span> <span class="kn">import</span> <span class="n">OWLLiteral</span>
-<span class="kn">from</span> <span class="nn">owlapy.class_expression</span> <span class="kn">import</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span>
-<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">Timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Timedelta</span>
 
 <span class="n">Restriction_Literals</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Timedelta</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="owl_datatype_max_exclusive_restriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/providers/index.html#owlapy.providers.owl_datatype_max_exclusive_restriction">[docs]</a>
-<span class="k">def</span> <span class="nf">owl_datatype_max_exclusive_restriction</span><span class="p">(</span><span class="n">max_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_datatype_max_exclusive_restriction</span><span class="p">(</span><span class="n">max_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a max exclusive restriction.&quot;&quot;&quot;</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">OWLFacetRestriction</span><span class="p">(</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span><span class="p">,</span> <span class="n">max_</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">(),</span> <span class="n">r</span><span class="p">)</span></div>
@@ -102,7 +102,7 @@
 
 <div class="viewcode-block" id="owl_datatype_min_exclusive_restriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/providers/index.html#owlapy.providers.owl_datatype_min_exclusive_restriction">[docs]</a>
-<span class="k">def</span> <span class="nf">owl_datatype_min_exclusive_restriction</span><span class="p">(</span><span class="n">min_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_datatype_min_exclusive_restriction</span><span class="p">(</span><span class="n">min_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a min exclusive restriction.&quot;&quot;&quot;</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">OWLFacetRestriction</span><span class="p">(</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span><span class="p">,</span> <span class="n">min_</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">(),</span> <span class="n">r</span><span class="p">)</span></div>
@@ -111,7 +111,7 @@
 
 <div class="viewcode-block" id="owl_datatype_max_inclusive_restriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/providers/index.html#owlapy.providers.owl_datatype_max_inclusive_restriction">[docs]</a>
-<span class="k">def</span> <span class="nf">owl_datatype_max_inclusive_restriction</span><span class="p">(</span><span class="n">max_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_datatype_max_inclusive_restriction</span><span class="p">(</span><span class="n">max_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a max inclusive restriction.&quot;&quot;&quot;</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">OWLFacetRestriction</span><span class="p">(</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span><span class="p">,</span> <span class="n">max_</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">(),</span> <span class="n">r</span><span class="p">)</span></div>
@@ -120,7 +120,7 @@
 
 <div class="viewcode-block" id="owl_datatype_min_inclusive_restriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/providers/index.html#owlapy.providers.owl_datatype_min_inclusive_restriction">[docs]</a>
-<span class="k">def</span> <span class="nf">owl_datatype_min_inclusive_restriction</span><span class="p">(</span><span class="n">min_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_datatype_min_inclusive_restriction</span><span class="p">(</span><span class="n">min_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a min inclusive restriction.&quot;&quot;&quot;</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">OWLFacetRestriction</span><span class="p">(</span><span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span><span class="p">,</span> <span class="n">min_</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">(),</span> <span class="n">r</span><span class="p">)</span></div>
@@ -129,7 +129,7 @@
 
 <div class="viewcode-block" id="owl_datatype_min_max_exclusive_restriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/providers/index.html#owlapy.providers.owl_datatype_min_max_exclusive_restriction">[docs]</a>
-<span class="k">def</span> <span class="nf">owl_datatype_min_max_exclusive_restriction</span><span class="p">(</span><span class="n">min_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_datatype_min_max_exclusive_restriction</span><span class="p">(</span><span class="n">min_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">,</span>
                                                <span class="n">max_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a min-max exclusive restriction.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
@@ -147,7 +147,7 @@
 
 <div class="viewcode-block" id="owl_datatype_min_max_inclusive_restriction">
 <a class="viewcode-back" href="../../autoapi/owlapy/providers/index.html#owlapy.providers.owl_datatype_min_max_inclusive_restriction">[docs]</a>
-<span class="k">def</span> <span class="nf">owl_datatype_min_max_inclusive_restriction</span><span class="p">(</span><span class="n">min_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_datatype_min_max_inclusive_restriction</span><span class="p">(</span><span class="n">min_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">,</span>
                                                <span class="n">max_</span><span class="p">:</span> <span class="n">Restriction_Literals</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a min-max inclusive restriction.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>

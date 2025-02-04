@@ -6,19 +6,19 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_reasoner &mdash; OWLAPY 1.3.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
+  <title>owlapy.owl_reasoner &mdash; OWLAPY 1.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
       <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
       <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
 
   
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=28d163b9"></script>
+      <script src="../../../_static/documentation_options.js?v=9172181d"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -88,6 +88,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.StructuralReasoner.data_property_domains"><code class="docutils literal notranslate"><span class="pre">StructuralReasoner.data_property_domains()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.StructuralReasoner.object_property_domains"><code class="docutils literal notranslate"><span class="pre">StructuralReasoner.object_property_domains()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.StructuralReasoner.object_property_ranges"><code class="docutils literal notranslate"><span class="pre">StructuralReasoner.object_property_ranges()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.StructuralReasoner.data_property_ranges"><code class="docutils literal notranslate"><span class="pre">StructuralReasoner.data_property_ranges()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.StructuralReasoner.equivalent_classes"><code class="docutils literal notranslate"><span class="pre">StructuralReasoner.equivalent_classes()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.StructuralReasoner.disjoint_classes"><code class="docutils literal notranslate"><span class="pre">StructuralReasoner.disjoint_classes()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.StructuralReasoner.different_individuals"><code class="docutils literal notranslate"><span class="pre">StructuralReasoner.different_individuals()</span></code></a></li>
@@ -328,6 +329,23 @@ the result of super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing),
 if N is non-empty.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.StructuralReasoner.data_property_ranges">
+<span class="sig-name descname"><span class="pre">data_property_ranges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#StructuralReasoner.data_property_ranges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.StructuralReasoner.data_property_ranges" title="Link to this definition"></a></dt>
+<dd><p>Gets the data ranges that are the direct or indirect ranges of this property with respect to the imports
+closure of the root ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pe</strong> – The property expression whose ranges are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – Specifies if the direct ranges should be retrieved (True), or if all ranges should be retrieved
+(False).</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
 </dd></dl>
 
 <dl class="py method">

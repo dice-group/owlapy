@@ -5,19 +5,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.iri &mdash; OWLAPY 1.3.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+  <title>owlapy.iri &mdash; OWLAPY 1.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
       <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8775fe07" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=28d163b9"></script>
+      <script src="../../_static/documentation_options.js?v=9172181d"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -82,24 +82,24 @@
              
   <h1>Source code for owlapy.iri</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;OWL IRI&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">weakref</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">weakref</span> <span class="kn">import</span> <span class="n">WeakKeyDictionary</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">weakref</span><span class="w"> </span><span class="kn">import</span> <span class="n">WeakKeyDictionary</span>
 
-<span class="kn">from</span> <span class="nn">owlapy</span> <span class="kn">import</span> <span class="n">namespaces</span>
-<span class="kn">from</span> <span class="nn">.owl_annotation</span> <span class="kn">import</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span>
-<span class="kn">from</span> <span class="nn">owlapy.namespaces</span> <span class="kn">import</span> <span class="n">Namespaces</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy</span><span class="w"> </span><span class="kn">import</span> <span class="n">namespaces</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_annotation</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.namespaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">Namespaces</span>
 
 
-<span class="k">class</span> <span class="nc">_WeakCached</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_WeakCached</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">what</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">what</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">)</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="n">WeakKeyDictionary</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">_temp</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_temp</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -109,14 +109,14 @@
             <span class="k">return</span> <span class="n">ret</span><span class="p">()</span>
 
 
-<span class="k">class</span> <span class="nc">_meta_IRI</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="n">_WeakCached</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_meta_IRI</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">,</span> <span class="n">_WeakCached</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
     <span class="k">pass</span>
 
 
 <div class="viewcode-block" id="IRI">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI">[docs]</a>
-<span class="k">class</span> <span class="nc">IRI</span><span class="p">(</span><span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">_meta_IRI</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IRI</span><span class="p">(</span><span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">_meta_IRI</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An IRI, consisting of a namespace and a remainder.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_namespace&#39;</span><span class="p">,</span> <span class="s1">&#39;_remainder&#39;</span><span class="p">,</span> <span class="s1">&#39;__weakref__&#39;</span>
     <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">0</span>
@@ -124,12 +124,12 @@
     <span class="n">_namespace</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">_remainder</span><span class="p">:</span> <span class="nb">str</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">],</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">],</span> <span class="n">remainder</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">):</span>
             <span class="n">namespace</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">ns</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">namespace</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s2">&quot;#&quot;</span><span class="p">),</span> <span class="s2">&quot;It should be a valid IRI based on /, :, and #&quot;</span>
-        <span class="kn">import</span> <span class="nn">sys</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
         <span class="c1"># https://docs.python.org/3.2/library/sys.html?highlight=sys.intern#sys.intern</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">intern</span><span class="p">(</span><span class="n">namespace</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span> <span class="o">=</span> <span class="n">remainder</span>
@@ -137,7 +137,7 @@
 <div class="viewcode-block" id="IRI.create">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.create">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">iri</span><span class="p">:</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Namespaces</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IRI&#39;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="n">iri</span><span class="p">:</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Namespaces</span><span class="p">,</span> <span class="n">remainder</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IRI&#39;</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="o">|</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iri</span><span class="p">,</span> <span class="n">Namespaces</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Input must be a string or an instance of Namespaces. Currently, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">iri</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">if</span> <span class="n">remainder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span><span class="nb">str</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Reminder must be string. Currently, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">remainder</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -155,13 +155,13 @@
 
 <div class="viewcode-block" id="IRI.__repr__">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;IRI(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 
 <div class="viewcode-block" id="IRI.__eq__">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.__eq__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span> <span class="ow">is</span> <span class="n">other</span><span class="o">.</span><span class="n">_namespace</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_remainder</span>
         <span class="k">else</span><span class="p">:</span>
@@ -170,37 +170,37 @@
 
 <div class="viewcode-block" id="IRI.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.__hash__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remainder</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="IRI.is_nothing">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.is_nothing">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this IRI is equal to the IRI that owl:Nothing is named with.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :True if this IRI is equal to &lt;http://www.w3.org/2002/07/owl#Nothing&gt; and otherwise False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLRDFVocabulary</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLRDFVocabulary</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NOTHING</span><span class="o">.</span><span class="n">iri</span></div>
 
 
 <div class="viewcode-block" id="IRI.is_thing">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.is_thing">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this IRI is equal to the IRI that owl:Thing is named with.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :True if this IRI is equal to &lt;http://www.w3.org/2002/07/owl#Thing&gt; and otherwise False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">owlapy.vocab</span> <span class="kn">import</span> <span class="n">OWLRDFVocabulary</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLRDFVocabulary</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_THING</span><span class="o">.</span><span class="n">iri</span></div>
 
 
 <div class="viewcode-block" id="IRI.is_reserved_vocabulary">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.is_reserved_vocabulary">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_reserved_vocabulary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_reserved_vocabulary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if this IRI is in the reserved vocabulary. An IRI is in the reserved vocabulary if it starts with</span>
 <span class="sd">        &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt; or &lt;http://www.w3.org/2000/01/rdf-schema#&gt; or</span>
 <span class="sd">        &lt;http://www.w3.org/2001/XMLSchema#&gt; or &lt;http://www.w3.org/2002/07/owl#&gt;.</span>
@@ -214,14 +214,14 @@
 
 <div class="viewcode-block" id="IRI.as_iri">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.as_iri">[docs]</a>
-    <span class="k">def</span> <span class="nf">as_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IRI&#39;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_iri</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IRI&#39;</span><span class="p">:</span>
         <span class="c1"># documented in parent</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="IRI.as_str">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.as_str">[docs]</a>
-    <span class="k">def</span> <span class="nf">as_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        CD: Should be deprecated.</span>
 <span class="sd">        Returns:</span>
@@ -231,7 +231,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        Returns:</span>
@@ -240,7 +240,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">reminder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reminder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        Returns:</span>
@@ -250,7 +250,7 @@
 
 <div class="viewcode-block" id="IRI.get_namespace">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.get_namespace">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The namespace as string.</span>
@@ -260,7 +260,7 @@
 
 <div class="viewcode-block" id="IRI.get_remainder">
 <a class="viewcode-back" href="../../autoapi/owlapy/iri/index.html#owlapy.iri.IRI.get_remainder">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_remainder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_remainder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The remainder (coincident with NCName usually) for this IRI.</span>
