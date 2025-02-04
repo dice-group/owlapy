@@ -74,7 +74,8 @@ father_onto_path = "KGs/Family/father.owl"
 father_manager = SyncOntologyManager()
 father_onto = father_manager.load_ontology(father_onto_path)
 
-class TestSyncReasoner(unittest.TestCase):
+
+class TestSyncOntology(unittest.TestCase):
 
     ontology_path = "KGs/Test/test_ontology.owl"
     manager = SyncOntologyManager()
@@ -84,7 +85,9 @@ class TestSyncReasoner(unittest.TestCase):
         ontology_path = "KGs/Family/father.owl"
         onto = SyncOntologyManager().load_ontology(ontology_path)
         assert {owl_class.reminder for owl_class in onto.classes_in_signature()}=={'male', 'female', 'Thing', 'person'}
-        assert {individual.reminder for individual in onto.individuals_in_signature()}=={'markus', 'anna', 'martin', 'stefan', 'heinz', 'michelle'}
+        assert {individual.reminder for individual in onto.individuals_in_signature()} == {'markus', 'anna', 'martin',
+                                                                                           'stefan', 'heinz',
+                                                                                           'michelle'}
         assert {object_property.reminder for object_property in onto.object_properties_in_signature()}=={'hasChild'}
 
     # NOTE AB: The name of "assertCountEqual" may be misleading,but it's essentially an order-insensitive "assertEqual".
@@ -104,9 +107,9 @@ class TestSyncReasoner(unittest.TestCase):
                                                                            s, ind1])
 
     def test_equivalent_classes_axiom(self):
-        eq1 = OWLEquivalentClassesAxiom([N, Q])
-        eq2 = OWLEquivalentClassesAxiom([F, OWLObjectSomeValuesFrom(property=r2, filler=G)])
-        eq3 = OWLEquivalentClassesAxiom([AB, OWLObjectIntersectionOf((A, B))])
+        eq1 = OWLEquivalentClassesAxiom([Q, N])
+        eq2 = OWLEquivalentClassesAxiom([OWLObjectSomeValuesFrom(property=r2, filler=G), F])
+        eq3 = OWLEquivalentClassesAxiom([OWLObjectIntersectionOf((B, A)), AB])
         aeq = set()
         for cls in self.onto.classes_in_signature():
             ea = set(self.onto.equivalent_classes_axioms(cls))
@@ -138,22 +141,68 @@ class TestSyncReasoner(unittest.TestCase):
 
     def test_get_abox(self):
         self.assertCountEqual(father_onto.get_abox_axioms(),
-                              [OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'martin')),class_expression=OWLClass(IRI('http://example.com/father#', 'male')),annotations=[]),
-                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),class_expression=OWLClass(IRI('http://example.com/father#', 'male')),annotations=[]),
-                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'michelle')),class_expression=OWLClass(IRI('http://example.com/father#', 'female')),annotations=[]),
-                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),class_expression=OWLClass(IRI('http://example.com/father#', 'male')),annotations=[]),
-                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')),class_expression=OWLClass(IRI('http://example.com/father#', 'male')),annotations=[]),
-                               OWLClassAssertionAxiom(individual=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),class_expression=OWLClass(IRI('http://example.com/father#', 'female')),annotations=[]),
-                               OWLObjectPropertyAssertionAxiom(subject=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),object_=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),annotations=[]),
-                               OWLObjectPropertyAssertionAxiom(subject=OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')),property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),object_=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),annotations=[]),
-                               OWLObjectPropertyAssertionAxiom(subject=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),object_=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),annotations=[]),
-                               OWLObjectPropertyAssertionAxiom(subject=OWLNamedIndividual(IRI('http://example.com/father#', 'martin')),property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),object_=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),annotations=[])])
+                              [OWLClassAssertionAxiom(
+                                  individual=OWLNamedIndividual(IRI('http://example.com/father#', 'martin')),
+                                  class_expression=OWLClass(IRI('http://example.com/father#', 'male')), annotations=[]),
+                               OWLClassAssertionAxiom(
+                                   individual=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),
+                                   class_expression=OWLClass(IRI('http://example.com/father#', 'male')),
+                                   annotations=[]),
+                               OWLClassAssertionAxiom(
+                                   individual=OWLNamedIndividual(IRI('http://example.com/father#', 'michelle')),
+                                   class_expression=OWLClass(IRI('http://example.com/father#', 'female')),
+                                   annotations=[]),
+                               OWLClassAssertionAxiom(
+                                   individual=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),
+                                   class_expression=OWLClass(IRI('http://example.com/father#', 'male')),
+                                   annotations=[]),
+                               OWLClassAssertionAxiom(
+                                   individual=OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')),
+                                   class_expression=OWLClass(IRI('http://example.com/father#', 'male')),
+                                   annotations=[]),
+                               OWLClassAssertionAxiom(
+                                   individual=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),
+                                   class_expression=OWLClass(IRI('http://example.com/father#', 'female')),
+                                   annotations=[]),
+                               OWLObjectPropertyAssertionAxiom(
+                                   subject=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),
+                                   property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),
+                                   object_=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),
+                                   annotations=[]),
+                               OWLObjectPropertyAssertionAxiom(
+                                   subject=OWLNamedIndividual(IRI('http://example.com/father#', 'stefan')),
+                                   property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),
+                                   object_=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),
+                                   annotations=[]),
+                               OWLObjectPropertyAssertionAxiom(
+                                   subject=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),
+                                   property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),
+                                   object_=OWLNamedIndividual(IRI('http://example.com/father#', 'anna')),
+                                   annotations=[]),
+                               OWLObjectPropertyAssertionAxiom(
+                                   subject=OWLNamedIndividual(IRI('http://example.com/father#', 'martin')),
+                                   property_=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),
+                                   object_=OWLNamedIndividual(IRI('http://example.com/father#', 'heinz')),
+                                   annotations=[])])
 
     def test_get_tbox(self):
-        self.assertCountEqual(father_onto.get_tbox_axioms(),
-                              [OWLEquivalentClassesAxiom([OWLClass(IRI('http://example.com/father#', 'male')), OWLObjectComplementOf(OWLClass(IRI('http://example.com/father#', 'female')))],[]),
-                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'female')),super_class=OWLClass(IRI('http://example.com/father#', 'person')),annotations=[]),
-                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'male')),super_class=OWLClass(IRI('http://example.com/father#', 'person')),annotations=[]),
-                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'person')),super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')),annotations=[]),
-                               OWLObjectPropertyRangeAxiom(OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),OWLClass(IRI('http://example.com/father#', 'person')),[]),
-                               OWLObjectPropertyDomainAxiom(OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),OWLClass(IRI('http://example.com/father#', 'person')),[])])
+        print(father_onto.get_tbox_axioms())
+        self.assertCountEqual(list(father_onto.get_tbox_axioms()),
+                              [OWLObjectPropertyDomainAxiom(
+                                  OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),
+                                                            OWLClass(IRI('http://example.com/father#', 'person')),[]),
+                               OWLObjectPropertyRangeAxiom(
+                                   OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')),
+                                                           OWLClass(IRI('http://example.com/father#', 'person')),[]),
+                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'person')),
+                                                  super_class=OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')),
+                                                  annotations=[]),
+                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'male')),
+                                                  super_class=OWLClass(IRI('http://example.com/father#', 'person')),
+                                                  annotations=[]),
+                               OWLSubClassOfAxiom(sub_class=OWLClass(IRI('http://example.com/father#', 'female')),
+                                                  super_class=OWLClass(IRI('http://example.com/father#', 'person')),
+                                                  annotations=[]),
+                               OWLEquivalentClassesAxiom([OWLObjectComplementOf(
+                                   OWLClass(IRI('http://example.com/father#', 'female'))),
+                                                          OWLClass(IRI('http://example.com/father#', 'male'))],[])])

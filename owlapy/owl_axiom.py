@@ -195,9 +195,10 @@ class OWLHasKeyAxiom(OWLLogicalAxiom, HasOperands[OWLPropertyExpression]):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._class_expression == other._class_expression \
-                and self._property_expressions == other._property_expressions \
-                and self._annotations == other._annotations
-        return NotImplemented
+                and set(self._property_expressions) == set(other._property_expressions) \
+                and len(self._property_expressions) == len(other._property_expressions) \
+                and set(self._annotations) == set(other._annotations)
+        return False
 
     def __hash__(self):
         return hash((self._class_expression, *self._property_expressions, *self._annotations))
@@ -257,8 +258,11 @@ class OWLNaryClassAxiom(OWLClassAxiom, OWLNaryAxiom[OWLClassExpression], metacla
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._class_expressions == other._class_expressions and self._annotations == other._annotations
-        return NotImplemented
+            # parsed to set to have order-insensitive comparison
+            return (set(self._class_expressions) == set(other._class_expressions)
+                    and len(self._class_expressions) == len(other._class_expressions)
+                    and set(self._annotations) == set(other._annotations))
+        return False
 
     def __hash__(self):
         return hash((*self._class_expressions, *self._annotations))
@@ -280,6 +284,9 @@ class OWLEquivalentClassesAxiom(OWLNaryClassAxiom):
     def __init__(self, class_expressions: List[OWLClassExpression],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
         super().__init__(class_expressions=class_expressions, annotations=annotations)
+
+    def __iter__(self):
+        yield from self._class_expressions
 
     def contains_named_equivalent_class(self) -> bool:
         return any(isinstance(ce, OWLClass) for ce in self._class_expressions)
@@ -336,8 +343,10 @@ class OWLNaryIndividualAxiom(OWLIndividualAxiom, OWLNaryAxiom[OWLIndividual], me
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._individuals == other._individuals and self._annotations == other._annotations
-        return NotImplemented
+            return (set(self._individuals) == set(other._individuals)
+                    and len(self._individuals) == len(other._individuals)
+                    and set(self._annotations) == set(other._annotations))
+        return False
 
     def __hash__(self):
         return hash((*self._individuals, *self._annotations))
@@ -402,8 +411,10 @@ class OWLNaryPropertyAxiom(Generic[_P], OWLPropertyAxiom, OWLNaryAxiom[_P], meta
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._properties == other._properties and self._annotations == other._annotations
-        return NotImplemented
+            # parsed to set to have order-insensitive comparison
+            return (set(self._properties) == set(other._properties) and len(self._properties) == len(other._properties)
+                    and set(self._annotations) == set(other._annotations))
+        return False
 
     def __hash__(self):
         return hash((*self._properties, *self._annotations))
@@ -584,9 +595,10 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._cls == other._cls and self._class_expressions == other._class_expressions \
-                and self._annotations == other._annotations
-        return NotImplemented
+            return (self._cls == other._cls and set(self._class_expressions) == set(other._class_expressions)
+                    and self._annotations == other._annotations
+                    and len(self._class_expressions) == len(other._class_expressions))
+        return False
 
     def __hash__(self):
         return hash((self._cls, *self._class_expressions, *self._annotations))
@@ -1037,6 +1049,9 @@ class OWLDataPropertyAssertionAxiom(OWLPropertyAssertionAxiom[OWLDataPropertyExp
 
     def __init__(self, subject: OWLIndividual, property_: OWLDataPropertyExpression, object_: OWLLiteral,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        assert isinstance(subject,OWLIndividual), f"subject must be an OWLIndividual. Currently, {subject} of {type(subject)}"
+        assert isinstance(property_,OWLDataPropertyExpression), f"property_ must be an OWLDataPropertyExpression. Currently, {type(property_)}"
+        assert isinstance(object_,OWLLiteral), f"object_ must be an OWLLiteral. Currently, {type(object_)}"
         super().__init__(subject, property_, object_, annotations)
 
 
@@ -1256,6 +1271,14 @@ class OWLPropertyRangeAxiom(Generic[_P, _R], OWLUnaryPropertyAxiom[_P], metaclas
         self._range = range_
         super().__init__(property_=property_, annotations=annotations)
 
+    @property
+    def prop(self):
+        return self._property
+
+    @property
+    def range(self):
+        return self._range
+
     def get_range(self) -> _R:
         return self._range
 
@@ -1286,6 +1309,10 @@ class OWLObjectPropertyDomainAxiom(OWLPropertyDomainAxiom[OWLObjectPropertyExpre
     def __init__(self, property_: OWLObjectPropertyExpression, domain: OWLClassExpression,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
         super().__init__(property_=property_, domain=domain, annotations=annotations)
+
+    @property
+    def prop(self):
+        return self._property
 
 
 class OWLDataPropertyDomainAxiom(OWLPropertyDomainAxiom[OWLDataPropertyExpression]):

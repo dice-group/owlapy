@@ -4,7 +4,6 @@ https://www.w3.org/TR/owl2-syntax/#Data_Ranges
 
 DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction
 """
-
 from .owl_object import OWLObject
 from .meta_classes import HasOperands
 from typing import Final, Sequence, Iterable
@@ -42,8 +41,9 @@ class OWLNaryDataRange(OWLDataRange, HasOperands[OWLDataRange]):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._operands == other._operands
-        return NotImplemented
+            return (set(self._operands) == set(other._operands)
+                    and len(list((self._operands))) == len(list((other._operands))))
+        return False
 
     def __hash__(self):
         return hash(self._operands)

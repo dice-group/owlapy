@@ -1,7 +1,7 @@
 """OWL IRI"""
 import weakref
 from abc import ABCMeta
-from typing import Final, Union, overload
+from typing import Final, Union
 from weakref import WeakKeyDictionary
 
 from owlapy import namespaces
@@ -49,45 +49,21 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         self._namespace = sys.intern(namespace)
         self._remainder = remainder
 
-    @overload
     @staticmethod
-    def create(namespace: Namespaces, remainder: str) -> 'IRI':
-        ...
-
-    @overload
-    @staticmethod
-    def create(namespace: str, remainder: str) -> 'IRI':
-        """Creates an IRI by concatenating two strings. The full IRI is an IRI that contains the characters in
-        namespace + remainder.
-
-        Args:
-            namespace: The first string.
-            remainder: The second string.
-
-        Returns:
-            An IRI whose characters consist of prefix + suffix.
-        """
-        ...
-
-    @overload
-    @staticmethod
-    def create(string: str) -> 'IRI':
-        """Creates an IRI from the specified String.
-
-        Args:
-            string: The String that specifies the IRI.
-
-        Returns:
-            The IRI that has the specified string representation.
-        """
-        ...
-
-    @staticmethod
-    def create(string, remainder=None) -> 'IRI':
+    def create(iri:str | Namespaces, remainder:str=None) -> 'IRI':
+        assert isinstance(iri, str) | isinstance(iri, Namespaces), f"Input must be a string or an instance of Namespaces. Currently, {type(iri)}"
         if remainder is not None:
-            return IRI(string, remainder)
-        index = 1 + max(string.rfind("/"), string.rfind(":"), string.rfind("#"))
-        return IRI(string[0:index], string[index:])
+            assert isinstance(remainder,str), f"Reminder must be string. Currently, {type(remainder)}"
+            return IRI(iri, remainder)
+        else:
+            assert isinstance(iri, str) and remainder is None, \
+                f"iri must be string if remainder is None. Currently, {type(iri)} and {type(remainder)}"
+            # Extract reminder from input string
+            assert "/" in iri, f"Input must contain /\tCurrently, {iri}"
+            # assert ":" in iri, "Input must contain :"
+            assert " " not in iri, f"Input must not contain whitespace. Currently:{iri}."
+            index = 1 + max(iri.rfind("/"), iri.rfind(":"), iri.rfind("#"))
+            return IRI(iri[0:index], iri[index:])
 
     def __repr__(self):
         return f"IRI({repr(self._namespace)}, {repr(self._remainder)})"
