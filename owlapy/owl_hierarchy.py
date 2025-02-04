@@ -264,8 +264,10 @@ class ClassHierarchy(AbstractHierarchy[OWLClass]):
         return OWLNothing
 
     def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) -> Iterable[Tuple[OWLClass, Iterable[OWLClass]]]:
+        clss = set(reasoner.get_root_ontology().classes_in_signature())
+        clss.add(OWLNothing)
         yield from ((_, reasoner.sub_classes(_, direct=True))
-                    for _ in reasoner.get_root_ontology().classes_in_signature())
+                    for _ in clss)
 
     def sub_classes(self, entity: OWLClass, direct: bool = True) -> Iterable[OWLClass]:
         yield from self.children(entity, direct)
@@ -298,10 +300,12 @@ class ObjectPropertyHierarchy(AbstractHierarchy[OWLObjectProperty]):
 
     def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) \
             -> Iterable[Tuple[OWLObjectProperty, Iterable[OWLObjectProperty]]]:
+        o_props = set(reasoner.get_root_ontology().object_properties_in_signature())
+        o_props.add(OWLBottomObjectProperty)
         return ((_, map(lambda _: cast(OWLObjectProperty, _),
                         filter(lambda _: isinstance(_, OWLObjectProperty),
                                reasoner.sub_object_properties(_, direct=True))))
-                for _ in reasoner.get_root_ontology().object_properties_in_signature())
+                for _ in o_props)
 
     def sub_object_properties(self, entity: OWLObjectProperty, direct: bool = True) -> Iterable[OWLObjectProperty]:
         yield from self.children(entity, direct)
@@ -346,8 +350,10 @@ class DatatypePropertyHierarchy(AbstractHierarchy[OWLDataProperty]):
 
     def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) \
             -> Iterable[Tuple[OWLDataProperty, Iterable[OWLDataProperty]]]:
+        d_props = set(reasoner.get_root_ontology().data_properties_in_signature())
+        d_props.add(OWLBottomDataProperty)
         return ((_, reasoner.sub_data_properties(_, direct=True))
-                for _ in reasoner.get_root_ontology().data_properties_in_signature())
+                for _ in d_props)
 
     def sub_data_properties(self, entity: OWLDataProperty, direct: bool = True):
         yield from self.children(entity, direct)
