@@ -13,7 +13,7 @@ from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom,
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
     OWLDataSomeValuesFrom, OWLDataOneOf, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataHasValue, \
-    OWLDataAllValuesFrom
+    OWLDataAllValuesFrom, OWLNothing, OWLThing
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
@@ -26,7 +26,8 @@ from owlapy.owl_ontology_manager import SyncOntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral
+from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObjectProperty, OWLBottomDataProperty, \
+    OWLTopDataProperty
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 logger = logging.getLogger(__name__)
@@ -170,6 +171,13 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     def disjoint_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
         seen_set = set()
+        if ce is OWLNothing:
+            yield from self._ontology.classes_in_signature()
+            yield OWLThing
+            return
+        if ce is OWLThing:
+            yield OWLNothing
+            return
         yield from self._find_disjoint_classes(ce, only_named, seen_set)
         for c in self.super_classes(ce, only_named=only_named):
             if c != OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')):
@@ -420,6 +428,13 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     def disjoint_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
         seen_set = set()
+        if op is OWLBottomObjectProperty:
+            yield from self._ontology.object_properties_in_signature()
+            yield OWLTopObjectProperty
+            return
+        if op is OWLTopObjectProperty:
+            yield OWLBottomObjectProperty
+            return
         yield from self._find_disjoint_object_properties(op, seen_set)
         for o in self.super_object_properties(op):
             if o != OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#', 'ObjectProperty')):
@@ -446,6 +461,13 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     def disjoint_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
         seen_set = set()
+        if dp is OWLBottomDataProperty:
+            yield from self._ontology.data_properties_in_signature()
+            yield OWLTopDataProperty
+            return
+        if dp is OWLTopDataProperty:
+            yield OWLBottomDataProperty
+            return
         yield from self._find_disjoint_data_properties(dp, seen_set)
         for d in self.super_data_properties(dp):
             if d != OWLDataProperty(IRI('http://www.w3.org/2002/07/owl#', 'DatatypeProperty')):
