@@ -125,3 +125,84 @@ def csv_to_rdf_kg(path_csv:str=None,path_kg:str=None,namespace:str=None):
                                           f"value=**{value}**\n"
                                           f"has not been decided")
     ontology.save(path=path_kg)
+
+def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
+    """
+    Constructs a CSV file from an RDF Knowledge Graph (RDF/XML) 
+
+    Args:
+        path_kg (str): Path to the RDF Knowledge Graph file (RDF/XML)
+        path_csv (str): Path where the reconstructed CSV should be saved.
+
+    Raises:
+        AssertionError: If the provided paths are None or invalid.
+
+    Example:
+        >>> # Assuming you previously did:
+        >>> # csv_to_rdf_kg("iris_dataset.csv", "iris_kg.owl", "http://example.com/iris")
+        >>> rdf_kg_to_csv("iris_kg.owl", "reconstructed_iris_dataset.csv")
+        >>> print("CSV reconstructed from RDF KG saved as reconstructed_iris_dataset.csv")
+    """
+    import os
+    import pandas as pd
+    from owlapy.owl_ontology_manager import SyncOntologyManager
+
+    # Validate arguments
+    assert path_kg is not None, "path_kg cannot be None"
+    assert path_csv is not None, "path_csv cannot be None"
+    assert os.path.exists(path_kg), f"RDF Knowledge Graph file {path_kg} does not exist."
+
+    # Load the ontology
+    manager = SyncOntologyManager()
+    ontology = manager.load_ontology(path_kg)
+    # Extract individuals and data property assertions
+    rows = {}
+    columns_list = []
+
+    # We assume each individual corresponds to a row, and its IRI ends with '#<index>'.
+    # Data properties correspond to columns, with IRIs ending in '#<modified_column_name>'.
+    for axiom in ontology.get_abox_axioms():
+        if isinstance(axiom, OWLDataPropertyAssertionAxiom):
+            subject_ind = axiom.get_subject()
+            property_exp = axiom.get_property()
+            literal = axiom.get_object()
+            literal_value = literal.get_literal()
+            if literal_value == "nan":
+                print(f"Skipping {axiom} as it has a NaN value")
+                continue
+            
+            try:
+                row_index = int(subject_ind.reminder)
+            except ValueError:
+                row_index = subject_ind.reminder
+
+            # Extract column fragment from property IRI: namespace#<column_name>
+            column_fragment = property_exp.iri.reminder.rsplit('#', 1)[-1]
+            value = literal_value
+            try:
+                if '.' in literal_value:
+                    value = float(literal_value)
+                else:
+                    value = int(literal_value)
+            except ValueError:
+                # keep as string if not numeric
+                pass
+
+            if row_index not in rows:
+                rows[row_index] = {}
+            rows[row_index][column_fragment] = value    
+            if column_fragment not in columns_list:
+                columns_list.append(column_fragment)
+
+    # Construct a DataFrame from the extracted data
+    columns = columns_list
+    row_indices = list(rows.keys())
+    data_list = []
+
+    for i in row_indices:
+        row_data = [rows[i].get(col, None) for col in columns]
+        data_list.append(row_data)
+
+    df = pd.DataFrame(data_list, columns=columns)
+    df.to_csv(path_csv, index=False, na_rep="")
+    print(f"CSV reconstructed and saved to {path_csv}")
