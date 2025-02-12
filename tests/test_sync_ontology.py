@@ -5,8 +5,7 @@ from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLEquivalentClassesAxiom, OWLClassAssertionAxiom, OWLObjectPropertyAssertionAxiom, \
     OWLSubClassOfAxiom, OWLObjectPropertyRangeAxiom, OWLObjectPropertyDomainAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology import OWLOntologyID
-from owlapy.owl_ontology_manager import SyncOntologyManager
+from owlapy.owl_ontology import OWLOntologyID, SyncOntology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 
 NS = "http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#"
@@ -71,24 +70,22 @@ T = OWLClass(IRI(NS, 'T'))
 U = OWLClass(IRI(NS, 'U'))
 
 father_onto_path = "KGs/Family/father.owl"
-father_manager = SyncOntologyManager()
-father_onto = father_manager.load_ontology(father_onto_path)
+father_onto = SyncOntology(father_onto_path)
 
 
 class TestSyncOntology(unittest.TestCase):
 
     ontology_path = "KGs/Test/test_ontology.owl"
-    manager = SyncOntologyManager()
-    onto = manager.load_ontology(ontology_path)
+    onto = SyncOntology(ontology_path)
 
     def test_interface_father_dataset(self):
         ontology_path = "KGs/Family/father.owl"
-        onto = SyncOntologyManager().load_ontology(ontology_path)
+        onto = SyncOntology(ontology_path)
         assert {owl_class.reminder for owl_class in onto.classes_in_signature()}=={'male', 'female', 'Thing', 'person'}
         assert {individual.reminder for individual in onto.individuals_in_signature()} == {'markus', 'anna', 'martin',
                                                                                            'stefan', 'heinz',
                                                                                            'michelle'}
-        assert {object_property.reminder for object_property in onto.object_properties_in_signature()}=={'hasChild'}
+        assert {object_property.reminder for object_property in onto.object_properties_in_signature()} == {'hasChild'}
 
     # NOTE AB: The name of "assertCountEqual" may be misleading,but it's essentially an order-insensitive "assertEqual".
 

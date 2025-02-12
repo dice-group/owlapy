@@ -5,7 +5,7 @@ import unittest
 from owlapy.class_expression import OWLClass, OWLNothing
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLSymmetricObjectPropertyAxiom, OWLReflexiveObjectPropertyAxiom
-from owlapy.owl_ontology_manager import SyncOntologyManager
+from owlapy.owl_ontology import SyncOntology
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.owl_reasoner import SyncReasoner
 
@@ -22,7 +22,7 @@ class TestOwlapyCommand(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0)
 
-        onto = SyncOntologyManager().load_ontology("inferred_axioms_ontology.owl")
+        onto = SyncOntology("inferred_axioms_ontology.owl")
 
         ops = onto.object_properties_in_signature()
         self.assertCountEqual(list(ops), [OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'hasChild')),
@@ -33,6 +33,7 @@ class TestOwlapyCommand(unittest.TestCase):
 
         reasoner = SyncReasoner(onto)
         mapper = reasoner.mapper
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.model import AxiomType
         symetrical_axioms = mapper.map_(
             onto.get_owlapi_ontology().getAxioms(AxiomType.SYMMETRIC_OBJECT_PROPERTY).stream())

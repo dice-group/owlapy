@@ -1,15 +1,11 @@
+from owlapy.owl_ontology import SyncOntology
 from owlapy.util_owl_static_funcs import save_owl_class_expressions, csv_to_rdf_kg
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
 from owlapy.owl_property import OWLObjectProperty
-from owlapy import owl_expression_to_sparql, owl_expression_to_dl
-from owlapy.owl_ontology_manager import OntologyManager
-from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
-from owlapy.owl_individual import OWLNamedIndividual, IRI
 from sklearn.datasets import load_iris
 import pandas as pd
 import rdflib
 
-from owlapy.owl_ontology_manager import SyncOntologyManager
 
 class TestRunningExamples:
     def test_readme(self):
@@ -36,5 +32,5 @@ class TestRunningExamples:
         assert len(df) == 150
         path_kg = "iris_kg.owl"
         csv_to_rdf_kg(path_csv="iris_dataset.csv", path_kg=path_kg, namespace="http://example.com/society")
-        onto = SyncOntologyManager().load_ontology(path_kg)
+        onto = SyncOntology(path_kg)
         assert len(onto.get_abox_axioms()) == 750

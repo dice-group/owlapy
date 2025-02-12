@@ -3,8 +3,10 @@ from functools import singledispatchmethod, singledispatch
 from itertools import chain, islice, combinations
 import types
 from types import MappingProxyType
-from typing import Iterable, TypeVar, Final, Optional, Union, cast
+from typing import Iterable, Final, Optional, Union, cast
 import logging
+
+import jpype
 import owlready2
 import rdflib
 from pandas import Timedelta
@@ -18,16 +20,16 @@ from owlapy.owl_literal import IntegerOWLDatatype, DoubleOWLDatatype, BooleanOWL
 from owlapy.owl_object import OWLObject
 from owlapy.iri import IRI
 from owlapy.class_expression import OWLClass, OWLThing, OWLClassExpression, OWLObjectComplementOf, OWLObjectUnionOf, \
-    OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectExactCardinality, \
+    OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectExactCardinality, \
     OWLObjectMaxCardinality, OWLObjectMinCardinality, OWLObjectHasValue, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
     OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, OWLDataOneOf, \
     OWLDatatypeRestriction, OWLRestriction, OWLObjectRestriction, OWLDataRestriction, OWLFacetRestriction, \
-    OWLNaryBooleanClassExpression, OWLQuantifiedObjectRestriction, OWLQuantifiedDataRestriction
+    OWLNaryBooleanClassExpression, OWLQuantifiedObjectRestriction, OWLQuantifiedDataRestriction, OWLObjectOneOf
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty, OWLPropertyExpression, OWLObjectInverseOf, \
     OWLObjectPropertyExpression, OWLDataPropertyExpression, OWLProperty
 from datetime import date, datetime
 from owlready2 import destroy_entity, AllDisjoint, AllDifferent, GeneralClassAxiom
-from owlapy.owl_axiom import (OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassOfAxiom, OWLEquivalentClassesAxiom, \
+from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassOfAxiom, OWLEquivalentClassesAxiom, \
     OWLDisjointUnionAxiom, OWLAnnotationAssertionAxiom, OWLAnnotationProperty, OWLSubPropertyAxiom, \
     OWLPropertyRangeAxiom, OWLClassAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom, \
     OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom, OWLPropertyDomainAxiom, \
@@ -36,8 +38,10 @@ from owlapy.owl_axiom import (OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClass
     OWLObjectPropertyCharacteristicAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, \
     OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom, \
     OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
-    OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom, OWLClassAxiom,
-                              OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom)
+    OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom, OWLClassAxiom, \
+    OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom
+from owlapy.static_funcs import startJVM
+
 from owlapy.vocab import OWLFacet
 import os
 
@@ -55,10 +59,6 @@ _Datatype_map: Final = MappingProxyType({
 
 
 _VERSION_IRI: Final = IRI.create(namespaces.OWL, "versionIRI")
-
-_M = TypeVar('_M', bound='OWLOntologyManager')  # noqa: F821
-_OM = TypeVar('_OM', bound='OntologyManager')  # noqa: F821
-_SM = TypeVar('_SM', bound='SyncOntologyManager')  # noqa: F821
 
 
 class OWLOntologyID:
@@ -778,26 +778,26 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, 
 
 
 class Ontology(AbstractOWLOntology):
-    __slots__ = '_manager', '_iri', '_world', '_onto', 'is_modified'
+    __slots__ = '_iri', '_world', '_onto', 'is_modified'
 
-    _manager: _OM
     _onto: owlready2.Ontology
-    _world: owlready2.World
     is_modified: bool
 
-    def __init__(self, manager: _OM, ontology_iri: IRI | str, load: bool):
+    def __init__(self, ontology_iri: IRI | str, load: bool = True, world_store=None):
         """Represents an Ontology in Ontolearn.
 
         Args:
-            manager: Ontology manager.
             ontology_iri: IRI of the ontology.
             load: Whether to load the ontology or not.
         """
-        self._manager = manager
         self._iri = ontology_iri
-        self._world = manager._world
+        if world_store is None:
+            self._world = owlready2.World()
+        else:
+            self._world = owlready2.World(filename=world_store)
         self.is_modified = False
-        if isinstance(ontology_iri,str):
+
+        if isinstance(ontology_iri, str):
             onto = self._world.get_ontology(ontology_iri)
         else:
             onto = self._world.get_ontology(ontology_iri.as_str())
@@ -828,33 +828,34 @@ class Ontology(AbstractOWLOntology):
         for i in self._onto.individuals():
             yield OWLNamedIndividual(IRI.create(i.iri))
 
-    def get_abox_axioms(self)->Iterable:
+    def get_abox_axioms(self) -> Iterable:
         raise NotImplementedError("will be implemented in future")
 
-    def get_tbox_axioms(self)->Iterable:
+    def get_tbox_axioms(self) -> Iterable:
         # @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint
         raise NotImplementedError("will be implemented in future")
-    def get_abox_axioms_between_individuals(self)->Iterable:
+
+    def get_abox_axioms_between_individuals(self) -> Iterable:
         # @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties
         raise NotImplementedError("will be implemented in future")
-    def get_abox_axioms_between_individuals_and_classes(self)->Iterable:
+
+    def get_abox_axioms_between_individuals_and_classes(self) -> Iterable:
         # @TODO: CD: Return all type information about individuals, i.e., individual type Class
         raise NotImplementedError("will be implemented in future")
+
     # @TODO:CD:Unsure it is working
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
         c_x: owlready2.ThingClass = self._world[c.str]
         # TODO: Should this also return EquivalentClasses general class axioms? Compare to java owlapi
         for ec_x in c_x.equivalent_to:
             yield OWLEquivalentClassesAxiom([c, _parse_concept_to_owlapy(ec_x)])
+
     # @TODO:CD:Unsure it is working
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
         # TODO: At the moment owlready2 only supports SubClassOf general class axioms. (18.02.2023)
         for ca in self._onto.general_class_axioms():
             yield from (OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
                         for c in ca.is_a)
-
-    def get_owl_ontology_manager(self) -> _OM:
-        return self._manager
 
     def get_ontology_id(self) -> OWLOntologyID:
         onto_iri = self._world._unabbreviate(self._onto.storid)
@@ -940,7 +941,7 @@ class Ontology(AbstractOWLOntology):
             for ax in axiom:
                 _remove_axiom(ax, self, self._world)
 
-    def save(self, path: Union[str,IRI] = None, inplace:bool=False, rdf_format = "rdfxml"):
+    def save(self, path: Union[str, IRI] = None, inplace: bool = False, rdf_format="rdfxml"):
         # convert it into str.
         if isinstance(path, IRI):
             path = path.as_str()
@@ -948,7 +949,7 @@ class Ontology(AbstractOWLOntology):
         if inplace is False:
             assert isinstance(path,str), f"path must be string if inplace is set to False. Current path is {type(path)}"
         # Get the current ontology defined in the world.
-        ont_x:owlready2.namespace.Ontology
+        ont_x: owlready2.namespace.Ontology
         ont_x = self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str())
 
         if inplace:
@@ -960,7 +961,7 @@ class Ontology(AbstractOWLOntology):
                 self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(file="demo.owl")
         else:
             print(f"Saving {path}..")
-            ont_x.save(file=path,format=rdf_format)
+            ont_x.save(file=path, format=rdf_format)
 
     def get_original_iri(self):
         """Get the IRI argument that was used to create this ontology."""
@@ -980,28 +981,33 @@ class Ontology(AbstractOWLOntology):
 
 class SyncOntology(AbstractOWLOntology):
 
-    def __init__(self, manager: _SM, path: Union[IRI, str], new: bool = False):
+    def __init__(self, path: Union[IRI, str], load: bool = True):
+        if not jpype.isJVMStarted():
+            startJVM()
+        # noinspection PyUnresolvedReferences
+        from org.semanticweb.owlapi.apibinding import OWLManager
         from owlapy.owlapi_mapper import OWLAPIMapper
+        # noinspection PyUnresolvedReferences
         from java.io import File
+        # noinspection PyUnresolvedReferences
         from java.util.stream import Stream
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.model import IRI as owlapi_IRI
-        self.manager = manager
-        self.path = path
-        self.new = new
 
+        self.owlapi_manager = OWLManager.createOWLOntologyManager()
+        self.path = path
 
         if isinstance(path, IRI):
             file_path = path.str
         else:
             file_path = path
-        if new:  # create new ontology
+        if not load:  # create new ontology
             if isinstance(path, IRI):
-                self.owlapi_ontology = self.manager.get_owlapi_manager().createOntology(Stream.empty(),
-                                                                                   owlapi_IRI.create(path.str))
+                self.owlapi_ontology = self.owlapi_manager.createOntology(Stream.empty(), owlapi_IRI.create(path.str))
             else:
                 raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
         else:  # means we are loading an existing ontology
-            self.owlapi_ontology = self.manager.get_owlapi_manager().loadOntologyFromOntologyDocument(File(file_path))
+            self.owlapi_ontology = self.owlapi_manager.loadOntologyFromOntologyDocument(File(file_path))
         self.mapper = OWLAPIMapper()
 
     def __eq__(self, other):
@@ -1056,6 +1062,7 @@ class SyncOntology(AbstractOWLOntology):
         return self.mapper.map_(self.owlapi_ontology.getObjectPropertyRangeAxioms(self.mapper.map_(property)))
 
     def _get_imports_enum(self, include_imports_closure: bool):
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.model.parameters import Imports
         if include_imports_closure:
             imports = Imports.INCLUDED
@@ -1096,9 +1103,6 @@ class SyncOntology(AbstractOWLOntology):
         """
         return self.mapper.map_(self.owlapi_ontology.getTBoxAxioms(self._get_imports_enum(include_imports_closure)))
 
-    def get_owl_ontology_manager(self) -> _M:
-        return self.manager
-
     def get_owlapi_ontology(self):
         return self.owlapi_ontology
 
@@ -1117,13 +1121,15 @@ class SyncOntology(AbstractOWLOntology):
         else:
             self.owlapi_ontology.removeAxioms(self.mapper.map_(axiom))
 
-    def save(self, path:str=None, document_iri: Optional[IRI] = None):
+    def save(self, path: str = None, document_iri: Optional[IRI] = None):
         """
         https://github.com/phillord/owl-api/blob/b2a5bfb9a0c6730c8ff950776af8f9bf19c78eac/
                 contract/src/test/java/org/coode/owlapi/examples/Examples.java#L206
         """
-        assert isinstance(path,str), "Path must be a string"
+        assert isinstance(path, str), "Path must be a string"
+        # noinspection PyUnresolvedReferences
         from java.io import File
+        # noinspection PyUnresolvedReferences
         import org.semanticweb.owlapi.model.IRI
         # //Create a file for the new format
         file = File(path)
@@ -1132,17 +1138,22 @@ class SyncOntology(AbstractOWLOntology):
             document_iri = org.semanticweb.owlapi.model.IRI.create(file.toURI())
         else:
             raise NotImplementedError("document_iri must be None for the time being")
-        self.manager.saveOntology(self.owlapi_ontology, self.manager.getOntologyFormat(self.owlapi_ontology), document_iri)
+        self.owlapi_manager.saveOntology(self.owlapi_ontology,
+                                         self.owlapi_manager.getOntologyFormat(self.owlapi_ontology), document_iri)
+
 
 class RDFLibOntology(AbstractOWLOntology):
 
-    def __init__(self,path:str):
-        assert os.path.exists(path)
-        import rdflib
+    def __init__(self, path: str, load: bool = True):
+        if load:
+            assert os.path.exists(path)
+            import rdflib
 
-        self.rdflib_graph=rdflib.Graph().parse(path)
-        self.str_owl_classes=[ x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class) if not isinstance(x,rdflib.term.BNode)]
-        self.str_owl_individuals=[ x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual) if not isinstance(x,rdflib.term.BNode)]
+            self.rdflib_graph = rdflib.Graph().parse(path)
+            self.str_owl_classes = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class) if not isinstance(x, rdflib.term.BNode)]
+            self.str_owl_individuals = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual) if not isinstance(x, rdflib.term.BNode)]
+        else:  # create a blank rdf ontology
+            raise NotImplementedError("Currently supports only loading an existing ontology")
 
     def __len__(self) -> int:
         return len(self.rdflib_graph)
@@ -1172,21 +1183,21 @@ class RDFLibOntology(AbstractOWLOntology):
                         results.append(axiom)
         return results
 
-    def get_abox_axioms(self)->Iterable:
+    def get_abox_axioms(self) -> Iterable:
         results=[]
         for owl_individual in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
             if isinstance(owl_individual, rdflib.term.URIRef):
-                str_owl_individual=owl_individual.n3()[1:-1]
-                for (_,p,o) in self.rdflib_graph.triples(triple=(owl_individual,None, None)):
+                str_owl_individual = owl_individual.n3()[1:-1]
+                for (_, p, o) in self.rdflib_graph.triples(triple=(owl_individual,None, None)):
                     if isinstance(o, rdflib.term.BNode):
                         continue
-                    str_iri_predicate=p.n3()[1:-1]
+                    str_iri_predicate = p.n3()[1:-1]
                     str_iri_object = o.n3()[1:-1]
                     axiom=None
-                    if str_iri_predicate=="http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
+                    if str_iri_predicate == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
                         if str_iri_object in self.str_owl_classes:
                             axiom = OWLClassAssertionAxiom(OWLNamedIndividual(str_owl_individual), OWLClass(str_iri_object))
-                        elif str_iri_object=="http://www.w3.org/2002/07/owl#NamedIndividual":
+                        elif str_iri_object == "http://www.w3.org/2002/07/owl#NamedIndividual":
                             # axiom= OWLDeclarationAxiom(OWLNamedIndividual(str_owl_individual))
                             continue
                         else:
@@ -1254,7 +1265,6 @@ class RDFLibOntology(AbstractOWLOntology):
         for ca in self._onto.general_class_axioms():
             yield from (OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
                         for c in ca.is_a)
-
 
     def data_property_domain_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
         raise NotImplementedError("will be implemented in future")
@@ -1375,7 +1385,6 @@ class RDFLibOntology(AbstractOWLOntology):
     def __repr__(self):
         raise NotImplementedError("will be implemented in future")
         return f'RDFLibOntology({self._onto.base_iri}, loaded:{self._onto.loaded})'
-
 
 
 OWLREADY2_FACET_KEYS = MappingProxyType({

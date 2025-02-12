@@ -2,7 +2,7 @@ from owlapy.class_expression import OWLObjectSomeValuesFrom, OWLObjectIntersecti
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLSubClassOfAxiom, OWLObjectPropertyDomainAxiom, OWLEquivalentObjectPropertiesAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.owl_reasoner import StructuralReasoner
 
@@ -116,8 +116,7 @@ r7EB = OWLObjectIntersectionOf([r7E, B])
 JK = OWLObjectIntersectionOf([J, K])
 r1T = OWLObjectSomeValuesFrom(property=r1, filler=OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')))
 
-manager = OntologyManager()
-onto = manager.load_ontology(IRI.create('file://' + data_file))
+onto = Ontology(IRI.create('file://' + data_file))
 
 onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([r6, r5]))
 onto.add_axiom(OWLEquivalentObjectPropertiesAxiom([r5, r6]))

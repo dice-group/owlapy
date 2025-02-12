@@ -3,7 +3,7 @@ import time
 
 from owlapy.class_expression import (OWLClass, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom,
                                      OWLObjectIntersectionOf, OWLObjectUnionOf)
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology import Ontology
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.utils import concept_reducer_properties, concept_reducer
 from owlapy import owl_expression_to_dl
@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from tqdm import tqdm
+
 
 def eval_reasoners(iter_owl_exp, mapping,info:str=""):
     results = dict()
@@ -85,7 +86,7 @@ owl_reasoners["HermiT"] = SyncReasoner(ontology=ontology_path, reasoner="HermiT"
 owl_reasoners["Pellet"] = SyncReasoner(ontology=ontology_path, reasoner="Pellet")
 owl_reasoners["JFact"] = SyncReasoner(ontology=ontology_path, reasoner="JFact")
 owl_reasoners["Openllet"] = SyncReasoner(ontology=ontology_path, reasoner="Openllet")
-onto = OntologyManager().load_ontology(ontology_path)
+onto = Ontology(ontology_path)
 c: OWLClass
 # () C: OWL Class.
 c = {i for i in onto.classes_in_signature()}

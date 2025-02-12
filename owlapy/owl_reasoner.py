@@ -1,6 +1,8 @@
 """OWL Reasoner"""
 import operator
 import logging
+
+import jpype
 import owlready2
 
 from collections import defaultdict
@@ -22,12 +24,12 @@ from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
-from owlapy.owl_ontology_manager import SyncOntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObjectProperty, OWLBottomDataProperty, \
     OWLTopDataProperty
+from owlapy.static_funcs import startJVM
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 logger = logging.getLogger(__name__)
@@ -1031,16 +1033,17 @@ class SyncReasoner(AbstractOWLReasoner):
             (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet', "
              f"'Structural']. "
              f"This field is case sensitive.")
+        if not jpype.isJVMStarted():
+            startJVM()
+        # noinspection PyUnresolvedReferences
+        from org.semanticweb.owlapi.apibinding import OWLManager
         if isinstance(ontology, SyncOntology):
-            self.manager = ontology.manager
             self.ontology = ontology
         elif isinstance(ontology, str):
-            # https://owlcs.github.io/owlapi/apidocs_5/org/semanticweb/owlapi/apibinding/OWLManager.html
-            self.manager = SyncOntologyManager()
-            # OWLOntology
-            self.ontology = self.manager.load_ontology(ontology)
+            manager = OWLManager.createOWLOntologyManager()
+            self.ontology = manager.load_ontology(ontology)
 
-        self._owlapi_manager = self.manager.get_owlapi_manager()
+        self._owlapi_manager = self.ontology.owlapi_manager
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
         self.mapper = self.ontology.mapper
         self.inference_types_mapping = import_and_include_axioms_generators()
@@ -1406,7 +1409,9 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             Iterable of inferred axioms.
         """
+        # noinspection PyUnresolvedReferences
         from java.util import ArrayList
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.util import InferredOntologyGenerator
 
         generators = ArrayList()
@@ -1444,9 +1449,13 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             None (the file is saved to the specified directory)
         """
+        # noinspection PyUnresolvedReferences
         from java.io import File, FileOutputStream
+        # noinspection PyUnresolvedReferences
         from java.util import ArrayList
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.util import InferredOntologyGenerator
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.formats import TurtleDocumentFormat, RDFXMLDocumentFormat, OWLXMLDocumentFormat
         if output_format == "ttl" or output_format == "turtle":
             document_format = TurtleDocumentFormat()
@@ -1533,25 +1542,32 @@ class SyncReasoner(AbstractOWLReasoner):
 def initialize_reasoner(reasoner:str, owlapi_ontology):
     # () Create a reasoner using the ontology
     if reasoner == "HermiT":
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.HermiT import ReasonerFactory
         owlapi_reasoner = ReasonerFactory().createReasoner(owlapi_ontology)
         assert owlapi_reasoner.getReasonerName() == "HermiT"
     elif reasoner == "JFact":
+        # noinspection PyUnresolvedReferences
         from uk.ac.manchester.cs.jfact import JFactFactory
         owlapi_reasoner = JFactFactory().createReasoner(owlapi_ontology)
     elif reasoner == "Pellet":
+        # noinspection PyUnresolvedReferences
         from openllet.owlapi import PelletReasonerFactory
         owlapi_reasoner = PelletReasonerFactory().createReasoner(owlapi_ontology)
     elif reasoner == "Openllet":
+        # noinspection PyUnresolvedReferences
         from openllet.owlapi import OpenlletReasonerFactory
         owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(owlapi_ontology)
     elif reasoner == "Structural":
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
         owlapi_reasoner = StructuralReasonerFactory().createReasoner(owlapi_ontology)
     else:
         raise NotImplementedError("Not implemented")
     return owlapi_reasoner
+
 def import_and_include_axioms_generators():
+    # noinspection PyUnresolvedReferences
     from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
                                              InferredEquivalentClassAxiomGenerator,
                                              InferredDisjointClassesAxiomGenerator,

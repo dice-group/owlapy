@@ -133,11 +133,6 @@ class AbstractOWLOntology(OWLObject, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_owl_ontology_manager(self) -> _M:
-        """Gets the manager that manages this ontology."""
-        pass
-
-    @abstractmethod
     def get_ontology_id(self) -> _OI:
         """Gets the OWLOntologyID belonging to this object.
 
