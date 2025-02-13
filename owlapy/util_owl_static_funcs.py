@@ -51,8 +51,8 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
 
     namespace = 'https://dice-research.org/predictions#' if namespace is None else namespace
     assert "#" == namespace[-1], "namespace must end with #"
-    # Initialize an Ontology Manager.
-    # Create an ontology given an ontology manager.
+
+    # Create an ontology given the namespace.
     ontology: Ontology = Ontology(namespace, load=False)
     # () Iterate over concepts
     for th, i in enumerate(expressions):
@@ -93,7 +93,7 @@ def csv_to_rdf_kg(path_csv: str = None, path_kg: str = None, namespace: str = No
     assert namespace is not None, "namespace cannot be None"
     assert namespace[:7] == "http://", "First characters of namespace must be 'http://'"
 
-    # Create an ontology given an ontology manager.
+    # Create an ontology given the namespace.
     ontology: SyncOntology = SyncOntology(namespace, load=False)
 
     # Read the CSV file

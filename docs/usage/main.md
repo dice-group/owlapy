@@ -12,17 +12,14 @@
 
 --------------------------------------------------------------------------------------------
 ## What is owlapy?
-Owlapy is an open-source software library in python that is used to represent entities
-in OWL 2 Web Ontology Language.
 
-We identified the gap of having a library that will serve as a base structure 
-for representing OWL entities and for manipulating OWL Ontologies in python, and like that, owlapy was created. Owlapy 
-is loosely based on its java-counterpart, _owlapi_. Owlapy is currently utilized 
-by powerful libraries such as [Ontolearn](https://github.com/dice-group/Ontolearn)
-and [OntoSample](https://github.com/alkidbaci/OntoSample). 
-
-Owlapy is the perfect choice for machine learning projects that are built in python and
-focus on knowledge graphs and class expression learnings. 
+Owlapy is an open-source Python library designed for representing and manipulating OWL 2 ontologies, offering a robust 
+foundation for knowledge graph and class expression learning projects in machine learning. Inspired by [OWLAPI](https://github.com/owlcs/owlapi)
+(which is also available to use in this library via synchronisation), Owlapy enables ontology creation,
+modification, and reasoning while supporting OWL 2 Structural Specification, Functional-Style Syntax, and advanced 
+features such as parsing and rendering to Description Logics and Manchester syntax. With capabilities to convert OWL 
+expressions into SPARQL queries and interfaces for ontology and reasoning, Owlapy is a powerful tool used in powerful 
+libraries like [Ontolearn](https://github.com/dice-group/Ontolearn) and [OntoSample](https://github.com/alkidbaci/OntoSample).
 
 ---------------------------------------
 
@@ -40,10 +37,11 @@ including:
   - Axioms
   - Annotations
 - Construct complex class expressions.
-- Provide interfaces for OWL Ontology, Ontology manager and Reasoner.
+- Provide interfaces for OWL Ontology and Reasoner.
 - Convert owl expression to SPARQL queries.
 - Render owl expression to Description Logics or Manchester syntax.
 - Parse Description Logics or Manchester expression to owl expression.
+- **Makes _OWLAPI_ available to be easily used in Python.**
 
 
 ## How to install?

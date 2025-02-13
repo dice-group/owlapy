@@ -126,7 +126,7 @@ teacher_that_hasChild_male = OWLObjectIntersectionOf([hasChild_male, teacher])
 print(owl_expression_to_dl(teacher_that_hasChild_male)) # (∃ hasChild.male) ⊓ teacher
 print(owl_expression_to_sparql(teacher_that_hasChild_male)) #  SELECT DISTINCT ?x WHERE {  ?x <http://example.com/society#hasChild> ?s_1 . ?s_1 a <http://example.com/society#male> . ?x a <http://example.com/society#teacher> .  } }
 
-# Create an ontology via ontology manager directly
+# Create an ontology
 ontology = create_ontology("file:/example_ontology.owl",with_owlapi=False)
 john = OWLNamedIndividual("http://example.com/society#john")
 male_declaration_axiom = OWLDeclarationAxiom(male)

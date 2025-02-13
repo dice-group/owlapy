@@ -996,6 +996,7 @@ class SyncOntology(AbstractOWLOntology):
 
         self.owlapi_manager = OWLManager.createOWLOntologyManager()
         self.path = path
+        self.load = load
 
         if isinstance(path, IRI):
             file_path = path.str
@@ -1031,7 +1032,7 @@ class SyncOntology(AbstractOWLOntology):
                 f'\t|Classes|={len(self.classes_in_signature())}'
                 f'\t|Object Properties|={len(self.object_properties_in_signature())}'
                 f'\t|Data Properties|={len(self.data_properties_in_signature())}'
-                f'\n{self.manager}\tPath:{self.path}\tNew:{self.new}')
+                f'\n tPath:{self.path}\tLoad:{self.load}')
 
     def __len__(self):
         return len([i for i in self.get_abox_axioms()] + [i for i in self.get_abox_axioms()])
@@ -1373,8 +1374,6 @@ class RDFLibOntology(AbstractOWLOntology):
             ont_x.save(file=path,format=rdf_format)
 
     def get_ontology_id(self):
-        raise NotImplementedError("will be implemented in future")
-    def get_owl_ontology_manager(self):
         raise NotImplementedError("will be implemented in future")
 
     def __eq__(self, other):
