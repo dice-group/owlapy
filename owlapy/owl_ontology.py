@@ -1005,7 +1005,11 @@ class SyncOntology(AbstractOWLOntology):
             if isinstance(path, IRI):
                 self.owlapi_ontology = self.owlapi_manager.createOntology(Stream.empty(), owlapi_IRI.create(path.str))
             else:
-                raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
+                try:
+                    self.owlapi_ontology = self.owlapi_manager.createOntology(Stream.empty(),
+                                                                              owlapi_IRI.create(path))
+                except Exception as e:
+                    raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
         else:  # means we are loading an existing ontology
             self.owlapi_ontology = self.owlapi_manager.loadOntologyFromOntologyDocument(File(file_path))
         self.mapper = OWLAPIMapper()

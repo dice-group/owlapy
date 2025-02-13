@@ -119,7 +119,7 @@ class TestSyncOntology(unittest.TestCase):
         self.assertEqual(self.onto.get_ontology_id(), onto_id)
 
     def test__eq__(self):
-        onto2 = self.manager.load_ontology(self.ontology_path)
+        onto2 = SyncOntology(self.ontology_path)
         self.assertTrue(self.onto.__eq__(onto2))
 
     def test_get_signature(self):

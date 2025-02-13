@@ -61,10 +61,10 @@ owlapy --path_ontology "KGs/Family/family-benchmark_rich_background.owl" --infer
 <details><summary> Click me! </summary>
 
 ```python
-from owlapy.owl_ontology_manager import SyncOntologyManager
+from owlapy.owl_ontology import SyncOntology
 
 ontology_path = "KGs/Family/father.owl"
-onto = SyncOntologyManager().load_ontology(ontology_path)
+onto = SyncOntology(ontology_path)
 
 print({owl_class.reminder for owl_class in onto.classes_in_signature()}) 
 # {'Thing', 'female', 'male', 'person'}
@@ -112,10 +112,9 @@ for axiom in onto.get_abox_axioms():
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom
 from owlapy.owl_property import OWLObjectProperty
 from owlapy import owl_expression_to_sparql, owl_expression_to_dl
-from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
-from owlapy.owl_individual import OWLNamedIndividual, IRI
-from owlapy.static_funcs import create_ontology
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.util_owl_static_funcs import create_ontology
 # Using owl classes to create a complex class expression
 male = OWLClass("http://example.com/society#male")
 hasChild = OWLObjectProperty("http://example.com/society#hasChild")
@@ -155,14 +154,14 @@ OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/i
 <details><summary> Click me! </summary>
 
 ```python
-from owlapy.owl_ontology_manager import OntologyManager
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.static_funcs import stopJVM
+from owlapy.owl_ontology import Ontology
 
 ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
 # Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet'
 sync_reasoner = SyncReasoner(ontology = ontology_path, reasoner="Pellet")
-onto = OntologyManager().load_ontology(ontology_path)
+onto = Ontology(ontology_path)
 # Iterate over defined owl Classes in the signature
 for i in onto.classes_in_signature():
     # Performing type inference with Pellet
@@ -206,7 +205,7 @@ Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/exam
 <details><summary> Click me! </summary>
 
 ```python
-from owlapy.owl_ontology_manager import SyncOntologyManager
+from owlapy.owl_ontology import SyncOntology
 from owlapy.util_owl_static_funcs import csv_to_rdf_kg
 import pandas as pd
 from sklearn.datasets import load_iris
@@ -216,7 +215,7 @@ df.to_csv("iris_dataset.csv", index=False)
 path_kg = "iris_kg.owl"
 # Construct an RDF Knowledge Graph from a CSV file
 csv_to_rdf_kg(path_csv="iris_dataset.csv", path_kg=path_kg, namespace="http://owlapy.com/iris")
-onto = SyncOntologyManager().load_ontology(path_kg)
+onto = SyncOntology(path_kg)
 assert len(onto.get_abox_axioms()) == 750
 
 ```

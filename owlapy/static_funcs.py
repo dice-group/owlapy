@@ -6,9 +6,9 @@ import shutil
 import jpype
 import jpype.imports
 import pkg_resources
-from owlapy.owl_ontology import SyncOntology, Ontology
 
-# NOTE: Static functions closely related with owl classes should be placed in utils.py not here
+# NOTE: Static functions closely related with owl classes should be placed in utils.py
+# or util_owl_static_funcs.py not here
 
 
 def move(*args):
@@ -58,11 +58,3 @@ def stopJVM() -> None:
     if jpype.isJVMStarted():
         jpype.detachThreadFromJVM()
         jpype.shutdownJVM()
-
-
-def create_ontology(iri, with_owlapi=False):
-    """ A convenient function"""
-    if with_owlapi:
-        return SyncOntology(iri, load=False)
-    else:
-        return Ontology(iri, load=False)

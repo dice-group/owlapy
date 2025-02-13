@@ -9,7 +9,6 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_object import OWLObject
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 
-_M = TypeVar('_M', bound='OWLOntologyManager')  # noqa: F821
 _OI = TypeVar('_OI', bound='OWLOntologyID')  # noqa: F821
 
 
@@ -20,8 +19,6 @@ class AbstractOWLOntology(OWLObject, metaclass=ABCMeta):
     An ontology can have an ontology IRI which can be used to identify the ontology. If it has an ontology IRI then
     it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
     Structural Specification).
-
-    An ontology cannot be modified directly. Changes must be applied via its OWLOntologyManager.
     """
     __slots__ = ()
     type_index: Final = 1

@@ -1040,8 +1040,7 @@ class SyncReasoner(AbstractOWLReasoner):
         if isinstance(ontology, SyncOntology):
             self.ontology = ontology
         elif isinstance(ontology, str):
-            manager = OWLManager.createOWLOntologyManager()
-            self.ontology = manager.load_ontology(ontology)
+            self.ontology = SyncOntology(ontology)
 
         self._owlapi_manager = self.ontology.owlapi_manager
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()

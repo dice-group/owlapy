@@ -1,12 +1,13 @@
 import unittest
 
+from owlapy.iri import IRI
 from owlapy.owl_ontology import SyncOntology
 
 
 class TestSyncReasoner(unittest.TestCase):
     def test_read_write(self):
         # Create an empty ontology
-        o1 = SyncOntology("file:/example_ontology.owl", load=False)
+        o1 = SyncOntology(IRI.create("file:/example_ontology.owl"), load=False)
         # () Add tbox axioms from another ontology
         for axiom in SyncOntology("KGs/Family/father.owl").get_tbox_axioms():
             o1.add_axiom(axiom)
