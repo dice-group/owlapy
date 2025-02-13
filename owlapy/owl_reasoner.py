@@ -1033,10 +1033,7 @@ class SyncReasoner(AbstractOWLReasoner):
             (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet', "
              f"'Structural']. "
              f"This field is case sensitive.")
-        if not jpype.isJVMStarted():
-            startJVM()
-        # noinspection PyUnresolvedReferences
-        from org.semanticweb.owlapi.apibinding import OWLManager
+
         if isinstance(ontology, SyncOntology):
             self.ontology = ontology
         elif isinstance(ontology, str):
