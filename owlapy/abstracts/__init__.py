@@ -1,4 +1,4 @@
-from .abstract_owl_ontology_manager import AbstractOWLOntologyManager, AbstractOWLOntologyChange, AbstractOWLOntology
 from .abstract_owl_reasoner import AbstractOWLReasoner
+from .abstract_owl_ontology import AbstractOWLOntology
 
-__all__ = ['AbstractOWLOntologyManager', 'AbstractOWLOntologyChange', 'AbstractOWLOntology', 'AbstractOWLReasoner']
+__all__ = ['AbstractOWLOntology', 'AbstractOWLReasoner']

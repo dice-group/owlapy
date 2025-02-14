@@ -1,8 +1,6 @@
 """Classes representing hierarchy in OWL."""
 
-import operator
 from abc import ABCMeta, abstractmethod
-from functools import reduce
 from typing import Dict, Iterable, Tuple, overload, TypeVar, Generic, Type, cast, Optional, FrozenSet, Set
 
 from owlapy.class_expression import OWLClass, OWLThing, OWLNothing
@@ -432,46 +430,3 @@ def _reduce_transitive(hier: Dict[_S, Set[_S]], hier_inverse: Dict[_S, Set[_S]])
         if not direct_set:
             leaf_set |= {ent}
     return result_hier, frozenset(leaf_set)
-
-
-def _strongly_connected_components(graph: Dict[_S, Set[_S]]) -> Iterable[FrozenSet[_S]]:
-    """Strongly connected component algorithm.
-
-    Args:
-        graph: Directed Graph dictionary, vertex => set of vertices (there is an edge from v to each V).
-
-    Returns:
-        The strongly connected components.
-
-    Author: Mario Alviano
-    Source: https://github.com/alviano/python/blob/master/rewrite_aggregates/scc.py
-    Licence: GPL-3.0
-    """
-    identified = set()
-    stack = []
-    index = {}
-    boundaries = []
-
-    def dfs(v):
-        nonlocal identified
-        index[v] = len(stack)
-        stack.append({v})
-        boundaries.append(index[v])
-
-        for w in graph[v]:
-            if w not in index:
-                yield from dfs(w)
-            elif not {w} & identified:
-                while index[w] < boundaries[-1]:
-                    boundaries.pop()
-
-        if boundaries[-1] == index[v]:
-            boundaries.pop()
-            scc = reduce(operator.or_, stack[index[v]:])
-            del stack[index[v]:]
-            identified |= scc
-            yield frozenset(scc)
-
-    for v in graph:
-        if v not in index:
-            yield from dfs(v)
