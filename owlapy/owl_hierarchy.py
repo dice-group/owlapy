@@ -1,8 +1,6 @@
 """Classes representing hierarchy in OWL."""
 
-import operator
 from abc import ABCMeta, abstractmethod
-from functools import reduce
 from typing import Dict, Iterable, Tuple, overload, TypeVar, Generic, Type, cast, Optional, FrozenSet, Set
 
 from owlapy.class_expression import OWLClass, OWLThing, OWLNothing
