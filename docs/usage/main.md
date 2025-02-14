@@ -6,7 +6,7 @@
 
 **Publisher and maintainer:** [DICE](https://dice-research.org/) - data science research group of [Paderborn University](https://www.uni-paderborn.de/en/university).
 
-**Contact**: [onto-learn@lists.uni-paderborn.de](mailto:onto-learn@lists.uni-paderborn.de)
+**Contact**: [alkid@mail.uni-paderborn.de](mailto:alkid@mail.uni-paderborn.de)
 
 **License:** MIT License
 
