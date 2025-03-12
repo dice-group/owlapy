@@ -6,9 +6,12 @@ from .owl_axiom import OWLEquivalentClassesAxiom, OWLDataPropertyAssertionAxiom
 from .owl_property import OWLDataProperty
 from .owl_literal import OWLLiteral
 import os
+import json
 from typing import List
 from tqdm import tqdm
 import pandas as pd
+from rdflib import Graph, URIRef, Literal, RDFS, OWL, Namespace, RDF
+from rdflib.namespace import XSD
 
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
@@ -210,3 +213,161 @@ def create_ontology(iri, with_owlapi=False):
         return SyncOntology(iri, load=False)
     else:
         return Ontology(iri, load=False)
+
+
+def generate_ontology(graph_as_json: str = None,
+                      output_path: str = "generated_ontology.owl",
+                      output_format: str = "xml",
+                      namespace: str = "http://example.org/",
+                      generate_classes: bool = True,
+                      base_url: str = None,
+                      api_key: str = None,
+                      model: str = None,
+                      context: str = "",
+                      temperature: float = 0.15
+                      ):
+    """
+    Generates an ontology using quadruples from a given json file.
+
+    Args:
+        graph_as_json: Path to the json file that contains the nested data. Nested structure should look like following
+            where a graph can have multiple quadruples and each quadruple can have multiple  subject-predicate-object
+            triples:
+
+                    {'graph':[
+                        {
+                            quadruples:[
+                                {
+                                    "subject": ...
+                                    "predicate": ...
+                                    "object": ...
+                                },
+                            ],
+                        }
+                    ]}
+        output_path: Path to the output result (an ontology).
+        output_format: The format the output should be written in. Chose from ["xml", "n3", "turtle", "nt",
+            "pretty-xml", "trix", "trig", "nquads", "json-ld", "hext"].
+        namespace: Namespace of the ontology.
+        generate_classes: Whether you want to generate classes or not (should provide LLM arguments if True).
+        base_url: Base URL for the OpenAI client.
+        api_key: API key for the OpenAI client.
+        model: Model name to use for class generation via OpenAI client.
+        context: Additional context for the ontology. Used as assisting information during LLM prompts.
+                Describe the ontology focus area, weak points that can help the LLM to understand the data better,
+                including potential examples that may help identify entities better.
+        temperature: Temperature to use for the LLM during class generation.
+    """
+    if generate_classes:
+        assert base_url is not None and api_key is not None and model is not None,"Provide OpenAI client arguments: `base_url`, `api_key`, `model` or disable class generation."
+
+    assert output_format in ["xml", "n3", "turtle", "nt", "pretty-xml", "trix", "trig", "nquads", "json-ld", "hext"], "Unsuported output format. Check docstrings."
+
+    g = Graph()
+
+    with open(graph_as_json) as json_file:
+        data = json.load(json_file)
+
+    ex = Namespace(namespace)
+    g.bind("ex", ex)
+    g.bind("rdf", RDF)
+    g.bind("rdfs", RDFS)
+    g.bind("owl", OWL)
+    seen_set = set()
+    subjects = set()
+    predicates = set()
+    obj_for_pred = dict()
+    triples_as_str = ""
+    objects = set()
+    graphs = data["graphs"]
+    # First iteration to store data in memory for easy retrieval
+    for graph in graphs:
+        quadruples = graph["quadruples"]
+        for quad in quadruples:
+            sub = quad["subject"]
+            pred = quad["predicate"]
+            obj = quad["object"]
+            if pred not in obj_for_pred.keys():
+                obj_for_pred[pred] = set()
+            subjects.add(sub)
+            predicates.add(pred)
+            objects.add(obj)
+            obj_for_pred[pred].add(obj)
+            triples_as_str += sub.replace(" ", "") + " " + pred.replace("_", "") + " " + obj.replace(" ", "") + "\n"
+
+    # Second iteration to define the ontology
+    for graph in graphs:
+        quadruples = graph["quadruples"]
+        for quad in quadruples:
+            subj = quad["subject"].strip().replace(" ", "_")
+            pred_original = quad["predicate"]
+            pred = pred_original.strip().replace(" ", "_")
+            obj = quad["object"].strip().replace(" ", "_")
+            subject = URIRef(namespace + subj)
+            predicate = URIRef(namespace + pred)
+            obj_is_individual = len(obj_for_pred[pred_original].intersection(subjects)) > 0
+            if pred_original not in seen_set:
+                seen_set.add(pred_original)
+                if obj_is_individual:
+                    g.add((predicate, RDF.type, OWL.ObjectProperty))
+                else:  # we consider it a literal since no occurrence in subjects set
+                    g.add((predicate, RDF.type, OWL.DatatypeProperty))
+
+            if obj_is_individual:
+                g.add((subject, predicate, URIRef(namespace + obj)))
+            else:
+                try:
+                    obj_val = int(quad["object"])  # noqa: F841
+                    g.add((subject, predicate, Literal(quad["object"], datatype=XSD.integer)))
+                except ValueError:
+                    try:
+                        obj_val = float(quad["object"])  # noqa: F841
+                        g.add((subject, predicate, Literal(quad["object"], datatype=XSD.double)))
+                    except ValueError:
+                        g.add((subject, predicate, Literal(quad["object"], datatype=XSD.string)))
+
+    if generate_classes:
+        try:
+            from openai import OpenAI
+        except ModuleNotFoundError as e:
+            print("Could not detect the openai module. Please install using `pip install openai`")
+            exit(1)
+
+        client = OpenAI(base_url=base_url, api_key=api_key)
+
+        def generate_class_for_subject(s: str, triples: str):
+
+            system = ("You are an expert in ontologies and semantic modeling. Your task is to analyze ontology triples "
+                      "(in the form of subject-predicate-object) and generate a single named class (or type) for a given "
+                      "subject. When answering, provide only the class name with no extra text, explanation, or formatting."
+                      " For example, if the subject \"PaderbornUniversity\" corresponds to a university, respond with "
+                      "\"University\" and nothing else. If you cant decide a class for a subject, search it on the internet"
+                      " and try to come up with a class name.")
+            query = ("I have the following ontology triples: \n"
+                     f"{triples}"
+                     f"Based on these triples, generate a named class for the subject {s}. Print only the class name.")
+
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "system", "content": system},
+                          {"role": "user", "content": query},
+                          {"role": "assistant", "content": context}],
+                temperature=temperature)
+            generated_named_class = response.choices[0].message.content
+            # print(f"Generated class '{generated_named_class}' for subject '{s}'")
+            return generated_named_class
+
+        generated_classes = set()
+        # Class generation
+        for sub in subjects:
+            named_class = generate_class_for_subject(sub, triples_as_str)
+            cls = URIRef(namespace + named_class.replace(" ",""))
+            if named_class == "Thing":
+                cls = OWL.Thing
+            elif named_class not in generated_classes:
+                generated_classes.add(named_class)
+                g.add((cls, RDF.type, OWL.Class))
+            subj = sub.strip().replace(" ", "_")
+            g.add((URIRef(namespace + subj), RDF.type, cls))
+
+    g.serialize(destination=output_path, format=output_format)
