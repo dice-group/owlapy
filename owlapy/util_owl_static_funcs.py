@@ -329,7 +329,7 @@ def generate_ontology(graph_as_json: str = None,
     if generate_classes:
         try:
             from openai import OpenAI
-        except ModuleNotFoundError as e:
+        except ModuleNotFoundError:
             print("Could not detect the openai module. Please install using `pip install openai`")
             exit(1)
 
@@ -361,7 +361,7 @@ def generate_ontology(graph_as_json: str = None,
         # Class generation
         for sub in subjects:
             named_class = generate_class_for_subject(sub, triples_as_str)
-            cls = URIRef(namespace + named_class.replace(" ",""))
+            cls = URIRef(namespace + named_class.replace(" ", ""))
             if named_class == "Thing":
                 cls = OWL.Thing
             elif named_class not in generated_classes:
