@@ -42,9 +42,9 @@ In Owlapy, we provide two main reasoner classes:
   
   SyncReasoner is a class that serves as a 'syncing' class 
   between our framework and reasoners in _owlapi_. It
-  can perform full reasoning in _ALCH_ due to the use of well-known reasoners such as HermiT, Pellet, EKL etc. 
+  can perform full reasoning in _ALCH_ due to the use of well-known reasoners such as HermiT, Pellet, ELK etc. 
   SyncReasoner is more useful when your main goal is reasoning over the ontology,
-  and you are familiarized with the java reasoners (HermiT, Pellet, EKL, JFact, ...).
+  and you are familiarized with the java reasoners (HermiT, Pellet, ELK, JFact, ...).
 
     **Initialization:**
 
@@ -56,7 +56,7 @@ In Owlapy, we provide two main reasoner classes:
     
     SyncReasoner is made available by [OWLAPI mapper](owlapi_synchronization.md) and requires the ontology path or an
     object of type [SyncOntology](owlapy.owl_ontology.SyncOntology),
-    together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"EKL"`, `"JFact"`, 
+    together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"ELK"`, `"JFact"`, 
    `"Openllet"`, `"StructuralReasoner"` specified as a string value.
  
    

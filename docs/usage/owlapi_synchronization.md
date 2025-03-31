@@ -84,7 +84,7 @@ That means that you can play around with OWLAPI code in python as long
 as your JVM is started. Isn't that awesome! 
 
 `SyncReasoner` uses HermiT reasoner by default. You can choose between:
-"HermiT", "Pellet", "EKL", "JFact" and "Openllet" and "StructuralReasoner". Although no significant 
+"HermiT", "Pellet", "ELK", "JFact" and "Openllet" and "StructuralReasoner". Although no significant 
 difference has been noticed between these reasoners, they surely differentiate 
 in specific scenarios. You can check OWLAPI's [Wiki](https://github.com/owlcs/owlapi/wiki) for more details.
 
