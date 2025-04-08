@@ -8,9 +8,9 @@ a mapping class that makes possible the conversion of the most
 important classes from _owlapy_ to _owlapi_ and vice-versa. 
 
 
-We are able to use OWLAPI via [Jpype](https://jpype.readthedocs.io/en/latest/),
-a python module that provides access to Java in python. To start executing 
-Java code via Jpype, one needs to start the java virtual machine (JVM).
+We are able to use OWLAPI via [JPype](https://jpype.readthedocs.io/en/latest/),
+a python module that provides access to Java in Python. To start executing 
+Java code via JPype, one needs to start the java virtual machine (JVM).
 You don't have to worry about it, because if a class is going to use
 `OWLAPIMapper` the JVM will start automatically. However, there is the 
 function `startJVM` of the `static_functions.py` module if you ever need
@@ -79,7 +79,7 @@ then you can stop the JVM after it not being needed anymore.
 ## Notes
 
 An important thing to keep in mind is that when starting the JVM
-you are able to import and use java classes as you would do in python (thanks to Jpype). 
+you are able to import and use java classes as you would do in python (thanks to JPype). 
 That means that you can play around with OWLAPI code in python as long 
 as your JVM is started. Isn't that awesome! 
 
@@ -89,6 +89,8 @@ difference has been noticed between these reasoners, they surely differentiate
 in specific scenarios. You can check OWLAPI's [Wiki](https://github.com/owlcs/owlapi/wiki) for more details.
 
 _**owlapi version**: 5.1.9_
+
+For java installation, check the minimum version required by owlapi distribution mentioned above.
 
 ## Examples
 

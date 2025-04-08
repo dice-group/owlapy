@@ -27,9 +27,9 @@ libraries like [Ontolearn](https://github.com/dice-group/Ontolearn) and [OntoSam
 - Create, manipulate and save Ontologies.
 - Retrieving information from the signature of the ontology.
 - Reasoning over ontology.
-- Represent every notation in 
+- Representation of (almost) every notation in 
 [OWL 2 Structural Specification and Functional-Style Syntax](https://www.w3.org/TR/owl2-syntax/)
-including: 
+highlighting: 
   - Entities, Literals, and Anonymous Individuals
   - Property Expressions
   - Data Ranges
@@ -41,7 +41,8 @@ including:
 - Convert owl expression to SPARQL queries.
 - Render owl expression to Description Logics or Manchester syntax.
 - Parse Description Logics or Manchester expression to owl expression.
-- **Makes _OWLAPI_ available to be easily used in Python.**
+- **Enables _OWLAPI_ to be easily used in our Python framework.** 
+    - Compatible with well-known java reasoners such as HermiT, Pellet, etc.
 
 
 ## How to install?

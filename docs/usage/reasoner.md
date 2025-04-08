@@ -63,6 +63,11 @@ In Owlapy, we provide two main reasoner classes:
    **Note that SyncReasoner with `reasoner` argument set to `"StructuralReasoner"` is referring to 
    _StructuralReasoner_ implemented in OWLAPI. That is different from our StructuralReasoner.**
 
+  **Also is worth mentioning that some java reasoners like ELK do not implement all methods that a reasoner 
+  can perform. You will get a `NotImplementedError` if you try to use them. Note that we use these reasoners via jar
+  distributions, and we do not consider updating them. But in such cases we keep an eye open for new releases 
+  that may address these limitations.**
+
   
 ## Usage of the Reasoner
 All the reasoners available in Owlapy inherit from the
