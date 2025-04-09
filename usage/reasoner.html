@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reasoners &mdash; OWLAPY 1.4.0 documentation</title>
+  <title>Reasoners &mdash; OWLAPY 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../_static/documentation_options.js?v=e0a75244"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -58,6 +58,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#class-reasoning">Class Reasoning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#object-properties-and-data-properties-reasoning">Object Properties and Data Properties Reasoning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#find-instances">Find Instances</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#infer-and-validate-facts">Infer and validate facts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#serve-syncreasoner">Serve SyncReasoner</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="owlapi_synchronization.html">Owlapi Synchronization</a></li>
@@ -91,17 +93,16 @@
              
   <section id="reasoners">
 <h1>Reasoners<a class="headerlink" href="#reasoners" title="Link to this heading"></a></h1>
-<p>To validate facts about statements in the ontology, the help of a reasoner
+<p>To validate or infer facts from statements in the ontology, the help of a reasoner
 component is required.</p>
 <p>For this guide we will also consider the ‘father’ ontology that we slightly described <a class="reference internal" href="ontologies.html"><span class="std std-doc">here</span></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">OntologyManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
 
-<span class="n">manager</span> <span class="o">=</span> <span class="n">OntologyManager</span><span class="p">()</span>
-<span class="n">onto</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;KGs/Family/father.owl&quot;</span><span class="p">))</span>
+<span class="n">onto</span> <span class="o">=</span> <span class="n">Ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;KGs/Family/father.owl&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>In our Owlapy library, we provide two main reasoner classes:</p>
+<p>In Owlapy, we provide two main reasoner classes:</p>
 <ul>
 <li><p><a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner" title="owlapy.owl_reasoner.StructuralReasoner"><span class="xref myst py py-class"><strong>StructuralReasoner</strong></span></a> (What used to be FastInstanceCheckerReasoner )</p>
 <p>Structural Reasoner is the base reasoner in Owlapy. This reasoner works
@@ -125,27 +126,30 @@ for <code class="docutils literal notranslate"><span class="pre">instances()</sp
 <li><p><a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class"><strong>SyncReasoner</strong></span></a></p>
 <p>SyncReasoner is a class that serves as a ‘syncing’ class
 between our framework and reasoners in <em>owlapi</em>. It
-can perform full reasoning in <em>ALCH</em> due to the use of reasoners from
-powerful reasoners like HermiT, Pellet, etc.
+can perform full reasoning in <em>ALCH</em> due to the use of well-known reasoners such as HermiT, Pellet, ELK etc.
 SyncReasoner is more useful when your main goal is reasoning over the ontology,
-and you are familiarized with the java reasoners (HermiT, Pellet, JFact, Openllet, …).</p>
+and you are familiarized with the java reasoners (HermiT, Pellet, ELK, JFact, …).</p>
 <p><strong>Initialization:</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncReasoner</span>
 
 <span class="n">sync_reasoner</span> <span class="o">=</span> <span class="n">SyncReasoner</span><span class="p">(</span><span class="n">ontology</span><span class="o">=</span><span class="s2">&quot;KGs/Mutagenesis/mutagenesis.owl&quot;</span><span class="p">,</span> <span class="n">reasoner</span><span class="o">=</span><span class="s2">&quot;HermiT&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>SyncReasoner is made available by <a class="reference internal" href="owlapi_synchronization.html"><span class="std std-doc">owlapi mapper</span></a> and requires the ontology path or an
+<p>SyncReasoner is made available by <a class="reference internal" href="owlapi_synchronization.html"><span class="std std-doc">OWLAPI mapper</span></a> and requires the ontology path or an
 object of type <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology" title="owlapy.owl_ontology.SyncOntology"><span class="xref myst py py-class">SyncOntology</span></a>,
-together with a reasoner name from the possible set of reasoners: <code class="docutils literal notranslate"><span class="pre">&quot;Hermit&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Pellet&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;JFact&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Openllet&quot;</span></code>
-<code class="docutils literal notranslate"><span class="pre">&quot;StructuralReasoner&quot;</span></code>.</p>
-<p><strong>Note that SyncReasoner with <code class="docutils literal notranslate"><span class="pre">reasoner</span></code> argument set to <code class="docutils literal notranslate"><span class="pre">&quot;StructuralReasoner&quot;</span></code> is refering to
-<em>StructuralReasoner</em> implemented in owlapi. That is different from our StructuralReasoner.</strong></p>
+together with a reasoner name from the possible set of reasoners: <code class="docutils literal notranslate"><span class="pre">&quot;Hermit&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Pellet&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;ELK&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;JFact&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;Openllet&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;StructuralReasoner&quot;</span></code> specified as a string value.</p>
+<p><strong>Note that SyncReasoner with <code class="docutils literal notranslate"><span class="pre">reasoner</span></code> argument set to <code class="docutils literal notranslate"><span class="pre">&quot;StructuralReasoner&quot;</span></code> is referring to
+<em>StructuralReasoner</em> implemented in OWLAPI. That is different from our StructuralReasoner.</strong></p>
+<p><strong>Also is worth mentioning that some java reasoners like ELK do not implement all methods that a reasoner
+can perform. You will get a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> if you try to use them. Note that we use these reasoners via jar
+distributions, and we do not consider updating them. But in such cases we keep an eye open for new releases
+that may address these limitations.</strong></p>
 </li>
 </ul>
 <section id="usage-of-the-reasoner">
 <h2>Usage of the Reasoner<a class="headerlink" href="#usage-of-the-reasoner" title="Link to this heading"></a></h2>
-<p>All the reasoners available in the Owlapy library inherit from the
+<p>All the reasoners available in Owlapy inherit from the
 class: <a class="reference internal" href="../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.AbstractOWLReasoner" title="owlapy.abstracts.AbstractOWLReasoner"><span class="xref myst py py-class">AbstractOWLReasoner</span></a>.
 Further on, in this guide, we use <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner" title="owlapy.owl_reasoner.StructuralReasoner"><span class="xref myst py py-class">StructuralReasoner</span></a>
 to show the capabilities of a reasoner in Owlapy.</p>
@@ -183,7 +187,7 @@ upon the class, object property, or data property hierarchy.</p>
 </div></blockquote>
 <blockquote>
 <div><p><strong>NOTE</strong>: In SyncReasoner, there is no use for the argument <code class="docutils literal notranslate"><span class="pre">only_named</span></code> as this is not
-supported by methods in the java library owlapi.</p>
+supported by methods in the java library OWLAPI.</p>
 </div></blockquote>
 <p>You can get all the types of a certain individual using <code class="docutils literal notranslate"><span class="pre">types</span></code> method:</p>
 <!--pytest-codeblocks:cont-->
@@ -266,9 +270,27 @@ The argument is of type <a class="reference internal" href="../autoapi/owlapy/cl
     <span class="nb">print</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="infer-and-validate-facts">
+<h2>Infer and validate facts<a class="headerlink" href="#infer-and-validate-facts" title="Link to this heading"></a></h2>
+<p>With <strong>SyncReasoner</strong> you can also infer missing facts from the ontology by using the method <code class="docutils literal notranslate"><span class="pre">infer_axioms</span></code>, check for
+consistency of the ontology (<code class="docutils literal notranslate"><span class="pre">has_consistent_ontology</span></code>), check satisfiability of a class expression (<code class="docutils literal notranslate"><span class="pre">is_satisfiable</span></code>)
+and more. See <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">SyncReasoner API</span></a> for more detail.</p>
+</section>
+<section id="serve-syncreasoner">
+<h2>Serve SyncReasoner<a class="headerlink" href="#serve-syncreasoner" title="Link to this heading"></a></h2>
+<p>Using the CLI command <code class="docutils literal notranslate"><span class="pre">owlapy-serve</span></code> you can start a server hosting Owlapy API via FastAPI to use such
+functionalities offered by SyncReasoner:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>owlapy-serve<span class="w"> </span>--path_kb<span class="w"> </span>KGs/Family/family-benchmark_rich_background.owl<span class="w"> </span>--reasoner<span class="w"> </span>HermiT
+</pre></div>
+</div>
+<p>Optionally, you provide custom host and port for the FastAPI server:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>owlapy-serve<span class="w"> </span>--path_kb<span class="w"> </span>KGs/Family/family-benchmark_rich_background.owl<span class="w"> </span>--reasoner<span class="w"> </span>HermiT<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
 <hr class="docutils" />
 <p>In this guide we covered the main functionalities of the reasoners in Owlapy.
-In the next one, we speak about owlapi synchronization and how can make use of owlapi in owlapy.</p>
+In the next one, we speak about OWLAPI synchronization and how can make use of OWLAPI in Owlapy.</p>
 </section>
 </section>
 

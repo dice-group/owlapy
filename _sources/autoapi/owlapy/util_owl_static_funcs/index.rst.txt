@@ -11,6 +11,9 @@ Functions
 
    owlapy.util_owl_static_funcs.save_owl_class_expressions
    owlapy.util_owl_static_funcs.csv_to_rdf_kg
+   owlapy.util_owl_static_funcs.rdf_kg_to_csv
+   owlapy.util_owl_static_funcs.create_ontology
+   owlapy.util_owl_static_funcs.generate_ontology
 
 
 Module Contents
@@ -74,5 +77,62 @@ Module Contents
    >>> df.to_csv("iris_dataset.csv", index=False)
    >>> print("Dataset saved as iris_dataset.csv")
    >>> csv_to_rdf_kg("iris_dataset.csv")
+
+
+.. py:function:: rdf_kg_to_csv(path_kg: str = None, path_csv: str = None)
+
+   Constructs a CSV file from an RDF Knowledge Graph (RDF/XML)
+
+   :param path_kg: Path to the RDF Knowledge Graph file (RDF/XML)
+   :type path_kg: str
+   :param path_csv: Path where the reconstructed CSV should be saved.
+   :type path_csv: str
+
+   :raises AssertionError: If the provided paths are None or invalid.
+
+   .. rubric:: Example
+
+   >>> # Assuming you previously did:
+   >>> # csv_to_rdf_kg("iris_dataset.csv", "iris_kg.owl", "http://example.com/iris")
+   >>> rdf_kg_to_csv("iris_kg.owl", "reconstructed_iris_dataset.csv")
+   >>> print("CSV reconstructed from RDF KG saved as reconstructed_iris_dataset.csv")
+
+
+.. py:function:: create_ontology(iri, with_owlapi=False)
+
+   A convenient function
+
+
+.. py:function:: generate_ontology(graph_as_json: str = None, output_path: str = 'generated_ontology.owl', output_format: str = 'xml', namespace: str = 'http://example.org/', generate_classes: bool = True, base_url: str = None, api_key: str = None, model: str = None, context: str = '', temperature: float = 0.15)
+
+   Generates an ontology using quadruples from a given json file.
+
+   :param graph_as_json: Path to the json file that contains the nested data. Nested structure should look like following
+                         where a graph can have multiple quadruples and each quadruple can have multiple  subject-predicate-object
+                         triples:
+
+                                 {'graph':[
+                                     {
+                                         quadruples:[
+                                             {
+                                                 "subject": ...
+                                                 "predicate": ...
+                                                 "object": ...
+                                             },
+                                         ],
+                                     }
+                                 ]}
+   :param output_path: Path to the output result (an ontology).
+   :param output_format: The format the output should be written in. Chose from ["xml", "n3", "turtle", "nt",
+                         "pretty-xml", "trix", "trig", "nquads", "json-ld", "hext"].
+   :param namespace: Namespace of the ontology.
+   :param generate_classes: Whether you want to generate classes or not (should provide LLM arguments if True).
+   :param base_url: Base URL for the OpenAI client.
+   :param api_key: API key for the OpenAI client.
+   :param model: Model name to use for class generation via OpenAI client.
+   :param context: Additional context for the ontology. Used as assisting information during LLM prompts.
+                   Describe the ontology focus area, weak points that can help the LLM to understand the data better,
+                   including potential examples that may help identify entities better.
+   :param temperature: Temperature to use for the LLM during class generation.
 
 

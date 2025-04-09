@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Owlapi Synchronization &mdash; OWLAPY 1.4.0 documentation</title>
+  <title>Owlapi Synchronization &mdash; OWLAPY 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../_static/documentation_options.js?v=e0a75244"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -90,44 +90,42 @@
              
   <section id="owlapi-synchronization">
 <h1>Owlapi Synchronization<a class="headerlink" href="#owlapi-synchronization" title="Link to this heading"></a></h1>
-<p>As mentioned earlier, <em>owlapy</em> is loosely based in <a class="reference external" href="https://github.com/owlcs/owlapi"><em>owlapi</em></a>,
+<p>As mentioned earlier, <em>owlapy</em> is loosely based in <a class="reference external" href="https://github.com/owlcs/owlapi"><em>OWLAPI</em></a>,
 a library for ontology modification in java.</p>
 <p>We have created <a class="reference internal" href="../autoapi/owlapy/owlapi_mapper/index.html#owlapy.owlapi_mapper.OWLAPIMapper" title="owlapy.owlapi_mapper.OWLAPIMapper"><span class="xref myst py py-class">OWLAPIMapper</span></a>,
 a mapping class that makes possible the conversion of the most
 important classes from <em>owlapy</em> to <em>owlapi</em> and vice-versa.</p>
-<p>We are able to use owlapi via <a class="reference external" href="https://jpype.readthedocs.io/en/latest/">Jpype</a>,
-a python module that provides access to Java in python. To start executing
-Java code via Jpype, one needs to start the java virtual machine (JVM).
+<p>We are able to use OWLAPI via <a class="reference external" href="https://jpype.readthedocs.io/en/latest/">JPype</a>,
+a python module that provides access to Java in Python. To start executing
+Java code via JPype, one needs to start the java virtual machine (JVM).
 You don’t have to worry about it, because if a class is going to use
 <code class="docutils literal notranslate"><span class="pre">OWLAPIMapper</span></code> the JVM will start automatically. However, there is the
 function <code class="docutils literal notranslate"><span class="pre">startJVM</span></code> of the <code class="docutils literal notranslate"><span class="pre">static_functions.py</span></code> module if you ever need
 to start it manually.</p>
 <section id="sync-classes">
 <h2>“Sync” Classes<a class="headerlink" href="#sync-classes" title="Link to this heading"></a></h2>
-<p>With the addition of the <code class="docutils literal notranslate"><span class="pre">OWLAPIMapper</span></code>, we introduce three new classes:</p>
+<p>With the addition of the <code class="docutils literal notranslate"><span class="pre">OWLAPIMapper</span></code>, we introduce two new classes:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.SyncOntologyManager" title="owlapy.owl_ontology_manager.SyncOntologyManager"><span class="xref myst py py-class">SyncOntologyManager</span></a></p></li>
 <li><p><a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology" title="owlapy.owl_ontology.SyncOntology"><span class="xref myst py py-class">SyncOntology</span></a></p></li>
 <li><p><a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">SyncReasoner</span></a></p></li>
 </ul>
-<p>All the logic of these three classes is handled by <em>owlapi</em> through the
+<p>The logic of both these classes is handled by <em>OWLAPI</em> through the
 mapper. They inherit from abstract classes already present in owlapy
-(<code class="docutils literal notranslate"><span class="pre">OWLOntologyManager</span></code>, <code class="docutils literal notranslate"><span class="pre">OWLOntology</span></code> and <code class="docutils literal notranslate"><span class="pre">OWLReasoner</span></code> respectively) so
+(<code class="docutils literal notranslate"><span class="pre">AbstractOWLOntology</span></code> and <code class="docutils literal notranslate"><span class="pre">AbstractOWLReasoner</span></code> respectively) so
 the usage is the same as other implementors of these abstract classes.
-However, there are also some extra methods, like <code class="docutils literal notranslate"><span class="pre">infer_axioms</span></code> of SyncReasoner
-which infers the missing axioms from the given ontology and returns them as <code class="docutils literal notranslate"><span class="pre">Iterable[OWLAxiom]</span></code>.
-Make sure to check the API docs to see them all.</p>
+Additionally, SyncReasoner provides some supplementary methods, such as <code class="docutils literal notranslate"><span class="pre">infer_axioms</span></code> in,
+which infers and returns missing axioms from a given ontology.
+For a comprehensive overview of all available methods, refer to the <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">API</span></a> documentation.</p>
 <p>To make this guide self-contained, we will go through a simple example
-showing how to use this above-mentioned classes:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntologyManager</span>
+showing how to use the aforementioned classes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDeclarationAxiom</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncReasoner</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.static_funcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">stopJVM</span>
 
-<span class="c1"># (.) Creat a manager and load the &#39;father&#39; ontology</span>
-<span class="n">manager</span> <span class="o">=</span> <span class="n">SyncOntologyManager</span><span class="p">()</span>
-<span class="n">ontology</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="s2">&quot;KGs/Family/father.owl&quot;</span><span class="p">)</span>
+<span class="c1"># (.) Load the &#39;father&#39; ontology into a SyncOntology object</span>
+<span class="n">ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="s2">&quot;KGs/Family/father.owl&quot;</span><span class="p">)</span>
 
 <span class="c1"># (.) Use your ontology as you usually do</span>
 <span class="c1"># (..) Add a new class</span>
@@ -156,7 +154,7 @@ just a small part of what you can do with “Sync” classes.</p>
 the JVM by either using <code class="docutils literal notranslate"><span class="pre">jpype.shutdownJVM()</span></code> or the static function from the
 <code class="docutils literal notranslate"><span class="pre">static_functions.py</span></code> module <code class="docutils literal notranslate"><span class="pre">stopJVM()</span></code>. This will free the resources used by JPype and the java
 packages. Once you stop the JVM it cannot be restarted so make sure you do that
-when you are done with the owlapi related classes. Stopping the JVM is not
+when you are done with the OWLAPI related classes. Stopping the JVM is not
 strictly necessary. The resources will be freed once the execution is over, but
 in case your code is somehow longer and the “Sync” classes only make up a part of your execution
 then you can stop the JVM after it not being needed anymore.</p>
@@ -164,21 +162,20 @@ then you can stop the JVM after it not being needed anymore.</p>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <p>An important thing to keep in mind is that when starting the JVM
-you are able to import and use java classes as you would do in python (thanks to Jpype).
-That means that you can play around with owlapi code in python as long
+you are able to import and use java classes as you would do in python (thanks to JPype).
+That means that you can play around with OWLAPI code in python as long
 as your JVM is started. Isn’t that awesome!</p>
 <p><code class="docutils literal notranslate"><span class="pre">SyncReasoner</span></code> uses HermiT reasoner by default. You can choose between:
-“HermiT”, “Pellet”, “JFact” and “Openllet”. Although no significant
-difference is noticed between these reasoners, they surely differentiate
-in specific scenarios. You can check owlapi <a class="reference external" href="https://github.com/owlcs/owlapi/wiki">Wiki</a> for more references.</p>
+“HermiT”, “Pellet”, “ELK”, “JFact” and “Openllet” and “StructuralReasoner”. Although no significant
+difference has been noticed between these reasoners, they surely differentiate
+in specific scenarios. You can check OWLAPI’s <a class="reference external" href="https://github.com/owlcs/owlapi/wiki">Wiki</a> for more details.</p>
 <p><em><strong>owlapi version</strong>: 5.1.9</em></p>
+<p>For java installation, check the minimum version required by owlapi distribution mentioned above.</p>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <p>You can see usage examples in the <a class="reference external" href="https://github.com/dice-group/owlapy/tree/develop/examples"><em>examples</em></a> folder.</p>
-<p><a class="reference external" href="https://github.com/dice-group/owlapy/tree/develop/tests">Test cases</a>
-can also serve as an example, so you can
-check them out as well.</p>
+<p><a class="reference external" href="https://github.com/dice-group/owlapy/tree/develop/tests">Test cases</a> can also serve as an example, so you can check them out as well.</p>
 </section>
 </section>
 

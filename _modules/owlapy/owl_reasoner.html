@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_reasoner &mdash; OWLAPY 1.4.0 documentation</title>
+  <title>owlapy.owl_reasoner &mdash; OWLAPY 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../_static/documentation_options.js?v=e0a75244"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -96,7 +96,7 @@
     <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> \
     <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> \
     <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> \
-    <span class="n">OWLDataAllValuesFrom</span>
+    <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLNothing</span><span class="p">,</span> <span class="n">OWLThing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">OWLSubClassOfAxiom</span>
@@ -105,11 +105,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">SyncOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntologyManager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> \
     <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">OWLBottomObjectProperty</span><span class="p">,</span> <span class="n">OWLTopObjectProperty</span><span class="p">,</span> <span class="n">OWLBottomDataProperty</span><span class="p">,</span> \
+    <span class="n">OWLTopDataProperty</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_with_timeout</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -275,6 +275,13 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner.disjoint_classes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">only_named</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
         <span class="n">seen_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ce</span> <span class="ow">is</span> <span class="n">OWLNothing</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">OWLThing</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">ce</span> <span class="ow">is</span> <span class="n">OWLThing</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">OWLNothing</span>
+            <span class="k">return</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_disjoint_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">only_named</span><span class="p">,</span> <span class="n">seen_set</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">only_named</span><span class="o">=</span><span class="n">only_named</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s1">&#39;http://www.w3.org/2002/07/owl#&#39;</span><span class="p">,</span> <span class="s1">&#39;Thing&#39;</span><span class="p">)):</span>
@@ -558,6 +565,13 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner.disjoint_object_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
         <span class="n">seen_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">op</span> <span class="ow">is</span> <span class="n">OWLBottomObjectProperty</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">OWLTopObjectProperty</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">op</span> <span class="ow">is</span> <span class="n">OWLTopObjectProperty</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">OWLBottomObjectProperty</span>
+            <span class="k">return</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_disjoint_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">seen_set</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">super_object_properties</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">o</span> <span class="o">!=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s1">&#39;http://www.w3.org/2002/07/owl#&#39;</span><span class="p">,</span> <span class="s1">&#39;ObjectProperty&#39;</span><span class="p">)):</span>
@@ -587,6 +601,13 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner.disjoint_data_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
         <span class="n">seen_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">dp</span> <span class="ow">is</span> <span class="n">OWLBottomDataProperty</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">OWLTopDataProperty</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">dp</span> <span class="ow">is</span> <span class="n">OWLTopDataProperty</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">OWLBottomDataProperty</span>
+            <span class="k">return</span>
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_disjoint_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="n">seen_set</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">super_data_properties</span><span class="p">(</span><span class="n">dp</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s1">&#39;http://www.w3.org/2002/07/owl#&#39;</span><span class="p">,</span> <span class="s1">&#39;DatatypeProperty&#39;</span><span class="p">)):</span>
@@ -1170,28 +1191,33 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            ontology(SyncOntology): Ontology that will be used by this reasoner.</span>
-<span class="sd">            reasoner: Name of the reasoner. Possible values (case-sensitive): [&quot;HermiT&quot;, &quot;Pellet&quot;, &quot;JFact&quot;, &quot;Openllet&quot;,</span>
-<span class="sd">             &quot;Structural&quot;].</span>
-<span class="sd">                Default: &quot;HermiT&quot;.</span>
+<span class="sd">            reasoner: Name of the reasoner. Possible values (case-sensitive): [&quot;HermiT&quot;, &quot;Pellet&quot;, &quot;ELK&quot;, &quot;JFact&quot;,</span>
+<span class="sd">            &quot;Openllet&quot;, &quot;Structural&quot;]. Default: &quot;HermiT&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">reasoner</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HermiT&quot;</span><span class="p">,</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">,</span> <span class="s2">&quot;JFact&quot;</span><span class="p">,</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">,</span> <span class="s2">&quot;Structural&quot;</span><span class="p">],</span> \
-            <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">reasoner</span><span class="si">}</span><span class="s2">&#39; is not implemented. Available reasoners: [&#39;HermiT&#39;, &#39;Pellet&#39;, &#39;JFact&#39;, &#39;Openllet&#39;, &quot;</span>
+        <span class="k">assert</span> <span class="n">reasoner</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HermiT&quot;</span><span class="p">,</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">,</span> <span class="s2">&quot;ELK&quot;</span><span class="p">,</span> <span class="s2">&quot;JFact&quot;</span><span class="p">,</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">,</span> <span class="s2">&quot;Structural&quot;</span><span class="p">],</span> \
+            <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">reasoner</span><span class="si">}</span><span class="s2">&#39; is not implemented. Available reasoners: [&#39;HermiT&#39;, &#39;Pellet&#39;, &#39;ELK&#39;, &#39;JFact&#39;, &#39;Openllet&#39;, &quot;</span>
              <span class="sa">f</span><span class="s2">&quot;&#39;Structural&#39;]. &quot;</span>
              <span class="sa">f</span><span class="s2">&quot;This field is case sensitive.&quot;</span><span class="p">)</span>
+
+        <span class="c1">#  TODO: ELK does not support specific methods. That means that mapping methods in owlapy will</span>
+        <span class="c1">#   also raise NotImplementedError. Check for new release of elk and if any of these method is</span>
+        <span class="c1">#   implemented, remove the `raise NotImplementedError` statement for the respective mapping</span>
+        <span class="c1">#   implemented in this class. Current version of elk is 6.0.0.</span>
+        <span class="c1">#   Maven releases: https://mvnrepository.com/artifact/io.github.liveontologies/elk-owlapi</span>
+        <span class="c1">#   ElkReasoner GitHub link: https://github.com/liveontologies/elk-reasoner/blob/main/elk-owlapi/src/main/java/org/semanticweb/elk/owlapi/ElkReasoner.java</span>
+
+
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">manager</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="n">ontology</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="c1"># https://owlcs.github.io/owlapi/apidocs_5/org/semanticweb/owlapi/apibinding/OWLManager.html</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">SyncOntologyManager</span><span class="p">()</span>
-            <span class="c1"># OWLOntology</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">get_owlapi_manager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">=</span> <span class="n">reasoner</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">owlapi_manager</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">get_owlapi_ontology</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">mapper</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inference_types_mapping</span> <span class="o">=</span> <span class="n">import_and_include_axioms_generators</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1245,6 +1271,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Disjoint classes of the given class expression.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getDisjointClasses` is not yet implemented for ELK!&quot;</span><span class="p">)</span>
         <span class="n">classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getDisjointClasses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">))</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">]</span></div>
 
@@ -1304,6 +1332,8 @@
 <span class="sd">            super_classes(DataSomeValuesFrom(pe rdfs:Literal), false) together with N if N is non-empty.</span>
 <span class="sd">            (Note, rdfs:Literal is the top datatype).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getDataPropertyDomains` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getDataPropertyDomains</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1325,6 +1355,8 @@
 <span class="sd">            super_classes(ObjectSomeValuesFrom(pe owl:Thing), true). If direct is False: then the result of</span>
 <span class="sd">            super_classes(ObjectSomeValuesFrom(pe owl:Thing), false) together with N if N is non-empty.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getObjectPropertyDomains` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getObjectPropertyDomains</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1347,6 +1379,8 @@
 <span class="sd">            the result of super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), false) together with N</span>
 <span class="sd">            if N is non-empty.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getObjectPropertyRanges` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getObjectPropertyRanges</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1410,6 +1444,8 @@
 <span class="sd">            StrictSubDataPropertyOf(P, pe). If pe is equivalent to owl:bottomDataProperty then nothing will be</span>
 <span class="sd">            returned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getSubDataProperties` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span> <span class="k">for</span> <span class="n">pe</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getSubDataProperties</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1428,6 +1464,8 @@
 <span class="sd">         Returns:</span>
 <span class="sd">             Iterable of super properties.</span>
 <span class="sd">         &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getSuperDataProperties` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span> <span class="k">for</span> <span class="n">pe</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getSuperDataProperties</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">direct</span><span class="p">)</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1444,6 +1482,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            All individuals x where the set of reasoner axioms entails DifferentIndividuals(ind x).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getDifferentIndividuals` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getDifferentIndividuals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1496,6 +1536,8 @@
 <span class="sd">            If dp is unsatisfiable with respect to the set of reasoner axioms then owl:bottomDataProperty will</span>
 <span class="sd">            be returned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getEquivalentDataProperties` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span> <span class="k">for</span> <span class="n">pe</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getEquivalentDataProperties</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">)))]</span></div>
 
@@ -1513,6 +1555,8 @@
 <span class="sd">            The named individuals such that for each individual j, the set of reasoner axioms entails</span>
 <span class="sd">            ObjectPropertyAssertion(pe ind j).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getObjectPropertyValues` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getObjectPropertyValues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">))</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1548,6 +1592,8 @@
 <span class="sd">            EquivalentObjectProperties(e ObjectPropertyComplementOf(op)) or</span>
 <span class="sd">            StrictSubObjectPropertyOf(e ObjectPropertyComplementOf(op)).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getDisjointObjectProperties` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span> <span class="k">for</span> <span class="n">pe</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getDisjointObjectProperties</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">))</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1566,6 +1612,8 @@
 <span class="sd">            EquivalentDataProperties(e DataPropertyComplementOf(dp)) or</span>
 <span class="sd">            StrictSubDataPropertyOf(e DataPropertyComplementOf(dp)).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getDisjointDataProperties` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span> <span class="k">for</span> <span class="n">pe</span> <span class="ow">in</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getDisjointDataProperties</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">))</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
@@ -1621,7 +1669,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Iterable of inferred axioms.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayList</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">InferredOntologyGenerator</span>
 
         <span class="n">generators</span> <span class="o">=</span> <span class="n">ArrayList</span><span class="p">()</span>
@@ -1662,9 +1712,13 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            None (the file is saved to the specified directory)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span><span class="p">,</span> <span class="n">FileOutputStream</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayList</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">InferredOntologyGenerator</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.formats</span><span class="w"> </span><span class="kn">import</span> <span class="n">TurtleDocumentFormat</span><span class="p">,</span> <span class="n">RDFXMLDocumentFormat</span><span class="p">,</span> <span class="n">OWLXMLDocumentFormat</span>
         <span class="k">if</span> <span class="n">output_format</span> <span class="o">==</span> <span class="s2">&quot;ttl&quot;</span> <span class="ow">or</span> <span class="n">output_format</span> <span class="o">==</span> <span class="s2">&quot;turtle&quot;</span><span class="p">:</span>
             <span class="n">document_format</span> <span class="o">=</span> <span class="n">TurtleDocumentFormat</span><span class="p">()</span>
@@ -1770,28 +1824,38 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">owlapi_ontology</span><span class="p">):</span>
     <span class="c1"># () Create a reasoner using the ontology</span>
     <span class="k">if</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.HermiT</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasonerFactory</span>
         <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">owlapi_reasoner</span><span class="o">.</span><span class="n">getReasonerName</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span>
+    <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.elk.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElkReasonerFactory</span>
+        <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">uk.ac.manchester.cs.jfact</span><span class="w"> </span><span class="kn">import</span> <span class="n">JFactFactory</span>
         <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
         <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenlletReasonerFactory</span>
         <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">OpenlletReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.reasoner.structural</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
         <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span><span class="o">.</span><span class="n">createReasoner</span><span class="p">(</span><span class="n">owlapi_ontology</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">owlapi_reasoner</span></div>
 
+
 <div class="viewcode-block" id="import_and_include_axioms_generators">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.import_and_include_axioms_generators">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">import_and_include_axioms_generators</span><span class="p">():</span>
+    <span class="c1"># noinspection PyUnresolvedReferences</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.util</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">,</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span>
                                              <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">,</span>
                                              <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">,</span>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.util_owl_static_funcs &mdash; OWLAPY 1.4.0 documentation</title>
+  <title>owlapy.util_owl_static_funcs &mdash; OWLAPY 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../../_static/documentation_options.js?v=e0a75244"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -74,7 +74,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html">owlapy.owl_literal</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html">owlapy.owl_object</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../owl_ontology_manager/index.html">owlapy.owl_ontology_manager</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
@@ -87,6 +86,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.save_owl_class_expressions"><code class="docutils literal notranslate"><span class="pre">save_owl_class_expressions()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.csv_to_rdf_kg"><code class="docutils literal notranslate"><span class="pre">csv_to_rdf_kg()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.rdf_kg_to_csv"><code class="docutils literal notranslate"><span class="pre">rdf_kg_to_csv()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.create_ontology"><code class="docutils literal notranslate"><span class="pre">create_ontology()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.generate_ontology"><code class="docutils literal notranslate"><span class="pre">generate_ontology()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -95,7 +97,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../index.html#classes">Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
 </ul>
@@ -138,6 +139,15 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.csv_to_rdf_kg" title="owlapy.util_owl_static_funcs.csv_to_rdf_kg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">csv_to_rdf_kg</span></code></a>([path_csv, path_kg, namespace])</p></td>
 <td><p>Transfroms a CSV file to an RDF Knowledge Graph in RDF/XML format.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.rdf_kg_to_csv" title="owlapy.util_owl_static_funcs.rdf_kg_to_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rdf_kg_to_csv</span></code></a>([path_kg, path_csv])</p></td>
+<td><p>Constructs a CSV file from an RDF Knowledge Graph (RDF/XML)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.create_ontology" title="owlapy.util_owl_static_funcs.create_ontology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_ontology</span></code></a>(iri[, with_owlapi])</p></td>
+<td><p>A convenient function</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.generate_ontology" title="owlapy.util_owl_static_funcs.generate_ontology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_ontology</span></code></a>([graph_as_json, output_path, ...])</p></td>
+<td><p>Generates an ontology using quadruples from a given json file.</p></td>
 </tr>
 </tbody>
 </table>
@@ -210,6 +220,85 @@ supports ‘rdfxml’. Defaults to ‘rdfxml’.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">csv_to_rdf_kg</span><span class="p">(</span><span class="s2">&quot;iris_dataset.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.util_owl_static_funcs.rdf_kg_to_csv">
+<span class="sig-prename descclassname"><span class="pre">owlapy.util_owl_static_funcs.</span></span><span class="sig-name descname"><span class="pre">rdf_kg_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_kg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_csv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/util_owl_static_funcs.html#rdf_kg_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.util_owl_static_funcs.rdf_kg_to_csv" title="Link to this definition"></a></dt>
+<dd><p>Constructs a CSV file from an RDF Knowledge Graph (RDF/XML)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_kg</strong> (<em>str</em>) – Path to the RDF Knowledge Graph file (RDF/XML)</p></li>
+<li><p><strong>path_csv</strong> (<em>str</em>) – Path where the reconstructed CSV should be saved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If the provided paths are None or invalid.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Assuming you previously did:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># csv_to_rdf_kg(&quot;iris_dataset.csv&quot;, &quot;iris_kg.owl&quot;, &quot;http://example.com/iris&quot;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rdf_kg_to_csv</span><span class="p">(</span><span class="s2">&quot;iris_kg.owl&quot;</span><span class="p">,</span> <span class="s2">&quot;reconstructed_iris_dataset.csv&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CSV reconstructed from RDF KG saved as reconstructed_iris_dataset.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.util_owl_static_funcs.create_ontology">
+<span class="sig-prename descclassname"><span class="pre">owlapy.util_owl_static_funcs.</span></span><span class="sig-name descname"><span class="pre">create_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_owlapi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/util_owl_static_funcs.html#create_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.util_owl_static_funcs.create_ontology" title="Link to this definition"></a></dt>
+<dd><p>A convenient function</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.util_owl_static_funcs.generate_ontology">
+<span class="sig-prename descclassname"><span class="pre">owlapy.util_owl_static_funcs.</span></span><span class="sig-name descname"><span class="pre">generate_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph_as_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'generated_ontology.owl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'xml'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'http://example.org/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.15</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/util_owl_static_funcs.html#generate_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.util_owl_static_funcs.generate_ontology" title="Link to this definition"></a></dt>
+<dd><p>Generates an ontology using quadruples from a given json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph_as_json</strong> – <p>Path to the json file that contains the nested data. Nested structure should look like following
+where a graph can have multiple quadruples and each quadruple can have multiple  subject-predicate-object
+triples:</p>
+<blockquote>
+<div><dl>
+<dt>{‘graph’:[</dt><dd><dl>
+<dt>{</dt><dd><dl>
+<dt>quadruples:[</dt><dd><dl class="simple">
+<dt>{</dt><dd><p>“subject”: …
+“predicate”: …
+“object”: …</p>
+</dd>
+</dl>
+<p>},</p>
+</dd>
+</dl>
+<p>],</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+</dl>
+<p>]}</p>
+</div></blockquote>
+</p></li>
+<li><p><strong>output_path</strong> – Path to the output result (an ontology).</p></li>
+<li><p><strong>output_format</strong> – The format the output should be written in. Chose from [“xml”, “n3”, “turtle”, “nt”,
+“pretty-xml”, “trix”, “trig”, “nquads”, “json-ld”, “hext”].</p></li>
+<li><p><strong>namespace</strong> – Namespace of the ontology.</p></li>
+<li><p><strong>generate_classes</strong> – Whether you want to generate classes or not (should provide LLM arguments if True).</p></li>
+<li><p><strong>base_url</strong> – Base URL for the OpenAI client.</p></li>
+<li><p><strong>api_key</strong> – API key for the OpenAI client.</p></li>
+<li><p><strong>model</strong> – Model name to use for class generation via OpenAI client.</p></li>
+<li><p><strong>context</strong> – Additional context for the ontology. Used as assisting information during LLM prompts.
+Describe the ontology focus area, weak points that can help the LLM to understand the data better,
+including potential examples that may help identify entities better.</p></li>
+<li><p><strong>temperature</strong> – Temperature to use for the LLM during class generation.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

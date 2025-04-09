@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_ontology &mdash; OWLAPY 1.4.0 documentation</title>
+  <title>owlapy.owl_ontology &mdash; OWLAPY 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -18,13 +18,13 @@
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../../_static/documentation_options.js?v=e0a75244"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="owlapy.owl_ontology_manager" href="../owl_ontology_manager/index.html" />
+    <link rel="next" title="owlapy.owl_property" href="../owl_property/index.html" />
     <link rel="prev" title="owlapy.owl_object" href="../owl_object/index.html" /> 
 </head>
 
@@ -103,7 +103,6 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals_and_classes"><code class="docutils literal notranslate"><span class="pre">Ontology.get_abox_axioms_between_individuals_and_classes()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.equivalent_classes_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.equivalent_classes_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.general_class_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.general_class_axioms()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.get_owl_ontology_manager"><code class="docutils literal notranslate"><span class="pre">Ontology.get_owl_ontology_manager()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.get_ontology_id"><code class="docutils literal notranslate"><span class="pre">Ontology.get_ontology_id()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.data_property_domain_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.data_property_domain_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.Ontology.data_property_range_axioms"><code class="docutils literal notranslate"><span class="pre">Ontology.data_property_range_axioms()</span></code></a></li>
@@ -119,9 +118,9 @@
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology"><code class="docutils literal notranslate"><span class="pre">SyncOntology</span></code></a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.manager"><code class="docutils literal notranslate"><span class="pre">SyncOntology.manager</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.owlapi_manager"><code class="docutils literal notranslate"><span class="pre">SyncOntology.owlapi_manager</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.path"><code class="docutils literal notranslate"><span class="pre">SyncOntology.path</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.new"><code class="docutils literal notranslate"><span class="pre">SyncOntology.new</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.load"><code class="docutils literal notranslate"><span class="pre">SyncOntology.load</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.mapper"><code class="docutils literal notranslate"><span class="pre">SyncOntology.mapper</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.__eq__"><code class="docutils literal notranslate"><span class="pre">SyncOntology.__eq__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.__hash__"><code class="docutils literal notranslate"><span class="pre">SyncOntology.__hash__()</span></code></a></li>
@@ -140,7 +139,6 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_signature"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_signature()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_abox_axioms"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_abox_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_tbox_axioms"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_tbox_axioms()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_owl_ontology_manager"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_owl_ontology_manager()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_owlapi_ontology"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_owlapi_ontology()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_ontology_id"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_ontology_id()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.add_axiom"><code class="docutils literal notranslate"><span class="pre">SyncOntology.add_axiom()</span></code></a></li>
@@ -149,9 +147,6 @@
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology</span></code></a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.rdflib_graph"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.rdflib_graph</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.str_owl_classes"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.str_owl_classes</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.str_owl_individuals"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.str_owl_individuals</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.__len__"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.__len__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.get_tbox_axioms"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.get_tbox_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.get_abox_axioms"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.get_abox_axioms()</span></code></a></li>
@@ -172,7 +167,6 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.remove_axiom"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.remove_axiom()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.save"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.save()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.get_ontology_id"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.get_ontology_id()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.get_owl_ontology_manager"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.get_owl_ontology_manager()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.__eq__"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.__eq__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.__hash__"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.__hash__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.RDFLibOntology.__repr__"><code class="docutils literal notranslate"><span class="pre">RDFLibOntology.__repr__()</span></code></a></li>
@@ -196,7 +190,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../owl_ontology_manager/index.html">owlapy.owl_ontology_manager</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
@@ -209,7 +202,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../index.html#classes">Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
 </ul>
@@ -356,17 +348,16 @@ Ontology Documents in the OWL 2 Structural Specification.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology.</span></span><span class="sig-name descname"><span class="pre">Ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_OM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ontology_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology.</span></span><span class="sig-name descname"><span class="pre">Ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="../abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></code></a></p>
 <p>Represents an OWL 2 Ontology  in the OWL 2 specification.</p>
 <p>An OWLOntology consists of a possibly empty set of OWLAxioms and a possibly empty set of OWLAnnotations.
 An ontology can have an ontology IRI which can be used to identify the ontology. If it has an ontology IRI then
 it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
 Structural Specification).</p>
-<p>An ontology cannot be modified directly. Changes must be applied via its OWLOntologyManager.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_manager',</span> <span class="pre">'_iri',</span> <span class="pre">'_world',</span> <span class="pre">'_onto',</span> <span class="pre">'is_modified')</span></em><a class="headerlink" href="#owlapy.owl_ontology.Ontology.__slots__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_iri',</span> <span class="pre">'_world',</span> <span class="pre">'_onto',</span> <span class="pre">'is_modified')</span></em><a class="headerlink" href="#owlapy.owl_ontology.Ontology.__slots__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -474,12 +465,6 @@ Structural Specification).</p>
 <dd class="field-odd"><p>General class axioms contained in this ontology.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.get_owl_ontology_manager">
-<span class="sig-name descname"><span class="pre">get_owl_ontology_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_OM</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.get_owl_ontology_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.get_owl_ontology_manager" title="Link to this definition"></a></dt>
-<dd><p>Gets the manager that manages this ontology.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -614,17 +599,16 @@ saved.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology.</span></span><span class="sig-name descname"><span class="pre">SyncOntology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_SM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology.</span></span><span class="sig-name descname"><span class="pre">SyncOntology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="../abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></code></a></p>
 <p>Represents an OWL 2 Ontology  in the OWL 2 specification.</p>
 <p>An OWLOntology consists of a possibly empty set of OWLAxioms and a possibly empty set of OWLAnnotations.
 An ontology can have an ontology IRI which can be used to identify the ontology. If it has an ontology IRI then
 it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
 Structural Specification).</p>
-<p>An ontology cannot be modified directly. Changes must be applied via its OWLOntologyManager.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.manager">
-<span class="sig-name descname"><span class="pre">manager</span></span><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.manager" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.owlapi_manager">
+<span class="sig-name descname"><span class="pre">owlapi_manager</span></span><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.owlapi_manager" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -633,8 +617,8 @@ Structural Specification).</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.new">
-<span class="sig-name descname"><span class="pre">new</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.new" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.load">
+<span class="sig-name descname"><span class="pre">load</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.load" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -833,12 +817,6 @@ Structural Specification).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.get_owl_ontology_manager">
-<span class="sig-name descname"><span class="pre">get_owl_ontology_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_M</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.get_owl_ontology_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.get_owl_ontology_manager" title="Link to this definition"></a></dt>
-<dd><p>Gets the manager that manages this ontology.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.get_owlapi_ontology">
 <span class="sig-name descname"><span class="pre">get_owlapi_ontology</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.get_owlapi_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.get_owlapi_ontology" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -895,29 +873,13 @@ Structural Specification).</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology.</span></span><span class="sig-name descname"><span class="pre">RDFLibOntology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology.</span></span><span class="sig-name descname"><span class="pre">RDFLibOntology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="../abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></code></a></p>
 <p>Represents an OWL 2 Ontology  in the OWL 2 specification.</p>
 <p>An OWLOntology consists of a possibly empty set of OWLAxioms and a possibly empty set of OWLAnnotations.
 An ontology can have an ontology IRI which can be used to identify the ontology. If it has an ontology IRI then
 it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
 Structural Specification).</p>
-<p>An ontology cannot be modified directly. Changes must be applied via its OWLOntologyManager.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.rdflib_graph">
-<span class="sig-name descname"><span class="pre">rdflib_graph</span></span><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.rdflib_graph" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.str_owl_classes">
-<span class="sig-name descname"><span class="pre">str_owl_classes</span></span><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.str_owl_classes" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.str_owl_individuals">
-<span class="sig-name descname"><span class="pre">str_owl_individuals</span></span><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.str_owl_individuals" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.__len__">
 <span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology.__len__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.__len__" title="Link to this definition"></a></dt>
@@ -1128,12 +1090,6 @@ saved.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.get_owl_ontology_manager">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_owl_ontology_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology.get_owl_ontology_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.get_owl_ontology_manager" title="Link to this definition"></a></dt>
-<dd><p>Gets the manager that manages this ontology.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.RDFLibOntology.__eq__">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#RDFLibOntology.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.RDFLibOntology.__eq__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -1214,7 +1170,7 @@ saved.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../owl_object/index.html" class="btn btn-neutral float-left" title="owlapy.owl_object" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../owl_ontology_manager/index.html" class="btn btn-neutral float-right" title="owlapy.owl_ontology_manager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../owl_property/index.html" class="btn btn-neutral float-right" title="owlapy.owl_property" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

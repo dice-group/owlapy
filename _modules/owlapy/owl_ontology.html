@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_ontology &mdash; OWLAPY 1.4.0 documentation</title>
+  <title>owlapy.owl_ontology &mdash; OWLAPY 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../_static/documentation_options.js?v=e0a75244"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -86,8 +86,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">islice</span><span class="p">,</span> <span class="n">combinations</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">jpype</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">owlready2</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rdflib</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Timedelta</span>
@@ -101,16 +103,16 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObject</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLThing</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> \
-    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> \
+    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> \
     <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> \
     <span class="n">OWLDataExactCardinality</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> \
     <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLRestriction</span><span class="p">,</span> <span class="n">OWLObjectRestriction</span><span class="p">,</span> <span class="n">OWLDataRestriction</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> \
-    <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span> <span class="n">OWLQuantifiedDataRestriction</span>
+    <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span> <span class="n">OWLQuantifiedDataRestriction</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> \
     <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlready2</span><span class="w"> </span><span class="kn">import</span> <span class="n">destroy_entity</span><span class="p">,</span> <span class="n">AllDisjoint</span><span class="p">,</span> <span class="n">AllDifferent</span><span class="p">,</span> <span class="n">GeneralClassAxiom</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">OWLObjectPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">,</span> <span class="n">OWLEquivalentClassesAxiom</span><span class="p">,</span> \
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">,</span> <span class="n">OWLEquivalentClassesAxiom</span><span class="p">,</span> \
     <span class="n">OWLDisjointUnionAxiom</span><span class="p">,</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">,</span> <span class="n">OWLAnnotationProperty</span><span class="p">,</span> <span class="n">OWLSubPropertyAxiom</span><span class="p">,</span> \
     <span class="n">OWLPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">,</span> <span class="n">OWLDeclarationAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">,</span> \
     <span class="n">OWLSymmetricObjectPropertyAxiom</span><span class="p">,</span> <span class="n">OWLTransitiveObjectPropertyAxiom</span><span class="p">,</span> <span class="n">OWLPropertyDomainAxiom</span><span class="p">,</span> \
@@ -119,8 +121,10 @@
     <span class="n">OWLObjectPropertyCharacteristicAxiom</span><span class="p">,</span> <span class="n">OWLIrreflexiveObjectPropertyAxiom</span><span class="p">,</span> <span class="n">OWLInverseFunctionalObjectPropertyAxiom</span><span class="p">,</span> \
     <span class="n">OWLDisjointDataPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLDisjointObjectPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLEquivalentDataPropertiesAxiom</span><span class="p">,</span> \
     <span class="n">OWLEquivalentObjectPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLInverseObjectPropertiesAxiom</span><span class="p">,</span> <span class="n">OWLNaryPropertyAxiom</span><span class="p">,</span> <span class="n">OWLNaryIndividualAxiom</span><span class="p">,</span> \
-    <span class="n">OWLDifferentIndividualsAxiom</span><span class="p">,</span> <span class="n">OWLDisjointClassesAxiom</span><span class="p">,</span> <span class="n">OWLSameIndividualAxiom</span><span class="p">,</span> <span class="n">OWLClassAxiom</span><span class="p">,</span>
-                              <span class="n">OWLDataPropertyDomainAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyDomainAxiom</span><span class="p">)</span>
+    <span class="n">OWLDifferentIndividualsAxiom</span><span class="p">,</span> <span class="n">OWLDisjointClassesAxiom</span><span class="p">,</span> <span class="n">OWLSameIndividualAxiom</span><span class="p">,</span> <span class="n">OWLClassAxiom</span><span class="p">,</span> \
+    <span class="n">OWLDataPropertyDomainAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyRangeAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyDomainAxiom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.static_funcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">startJVM</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLFacet</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
@@ -138,10 +142,6 @@
 
 
 <span class="n">_VERSION_IRI</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">namespaces</span><span class="o">.</span><span class="n">OWL</span><span class="p">,</span> <span class="s2">&quot;versionIRI&quot;</span><span class="p">)</span>
-
-<span class="n">_M</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_M&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OWLOntologyManager&#39;</span><span class="p">)</span>  <span class="c1"># noqa: F821</span>
-<span class="n">_OM</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_OM&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;OntologyManager&#39;</span><span class="p">)</span>  <span class="c1"># noqa: F821</span>
-<span class="n">_SM</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_SM&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;SyncOntologyManager&#39;</span><span class="p">)</span>  <span class="c1"># noqa: F821</span>
 
 
 <div class="viewcode-block" id="OWLOntologyID">
@@ -884,26 +884,26 @@
 <div class="viewcode-block" id="Ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Ontology</span><span class="p">(</span><span class="n">AbstractOWLOntology</span><span class="p">):</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_manager&#39;</span><span class="p">,</span> <span class="s1">&#39;_iri&#39;</span><span class="p">,</span> <span class="s1">&#39;_world&#39;</span><span class="p">,</span> <span class="s1">&#39;_onto&#39;</span><span class="p">,</span> <span class="s1">&#39;is_modified&#39;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_iri&#39;</span><span class="p">,</span> <span class="s1">&#39;_world&#39;</span><span class="p">,</span> <span class="s1">&#39;_onto&#39;</span><span class="p">,</span> <span class="s1">&#39;is_modified&#39;</span>
 
-    <span class="n">_manager</span><span class="p">:</span> <span class="n">_OM</span>
     <span class="n">_onto</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">Ontology</span>
-    <span class="n">_world</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span>
     <span class="n">is_modified</span><span class="p">:</span> <span class="nb">bool</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="p">:</span> <span class="n">_OM</span><span class="p">,</span> <span class="n">ontology_iri</span><span class="p">:</span> <span class="n">IRI</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology_iri</span><span class="p">:</span> <span class="n">IRI</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">world_store</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents an Ontology in Ontolearn.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            manager: Ontology manager.</span>
 <span class="sd">            ontology_iri: IRI of the ontology.</span>
 <span class="sd">            load: Whether to load the ontology or not.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span> <span class="o">=</span> <span class="n">manager</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span> <span class="o">=</span> <span class="n">ontology_iri</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">_world</span>
+        <span class="k">if</span> <span class="n">world_store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_world</span> <span class="o">=</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">World</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">world_store</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_modified</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology_iri</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology_iri</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="n">ontology_iri</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="n">ontology_iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">())</span>
@@ -954,27 +954,30 @@
 
 <div class="viewcode-block" id="Ontology.get_abox_axioms">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_abox_axioms">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_abox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_abox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Ontology.get_tbox_axioms">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_tbox_axioms">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_tbox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tbox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
         <span class="c1"># @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
 
+
 <div class="viewcode-block" id="Ontology.get_abox_axioms_between_individuals">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_abox_axioms_between_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_abox_axioms_between_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
         <span class="c1"># @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
 
+
 <div class="viewcode-block" id="Ontology.get_abox_axioms_between_individuals_and_classes">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_abox_axioms_between_individuals_and_classes">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_abox_axioms_between_individuals_and_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_abox_axioms_between_individuals_and_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
         <span class="c1"># @TODO: CD: Return all type information about individuals, i.e., individual type Class</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
+
 
     <span class="c1"># @TODO:CD:Unsure it is working</span>
 <div class="viewcode-block" id="Ontology.equivalent_classes_axioms">
@@ -985,6 +988,7 @@
         <span class="k">for</span> <span class="n">ec_x</span> <span class="ow">in</span> <span class="n">c_x</span><span class="o">.</span><span class="n">equivalent_to</span><span class="p">:</span>
             <span class="k">yield</span> <span class="n">OWLEquivalentClassesAxiom</span><span class="p">([</span><span class="n">c</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">(</span><span class="n">ec_x</span><span class="p">)])</span></div>
 
+
     <span class="c1"># @TODO:CD:Unsure it is working</span>
 <div class="viewcode-block" id="Ontology.general_class_axioms">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.general_class_axioms">[docs]</a>
@@ -993,12 +997,6 @@
         <span class="k">for</span> <span class="n">ca</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_onto</span><span class="o">.</span><span class="n">general_class_axioms</span><span class="p">():</span>
             <span class="k">yield from</span> <span class="p">(</span><span class="n">OWLSubClassOfAxiom</span><span class="p">(</span><span class="n">_parse_concept_to_owlapy</span><span class="p">(</span><span class="n">ca</span><span class="o">.</span><span class="n">left_side</span><span class="p">),</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
                         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ca</span><span class="o">.</span><span class="n">is_a</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Ontology.get_owl_ontology_manager">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.get_owl_ontology_manager">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_owl_ontology_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_OM</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span></div>
 
 
 <div class="viewcode-block" id="Ontology.get_ontology_id">
@@ -1108,7 +1106,7 @@
 
 <div class="viewcode-block" id="Ontology.save">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology.save">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">IRI</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rdf_format</span> <span class="o">=</span> <span class="s2">&quot;rdfxml&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">IRI</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">rdf_format</span><span class="o">=</span><span class="s2">&quot;rdfxml&quot;</span><span class="p">):</span>
         <span class="c1"># convert it into str.</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">IRI</span><span class="p">):</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span>
@@ -1116,7 +1114,7 @@
         <span class="k">if</span> <span class="n">inplace</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">str</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;path must be string if inplace is set to False. Current path is </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="c1"># Get the current ontology defined in the world.</span>
-        <span class="n">ont_x</span><span class="p">:</span><span class="n">owlready2</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">Ontology</span>
+        <span class="n">ont_x</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">Ontology</span>
         <span class="n">ont_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_ontology_id</span><span class="p">()</span><span class="o">.</span><span class="n">get_ontology_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
@@ -1128,7 +1126,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="o">.</span><span class="n">get_ontology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_ontology_id</span><span class="p">()</span><span class="o">.</span><span class="n">get_ontology_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">())</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s2">&quot;demo.owl&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">..&quot;</span><span class="p">)</span>
-            <span class="n">ont_x</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">path</span><span class="p">,</span><span class="nb">format</span><span class="o">=</span><span class="n">rdf_format</span><span class="p">)</span></div>
+            <span class="n">ont_x</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">rdf_format</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Ontology.get_original_iri">
@@ -1164,28 +1162,39 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SyncOntology</span><span class="p">(</span><span class="n">AbstractOWLOntology</span><span class="p">):</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="p">:</span> <span class="n">_SM</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">new</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isJVMStarted</span><span class="p">():</span>
+            <span class="n">startJVM</span><span class="p">()</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.apibinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLManager</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owlapi_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAPIMapper</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.util.stream</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stream</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span> <span class="k">as</span> <span class="n">owlapi_IRI</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">manager</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">new</span> <span class="o">=</span> <span class="n">new</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_manager</span> <span class="o">=</span> <span class="n">OWLManager</span><span class="o">.</span><span class="n">createOWLOntologyManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span> <span class="o">=</span> <span class="n">load</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">IRI</span><span class="p">):</span>
             <span class="n">file_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">str</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">file_path</span> <span class="o">=</span> <span class="n">path</span>
-        <span class="k">if</span> <span class="n">new</span><span class="p">:</span>  <span class="c1"># create new ontology</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">load</span><span class="p">:</span>  <span class="c1"># create new ontology</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">IRI</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">get_owlapi_manager</span><span class="p">()</span><span class="o">.</span><span class="n">createOntology</span><span class="p">(</span><span class="n">Stream</span><span class="o">.</span><span class="n">empty</span><span class="p">(),</span>
-                                                                                   <span class="n">owlapi_IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">str</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_manager</span><span class="o">.</span><span class="n">createOntology</span><span class="p">(</span><span class="n">Stream</span><span class="o">.</span><span class="n">empty</span><span class="p">(),</span> <span class="n">owlapi_IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">str</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Cant initialize a new ontology using path. Use IRI instead&quot;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_manager</span><span class="o">.</span><span class="n">createOntology</span><span class="p">(</span><span class="n">Stream</span><span class="o">.</span><span class="n">empty</span><span class="p">(),</span>
+                                                                              <span class="n">owlapi_IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Cant initialize a new ontology using path. Use IRI instead&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># means we are loading an existing ontology</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">get_owlapi_manager</span><span class="p">()</span><span class="o">.</span><span class="n">loadOntologyFromOntologyDocument</span><span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_manager</span><span class="o">.</span><span class="n">loadOntologyFromOntologyDocument</span><span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="n">file_path</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">OWLAPIMapper</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SyncOntology.__eq__">
@@ -1212,7 +1221,7 @@
                 <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Classes|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
                 <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Object Properties|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
                 <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|Data Properties|=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="si">}</span><span class="se">\t</span><span class="s1">Path:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="se">\t</span><span class="s1">New:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">new</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> tPath:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="se">\t</span><span class="s1">Load:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SyncOntology.__len__">
@@ -1282,6 +1291,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_imports_enum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_imports_closure</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.model.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Imports</span>
         <span class="k">if</span> <span class="n">include_imports_closure</span><span class="p">:</span>
             <span class="n">imports</span> <span class="o">=</span> <span class="n">Imports</span><span class="o">.</span><span class="n">INCLUDED</span>
@@ -1331,12 +1341,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="o">.</span><span class="n">getTBoxAxioms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_imports_enum</span><span class="p">(</span><span class="n">include_imports_closure</span><span class="p">)))</span></div>
 
 
-<div class="viewcode-block" id="SyncOntology.get_owl_ontology_manager">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.get_owl_ontology_manager">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_owl_ontology_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_M</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span></div>
-
-
 <div class="viewcode-block" id="SyncOntology.get_owlapi_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.get_owlapi_ontology">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_owlapi_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1369,13 +1373,15 @@
 
 <div class="viewcode-block" id="SyncOntology.save">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology.save">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">document_iri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IRI</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">document_iri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IRI</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        https://github.com/phillord/owl-api/blob/b2a5bfb9a0c6730c8ff950776af8f9bf19c78eac/</span>
 <span class="sd">                contract/src/test/java/org/coode/owlapi/examples/Examples.java#L206</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;Path must be a string&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;Path must be a string&quot;</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span>
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.model.IRI</span>
         <span class="c1"># //Create a file for the new format</span>
         <span class="n">file</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -1384,21 +1390,26 @@
             <span class="n">document_iri</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">semanticweb</span><span class="o">.</span><span class="n">owlapi</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">toURI</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;document_iri must be None for the time being&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">saveOntology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">getOntologyFormat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="p">),</span> <span class="n">document_iri</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_manager</span><span class="o">.</span><span class="n">saveOntology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">owlapi_manager</span><span class="o">.</span><span class="n">getOntologyFormat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="p">),</span> <span class="n">document_iri</span><span class="p">)</span></div>
 </div>
+
 
 
 <div class="viewcode-block" id="RDFLibOntology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.RDFLibOntology">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RDFLibOntology</span><span class="p">(</span><span class="n">AbstractOWLOntology</span><span class="p">):</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">path</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">rdflib</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">rdflib</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span><span class="o">=</span><span class="n">rdflib</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">str_owl_classes</span><span class="o">=</span><span class="p">[</span> <span class="n">x</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span><span class="o">.</span><span class="n">subjects</span><span class="p">(</span><span class="n">rdflib</span><span class="o">.</span><span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">OWL</span><span class="o">.</span><span class="n">Class</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">rdflib</span><span class="o">.</span><span class="n">term</span><span class="o">.</span><span class="n">BNode</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">str_owl_individuals</span><span class="o">=</span><span class="p">[</span> <span class="n">x</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span><span class="o">.</span><span class="n">subjects</span><span class="p">(</span><span class="n">rdflib</span><span class="o">.</span><span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">OWL</span><span class="o">.</span><span class="n">NamedIndividual</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">rdflib</span><span class="o">.</span><span class="n">term</span><span class="o">.</span><span class="n">BNode</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span> <span class="o">=</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">str_owl_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span><span class="o">.</span><span class="n">subjects</span><span class="p">(</span><span class="n">rdflib</span><span class="o">.</span><span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">OWL</span><span class="o">.</span><span class="n">Class</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">term</span><span class="o">.</span><span class="n">BNode</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">str_owl_individuals</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span><span class="o">.</span><span class="n">subjects</span><span class="p">(</span><span class="n">rdflib</span><span class="o">.</span><span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">OWL</span><span class="o">.</span><span class="n">NamedIndividual</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">term</span><span class="o">.</span><span class="n">BNode</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># create a blank rdf ontology</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Currently supports only loading an existing ontology&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="RDFLibOntology.__len__">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.RDFLibOntology.__len__">[docs]</a>
@@ -1436,21 +1447,21 @@
 
 <div class="viewcode-block" id="RDFLibOntology.get_abox_axioms">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.RDFLibOntology.get_abox_axioms">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_abox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Iterable</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_abox_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">:</span>
         <span class="n">results</span><span class="o">=</span><span class="p">[]</span>
         <span class="k">for</span> <span class="n">owl_individual</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span><span class="o">.</span><span class="n">subjects</span><span class="p">(</span><span class="n">rdflib</span><span class="o">.</span><span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">OWL</span><span class="o">.</span><span class="n">NamedIndividual</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">owl_individual</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">term</span><span class="o">.</span><span class="n">URIRef</span><span class="p">):</span>
-                <span class="n">str_owl_individual</span><span class="o">=</span><span class="n">owl_individual</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">o</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span><span class="o">.</span><span class="n">triples</span><span class="p">(</span><span class="n">triple</span><span class="o">=</span><span class="p">(</span><span class="n">owl_individual</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+                <span class="n">str_owl_individual</span> <span class="o">=</span> <span class="n">owl_individual</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdflib_graph</span><span class="o">.</span><span class="n">triples</span><span class="p">(</span><span class="n">triple</span><span class="o">=</span><span class="p">(</span><span class="n">owl_individual</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">term</span><span class="o">.</span><span class="n">BNode</span><span class="p">):</span>
                         <span class="k">continue</span>
-                    <span class="n">str_iri_predicate</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">str_iri_predicate</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                     <span class="n">str_iri_object</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">n3</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                     <span class="n">axiom</span><span class="o">=</span><span class="kc">None</span>
-                    <span class="k">if</span> <span class="n">str_iri_predicate</span><span class="o">==</span><span class="s2">&quot;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">str_iri_predicate</span> <span class="o">==</span> <span class="s2">&quot;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&quot;</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">str_iri_object</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">str_owl_classes</span><span class="p">:</span>
                             <span class="n">axiom</span> <span class="o">=</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">(</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">str_owl_individual</span><span class="p">),</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">str_iri_object</span><span class="p">))</span>
-                        <span class="k">elif</span> <span class="n">str_iri_object</span><span class="o">==</span><span class="s2">&quot;http://www.w3.org/2002/07/owl#NamedIndividual&quot;</span><span class="p">:</span>
+                        <span class="k">elif</span> <span class="n">str_iri_object</span> <span class="o">==</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#NamedIndividual&quot;</span><span class="p">:</span>
                             <span class="c1"># axiom= OWLDeclarationAxiom(OWLNamedIndividual(str_owl_individual))</span>
                             <span class="k">continue</span>
                         <span class="k">else</span><span class="p">:</span>
@@ -1545,7 +1556,6 @@
         <span class="k">for</span> <span class="n">ca</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_onto</span><span class="o">.</span><span class="n">general_class_axioms</span><span class="p">():</span>
             <span class="k">yield from</span> <span class="p">(</span><span class="n">OWLSubClassOfAxiom</span><span class="p">(</span><span class="n">_parse_concept_to_owlapy</span><span class="p">(</span><span class="n">ca</span><span class="o">.</span><span class="n">left_side</span><span class="p">),</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
                         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ca</span><span class="o">.</span><span class="n">is_a</span><span class="p">)</span></div>
-
 
 
 <div class="viewcode-block" id="RDFLibOntology.data_property_domain_axioms">
@@ -1675,11 +1685,6 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ontology_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="RDFLibOntology.get_owl_ontology_manager">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.RDFLibOntology.get_owl_ontology_manager">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_owl_ontology_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span></div>
-
 
 <div class="viewcode-block" id="RDFLibOntology.__eq__">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.RDFLibOntology.__eq__">[docs]</a>
@@ -1703,7 +1708,6 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;will be implemented in future&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;RDFLibOntology(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_onto</span><span class="o">.</span><span class="n">base_iri</span><span class="si">}</span><span class="s1">, loaded:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_onto</span><span class="o">.</span><span class="n">loaded</span><span class="si">}</span><span class="s1">)&#39;</span></div>
 </div>
-
 
 
 

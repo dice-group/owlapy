@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ontologies &mdash; OWLAPY 1.4.0 documentation</title>
+  <title>Ontologies &mdash; OWLAPY 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../_static/documentation_options.js?v=e0a75244"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -63,6 +63,12 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#save-an-ontology">Save an Ontology</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#worlds">Worlds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#owlready2-stores-every-triple-in-a-world-object-and-it-can-handle-several-worlds-in-parallel-owlready2-uses-an-optimized-quadstore-to-store-the-world-each-world-object-is-stored-in-a-separate-quadstore-and-by-default-the-quadstore-is-stored-in-memory-but-it-can-also-be-stored-in-an-sqlite3-file-in-owlapy-we-have-deprecated-ontologymanager-and-when-an-ontology-is-created-a-new-world-is-also-created-to-be-associated-with-it-however-you-can-still-load-an-ontology-to-a-specific-world-using-the-method-load-ontology-iri">Owlready2 stores every triple in a ‘World’ object, and it can handle several Worlds in parallel.
+Owlready2 uses an optimized quadstore to store the world. Each world object is stored in a separate quadstore and
+by default the quadstore is stored in memory,
+but it can also be stored in an SQLite3 file. In owlapy we have deprecated OntologyManager
+and when an ontology is created a new world is also created to be associated with it.
+However, you can still load an ontology to a specific world using the method <code class="docutils literal notranslate"><span class="pre">load_ontology(iri)</span></code>.</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reasoner.html">Reasoners</a></li>
@@ -104,23 +110,22 @@ In this guide we show the basics of working with ontologies in Owlapy.
 We will use the <em>father</em> ontology for the following examples.</p>
 <section id="loading-an-ontology">
 <h2>Loading an Ontology<a class="headerlink" href="#loading-an-ontology" title="Link to this heading"></a></h2>
-<p>To load an ontology as well as to manage it, you will need an
-<a class="reference internal" href="#owlapy.owl_ontology_manager.OWLOntologyManager"><span class="xref myst">OWLOntologyManager</span></a>
+<p>To load an ontology you can use an implementor of
+<a class="reference internal" href="../autoapi/owlapy/abstracts/abstract_owl_ontology/index.html#module-owlapy.abstracts.abstract_owl_ontology" title="owlapy.abstracts.abstract_owl_ontology"><span class="xref myst py py-mod">AbstractOWLOntology</span></a>.
 An ontology can be loaded using the following Python code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">OntologyManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
 
-<span class="n">manager</span> <span class="o">=</span> <span class="n">OntologyManager</span><span class="p">()</span>
-<span class="n">onto</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;file://KGs/Family/father.owl&quot;</span><span class="p">))</span>
+<span class="n">onto</span> <span class="o">=</span> <span class="n">Ontology</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;file://KGs/Family/father.owl&quot;</span><span class="p">),</span> <span class="n">load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>First, we import the <code class="docutils literal notranslate"><span class="pre">IRI</span></code> class and a suitable OWLOntologyManager. To
-load a file from our computer, we have to reference it with an
-<a class="reference internal" href="../autoapi/owlapy/iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="xref myst py py-class">IRI</span></a>. Secondly, we need the
-Ontology Manager. Owlapy contains one such manager: The
-<a class="reference internal" href="../autoapi/owlapy/owl_ontology_manager/index.html#owlapy.owl_ontology_manager.OntologyManager" title="owlapy.owl_ontology_manager.OntologyManager"><span class="xref myst py py-class">OntologyManager</span></a>.</p>
-<p>Now, we can already inspect the contents of the ontology. For example,
-to list all individuals:</p>
+<p>To load an ontology from your local machine, you can use the <code class="docutils literal notranslate"><span class="pre">IRI</span></code> class which
+should be created using a file path or just specify the path of the file storing
+the ontology directly (<code class="docutils literal notranslate"><span class="pre">.owl</span></code> format is recommended). In the <code class="docutils literal notranslate"><span class="pre">Ontology</span></code> class you can
+also specify the <code class="docutils literal notranslate"><span class="pre">load</span></code> argument which tells the system whether you are trying to load an
+existing ontology or creating a new one.</p>
+<p>Now, you can already inspect the contents of the ontology. For example,
+list all individuals:</p>
 <!--pytest-codeblocks:cont-->
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
@@ -131,8 +136,9 @@ to list all individuals:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">onto</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>For more methods, see the abstract class <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="xref myst py py-class">OWLOntology</span></a>
-or the concrete implementation <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="xref myst py py-class">Ontology</span></a>.</p>
+<p>For more methods, see the abstract class <a class="reference internal" href="../autoapi/owlapy/abstracts/abstract_owl_ontology/index.html#module-owlapy.abstracts.abstract_owl_ontology" title="owlapy.abstracts.abstract_owl_ontology"><span class="xref myst py py-mod">AbstractOWLOntology</span></a>
+or one of the concrete implementation <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="xref myst py py-class">Ontology</span></a>, <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology" title="owlapy.owl_ontology.SyncOntology"><span class="xref myst py py-class">SyncOntology</span></a>,
+<a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.RDFLibOntology" title="owlapy.owl_ontology.RDFLibOntology"><span class="xref myst py py-class">RDFLibOntology</span></a>.</p>
 </section>
 <section id="modifying-an-ontology">
 <h2>Modifying an Ontology<a class="headerlink" href="#modifying-an-ontology" title="Link to this heading"></a></h2>
@@ -141,7 +147,7 @@ making statements about the relationships between individuals and concepts in th
 They provide a formal and precise way to represent knowledge and allow for automated
 reasoning and inference. Axioms can be <strong>added</strong>, <strong>modified</strong>, or <strong>removed</strong> from an ontology,
 allowing the ontology to evolve and adapt as new knowledge is gained.</p>
-<p>In owlapy we also have different axioms represented by different classes. You can check all
+<p>In owlapy we represent different axioms by different classes. You can check all
 the axioms classes <a class="reference internal" href="#owlapy.owl_axioms"><span class="xref myst">here</span></a>. Some frequently used axioms are:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLDeclarationAxiom" title="owlapy.owl_axiom.OWLDeclarationAxiom"><span class="xref myst py py-class">OWLDeclarationAxiom</span></a></p></li>
@@ -195,7 +201,7 @@ properties you can use the class <a class="reference internal" href="../autoapi/
 <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">hasAge_dp_declaration_axiom</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>See the <a class="reference internal" href="../autoapi/owlapy/index.html#module-owlapy" title="owlapy"><span class="xref myst py py-mod">owlapy</span></a> for more OWL entities that you can add as a declaration axiom.</p>
+<p>See the <a class="reference internal" href="../autoapi/owlapy/index.html#module-owlapy" title="owlapy"><span class="xref myst py py-mod">owlapy</span></a> API for more OWL entities that you can add as a declaration axiom.</p>
 </section>
 <section id="add-an-assertion-axiom">
 <h3>Add an Assertion Axiom<a class="headerlink" href="#add-an-assertion-axiom" title="Link to this heading"></a></h3>
@@ -217,7 +223,7 @@ want to assert a class axiom for the individual <code class="docutils literal no
 We have used the class <code class="docutils literal notranslate"><span class="pre">OWLClassAssertionAxiom</span></code>
 where the first argument is the ‘individual’ <code class="docutils literal notranslate"><span class="pre">heinz</span></code> and the second argument is
 the ‘class_expression’. As the class expression, we used the previously defined class
-<code class="docutils literal notranslate"><span class="pre">child_Class</span></code>. Finally, add the axiom by using <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code> method of the <a class="reference internal" href="#owlapy.owl_ontology.OWLOntology"><span class="xref myst">OWLOntology</span></a>.</p>
+<code class="docutils literal notranslate"><span class="pre">child_Class</span></code>. Finally, add the axiom by using <code class="docutils literal notranslate"><span class="pre">add_axiom</span></code> method of the <a class="reference internal" href="../autoapi/owlapy/abstracts/abstract_owl_ontology/index.html#module-owlapy.abstracts.abstract_owl_ontology" title="owlapy.abstracts.abstract_owl_ontology"><span class="xref myst py py-mod">AbstractOWLOntology</span></a>.</p>
 <p>Let’s show one more example using a <code class="docutils literal notranslate"><span class="pre">OWLDataPropertyAssertionAxiom</span></code> to assign the age of 17 to
 heinz.</p>
 <!--pytest-codeblocks:cont-->
@@ -252,7 +258,7 @@ assertion axioms that you can use.</p>
 <section id="save-an-ontology">
 <h2>Save an Ontology<a class="headerlink" href="#save-an-ontology" title="Link to this heading"></a></h2>
 <p>If you modified an ontology, you may want to save it as a new file. To do this
-you can use the <code class="docutils literal notranslate"><span class="pre">save</span></code> method of the <a class="reference internal" href="#owlapy.owl_ontology.OWLOntology"><span class="xref myst">OWLOntology</span></a>.
+you can use the <code class="docutils literal notranslate"><span class="pre">save</span></code> method of the <a class="reference internal" href="../autoapi/owlapy/abstracts/abstract_owl_ontology/index.html#module-owlapy.abstracts.abstract_owl_ontology" title="owlapy.abstracts.abstract_owl_ontology"><span class="xref myst py py-mod">AbstractOWLOntology</span></a>.
 It requires one argument, the IRI of the new ontology.</p>
 <!--pytest-codeblocks:cont-->
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">onto</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;file:/&#39;</span> <span class="o">+</span> <span class="s1">&#39;test&#39;</span> <span class="o">+</span> <span class="s1">&#39;.owl&#39;</span><span class="p">))</span>
@@ -263,22 +269,16 @@ created in the same directory as the file you are running this code.</p>
 </section>
 <section id="worlds">
 <h2>Worlds<a class="headerlink" href="#worlds" title="Link to this heading"></a></h2>
-<p>Owlready2 stores every triple in a ‘World’ object, and it can handle several Worlds in parallel.
+</section>
+<section id="owlready2-stores-every-triple-in-a-world-object-and-it-can-handle-several-worlds-in-parallel-owlready2-uses-an-optimized-quadstore-to-store-the-world-each-world-object-is-stored-in-a-separate-quadstore-and-by-default-the-quadstore-is-stored-in-memory-but-it-can-also-be-stored-in-an-sqlite3-file-in-owlapy-we-have-deprecated-ontologymanager-and-when-an-ontology-is-created-a-new-world-is-also-created-to-be-associated-with-it-however-you-can-still-load-an-ontology-to-a-specific-world-using-the-method-load-ontology-iri">
+<h2>Owlready2 stores every triple in a ‘World’ object, and it can handle several Worlds in parallel.
 Owlready2 uses an optimized quadstore to store the world. Each world object is stored in a separate quadstore and
 by default the quadstore is stored in memory,
-but it can also be stored in an SQLite3 file. The method <code class="docutils literal notranslate"><span class="pre">save_world()</span></code> of the ontology manager does the latter.
-When an <em>OWLOntologyManager</em> object is created, a new world is also created as an attribute of the manager.
-By calling the method <code class="docutils literal notranslate"><span class="pre">load_ontology(iri)</span></code> the ontology is loaded to this world.</p>
-<p>It possible to create several isolated “worlds”, sometimes
-called “universe of speech”. This makes it possible, in particular, to load
-the same ontology several times, independently, that is to say, without
-the modifications made on one copy affecting the other copy. Sometimes the need to isolate
-an ontology arise. What that means is that you can have multiple reference of the same ontology in different
-worlds.</p>
-<hr class="docutils" />
-<p>It is important that an ontology is associated with a reasoner which is used to inferring knowledge
-from the ontology, i.e. to perform ontology reasoning.
-In the next guide we will see how to use a reasoner in Owlapy.</p>
+but it can also be stored in an SQLite3 file. In owlapy we have deprecated OntologyManager
+and when an ontology is created a new world is also created to be associated with it.
+However, you can still load an ontology to a specific world using the method <code class="docutils literal notranslate"><span class="pre">load_ontology(iri)</span></code>.<a class="headerlink" href="#owlready2-stores-every-triple-in-a-world-object-and-it-can-handle-several-worlds-in-parallel-owlready2-uses-an-optimized-quadstore-to-store-the-world-each-world-object-is-stored-in-a-separate-quadstore-and-by-default-the-quadstore-is-stored-in-memory-but-it-can-also-be-stored-in-an-sqlite3-file-in-owlapy-we-have-deprecated-ontologymanager-and-when-an-ontology-is-created-a-new-world-is-also-created-to-be-associated-with-it-however-you-can-still-load-an-ontology-to-a-specific-world-using-the-method-load-ontology-iri" title="Link to this heading"></a></h2>
+<p>It is essential to associate an ontology with a reasoner, which enables the inference of new knowledge through ontology
+reasoning. In the next guide, we will explore how to use a reasoner in Owlapy.</p>
 </section>
 </section>
 

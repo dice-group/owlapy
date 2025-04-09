@@ -85,7 +85,7 @@ Module Contents
    .. py:method:: __eq__(other)
 
 
-.. py:class:: Ontology(manager: _OM, ontology_iri: owlapy.iri.IRI | str, load: bool)
+.. py:class:: Ontology(ontology_iri: owlapy.iri.IRI | str, load: bool = True, world_store=None)
 
    Bases: :py:obj:`owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology`
 
@@ -97,11 +97,9 @@ Module Contents
    it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
    Structural Specification).
 
-   An ontology cannot be modified directly. Changes must be applied via its OWLOntologyManager.
-
 
    .. py:attribute:: __slots__
-      :value: ('_manager', '_iri', '_world', '_onto', 'is_modified')
+      :value: ('_iri', '_world', '_onto', 'is_modified')
 
 
 
@@ -183,12 +181,6 @@ Module Contents
          as the sub class and EquivalentClass axioms and DisjointClass axioms with only complex class expressions.
 
       :returns: General class axioms contained in this ontology.
-
-
-
-   .. py:method:: get_owl_ontology_manager() -> _OM
-
-      Gets the manager that manages this ontology.
 
 
 
@@ -284,7 +276,7 @@ Module Contents
    .. py:method:: __repr__()
 
 
-.. py:class:: SyncOntology(manager: _SM, path: Union[owlapy.iri.IRI, str], new: bool = False)
+.. py:class:: SyncOntology(path: Union[owlapy.iri.IRI, str], load: bool = True)
 
    Bases: :py:obj:`owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology`
 
@@ -296,17 +288,15 @@ Module Contents
    it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
    Structural Specification).
 
-   An ontology cannot be modified directly. Changes must be applied via its OWLOntologyManager.
 
-
-   .. py:attribute:: manager
+   .. py:attribute:: owlapi_manager
 
 
    .. py:attribute:: path
 
 
-   .. py:attribute:: new
-      :value: False
+   .. py:attribute:: load
+      :value: True
 
 
 
@@ -446,12 +436,6 @@ Module Contents
 
 
 
-   .. py:method:: get_owl_ontology_manager() -> _M
-
-      Gets the manager that manages this ontology.
-
-
-
    .. py:method:: get_owlapi_ontology()
 
 
@@ -490,7 +474,7 @@ Module Contents
 
 
 
-.. py:class:: RDFLibOntology(path: str)
+.. py:class:: RDFLibOntology(path: str, load: bool = True)
 
    Bases: :py:obj:`owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology`
 
@@ -501,17 +485,6 @@ Module Contents
    An ontology can have an ontology IRI which can be used to identify the ontology. If it has an ontology IRI then
    it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
    Structural Specification).
-
-   An ontology cannot be modified directly. Changes must be applied via its OWLOntologyManager.
-
-
-   .. py:attribute:: rdflib_graph
-
-
-   .. py:attribute:: str_owl_classes
-
-
-   .. py:attribute:: str_owl_individuals
 
 
    .. py:method:: __len__() -> int
@@ -691,14 +664,6 @@ Module Contents
       Gets the OWLOntologyID belonging to this object.
 
       :returns: The OWLOntologyID.
-
-
-
-   .. py:method:: get_owl_ontology_manager()
-      :abstractmethod:
-
-
-      Gets the manager that manages this ontology.
 
 
 

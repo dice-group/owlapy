@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_hierarchy &mdash; OWLAPY 1.4.0 documentation</title>
+  <title>owlapy.owl_hierarchy &mdash; OWLAPY 1.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../_static/documentation_options.js?v=e0a75244"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -83,9 +83,7 @@
   <h1>Source code for owlapy.owl_hierarchy</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Classes representing hierarchy in OWL.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">overload</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Set</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLThing</span><span class="p">,</span> <span class="n">OWLNothing</span>
@@ -638,49 +636,6 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">direct_set</span><span class="p">:</span>
             <span class="n">leaf_set</span> <span class="o">|=</span> <span class="p">{</span><span class="n">ent</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">result_hier</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">leaf_set</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_strongly_connected_components</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_S</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">_S</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">FrozenSet</span><span class="p">[</span><span class="n">_S</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Strongly connected component algorithm.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        graph: Directed Graph dictionary, vertex =&gt; set of vertices (there is an edge from v to each V).</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The strongly connected components.</span>
-
-<span class="sd">    Author: Mario Alviano</span>
-<span class="sd">    Source: https://github.com/alviano/python/blob/master/rewrite_aggregates/scc.py</span>
-<span class="sd">    Licence: GPL-3.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">identified</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">index</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">boundaries</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">dfs</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-        <span class="k">nonlocal</span> <span class="n">identified</span>
-        <span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
-        <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">v</span><span class="p">})</span>
-        <span class="n">boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">])</span>
-
-        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">w</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
-                <span class="k">yield from</span> <span class="n">dfs</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="ow">not</span> <span class="p">{</span><span class="n">w</span><span class="p">}</span> <span class="o">&amp;</span> <span class="n">identified</span><span class="p">:</span>
-                <span class="k">while</span> <span class="n">index</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">boundaries</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-                    <span class="n">boundaries</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">boundaries</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
-            <span class="n">boundaries</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-            <span class="n">scc</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">or_</span><span class="p">,</span> <span class="n">stack</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]:])</span>
-            <span class="k">del</span> <span class="n">stack</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]:]</span>
-            <span class="n">identified</span> <span class="o">|=</span> <span class="n">scc</span>
-            <span class="k">yield</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">scc</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
-            <span class="k">yield from</span> <span class="n">dfs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 </pre></div>
 
            </div>
