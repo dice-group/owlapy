@@ -197,6 +197,7 @@ by default the quadstore is stored in memory,
 but it can also be stored in an SQLite3 file. In owlapy we have deprecated OntologyManager
 and when an ontology is created a new world is also created to be associated with it.
 However, you can still load an ontology to a specific world using the method `load_ontology(iri)`.
+
 -------------------------------------------------------------------------------------
 
 It is essential to associate an ontology with a reasoner, which enables the inference of new knowledge through ontology
