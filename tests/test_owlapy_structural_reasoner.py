@@ -10,7 +10,7 @@ from owlapy.owl_axiom import OWLSubDataPropertyOfAxiom, OWLInverseObjectProperti
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import DoubleOWLDatatype, OWLLiteral
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
 from owlready2.prop import DataProperty
 
@@ -24,8 +24,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
     # noinspection DuplicatedCode
     def test_instances(self):
         NS = "http://example.com/father#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
+        onto = Ontology(IRI.create("file://KGs/Family/father.owl"))
 
         male = OWLClass(IRI.create(NS, 'male'))
         female = OWLClass(IRI.create(NS, 'female'))
@@ -74,8 +73,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
     def test_complement(self):
         NS = "http://example.com/father#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
+        onto = Ontology(IRI.create("file://KGs/Family/father.owl"))
 
         male = OWLClass(IRI.create(NS, 'male'))
         female = OWLClass(IRI.create(NS, 'female'))
@@ -101,8 +99,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
     def test_all_values(self):
         NS = "http://example.com/father#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
+        onto = Ontology(IRI.create("file://KGs/Family/father.owl"))
 
         has_child = OWLObjectProperty(IRI(NS, 'hasChild'))
 
@@ -116,8 +113,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
     def test_complement2(self):
         NS = "http://example.com/father#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
+        onto = Ontology(IRI.create("file://KGs/Family/father.owl"))
 
         male = OWLClass(IRI.create(NS, 'male'))
         female = OWLClass(IRI.create(NS, 'female'))
@@ -130,8 +126,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
     def test_cardinality_restrictions(self):
         NS = "http://dl-learner.org/mutagenesis#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
+        onto = Ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
 
         hydrogen_3 = OWLClass(IRI.create(NS, 'Hydrogen-3'))
         atom = OWLClass(IRI.create(NS, 'Atom'))
@@ -164,8 +159,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
     def test_data_properties(self):
         NS = "http://dl-learner.org/mutagenesis#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
+        onto = Ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
 
         act = OWLDataProperty(IRI(NS, 'act'))
         fused_rings = OWLDataProperty(IRI(NS, 'hasThreeOrMoreFusedRings'))
@@ -235,8 +229,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
     def test_data_properties_time(self):
         NS = "http://example.com/father#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
+        onto = Ontology(IRI.create("file://KGs/Family/father.owl"))
 
         with onto._onto:
             class birthDate(DataProperty):
@@ -291,8 +284,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
     def test_sub_property_inclusion(self):
         ns = "http://dl-learner.org/mutagenesis#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
+        onto = Ontology(IRI.create("file://KGs/Mutagenesis/mutagenesis.owl"))
 
         carbon_22 = OWLClass(IRI(ns, 'Carbon-22'))
         compound = OWLClass(IRI(ns, 'Compound'))
@@ -341,8 +333,7 @@ class Owlapy_StructuralReasoner_Test(unittest.TestCase):
 
     def test_inverse(self):
         ns = "http://example.com/father#"
-        mgr = OntologyManager()
-        onto = mgr.load_ontology(IRI.create("file://KGs/Family/father.owl"))
+        onto = Ontology(IRI.create("file://KGs/Family/father.owl"))
 
         has_child = OWLObjectProperty(IRI(ns, 'hasChild'))
         has_child_inverse = OWLObjectProperty(IRI.create(ns, 'hasChild_inverse'))

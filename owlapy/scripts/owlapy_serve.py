@@ -3,7 +3,8 @@ import argparse
 import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
-from owlapy.owl_ontology_manager import SyncOntologyManager
+
+from owlapy.owl_ontology import SyncOntology
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.class_expression import OWLClass
 from owlapy.static_funcs import stopJVM
@@ -12,6 +13,7 @@ from enum import Enum
 
 ontology = None
 reasoner = None
+
 
 class InferenceType(str, Enum):
     InferredClassAssertionAxiomGenerator = "InferredClassAssertionAxiomGenerator"
@@ -27,14 +29,18 @@ class InferenceType(str, Enum):
     InferredObjectPropertyCharacteristicAxiomGenerator = "InferredObjectPropertyCharacteristicAxiomGenerator"
     All = "all"
 
+
 class InfrenceTypeRequest(BaseModel):
     inference_type: InferenceType
+
 
 class ClassIRIRequest(BaseModel):
     class_iri: str
 
+
 class AxiomRequest(BaseModel):
     axiom: str
+
 
 def create_app(ontology_path: str, reasoner_name: str):
     @asynccontextmanager
@@ -44,7 +50,7 @@ def create_app(ontology_path: str, reasoner_name: str):
         # Load the ontology
         if not os.path.exists(ontology_path):
             raise FileNotFoundError(f"Ontology file not found at {ontology_path}")
-        ontology = SyncOntologyManager().load_ontology(ontology_path)
+        ontology = SyncOntology(ontology_path)
 
         # Validate and initialize the reasoner
         valid_reasoners = ['Pellet', 'HermiT', 'JFact', 'Openllet']
@@ -109,6 +115,7 @@ def create_app(ontology_path: str, reasoner_name: str):
 
     return app
 
+
 def main():
     parser = argparse.ArgumentParser(description='Start OWLAPY API server.')
     parser.add_argument('--path_kb', type=str, required=True,
@@ -123,6 +130,7 @@ def main():
 
     app = create_app(args.path_kb, args.reasoner)
     uvicorn.run(app, host=args.host, port=args.port)
+
 
 if __name__ == '__main__':
     main()

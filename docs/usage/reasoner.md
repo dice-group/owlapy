@@ -1,19 +1,18 @@
 # Reasoners
 
-To validate facts about statements in the ontology, the help of a reasoner
+To validate or infer facts from statements in the ontology, the help of a reasoner
 component is required.
 
 For this guide we will also consider the 'father' ontology that we slightly described [here](ontologies.md):
 
 ```python
 from owlapy.iri import IRI
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology import Ontology
 
-manager = OntologyManager()
-onto = manager.load_ontology(IRI.create("KGs/Family/father.owl"))
+onto = Ontology(IRI.create("KGs/Family/father.owl"))
 ```
 
-In our Owlapy library, we provide two main reasoner classes:
+In Owlapy, we provide two main reasoner classes:
 
 
 - [**StructuralReasoner**](owlapy.owl_reasoner.StructuralReasoner) (What used to be FastInstanceCheckerReasoner )
@@ -43,10 +42,9 @@ In our Owlapy library, we provide two main reasoner classes:
   
   SyncReasoner is a class that serves as a 'syncing' class 
   between our framework and reasoners in _owlapi_. It
-  can perform full reasoning in _ALCH_ due to the use of reasoners from 
-  powerful reasoners like HermiT, Pellet, etc. 
+  can perform full reasoning in _ALCH_ due to the use of well-known reasoners such as HermiT, Pellet, ELK etc. 
   SyncReasoner is more useful when your main goal is reasoning over the ontology,
-  and you are familiarized with the java reasoners (HermiT, Pellet, JFact, Openllet, ...).
+  and you are familiarized with the java reasoners (HermiT, Pellet, ELK, JFact, ...).
 
     **Initialization:**
 
@@ -56,18 +54,23 @@ In our Owlapy library, we provide two main reasoner classes:
     sync_reasoner = SyncReasoner(ontology="KGs/Mutagenesis/mutagenesis.owl", reasoner="HermiT")
     ```
     
-    SyncReasoner is made available by [owlapi mapper](owlapi_synchronization.md) and requires the ontology path or an
+    SyncReasoner is made available by [OWLAPI mapper](owlapi_synchronization.md) and requires the ontology path or an
     object of type [SyncOntology](owlapy.owl_ontology.SyncOntology),
-    together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"JFact"`, `"Openllet"`
-   `"StructuralReasoner"`.
+    together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"ELK"`, `"JFact"`, 
+   `"Openllet"`, `"StructuralReasoner"` specified as a string value.
  
    
-   **Note that SyncReasoner with `reasoner` argument set to `"StructuralReasoner"` is refering to 
-   _StructuralReasoner_ implemented in owlapi. That is different from our StructuralReasoner.**
+   **Note that SyncReasoner with `reasoner` argument set to `"StructuralReasoner"` is referring to 
+   _StructuralReasoner_ implemented in OWLAPI. That is different from our StructuralReasoner.**
+
+  **Also is worth mentioning that some java reasoners like ELK do not implement all methods that a reasoner 
+  can perform. You will get a `NotImplementedError` if you try to use them. Note that we use these reasoners via jar
+  distributions, and we do not consider updating them. But in such cases we keep an eye open for new releases 
+  that may address these limitations.**
 
   
 ## Usage of the Reasoner
-All the reasoners available in the Owlapy library inherit from the
+All the reasoners available in Owlapy inherit from the
 class: [AbstractOWLReasoner](owlapy.abstracts.AbstractOWLReasoner).
 Further on, in this guide, we use [StructuralReasoner](owlapy.owl_reasoner.StructuralReasoner)
 to show the capabilities of a reasoner in Owlapy.
@@ -109,7 +112,7 @@ means that it will return only the named classes.
 upon the class, object property, or data property hierarchy.
 
 >**NOTE**: In SyncReasoner, there is no use for the argument `only_named` as this is not
-> supported by methods in the java library owlapi. 
+> supported by methods in the java library OWLAPI. 
 
 You can get all the types of a certain individual using `types` method:
 
@@ -206,10 +209,30 @@ for ind in male_individuals:
     print(ind)
 ```
 
+## Infer and validate facts
+
+With **SyncReasoner** you can also infer missing facts from the ontology by using the method `infer_axioms`, check for
+consistency of the ontology (`has_consistent_ontology`), check satisfiability of a class expression (`is_satisfiable`)
+and more. See [SyncReasoner API](owlapy.owl_reasoner.SyncReasoner) for more detail.
+
+## Serve SyncReasoner
+Using the CLI command `owlapy-serve` you can start a server hosting Owlapy API via FastAPI to use such 
+functionalities offered by SyncReasoner:
+
+```shell
+owlapy-serve --path_kb KGs/Family/family-benchmark_rich_background.owl --reasoner HermiT
+```
+
+Optionally, you provide custom host and port for the FastAPI server:
+
+```shell
+owlapy-serve --path_kb KGs/Family/family-benchmark_rich_background.owl --reasoner HermiT --host 0.0.0.0 --port 8000
+```
+
 -----------------------------------------------------------------------
 
 In this guide we covered the main functionalities of the reasoners in Owlapy. 
-In the next one, we speak about owlapi synchronization and how can make use of owlapi in owlapy.
+In the next one, we speak about OWLAPI synchronization and how can make use of OWLAPI in Owlapy.
 
 
 

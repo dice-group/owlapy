@@ -13,7 +13,7 @@ from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom,
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
     OWLDataSomeValuesFrom, OWLDataOneOf, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataHasValue, \
-    OWLDataAllValuesFrom
+    OWLDataAllValuesFrom, OWLNothing, OWLThing
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
@@ -22,11 +22,11 @@ from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
-from owlapy.owl_ontology_manager import SyncOntologyManager
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral
+from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObjectProperty, OWLBottomDataProperty, \
+    OWLTopDataProperty
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 logger = logging.getLogger(__name__)
@@ -170,6 +170,13 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     def disjoint_classes(self, ce: OWLClassExpression, only_named: bool = True) -> Iterable[OWLClassExpression]:
         seen_set = set()
+        if ce is OWLNothing:
+            yield from self._ontology.classes_in_signature()
+            yield OWLThing
+            return
+        if ce is OWLThing:
+            yield OWLNothing
+            return
         yield from self._find_disjoint_classes(ce, only_named, seen_set)
         for c in self.super_classes(ce, only_named=only_named):
             if c != OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing')):
@@ -420,6 +427,13 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     def disjoint_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
         seen_set = set()
+        if op is OWLBottomObjectProperty:
+            yield from self._ontology.object_properties_in_signature()
+            yield OWLTopObjectProperty
+            return
+        if op is OWLTopObjectProperty:
+            yield OWLBottomObjectProperty
+            return
         yield from self._find_disjoint_object_properties(op, seen_set)
         for o in self.super_object_properties(op):
             if o != OWLObjectProperty(IRI('http://www.w3.org/2002/07/owl#', 'ObjectProperty')):
@@ -446,6 +460,13 @@ class StructuralReasoner(AbstractOWLReasoner):
 
     def disjoint_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
         seen_set = set()
+        if dp is OWLBottomDataProperty:
+            yield from self._ontology.data_properties_in_signature()
+            yield OWLTopDataProperty
+            return
+        if dp is OWLTopDataProperty:
+            yield OWLBottomDataProperty
+            return
         yield from self._find_disjoint_data_properties(dp, seen_set)
         for d in self.super_data_properties(dp):
             if d != OWLDataProperty(IRI('http://www.w3.org/2002/07/owl#', 'DatatypeProperty')):
@@ -1001,28 +1022,33 @@ class SyncReasoner(AbstractOWLReasoner):
 
         Args:
             ontology(SyncOntology): Ontology that will be used by this reasoner.
-            reasoner: Name of the reasoner. Possible values (case-sensitive): ["HermiT", "Pellet", "JFact", "Openllet",
-             "Structural"].
-                Default: "HermiT".
+            reasoner: Name of the reasoner. Possible values (case-sensitive): ["HermiT", "Pellet", "ELK", "JFact",
+            "Openllet", "Structural"]. Default: "HermiT".
         """
-        assert reasoner in ["HermiT", "Pellet", "JFact", "Openllet", "Structural"], \
-            (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'JFact', 'Openllet', "
+        assert reasoner in ["HermiT", "Pellet", "ELK", "JFact", "Openllet", "Structural"], \
+            (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'ELK', 'JFact', 'Openllet', "
              f"'Structural']. "
              f"This field is case sensitive.")
+
+        #  TODO: ELK does not support specific methods. That means that mapping methods in owlapy will
+        #   also raise NotImplementedError. Check for new release of elk and if any of these method is
+        #   implemented, remove the `raise NotImplementedError` statement for the respective mapping
+        #   implemented in this class. Current version of elk is 6.0.0.
+        #   Maven releases: https://mvnrepository.com/artifact/io.github.liveontologies/elk-owlapi
+        #   ElkReasoner GitHub link: https://github.com/liveontologies/elk-reasoner/blob/main/elk-owlapi/src/main/java/org/semanticweb/elk/owlapi/ElkReasoner.java
+
+
         if isinstance(ontology, SyncOntology):
-            self.manager = ontology.manager
             self.ontology = ontology
         elif isinstance(ontology, str):
-            # https://owlcs.github.io/owlapi/apidocs_5/org/semanticweb/owlapi/apibinding/OWLManager.html
-            self.manager = SyncOntologyManager()
-            # OWLOntology
-            self.ontology = self.manager.load_ontology(ontology)
+            self.ontology = SyncOntology(ontology)
 
-        self._owlapi_manager = self.manager.get_owlapi_manager()
+        self.reasoner_name = reasoner
+        self._owlapi_manager = self.ontology.owlapi_manager
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
         self.mapper = self.ontology.mapper
         self.inference_types_mapping = import_and_include_axioms_generators()
-        self._owlapi_reasoner = initialize_reasoner(reasoner,self._owlapi_ontology)
+        self._owlapi_reasoner = initialize_reasoner(reasoner, self._owlapi_ontology)
 
     def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
@@ -1068,6 +1094,8 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             Disjoint classes of the given class expression.
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getDisjointClasses` is not yet implemented for ELK!")
         classes = self._owlapi_reasoner.getDisjointClasses(self.mapper.map_(ce)).getFlattened()
         yield from [self.mapper.map_(cls) for cls in classes]
 
@@ -1118,6 +1146,8 @@ class SyncReasoner(AbstractOWLReasoner):
             super_classes(DataSomeValuesFrom(pe rdfs:Literal), false) together with N if N is non-empty.
             (Note, rdfs:Literal is the top datatype).
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getDataPropertyDomains` is not yet implemented by ELK!")
         yield from [self.mapper.map_(ce) for ce in
                     self._owlapi_reasoner.getDataPropertyDomains(self.mapper.map_(p), direct).getFlattened()]
 
@@ -1136,6 +1166,8 @@ class SyncReasoner(AbstractOWLReasoner):
             super_classes(ObjectSomeValuesFrom(pe owl:Thing), true). If direct is False: then the result of
             super_classes(ObjectSomeValuesFrom(pe owl:Thing), false) together with N if N is non-empty.
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getObjectPropertyDomains` is not yet implemented by ELK!")
         yield from [self.mapper.map_(ce) for ce in
                     self._owlapi_reasoner.getObjectPropertyDomains(self.mapper.map_(p), direct).getFlattened()]
 
@@ -1155,6 +1187,8 @@ class SyncReasoner(AbstractOWLReasoner):
             the result of super_classes(ObjectSomeValuesFrom(ObjectInverseOf(pe) owl:Thing), false) together with N
             if N is non-empty.
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getObjectPropertyRanges` is not yet implemented by ELK!")
         yield from [self.mapper.map_(ce) for ce in
                     self._owlapi_reasoner.getObjectPropertyRanges(self.mapper.map_(p), direct).getFlattened()]
 
@@ -1209,6 +1243,8 @@ class SyncReasoner(AbstractOWLReasoner):
             StrictSubDataPropertyOf(P, pe). If pe is equivalent to owl:bottomDataProperty then nothing will be
             returned.
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getSubDataProperties` is not yet implemented by ELK!")
         yield from [self.mapper.map_(pe) for pe in
                     self._owlapi_reasoner.getSubDataProperties(self.mapper.map_(p), direct).getFlattened()]
 
@@ -1224,6 +1260,8 @@ class SyncReasoner(AbstractOWLReasoner):
          Returns:
              Iterable of super properties.
          """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getSuperDataProperties` is not yet implemented by ELK!")
         yield from [self.mapper.map_(pe) for pe in
                     self._owlapi_reasoner.getSuperDataProperties(self.mapper.map_(p), direct).getFlattened()]
 
@@ -1237,6 +1275,8 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             All individuals x where the set of reasoner axioms entails DifferentIndividuals(ind x).
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getDifferentIndividuals` is not yet implemented by ELK!")
         yield from [self.mapper.map_(ind) for ind in
                     self._owlapi_reasoner.getDifferentIndividuals(self.mapper.map_(i)).getFlattened()]
 
@@ -1280,6 +1320,8 @@ class SyncReasoner(AbstractOWLReasoner):
             If dp is unsatisfiable with respect to the set of reasoner axioms then owl:bottomDataProperty will
             be returned.
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getEquivalentDataProperties` is not yet implemented by ELK!")
         yield from [self.mapper.map_(pe) for pe in
                     self.mapper.to_list(self._owlapi_reasoner.getEquivalentDataProperties(self.mapper.map_(p)))]
 
@@ -1294,6 +1336,8 @@ class SyncReasoner(AbstractOWLReasoner):
             The named individuals such that for each individual j, the set of reasoner axioms entails
             ObjectPropertyAssertion(pe ind j).
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getObjectPropertyValues` is not yet implemented by ELK!")
         yield from [self.mapper.map_(ind) for ind in
                     self._owlapi_reasoner.getObjectPropertyValues(self.mapper.map_(i), self.mapper.map_(p)).getFlattened()]
 
@@ -1323,6 +1367,8 @@ class SyncReasoner(AbstractOWLReasoner):
             EquivalentObjectProperties(e ObjectPropertyComplementOf(op)) or
             StrictSubObjectPropertyOf(e ObjectPropertyComplementOf(op)).
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getDisjointObjectProperties` is not yet implemented by ELK!")
         yield from [self.mapper.map_(pe) for pe in
                     self._owlapi_reasoner.getDisjointObjectProperties(self.mapper.map_(p)).getFlattened()]
 
@@ -1338,6 +1384,8 @@ class SyncReasoner(AbstractOWLReasoner):
             EquivalentDataProperties(e DataPropertyComplementOf(dp)) or
             StrictSubDataPropertyOf(e DataPropertyComplementOf(dp)).
         """
+        if self.reasoner_name == "ELK":
+            raise NotImplementedError("`getDisjointDataProperties` is not yet implemented by ELK!")
         yield from [self.mapper.map_(pe) for pe in
                     self._owlapi_reasoner.getDisjointDataProperties(self.mapper.map_(p)).getFlattened()]
 
@@ -1384,7 +1432,9 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             Iterable of inferred axioms.
         """
+        # noinspection PyUnresolvedReferences
         from java.util import ArrayList
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.util import InferredOntologyGenerator
 
         generators = ArrayList()
@@ -1422,9 +1472,13 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             None (the file is saved to the specified directory)
         """
+        # noinspection PyUnresolvedReferences
         from java.io import File, FileOutputStream
+        # noinspection PyUnresolvedReferences
         from java.util import ArrayList
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.util import InferredOntologyGenerator
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.formats import TurtleDocumentFormat, RDFXMLDocumentFormat, OWLXMLDocumentFormat
         if output_format == "ttl" or output_format == "turtle":
             document_format = TurtleDocumentFormat()
@@ -1511,25 +1565,35 @@ class SyncReasoner(AbstractOWLReasoner):
 def initialize_reasoner(reasoner:str, owlapi_ontology):
     # () Create a reasoner using the ontology
     if reasoner == "HermiT":
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.HermiT import ReasonerFactory
         owlapi_reasoner = ReasonerFactory().createReasoner(owlapi_ontology)
         assert owlapi_reasoner.getReasonerName() == "HermiT"
+    elif reasoner == "ELK":
+        from org.semanticweb.elk.owlapi import ElkReasonerFactory
+        owlapi_reasoner = ElkReasonerFactory().createReasoner(owlapi_ontology)
     elif reasoner == "JFact":
+        # noinspection PyUnresolvedReferences
         from uk.ac.manchester.cs.jfact import JFactFactory
         owlapi_reasoner = JFactFactory().createReasoner(owlapi_ontology)
     elif reasoner == "Pellet":
+        # noinspection PyUnresolvedReferences
         from openllet.owlapi import PelletReasonerFactory
         owlapi_reasoner = PelletReasonerFactory().createReasoner(owlapi_ontology)
     elif reasoner == "Openllet":
+        # noinspection PyUnresolvedReferences
         from openllet.owlapi import OpenlletReasonerFactory
         owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(owlapi_ontology)
     elif reasoner == "Structural":
+        # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
         owlapi_reasoner = StructuralReasonerFactory().createReasoner(owlapi_ontology)
     else:
         raise NotImplementedError("Not implemented")
     return owlapi_reasoner
+
 def import_and_include_axioms_generators():
+    # noinspection PyUnresolvedReferences
     from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
                                              InferredEquivalentClassAxiomGenerator,
                                              InferredDisjointClassesAxiomGenerator,

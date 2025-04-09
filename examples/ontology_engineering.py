@@ -1,13 +1,13 @@
 from owlapy.class_expression import OWLClass
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology import Ontology
 from owlapy.iri import IRI
 from owlapy.static_funcs import download_external_files
 # (1) Download the datasets if KGs does not exist.
 download_external_files("https://files.dice-research.org/projects/Ontolearn/KGs.zip")
-# (2) Load the father ontology using a new ontology manager.
-onto = OntologyManager().load_ontology(path='file://../KGs/Family/father.owl')
+# (2) Load the father ontology.
+onto = Ontology('file://../KGs/Family/father.owl')
 # (3) Iterate over defined OWL classes, object properties.
 print("OWL Classes:")
 for c in onto.classes_in_signature():
@@ -44,8 +44,8 @@ for i in onto.individuals_in_signature():
 cdemir = OWLNamedIndividual('http://example.com/father#cdemir')
 onto.add_axiom(OWLClassAssertionAxiom(cdemir, father))
 # (9) Check whether cdemir is in the signature.
-assert cdemir in [ c for c in onto.individuals_in_signature()]
+assert cdemir in [c for c in onto.individuals_in_signature()]
 # (10) Save the modified ontology locally.
-onto.save(path="babo.owl",rdf_format = "rdfxml")
+onto.save(path="babo.owl", rdf_format="rdfxml")
 
 

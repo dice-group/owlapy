@@ -1,10 +1,10 @@
 from owlapy.owl_reasoner import SyncReasoner
-from owlapy import OntologyManager
+from owlapy.owl_ontology import Ontology
 from owlapy.class_expression import OWLClassExpression
 from typing import Dict
 ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
 # () Load ontology
-onto = OntologyManager().load_ontology(ontology_path)
+onto = Ontology(ontology_path, load=True)
 
 # () Initialize Reasoners
 reasoners = dict()
@@ -12,6 +12,7 @@ reasoners["HermiT"] = SyncReasoner(ontology=ontology_path, reasoner="HermiT")
 reasoners["Pellet"] = SyncReasoner(ontology=ontology_path, reasoner="Pellet")
 reasoners["JFact"] = SyncReasoner(ontology=ontology_path, reasoner="JFact")
 reasoners["Openllet"] = SyncReasoner(ontology=ontology_path, reasoner="Openllet")
+
 
 def compute_agreements(owl_reasoners:Dict[str,SyncReasoner], expression: OWLClassExpression, verbose=False):
     if verbose:
@@ -26,6 +27,7 @@ def compute_agreements(owl_reasoners:Dict[str,SyncReasoner], expression: OWLClas
     if verbose:
         print(f"Successful:{flag}")
     return flag
+
 
 # () Iterate over named classes
 for c in onto.classes_in_signature():

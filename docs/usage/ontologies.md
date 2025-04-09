@@ -7,26 +7,25 @@ We will use the _father_ ontology for the following examples.
 
 ## Loading an Ontology
 
-To load an ontology as well as to manage it, you will need an 
-[OWLOntologyManager](owlapy.owl_ontology_manager.OWLOntologyManager)
+To load an ontology you can use an implementor of 
+[AbstractOWLOntology](owlapy.abstracts.abstract_owl_ontology).
 An ontology can be loaded using the following Python code:
 
 ```python
 from owlapy.iri import IRI
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology import Ontology
 
-manager = OntologyManager()
-onto = manager.load_ontology(IRI.create("file://KGs/Family/father.owl"))
+onto = Ontology(IRI.create("file://KGs/Family/father.owl"), load=True)
 ```
 
-First, we import the `IRI` class and a suitable OWLOntologyManager. To
-load a file from our computer, we have to reference it with an
-[IRI](owlapy.iri.IRI). Secondly, we need the
-Ontology Manager. Owlapy contains one such manager: The
-[OntologyManager](owlapy.owl_ontology_manager.OntologyManager).
+To load an ontology from your local machine, you can use the `IRI` class which 
+should be created using a file path or just specify the path of the file storing
+the ontology directly (`.owl` format is recommended). In the `Ontology` class you can
+also specify the `load` argument which tells the system whether you are trying to load an
+existing ontology or creating a new one.
 
-Now, we can already inspect the contents of the ontology. For example,
-to list all individuals:
+Now, you can already inspect the contents of the ontology. For example,
+list all individuals:
 
 <!--pytest-codeblocks:cont-->
 ```python
@@ -41,8 +40,9 @@ You can get the object properties in the signature:
 onto.object_properties_in_signature()
 ```
 
-For more methods, see the abstract class [OWLOntology](owlapy.owl_ontology.Ontology)
-or the concrete implementation [Ontology](owlapy.owl_ontology.Ontology).
+For more methods, see the abstract class [AbstractOWLOntology](owlapy.abstracts.abstract_owl_ontology)
+or one of the concrete implementation [Ontology](owlapy.owl_ontology.Ontology), [SyncOntology](owlapy.owl_ontology.SyncOntology),
+[RDFLibOntology](owlapy.owl_ontology.RDFLibOntology).
 
 ## Modifying an Ontology
 
@@ -52,7 +52,7 @@ They provide a formal and precise way to represent knowledge and allow for autom
 reasoning and inference. Axioms can be **added**, **modified**, or **removed** from an ontology, 
 allowing the ontology to evolve and adapt as new knowledge is gained.
 
-In owlapy we also have different axioms represented by different classes. You can check all
+In owlapy we represent different axioms by different classes. You can check all
 the axioms classes [here](owlapy.owl_axioms). Some frequently used axioms are:
 
 - [OWLDeclarationAxiom](owlapy.owl_axiom.OWLDeclarationAxiom)
@@ -112,7 +112,7 @@ hasAge_dp_declaration_axiom = OWLDeclarationAxiom(hasAge_dp)
 onto.add_axiom(hasAge_dp_declaration_axiom)
 ```
 
-See the [owlapy](owlapy) for more OWL entities that you can add as a declaration axiom.
+See the [owlapy](owlapy) API for more OWL entities that you can add as a declaration axiom.
 
 #### Add an Assertion Axiom
 
@@ -136,7 +136,7 @@ want to assert a class axiom for the individual `heinz`.
 We have used the class `OWLClassAssertionAxiom`
 where the first argument is the 'individual' `heinz` and the second argument is 
 the 'class_expression'. As the class expression, we used the previously defined class 
-`child_Class`. Finally, add the axiom by using `add_axiom` method of the [OWLOntology](owlapy.owl_ontology.OWLOntology).
+`child_Class`. Finally, add the axiom by using `add_axiom` method of the [AbstractOWLOntology](owlapy.abstracts.abstract_owl_ontology).
 
 Let's show one more example using a `OWLDataPropertyAssertionAxiom` to assign the age of 17 to
 heinz. 
@@ -178,14 +178,14 @@ The required argument is the axiom/axioms you want to remove.
 ## Save an Ontology
 
 If you modified an ontology, you may want to save it as a new file. To do this
-you can use the `save` method of the [OWLOntology](owlapy.owl_ontology.OWLOntology).
+you can use the `save` method of the [AbstractOWLOntology](owlapy.abstracts.abstract_owl_ontology).
 It requires one argument, the IRI of the new ontology.
 
 <!--pytest-codeblocks:cont-->
 ```python
 onto.save(IRI.create('file:/' + 'test' + '.owl'))
 ```
- The above line of code will save the ontology `onto` in the file *test.owl* which will be
+The above line of code will save the ontology `onto` in the file *test.owl* which will be
 created in the same directory as the file you are running this code.
 
 
@@ -194,22 +194,14 @@ created in the same directory as the file you are running this code.
 Owlready2 stores every triple in a ‘World’ object, and it can handle several Worlds in parallel.
 Owlready2 uses an optimized quadstore to store the world. Each world object is stored in a separate quadstore and 
 by default the quadstore is stored in memory,
-but it can also be stored in an SQLite3 file. The method `save_world()` of the ontology manager does the latter.
-When an _OWLOntologyManager_ object is created, a new world is also created as an attribute of the manager.
-By calling the method `load_ontology(iri)` the ontology is loaded to this world. 
-
-It possible to create several isolated “worlds”, sometimes
-called “universe of speech”. This makes it possible, in particular, to load
-the same ontology several times, independently, that is to say, without
-the modifications made on one copy affecting the other copy. Sometimes the need to isolate 
-an ontology arise. What that means is that you can have multiple reference of the same ontology in different
-worlds.
+but it can also be stored in an SQLite3 file. In owlapy we have deprecated OntologyManager
+and when an ontology is created a new world is also created to be associated with it.
+However, you can still load an ontology to a specific world using the method `load_ontology(iri)`.
 
 -------------------------------------------------------------------------------------
 
-It is important that an ontology is associated with a reasoner which is used to inferring knowledge 
-from the ontology, i.e. to perform ontology reasoning.
-In the next guide we will see how to use a reasoner in Owlapy. 
+It is essential to associate an ontology with a reasoner, which enables the inference of new knowledge through ontology
+reasoning. In the next guide, we will explore how to use a reasoner in Owlapy.
 
 
 

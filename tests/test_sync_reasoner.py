@@ -9,7 +9,7 @@ from owlapy.owl_axiom import OWLDisjointClassesAxiom, OWLDeclarationAxiom, OWLCl
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLBottomObjectProperty, OWLTopObjectProperty, OWLBottomDataProperty, OWLTopDataProperty, \
     OWLLiteral
-from owlapy.owl_ontology_manager import OntologyManager
+from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.providers import owl_datatype_min_inclusive_restriction
@@ -116,7 +116,7 @@ class TestSyncReasoner(unittest.TestCase):
         owl_reasoners["JFact"] = SyncReasoner(ontology=ontology_path, reasoner="JFact")
         owl_reasoners["Openllet"] = SyncReasoner(ontology=ontology_path, reasoner="Openllet")
 
-        onto = OntologyManager().load_ontology(ontology_path)
+        onto = Ontology(ontology_path)
 
         def compute_agreements(i: OWLClassExpression, verbose=False):
             if verbose:
@@ -135,8 +135,7 @@ class TestSyncReasoner(unittest.TestCase):
             assert compute_agreements(i, True)
 
     def test_inconsistency_check(self):
-        manager = OntologyManager()
-        onto = manager.load_ontology(IRI.create(self.ontology_path))
+        onto = Ontology(IRI.create(self.ontology_path))
 
         carbon230 = OWLClass(IRI.create(self.ns, "Carbon-230"))
         axiom = OWLDisjointClassesAxiom([self.nitrogen38, carbon230])
@@ -353,4 +352,4 @@ class TestSyncReasoner(unittest.TestCase):
 
     def test_unsatisfiability(self):
         self.assertEqual(list(reasoner2.unsatisfiable_classes()), [OWLNothing])
-        self.assertNotEquals(list(reasoner2.unsatisfiable_classes()), [OWLThing])
+        self.assertNotEqual(list(reasoner2.unsatisfiable_classes()), [OWLThing])
