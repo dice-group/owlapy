@@ -95,12 +95,12 @@ class EBR(AbstractOWLReasoner):
         # Initialize an owl named individual object.
         subject_ = OWLNamedIndividual(str_iri)
         # Return a triple indicating the type.
-        for cl in self.get_type_individuals(str_iri):
+        for cl in self.type(subject_):
             yield subject_,OWLProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), cl
 
         # Return a triple based on an object property.
         for op in self.object_properties_in_signature():
-            for o in self.get_object_property_values(str_iri, op):
+            for o in self.object_property_values(subject_, op):
                 yield subject_, op, o
         #TODO: Data properties
 
@@ -158,8 +158,8 @@ class EBR(AbstractOWLReasoner):
         return [OWLClass(entity) for entity, score in self.predict(h=named_concept.str, r=self.str_iri_subclassof,
                                                                    t=None)]
 
-    def get_type_individuals(self, individual: str) -> List[OWLClass]:
-        return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual, r=self.str_iri_type, t=None)]
+    def type(self, individual: OWLNamedIndividual) -> List[OWLClass]:
+        return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual.str, r=self.str_iri_type, t=None)]
     def individuals_in_signature(self) -> List[OWLNamedIndividual]:
         set_str_entities=set()
         for owl_class in self.classes_in_signature():
@@ -298,15 +298,15 @@ class EBR(AbstractOWLReasoner):
         else:
             raise NotImplementedError(f"Instances for {type(expression)} are not implemented yet")
 
-    def get_object_property_values(
-            self, subject: str, object_property: OWLObjectProperty=None) -> List[OWLNamedIndividual]:
+    def object_property_values(
+            self, subject: OWLNamedIndividual, object_property: OWLObjectProperty=None) -> List[OWLNamedIndividual]:
         assert isinstance(object_property, OWLObjectProperty) or isinstance(object_property, OWLObjectInverseOf)
         if is_inverse := isinstance(object_property, OWLObjectInverseOf):
             object_property = object_property.get_inverse()
         return [OWLNamedIndividual(top_entity) for top_entity, score in self.predict(
-                h=None if is_inverse else subject,
+                h=None if is_inverse else subject.str,
                 r=object_property.iri.str,
-                t=subject if is_inverse else None)]
+                t=subject.str if is_inverse else None)]
 
     def get_individuals_with_object_property(
             self,
