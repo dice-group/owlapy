@@ -1,0 +1,343 @@
+"""Embedding-based reasoner"""
+
+from collections import Counter
+from typing import Generator, List, Tuple 
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
+from owlapy.class_expression.class_expression import OWLClassExpression, OWLObjectComplementOf
+from owlapy.class_expression.nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
+from owlapy.class_expression.owl_class import OWLClass
+from owlapy.class_expression.restriction import OWLObjectAllValuesFrom, OWLObjectMaxCardinality, OWLObjectMinCardinality, OWLObjectOneOf, OWLObjectSomeValuesFrom
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLLiteral
+from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, OWLProperty
+from owlapy.owl_reasoner import AbstractOWLReasoner
+import os
+from dicee.knowledge_graph_embeddings import KGE
+
+class EBR(AbstractOWLReasoner):
+    """The Embedding-Based Reasoner uses neural embeddings to retrieve concept instances from knowledge bases. """
+
+    STR_IRI_SUBCLASSOF = "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+    STR_IRI_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    STR_IRI_OWL_CLASS = "http://www.w3.org/2002/07/owl#Class"
+    STR_IRI_OBJECT_PROPERTY = "http://www.w3.org/2002/07/owl#ObjectProperty"
+    STR_IRI_RANGE = "http://www.w3.org/2000/01/rdf-schema#range"
+    STR_IRI_DOUBLE = "http://www.w3.org/2001/XMLSchema#double"
+    STR_IRI_BOOLEAN = "http://www.w3.org/2001/XMLSchema#boolean"
+    STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
+
+    def __init__(self, ontology: AbstractOWLOntology, path_neural_embedding: str = None, gamma: float = 0.5):
+        super().__init__(ontology)
+        self.gamma = gamma
+        #LF: maybe put this in a "NeuralOntology" class
+        self.path_neural_embedding = path_neural_embedding
+
+        if path_neural_embedding is None:
+            raise ValueError("path_neural_embedding is required")
+
+        if not os.path.exists(path_neural_embedding):
+            raise FileNotFoundError(f"The file {path_neural_embedding} does not exist.")
+
+        self.model = KGE(path=path_neural_embedding) 
+
+    def __str__(self):
+        return f"Embedding-Based Reasoner using: {self.model.model} with gamma: {self.gamma}"
+    
+    @property
+    def set_inferred_object_properties(self):  # pragma: no cover
+        return {i for i in self.object_properties_in_signature()} if self.inferred_object_properties is None else self.inferred_object_properties
+
+    @property
+    def set_inferred_owl_classes(self):  # pragma: no cover
+        return {i for i in self.classes_in_signature()} if self.inferred_named_owl_classes is None else self.inferred_named_owl_classes
+
+    def predict(self, h: str = None, r: str = None, t: str = None) -> List[Tuple[str,float]]:
+        # sanity check
+        assert h is not None or r is not None or t is not None, "At least one of h, r, or t must be provided."
+        assert h is None or isinstance(h, str), "Head entity must be a string."
+        assert r is None or isinstance(r, str), "Relation must be a string."
+        assert t is None or isinstance(t, str), "Tail entity must be a string."
+
+        if h is not None:
+            if h not in self.model.entity_to_idx:
+                # raise KeyError(f"Head entity '{h}' not found in model entity indices.")
+                return []
+            h = [h]
+
+        if r is not None:
+            if r not in self.model.relation_to_idx:
+                #raise KeyError(f"Relation '{r}' not found in model relation indices.")
+                return []
+            r = [r]
+
+        if t is not None:
+            if t not in self.model.entity_to_idx:
+                # raise KeyError(f"Tail entity '{t}' not found in model entity indices.")
+                return []
+            t = [t]
+
+        if r is None:
+            topk = len(self.model.relation_to_idx)
+        else:
+            topk = len(self.model.entity_to_idx)
+
+        return [ (top_entity, score)  for top_entity, score in self.model.predict_topk(h=h, r=r, t=t, topk=topk) if score >= self.gamma and is_valid_entity(top_entity)]
+
+    def predict_individuals_of_owl_class(self, owl_class: OWLClass) -> List[OWLNamedIndividual]:
+        top_entities=set()
+        # Find all subconcepts
+        owl_classes = [owl_class] + self.subconcepts(owl_class)
+        c:OWLClass
+        for c in owl_classes:
+            assert isinstance(c, OWLClass)
+            top_entity:str
+            score:float
+            for top_entity, score in self.predict(h=None,
+                                                  r=self.str_iri_type,
+                                                  t=c.iri.str):
+                top_entities.add(top_entity)
+        return [OWLNamedIndividual(i) for i in top_entities]
+
+    def abox(self, str_iri: str) -> Generator[
+        Tuple[
+            Tuple[OWLNamedIndividual, OWLProperty, OWLClass],
+            Tuple[OWLObjectProperty, OWLObjectProperty, OWLNamedIndividual],
+            Tuple[OWLObjectProperty, OWLDataProperty, OWLLiteral]], None,None ]:
+        # Initialize an owl named individual object.
+        subject_ = OWLNamedIndividual(str_iri)
+        # Return a triple indicating the type.
+        for cl in self.get_type_individuals(str_iri):
+            yield subject_,OWLProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), cl
+
+        # Return a triple based on an object property.
+        for op in self.object_properties_in_signature():
+            for o in self.get_object_property_values(str_iri, op):
+                yield subject_, op, o
+        #TODO: Data properties
+
+    def classes_in_signature(self) -> List[OWLClass]:
+        return [OWLClass(top_entity) for top_entity, score in self.predict(h=None,
+                                                                   r=self.str_iri_type,
+                                                                   t=self.str_iri_owl_class)]
+    def direct_subconcepts(self, named_concept: OWLClass) -> List[OWLClass]:
+        return [OWLClass(top_entity) for top_entity, score in self.predict(h=None,
+                                                                           r=self.str_iri_subclassof,
+                                                                           t=named_concept.str)]
+
+    def subconcepts(self, named_concept: OWLClass, visited=None) -> List[OWLClass]:
+        if visited is None:
+            visited = set()
+        all_subconcepts = []
+        for subconcept in self.direct_subconcepts(named_concept):
+            if subconcept not in self.classes_in_signature() or subconcept in visited:
+                continue  
+            visited.add(subconcept)
+            all_subconcepts.append(subconcept)
+            all_subconcepts.extend(self.subconcepts(subconcept, visited))
+        return all_subconcepts
+    
+    def most_general_classes(self) -> List[OWLClass]:  # pragma: no cover
+        """At least it has single subclass and there is no superclass"""
+        owl_concepts_not_having_parents=set()
+        for c in self.classes_in_signature():
+            direct_parents=set()
+            for x in self.get_direct_parents(c):
+                # Ignore c if (c subclass x) \in KG.
+                direct_parents.add(x)
+                break
+            if len(direct_parents) ==0:
+                for sub_c in self.subconcepts(named_concept=c):
+                    owl_concepts_not_having_parents.add(sub_c)
+                    break
+        return [i for i in owl_concepts_not_having_parents]
+
+    def least_general_named_concepts(self) -> Generator[OWLClass, None, None]:  # pragma: no cover
+        """At least it has single superclass and there is no subclass"""
+        for _class in self.classes_in_signature():
+            for concept in self.subconcepts(
+                    named_concept=_class
+            ):
+                break
+            else:
+                # checks if superclasses is not empty -> there is at least one superclass
+                if superclasses := list(
+                        self.get_direct_parents(_class)
+                ):
+                    yield _class
+
+    def get_direct_parents(self, named_concept: OWLClass)-> List[OWLClass] :  # pragma: no cover
+        return [OWLClass(entity) for entity, score in self.predict(h=named_concept.str, r=self.str_iri_subclassof,
+                                                                   t=None)]
+
+    def get_type_individuals(self, individual: str) -> List[OWLClass]:
+        return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual, r=self.str_iri_type, t=None)]
+    def individuals_in_signature(self) -> List[OWLNamedIndividual]:
+        set_str_entities=set()
+        for owl_class in self.classes_in_signature():
+            for top_entity, score in self.predict(h=None,
+                                                  r=self.str_iri_type,
+                                                  t=owl_class.iri.str):
+                set_str_entities.add(top_entity)
+        return [OWLNamedIndividual(entity) for entity in set_str_entities]
+
+    def data_properties_in_signature(self) -> List[OWLDataProperty]:
+        return [OWLDataProperty(top_entity) for top_entity, score in self.predict(h=None,
+                                                     r=self.str_iri_type,
+                                                     t=self.str_iri_data_property)]
+
+    def object_properties_in_signature(self) -> List[OWLObjectProperty]:
+        return [OWLObjectProperty(top_entity) for top_entity, score in self.predict(h=None,
+                                                     r=self.str_iri_type,
+                                                     t=self.str_iri_object_property)]
+
+    def boolean_data_properties(self) -> Generator[OWLDataProperty, None, None]:  # pragma: no cover
+        return [OWLDataProperty(top_entity) for top_entity,score  in self.predict(h=None, r=self.str_iri_range,
+                                                                                  t=self.str_iri_boolean)]
+
+    def double_data_properties(self) -> List[OWLDataProperty]:  # pragma: no cover
+        return [OWLDataProperty(top_entity) for top_entity, score in self.predict(
+                h=None,
+                r=self.str_iri_range,
+                t=self.str_iri_double)]
+    def individuals(self, expression: OWLClassExpression = None, named_individuals: bool = False) -> Generator[OWLNamedIndividual, None, None]:
+        if expression is None or expression.is_owl_thing():
+            yield from self.individuals_in_signature()
+        else:
+            yield from self.instances(expression)
+
+    def instances(self, expression: OWLClassExpression, named_individuals=False) -> Generator[OWLNamedIndividual, None, None]:
+        if isinstance(expression, OWLClass):
+            """ Given an OWLClass A, retrieve its instances Retrieval(A)={ x | phi(x, type, A) ≥ γ } """
+            yield from self.predict_individuals_of_owl_class(expression)
+        elif isinstance(expression, OWLObjectComplementOf):
+            """ Handling complement of class expressions:
+            Given an OWLObjectComplementOf ¬A, hence (A is an OWLClass),
+            retrieve its instances => Retrieval(¬A)= All Instance Set-DIFF { x | phi(x, type, A) ≥ γ } """
+            excluded_individuals:Set[OWLNamedIndividual]
+            excluded_individuals = set(self.instances(expression.get_operand()))
+            all_individuals= {i for i in self.individuals_in_signature()}
+            yield from all_individuals - excluded_individuals
+        elif isinstance(expression, OWLObjectIntersectionOf):
+            """ Handling intersection of class expressions:
+            Given an OWLObjectIntersectionOf (C ⊓ D),  
+            retrieve its instances by intersecting the instance of each operands.
+            {x | phi(x, type, C) ≥ γ} ∩ {x | phi(x, type, D) ≥ γ}
+            """
+            # Get the class expressions
+            #
+            result = None
+            for op in expression.operands():
+                retrieval_of_op = {_ for _ in self.instances(expression=op)}
+                if result is None:
+                    result = retrieval_of_op
+                else:
+                    result = result.intersection(retrieval_of_op)
+            yield from result
+        elif isinstance(expression, OWLObjectAllValuesFrom):
+            """
+            Given an OWLObjectAllValuesFrom ∀ r.C, retrieve its instances => 
+            Retrieval(¬∃ r.¬C) =             
+            Entities \setminus {x | ∃ y: \phi(y, type, C) < \gamma AND \phi(x,r,y)  ≥ \gamma } 
+            """
+            object_property = expression.get_property()
+            filler_expression = expression.get_filler()
+            yield from self.instances(OWLObjectComplementOf(OWLObjectSomeValuesFrom(object_property, OWLObjectComplementOf(filler_expression))))
+            
+        elif isinstance(expression, OWLObjectMinCardinality) or isinstance(expression, OWLObjectSomeValuesFrom):
+            """
+            Given an OWLObjectSomeValuesFrom ∃ r.C, retrieve its instances => 
+            Retrieval(∃ r.C) = 
+            {x | ∃ y : phi(y, type, C) ≥ \gamma AND phi(x, r, y) ≥ \gamma }  
+            """
+            object_property = expression.get_property()
+            filler_expression = expression.get_filler()
+            cardinality = 1
+            if isinstance(expression, OWLObjectMinCardinality):
+                cardinality = expression.get_cardinality()
+
+            object_individuals = self.instances(filler_expression)
+            result = Counter()
+            for object_individual in object_individuals:
+                subjects = self.get_individuals_with_object_property(
+                    obj=object_individual,
+                    object_property=object_property)
+                # Update the counter for all subjects found
+                result.update(subjects)
+            # Yield only those individuals who meet the cardinality requirement
+            for individual, count in result.items():
+                if count >= cardinality:
+                    yield individual
+        elif isinstance(expression, OWLObjectMaxCardinality):
+            object_property: OWLObjectProperty
+            object_property = expression.get_property()
+            filler_expression:OWLClassExpression
+            filler_expression = expression.get_filler()
+            cardinality:int
+            cardinality = expression.get_cardinality()
+            # Get all individuals that are instances of the filler expression.
+            owl_individual:OWLNamedIndividual
+            object_individuals = { owl_individual for owl_individual
+                                   in self.instances(filler_expression)}
+            # Initialize a dictionary to keep track of counts of related individuals for each entity.
+            owl_individual:OWLNamedIndividual
+            str_subject_individuals_to_count = {owl_individual.str: (owl_individual,0) for owl_individual in self.individuals_in_signature()}
+            for object_individual in object_individuals:
+                # Get all individuals related to the object individual via the object property.
+                subject_individuals = self.get_individuals_with_object_property(obj=object_individual,
+                                                              object_property=object_property)
+                # Update the count of related individuals for each object individual.
+                for subject_individual in subject_individuals:
+                    if subject_individual.str in str_subject_individuals_to_count:
+                        owl_obj, count = str_subject_individuals_to_count[subject_individual.str]
+                        # Increment the count.
+                        str_subject_individuals_to_count[subject_individual.str] = (owl_obj, count+1)
+            # Filter out individuals who exceed the specified cardinality.
+            yield from  {ind for str_ind, (ind, count) in str_subject_individuals_to_count.items() if count <= cardinality}
+
+        elif isinstance(expression, OWLObjectUnionOf):
+            result = None
+            for op in expression.operands():
+                retrieval_of_op = {_ for _ in self.instances(expression=op)}
+                if result is None:
+                    result = retrieval_of_op
+                else:
+                    result = result.union(retrieval_of_op)
+            yield from result
+
+        elif isinstance(expression, OWLObjectOneOf):
+            yield from expression.individuals()
+        else:
+            raise NotImplementedError(f"Instances for {type(expression)} are not implemented yet")
+
+    def get_object_property_values(
+            self, subject: str, object_property: OWLObjectProperty=None) -> List[OWLNamedIndividual]:
+        assert isinstance(object_property, OWLObjectProperty) or isinstance(object_property, OWLObjectInverseOf)
+        if is_inverse := isinstance(object_property, OWLObjectInverseOf):
+            object_property = object_property.get_inverse()
+        return [OWLNamedIndividual(top_entity) for top_entity, score in self.predict(
+                h=None if is_inverse else subject,
+                r=object_property.iri.str,
+                t=subject if is_inverse else None)]
+
+    def get_individuals_with_object_property(
+            self,
+            object_property: OWLObjectProperty, obj: OWLClass) \
+            -> Generator[OWLNamedIndividual, None, None]:
+        is_inverse = isinstance(object_property, OWLObjectInverseOf)
+
+        if is_inverse:
+            object_property = object_property.get_inverse()
+
+        for entity, score in self.predict(
+                h=obj.str if is_inverse else None,
+                r=object_property.str,
+                t=None if is_inverse else obj.str):
+
+            try:
+                yield OWLNamedIndividual(entity)
+            except Exception as e:  # pragma: no cover
+                # Log the invalid IRI
+                print(f"Invalid IRI detected: {prediction[0]}, error: {e}")
+                continue
+
+
