@@ -2,7 +2,6 @@
 
 from collections import Counter
 from typing import Generator, List, Tuple 
-from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.class_expression.class_expression import OWLClassExpression, OWLObjectComplementOf
 from owlapy.class_expression.nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
 from owlapy.class_expression.owl_class import OWLClass
@@ -11,8 +10,7 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, OWLProperty
 from owlapy.owl_reasoner import AbstractOWLReasoner
-import os
-from dicee.knowledge_graph_embeddings import KGE
+from owlapy.neural_ontology import NeuralOntology
 
 class EBR(AbstractOWLReasoner):
     """The Embedding-Based Reasoner uses neural embeddings to retrieve concept instances from knowledge bases. """
@@ -26,19 +24,10 @@ class EBR(AbstractOWLReasoner):
     STR_IRI_BOOLEAN = "http://www.w3.org/2001/XMLSchema#boolean"
     STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
 
-    def __init__(self, ontology: AbstractOWLOntology, path_neural_embedding: str = None, gamma: float = 0.5):
+    def __init__(self, ontology: NeuralOntology, gamma: float = 0.5):
         super().__init__(ontology)
         self.gamma = gamma
-        #LF: maybe put this in a "NeuralOntology" class
-        self.path_neural_embedding = path_neural_embedding
-
-        if path_neural_embedding is None:
-            raise ValueError("path_neural_embedding is required")
-
-        if not os.path.exists(path_neural_embedding):
-            raise FileNotFoundError(f"The file {path_neural_embedding} does not exist.")
-
-        self.model = KGE(path=path_neural_embedding) 
+        self.model = ontology.model
 
     def __str__(self):
         return f"Embedding-Based Reasoner using: {self.model.model} with gamma: {self.gamma}"
@@ -337,7 +326,7 @@ class EBR(AbstractOWLReasoner):
                 yield OWLNamedIndividual(entity)
             except Exception as e:  # pragma: no cover
                 # Log the invalid IRI
-                print(f"Invalid IRI detected: {prediction[0]}, error: {e}")
+                print(f"Invalid IRI detected: {entity}, error: {e}")
                 continue
 
 
