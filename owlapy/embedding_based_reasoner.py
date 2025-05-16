@@ -1,16 +1,20 @@
 """Embedding-based reasoner"""
 
 from collections import Counter
-from typing import Generator, List, Tuple 
+from typing import Generator, Iterable, List, Tuple 
 from owlapy.class_expression.class_expression import OWLClassExpression, OWLObjectComplementOf
 from owlapy.class_expression.nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
-from owlapy.class_expression.owl_class import OWLClass
+from owlapy.class_expression.owl_class import OWLClass, OWLThing
 from owlapy.class_expression.restriction import OWLObjectAllValuesFrom, OWLObjectMaxCardinality, OWLObjectMinCardinality, OWLObjectOneOf, OWLObjectSomeValuesFrom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, OWLProperty
+from owlapy.owl_object import OWLEntity
+from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty
 from owlapy.owl_reasoner import AbstractOWLReasoner
 from owlapy.neural_ontology import NeuralOntology
+
+def is_valid_entity(text_input: str):
+    return True if "/" in text_input else False
 
 class EBR(AbstractOWLReasoner):
     """The Embedding-Based Reasoner uses neural embeddings to retrieve concept instances from knowledge bases. """
@@ -20,9 +24,11 @@ class EBR(AbstractOWLReasoner):
     STR_IRI_OWL_CLASS = "http://www.w3.org/2002/07/owl#Class"
     STR_IRI_OBJECT_PROPERTY = "http://www.w3.org/2002/07/owl#ObjectProperty"
     STR_IRI_RANGE = "http://www.w3.org/2000/01/rdf-schema#range"
+    STR_IRI_DOMAIN = "http://www.w3.org/2000/01/rdf-schema#domain"
     STR_IRI_DOUBLE = "http://www.w3.org/2001/XMLSchema#double"
     STR_IRI_BOOLEAN = "http://www.w3.org/2001/XMLSchema#boolean"
     STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
+    STR_IRI_SUBPROPERTY = "http://www.w3.org/2000/01/rdf-schema#subPropertyOf"
 
     def __init__(self, ontology: NeuralOntology, gamma: float = 0.5):
         super().__init__(ontology)
@@ -75,7 +81,7 @@ class EBR(AbstractOWLReasoner):
     def predict_individuals_of_owl_class(self, owl_class: OWLClass) -> List[OWLNamedIndividual]:
         top_entities=set()
         # Find all subconcepts
-        owl_classes = [owl_class] + self.subconcepts(owl_class)
+        owl_classes = [owl_class] + self.sub_classes(owl_class)
         c:OWLClass
         for c in owl_classes:
             assert isinstance(c, OWLClass)
@@ -95,7 +101,7 @@ class EBR(AbstractOWLReasoner):
         # Initialize an owl named individual object.
         subject_ = OWLNamedIndividual(str_iri)
         # Return a triple indicating the type.
-        for cl in self.type(subject_):
+        for cl in self.types(subject_):
             yield subject_,OWLProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), cl
 
         # Return a triple based on an object property.
@@ -113,7 +119,7 @@ class EBR(AbstractOWLReasoner):
                                                                            r=self.str_iri_subclassof,
                                                                            t=named_concept.str)]
 
-    def subconcepts(self, named_concept: OWLClass, visited=None) -> List[OWLClass]:
+    def sub_classes(self, named_concept: OWLClass, visited=None) -> List[OWLClass]:
         if visited is None:
             visited = set()
         all_subconcepts = []
@@ -122,7 +128,7 @@ class EBR(AbstractOWLReasoner):
                 continue  
             visited.add(subconcept)
             all_subconcepts.append(subconcept)
-            all_subconcepts.extend(self.subconcepts(subconcept, visited))
+            all_subconcepts.extend(self.sub_classes(subconcept, visited))
         return all_subconcepts
     
     def most_general_classes(self) -> List[OWLClass]:  # pragma: no cover
@@ -135,7 +141,7 @@ class EBR(AbstractOWLReasoner):
                 direct_parents.add(x)
                 break
             if len(direct_parents) ==0:
-                for sub_c in self.subconcepts(named_concept=c):
+                for sub_c in self.sub_classes(named_concept=c):
                     owl_concepts_not_having_parents.add(sub_c)
                     break
         return [i for i in owl_concepts_not_having_parents]
@@ -143,7 +149,7 @@ class EBR(AbstractOWLReasoner):
     def least_general_named_concepts(self) -> Generator[OWLClass, None, None]:  # pragma: no cover
         """At least it has single superclass and there is no subclass"""
         for _class in self.classes_in_signature():
-            for concept in self.subconcepts(
+            for concept in self.sub_classes(
                     named_concept=_class
             ):
                 break
@@ -158,7 +164,27 @@ class EBR(AbstractOWLReasoner):
         return [OWLClass(entity) for entity, score in self.predict(h=named_concept.str, r=self.str_iri_subclassof,
                                                                    t=None)]
 
-    def type(self, individual: OWLNamedIndividual) -> List[OWLClass]:
+    def super_classes(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLClassExpression]:
+        if not isinstance(ce, OWLClass):
+            raise NotImplementedError("Only named classes are supported in the embedding-based reasoner")
+        
+        if direct:
+            return self.get_direct_parents(ce)
+        else:
+            visited = set()
+            all_superclasses = []
+            
+            def collect_superclasses(concept):
+                for parent in self.get_direct_parents(concept):
+                    if parent not in visited:
+                        visited.add(parent)
+                        all_superclasses.append(parent)
+                        collect_superclasses(parent)
+            
+            collect_superclasses(ce)
+            return all_superclasses
+
+    def types(self, individual: OWLNamedIndividual) -> List[OWLClass]:
         return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual.str, r=self.str_iri_type, t=None)]
     def individuals_in_signature(self) -> List[OWLNamedIndividual]:
         set_str_entities=set()
@@ -194,7 +220,7 @@ class EBR(AbstractOWLReasoner):
         else:
             yield from self.instances(expression)
 
-    def instances(self, expression: OWLClassExpression, named_individuals=False) -> Generator[OWLNamedIndividual, None, None]:
+    def instances(self, expression: OWLClassExpression, direct: bool = False, timeout: int = 1000) -> Generator[OWLNamedIndividual, None, None]:
         if isinstance(expression, OWLClass):
             """ Given an OWLClass A, retrieve its instances Retrieval(A)={ x | phi(x, type, A) ≥ γ } """
             yield from self.predict_individuals_of_owl_class(expression)
@@ -328,5 +354,312 @@ class EBR(AbstractOWLReasoner):
                 # Log the invalid IRI
                 print(f"Invalid IRI detected: {entity}, error: {e}")
                 continue
+    
+    def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        """Gets the class expressions that are the direct or indirect domains of this property with respect to the imports closure of the root ontology.
 
+        Args:
+            pe: The property expression whose domains are to be retrieved.
+            direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved (False).
+
+        Returns:
+            The class expressions that are the domains of the specified property.
+        """
+        # Get all classes that are domains of this property
+        domain_classes = [OWLClass(top_entity) for top_entity, score in self.predict(
+            h=pe.str, 
+            r=self.STR_IRI_DOMAIN,
+            t=None
+        )]
+        
+        if direct:
+            # If only direct domains are requested, return them as is
+            yield from domain_classes
+        else:
+            # If all domains are requested, also include all superclasses of each domain
+            all_domains = set(domain_classes)
+            for cls in domain_classes:
+                all_domains.update(self.super_classes(cls))
+            yield from all_domains
+            
+            # If no domain is found, yield OWLThing as the default domain
+            if not all_domains:
+                yield OWLThing
+
+    def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        # Check if the property is inverse
+        is_inverse = isinstance(pe, OWLObjectInverseOf)
+        if is_inverse:
+            # For inverse properties, the domains are the ranges of the original property
+            original_property = pe.get_inverse()
+            yield from self.object_property_ranges(original_property, direct)
+        else:
+            # Get all classes that are domains of this property
+            domain_classes = [OWLClass(top_entity) for top_entity, score in self.predict(
+                h=pe.str, 
+                r=self.STR_IRI_DOMAIN,
+                t=None
+            )]
+            
+            if direct:
+                # If only direct domains are requested, return them as is
+                yield from domain_classes
+            else:
+                # If all domains are requested, also include all superclasses of each domain
+                all_domains = set(domain_classes)
+                for cls in domain_classes:
+                    all_domains.update(self.super_classes(cls))
+                yield from all_domains
+                
+                # If no domain is found, yield OWLThing as the default domain
+                if not all_domains:
+                    yield OWLThing
+
+    def object_property_ranges(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
+        # Check if the property is inverse
+        is_inverse = isinstance(pe, OWLObjectInverseOf)
+        if is_inverse:
+            pe = pe.get_inverse()
+            # For inverse properties, the ranges are the domains of the original property
+            if direct:
+                yield from [OWLClass(top_entity) for top_entity, score in self.predict(
+                    h=pe.str, 
+                    r=self.STR_IRI_DOMAIN,
+                    t=None
+                )]
+            else:
+                # Get all domains and their superclasses
+                domain_classes = [OWLClass(top_entity) for top_entity, score in self.predict(
+                    h=pe.str, 
+                    r=self.STR_IRI_DOMAIN,
+                    t=None
+                )]
+                all_domains = set(domain_classes)
+                for cls in domain_classes:
+                    all_domains.update(self.super_classes(cls))
+                yield from all_domains
+                
+                # If no range is found, yield OWLThing as the default range
+                if not all_domains:
+                    yield OWLThing
+        else:
+            # For regular properties, get ranges directly
+            range_classes = [OWLClass(top_entity) for top_entity, score in self.predict(
+                h=pe.str, 
+                r=self.STR_IRI_RANGE,
+                t=None
+            )]
+            
+            if direct:
+                # If only direct ranges are requested, return them as is
+                yield from range_classes
+            else:
+                # If all ranges are requested, also include all superclasses of each range
+                all_ranges = set(range_classes)
+                for cls in range_classes:
+                    all_ranges.update(self.super_classes(cls))
+                yield from all_ranges
+                
+                # If no range is found, yield OWLThing as the default range
+                if not all_ranges:
+                    yield OWLThing
+
+    def equivalent_classes(self, ce: OWLClassExpression) -> Iterable[OWLClassExpression]:
+        raise NotImplementedError("Equivalent classes are not implemented for the embedding-based reasoner")
+    
+    def disjoint_classes(self, ce: OWLClassExpression) -> Iterable[OWLClassExpression]:
+        raise NotImplementedError("Disjoint classes are not implemented for the embedding-based reasoner")
+    
+    def different_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
+        raise NotImplementedError("Different individuals are not implemented for the embedding-based reasoner")
+    
+    def same_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
+        raise NotImplementedError("Same individuals are not implemented for the embedding-based reasoner")
+    
+    def equivalent_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
+        raise NotImplementedError("Equivalent object properties are not implemented for the embedding-based reasoner")
+    
+    def equivalent_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
+        raise NotImplementedError("Equivalent data properties are not implemented for the embedding-based reasoner")
+    
+    def data_property_values(self, e: OWLEntity, pe: OWLDataProperty) -> Iterable['OWLLiteral']:
+        raise NotImplementedError("Data property values are not implemented for the embedding-based reasoner")
+    
+    def disjoint_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
+        raise NotImplementedError("Disjoint object properties are not implemented for the embedding-based reasoner")
+    
+    def disjoint_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
+        raise NotImplementedError("Disjoint data properties are not implemented for the embedding-based reasoner")
+    
+    def sub_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
+        # Get direct sub properties
+        sub_properties = [OWLDataProperty(top_entity) for top_entity, score in self.predict(
+            h=None,
+            r=self.STR_IRI_SUBPROPERTY,
+            t=dp.str
+        )]
+        
+        if direct:
+            # If only direct sub properties are requested, return them as is
+            yield from sub_properties
+        else:
+            # If all sub properties are requested, also include all sub properties of each sub property
+            visited = set()
+            all_sub_properties = []
+            
+            def collect_sub_properties(property_):
+                for sub_prop in [OWLDataProperty(top_entity) for top_entity, score in self.predict(
+                        h=None,
+                        r=self.STR_IRI_SUBPROPERTY,
+                        t=property_.str
+                    )]:
+                    if sub_prop not in visited:
+                        visited.add(sub_prop)
+                        all_sub_properties.append(sub_prop)
+                        collect_sub_properties(sub_prop)
+            
+            for prop in sub_properties:
+                visited.add(prop)
+                all_sub_properties.append(prop)
+                collect_sub_properties(prop)
+                
+            yield from all_sub_properties
+    
+    def super_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
+        # Get direct super properties
+        super_properties = [OWLDataProperty(top_entity) for top_entity, score in self.predict(
+            h=dp.str,
+            r=self.STR_IRI_SUBPROPERTY,
+            t=None
+        )]
+        
+        if direct:
+            # If only direct super properties are requested, return them as is
+            yield from super_properties
+        else:
+            # If all super properties are requested, also include all super properties of each super property
+            visited = set()
+            all_super_properties = []
+            
+            def collect_super_properties(property_):
+                for super_prop in [OWLDataProperty(top_entity) for top_entity, score in self.predict(
+                        h=property_.str,
+                        r=self.STR_IRI_SUBPROPERTY,
+                        t=None
+                    )]:
+                    if super_prop not in visited:
+                        visited.add(super_prop)
+                        all_super_properties.append(super_prop)
+                        collect_super_properties(super_prop)
+            
+            for prop in super_properties:
+                visited.add(prop)
+                all_super_properties.append(prop)
+                collect_super_properties(prop)
+                
+            yield from all_super_properties
+    
+    def sub_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) -> Iterable[OWLObjectPropertyExpression]:
+        # Check if the property is inverse
+        is_inverse = isinstance(op, OWLObjectInverseOf)
+        if is_inverse:
+            # For inverse properties, the sub properties are the inverse of the super properties of the original property
+            original_property = op.get_inverse()
+            for super_prop in self.super_object_properties(original_property, direct):
+                yield OWLObjectInverseOf(super_prop)
+        else:
+            # Get direct sub properties
+            sub_properties = [OWLObjectProperty(top_entity) for top_entity, score in self.predict(
+                h=None,
+                r=self.STR_IRI_SUBPROPERTY,
+                t=op.str
+            )]
+            
+            if direct:
+                # If only direct sub properties are requested, return them as is
+                yield from sub_properties
+            else:
+                # If all sub properties are requested, also include all sub properties of each sub property
+                visited = set()
+                all_sub_properties = []
+                
+                def collect_sub_properties(property_):
+                    for sub_prop in [OWLObjectProperty(top_entity) for top_entity, score in self.predict(
+                            h=None,
+                            r=self.STR_IRI_SUBPROPERTY,
+                            t=property_.str
+                        )]:
+                        if sub_prop not in visited:
+                            visited.add(sub_prop)
+                            all_sub_properties.append(sub_prop)
+                            collect_sub_properties(sub_prop)
+                
+                for prop in sub_properties:
+                    visited.add(prop)
+                    all_sub_properties.append(prop)
+                    collect_sub_properties(prop)
+                    
+                yield from all_sub_properties
+    
+    def super_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) -> Iterable[OWLObjectPropertyExpression]:
+        # Check if the property is inverse
+        is_inverse = isinstance(op, OWLObjectInverseOf)
+        if is_inverse:
+            # For inverse properties, the super properties are the inverse of the sub properties of the original property
+            original_property = op.get_inverse()
+            for sub_prop in self.sub_object_properties(original_property, direct):
+                yield OWLObjectInverseOf(sub_prop)
+        else:
+            # Get direct super properties
+            super_properties = [OWLObjectProperty(top_entity) for top_entity, score in self.predict(
+                h=op.str,
+                r=self.STR_IRI_SUBPROPERTY,
+                t=None
+            )]
+            
+            if direct:
+                # If only direct super properties are requested, return them as is
+                yield from super_properties
+            else:
+                # If all super properties are requested, also include all super properties of each super property
+                visited = set()
+                all_super_properties = []
+                
+                def collect_super_properties(property_):
+                    for super_prop in [OWLObjectProperty(top_entity) for top_entity, score in self.predict(
+                            h=property_.str,
+                            r=self.STR_IRI_SUBPROPERTY,
+                            t=None
+                        )]:
+                        if super_prop not in visited:
+                            visited.add(super_prop)
+                            all_super_properties.append(super_prop)
+                            collect_super_properties(super_prop)
+                
+                for prop in super_properties:
+                    visited.add(prop)
+                    all_super_properties.append(prop)
+                    collect_super_properties(prop)
+                    
+                yield from all_super_properties
+    
+    def get_root_ontology(self) -> NeuralOntology:
+        return self.ontology
+
+
+
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
 
