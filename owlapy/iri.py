@@ -39,27 +39,32 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
     _namespace: str
     _remainder: str
 
-    def __init__(self, namespace: Union[str, Namespaces], remainder: str=""):
+    def __init__(self, namespace: Union[str, Namespaces], remainder: str="", is_file_path=False):
         if isinstance(namespace, Namespaces):
             namespace = namespace.ns
-        else:
-            assert namespace[-1] in ("/", ":", "#"), "It should be a valid IRI based on /, :, and #"
+        elif not is_file_path:
+            assert namespace[-1] in ("/", ":", "#"), ("It should be a valid IRI based on /, :, and #. "
+                                                      "Are you saving a file? - then set is_file_path=True "
+                                                      "to overcome this assertion.")
         import sys
         # https://docs.python.org/3.2/library/sys.html?highlight=sys.intern#sys.intern
         self._namespace = sys.intern(namespace)
         self._remainder = remainder
 
     @staticmethod
-    def create(iri:str | Namespaces, remainder:str=None) -> 'IRI':
+    def create(iri:str | Namespaces, remainder:str=None, is_file_path=False) -> 'IRI':
         assert isinstance(iri, str) | isinstance(iri, Namespaces), f"Input must be a string or an instance of Namespaces. Currently, {type(iri)}"
-        if remainder is not None:
+        if is_file_path and iri != "":
+            return IRI(iri, "", is_file_path)
+        elif remainder is not None:
             assert isinstance(remainder,str), f"Reminder must be string. Currently, {type(remainder)}"
             return IRI(iri, remainder)
         else:
             assert isinstance(iri, str) and remainder is None, \
                 f"iri must be string if remainder is None. Currently, {type(iri)} and {type(remainder)}"
             # Extract reminder from input string
-            assert "/" in iri, f"Input must contain /\tCurrently, {iri}"
+            assert "/" in iri, (f"Input must contain /\tCurrently, {iri}. Are you saving a file? - then "
+                                f"set is_file_path=True to overcome this assertion.")
             # assert ":" in iri, "Input must contain :"
             assert " " not in iri, f"Input must not contain whitespace. Currently:{iri}."
             index = 1 + max(iri.rfind("/"), iri.rfind(":"), iri.rfind("#"))
