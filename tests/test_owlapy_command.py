@@ -85,7 +85,6 @@ class TestOwlapyCommand(unittest.TestCase):
                           OWLClass(IRI('http://www.benchmark.org/family#', 'Granddaughter')),
                           OWLClass(IRI('http://www.benchmark.org/family#', 'PersonWithASibling')),
                           OWLClass(IRI('http://www.benchmark.org/family#', 'Sister')),
-                          OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Nothing')),
                           OWLClass(IRI('http://www.benchmark.org/family#', 'Grandmother')),
                           OWLClass(IRI('http://www.benchmark.org/family#', 'Daughter')),
                           OWLClass(IRI('http://www.benchmark.org/family#', 'Brother')),
