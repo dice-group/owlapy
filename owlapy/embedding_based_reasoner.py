@@ -1,10 +1,12 @@
 """Embedding-based reasoner"""
 
 from collections import Counter
-from typing import Generator, Iterable, List, Tuple 
+from functools import cached_property
+from typing import Generator, Iterable, List, Set, Tuple 
+from owlapy.class_expression import OWLThing
 from owlapy.class_expression.class_expression import OWLClassExpression, OWLObjectComplementOf
 from owlapy.class_expression.nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
-from owlapy.class_expression.owl_class import OWLClass, OWLThing
+from owlapy.class_expression.owl_class import OWLClass
 from owlapy.class_expression.restriction import OWLObjectAllValuesFrom, OWLObjectMaxCardinality, OWLObjectMinCardinality, OWLObjectOneOf, OWLObjectSomeValuesFrom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
@@ -33,18 +35,19 @@ class EBR(AbstractOWLReasoner):
     def __init__(self, ontology: NeuralOntology, gamma: float = 0.5):
         super().__init__(ontology)
         self.gamma = gamma
+        self.ontology = ontology
         self.model = ontology.model
 
     def __str__(self):
         return f"Embedding-Based Reasoner using: {self.model.model} with gamma: {self.gamma}"
     
-    @property
-    def set_inferred_object_properties(self):  # pragma: no cover
-        return {i for i in self.object_properties_in_signature()} if self.inferred_object_properties is None else self.inferred_object_properties
+    @cached_property
+    def inferred_object_properties(self) -> set:
+        return set(self.object_properties_in_signature())
 
-    @property
-    def set_inferred_owl_classes(self):  # pragma: no cover
-        return {i for i in self.classes_in_signature()} if self.inferred_named_owl_classes is None else self.inferred_named_owl_classes
+    @cached_property
+    def inferred_owl_classes(self) -> set:
+        return set(self.classes_in_signature())
 
     def predict(self, h: str = None, r: str = None, t: str = None) -> List[Tuple[str,float]]:
         # sanity check
@@ -88,7 +91,7 @@ class EBR(AbstractOWLReasoner):
             top_entity:str
             score:float
             for top_entity, score in self.predict(h=None,
-                                                  r=self.str_iri_type,
+                                                  r=self.STR_IRI_TYPE,
                                                   t=c.iri.str):
                 top_entities.add(top_entity)
         return [OWLNamedIndividual(i) for i in top_entities]
@@ -112,11 +115,11 @@ class EBR(AbstractOWLReasoner):
 
     def classes_in_signature(self) -> List[OWLClass]:
         return [OWLClass(top_entity) for top_entity, score in self.predict(h=None,
-                                                                   r=self.str_iri_type,
-                                                                   t=self.str_iri_owl_class)]
+                                                                   r=self.STR_IRI_TYPE,
+                                                                   t=self.STR_IRI_OWL_CLASS)]
     def direct_subconcepts(self, named_concept: OWLClass) -> List[OWLClass]:
         return [OWLClass(top_entity) for top_entity, score in self.predict(h=None,
-                                                                           r=self.str_iri_subclassof,
+                                                                           r=self.STR_IRI_SUBCLASSOF,
                                                                            t=named_concept.str)]
 
     def sub_classes(self, named_concept: OWLClass, visited=None) -> List[OWLClass]:
@@ -161,7 +164,7 @@ class EBR(AbstractOWLReasoner):
                     yield _class
 
     def get_direct_parents(self, named_concept: OWLClass)-> List[OWLClass] :  # pragma: no cover
-        return [OWLClass(entity) for entity, score in self.predict(h=named_concept.str, r=self.str_iri_subclassof,
+        return [OWLClass(entity) for entity, score in self.predict(h=named_concept.str, r=self.STR_IRI_SUBCLASSOF,
                                                                    t=None)]
 
     def super_classes(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLClassExpression]:
@@ -185,35 +188,35 @@ class EBR(AbstractOWLReasoner):
             return all_superclasses
 
     def types(self, individual: OWLNamedIndividual) -> List[OWLClass]:
-        return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual.str, r=self.str_iri_type, t=None)]
+        return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual.str, r=self.STR_IRI_TYPE, t=None)]
     def individuals_in_signature(self) -> List[OWLNamedIndividual]:
         set_str_entities=set()
         for owl_class in self.classes_in_signature():
             for top_entity, score in self.predict(h=None,
-                                                  r=self.str_iri_type,
+                                                  r=self.STR_IRI_TYPE,
                                                   t=owl_class.iri.str):
                 set_str_entities.add(top_entity)
         return [OWLNamedIndividual(entity) for entity in set_str_entities]
 
     def data_properties_in_signature(self) -> List[OWLDataProperty]:
         return [OWLDataProperty(top_entity) for top_entity, score in self.predict(h=None,
-                                                     r=self.str_iri_type,
-                                                     t=self.str_iri_data_property)]
+                                                     r=self.STR_IRI_TYPE,
+                                                     t=self.STR_IRI_DATA_PROPERTY)]
 
     def object_properties_in_signature(self) -> List[OWLObjectProperty]:
         return [OWLObjectProperty(top_entity) for top_entity, score in self.predict(h=None,
-                                                     r=self.str_iri_type,
-                                                     t=self.str_iri_object_property)]
+                                                     r=self.STR_IRI_TYPE,
+                                                     t=self.STR_IRI_OBJECT_PROPERTY)]
 
     def boolean_data_properties(self) -> Generator[OWLDataProperty, None, None]:  # pragma: no cover
-        return [OWLDataProperty(top_entity) for top_entity,score  in self.predict(h=None, r=self.str_iri_range,
-                                                                                  t=self.str_iri_boolean)]
+        return [OWLDataProperty(top_entity) for top_entity,score  in self.predict(h=None, r=self.STR_IRI_RANGE,
+                                                                                  t=self.STR_IRI_BOOLEAN)]
 
     def double_data_properties(self) -> List[OWLDataProperty]:  # pragma: no cover
         return [OWLDataProperty(top_entity) for top_entity, score in self.predict(
                 h=None,
-                r=self.str_iri_range,
-                t=self.str_iri_double)]
+                r=self.STR_IRI_RANGE,
+                t=self.STR_IRI_DOUBLE)]
     def individuals(self, expression: OWLClassExpression = None, named_individuals: bool = False) -> Generator[OWLNamedIndividual, None, None]:
         if expression is None or expression.is_owl_thing():
             yield from self.individuals_in_signature()
@@ -645,7 +648,6 @@ class EBR(AbstractOWLReasoner):
     
     def get_root_ontology(self) -> NeuralOntology:
         return self.ontology
-
 
 
     

@@ -2,7 +2,7 @@ from typing import Iterable, Optional, Union
 from owlapy.abstracts.abstract_owl_ontology import _OI, AbstractOWLOntology
 from owlapy.class_expression.owl_class import OWLClass
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLAxiom, OWLClassAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLEquivalentClassesAxiom, OWLObjectPropertyDomainAxiom
+from owlapy.owl_axiom import OWLAxiom, OWLClassAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLEquivalentClassesAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.owl_individual import OWLNamedIndividual
 from dicee.knowledge_graph_embeddings import KGE
@@ -51,3 +51,17 @@ class NeuralOntology(AbstractOWLOntology):
 
 	def save(self, document_iri: Optional[IRI] = None):
 		raise NotImplementedError("Not implemented")
+	
+	def __eq__(self, other):
+		return self.model == other.model
+	
+	def __hash__(self):
+		return hash(self.model)
+	
+	def __repr__(self):
+		return f"NeuralOntology(model={self.model})"
+	
+	def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
+		raise NotImplementedError("Not implemented")
+	
+	
