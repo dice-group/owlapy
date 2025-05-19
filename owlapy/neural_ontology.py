@@ -66,7 +66,7 @@ class NeuralOntology(AbstractOWLOntology):
 				setattr(args, key, value)
 		
 		# Train the model
-		reports = Execute(args).start()
+		Execute(args).start()
 		
 		# Load the trained model
 		self.model = KGE(path=args.path_to_store_single_run)

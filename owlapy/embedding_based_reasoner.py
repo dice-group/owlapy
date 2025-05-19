@@ -105,7 +105,7 @@ class EBR(AbstractOWLReasoner):
         subject_ = OWLNamedIndividual(str_iri)
         # Return a triple indicating the type.
         for cl in self.types(subject_):
-            yield subject_,OWLProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), cl
+            yield subject_, OWLProperty(self.STR_IRI_TYPE), cl
 
         # Return a triple based on an object property.
         for op in self.object_properties_in_signature():
@@ -158,7 +158,7 @@ class EBR(AbstractOWLReasoner):
                 break
             else:
                 # checks if superclasses is not empty -> there is at least one superclass
-                if superclasses := list(
+                if list(
                         self.get_direct_parents(_class)
                 ):
                     yield _class
@@ -293,11 +293,9 @@ class EBR(AbstractOWLReasoner):
             cardinality:int
             cardinality = expression.get_cardinality()
             # Get all individuals that are instances of the filler expression.
-            owl_individual:OWLNamedIndividual
             object_individuals = { owl_individual for owl_individual
                                    in self.instances(filler_expression)}
             # Initialize a dictionary to keep track of counts of related individuals for each entity.
-            owl_individual:OWLNamedIndividual
             str_subject_individuals_to_count = {owl_individual.str: (owl_individual,0) for owl_individual in self.individuals_in_signature()}
             for object_individual in object_individuals:
                 # Get all individuals related to the object individual via the object property.
