@@ -45,7 +45,7 @@ class NeuralOntology(AbstractOWLOntology):
 		
 		# Set default parameters
 		args.model = 'Keci'
-		args.scoring_technique = "KvsAll"
+		args.scoring_technique = "AllvsAll"
 		if os.path.isdir(path):
 			args.dataset_dir = path
 			args.path_single_kg = None
@@ -55,10 +55,11 @@ class NeuralOntology(AbstractOWLOntology):
 				args.backend = "rdflib"
 			path = os.path.dirname(path)
 		
+		args.trainer = "PL"
 		args.path_to_store_single_run = os.path.join(path, "trained_model")
-		args.num_epochs = 100
-		args.embedding_dim = 32
-		args.batch_size = 1024
+		args.num_epochs = 500
+		args.embedding_dim = 512
+		args.batch_size = 64
 		
 		# Override with user-provided parameters if any
 		if training_params is not None:

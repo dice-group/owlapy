@@ -2,7 +2,9 @@
 
 from collections import Counter
 from functools import cached_property
-from typing import Generator, Iterable, List, Set, Tuple 
+from typing import Generator, Iterable, List, Set, Tuple
+
+import torch 
 from owlapy.class_expression import OWLThing
 from owlapy.class_expression.class_expression import OWLClassExpression, OWLObjectComplementOf
 from owlapy.class_expression.nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
@@ -32,11 +34,20 @@ class EBR(AbstractOWLReasoner):
     STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
     STR_IRI_SUBPROPERTY = "http://www.w3.org/2000/01/rdf-schema#subPropertyOf"
 
-    def __init__(self, ontology: NeuralOntology, gamma: float = 0.5):
+    def __init__(self, ontology: NeuralOntology, gamma: float = 0.5, device: str = "gpu"):
         super().__init__(ontology)
         self.gamma = gamma
         self.ontology = ontology
         self.model = ontology.model
+        if device == "gpu" and torch.cuda.is_available():
+            self.model.to("cuda")
+            print("EBR inference on GPU")
+        elif device == "cpu":
+            self.model.to("cpu")
+            print("EBR inference on CPU")
+        else:
+            # warning 
+            print(f"Device {device} not supported, EBR will use CPU")
 
     def __str__(self):
         return f"Embedding-Based Reasoner using: {self.model.model} with gamma: {self.gamma}"
@@ -50,51 +61,25 @@ class EBR(AbstractOWLReasoner):
         return set(self.classes_in_signature())
 
     def predict(self, h: str = None, r: str = None, t: str = None) -> List[Tuple[str,float]]:
-        # sanity check
-        assert h is not None or r is not None or t is not None, "At least one of h, r, or t must be provided."
-        assert h is None or isinstance(h, str), "Head entity must be a string."
-        assert r is None or isinstance(r, str), "Relation must be a string."
-        assert t is None or isinstance(t, str), "Tail entity must be a string."
-
-        if h is not None:
-            if h not in self.model.entity_to_idx:
-                # raise KeyError(f"Head entity '{h}' not found in model entity indices.")
-                return []
-            h = [h]
-
-        if r is not None:
-            if r not in self.model.relation_to_idx:
-                #raise KeyError(f"Relation '{r}' not found in model relation indices.")
-                return []
-            r = [r]
-
-        if t is not None:
-            if t not in self.model.entity_to_idx:
-                # raise KeyError(f"Tail entity '{t}' not found in model entity indices.")
-                return []
-            t = [t]
-
         if r is None:
             topk = len(self.model.relation_to_idx)
         else:
             topk = len(self.model.entity_to_idx)
 
-        return [ (top_entity, score)  for top_entity, score in self.model.predict_topk(h=h, r=r, t=t, topk=topk) if score >= self.gamma and is_valid_entity(top_entity)]
+        return [ (top_entity, score) for row in self.model.predict_topk(h=h, r=r, t=t, topk=topk) for top_entity, score in row if score >= self.gamma and is_valid_entity(top_entity)]
 
     def predict_individuals_of_owl_class(self, owl_class: OWLClass) -> List[OWLNamedIndividual]:
-        top_entities=set()
-        # Find all subconcepts
-        owl_classes = [owl_class] + self.sub_classes(owl_class)
-        c:OWLClass
-        for c in owl_classes:
-            assert isinstance(c, OWLClass)
+            top_entities=set()
+            # Find all subconcepts
+            owl_classes = [owl_class] + self.sub_classes(owl_class)
+            c:OWLClass
             top_entity:str
             score:float
             for top_entity, score in self.predict(h=None,
-                                                  r=self.STR_IRI_TYPE,
-                                                  t=c.iri.str):
+                                                    r=self.STR_IRI_TYPE,
+                                                    t=[c.iri.str for c in owl_classes]):
                 top_entities.add(top_entity)
-        return [OWLNamedIndividual(i) for i in top_entities]
+            return [OWLNamedIndividual(i) for i in top_entities]
 
     def abox(self, str_iri: str) -> Generator[
         Tuple[
@@ -648,18 +633,13 @@ class EBR(AbstractOWLReasoner):
         return self.ontology
 
 
-    
-    
-    
-    
-    
-    
-    
+if __name__ == "__main__":
+    ontology = NeuralOntology(path_neural_embedding="KGs/Family/trained_model", train_if_not_exists=True, training_params={"num_epochs": 100, "batch_size": 128})
 
-    
-    
-    
-    
-    
-    
+    reasoner = EBR(ontology=ontology, gamma=0.8)
 
+
+    # Example usage
+    # Get all classes in the ontology
+    classes = reasoner.instances(OWLClass("http://example.com/father#person"))
+    print(list(classes))   
