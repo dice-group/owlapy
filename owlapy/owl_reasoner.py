@@ -36,7 +36,7 @@ _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
-    def __init__(self, ontology: AbstractOWLOntology, *, class_cache: bool = True,
+    def __init__(self, ontology: Union[AbstractOWLOntology, str], *, class_cache: bool = True,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
         """Fast instance checker.
 
@@ -47,6 +47,9 @@ class StructuralReasoner(AbstractOWLReasoner):
             sub_properties: Whether to take sub properties into account for the
                 :func:`StructuralReasoner.instances` retrieval.
             """
+        if isinstance(ontology, str):
+            ontology = Ontology(ontology)
+
         super().__init__(ontology)
         assert isinstance(ontology, Ontology)
         self._world: owlready2.World = ontology._world
