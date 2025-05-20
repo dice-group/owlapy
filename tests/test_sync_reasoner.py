@@ -168,10 +168,10 @@ class TestSyncReasoner(unittest.TestCase):
         self.assertCountEqual(list(reasoner2.equivalent_classes(N)), [N, Q])
 
     def test_disjoint_classes(self):
-        self.assertCountEqual(list(reasoner2.disjoint_classes(L)), [M, OWLNothing])
+        self.assertCountEqual(list(reasoner2.disjoint_classes(L)), [M])
 
     def test_sub_classes(self):
-        self.assertCountEqual(list(reasoner2.sub_classes(P)), [O, OWLNothing])
+        self.assertCountEqual(list(reasoner2.sub_classes(P)), [O])
 
     def test_super_classes(self):
         self.assertCountEqual(list(reasoner2.super_classes(O)), [P, OWLThing])
@@ -185,7 +185,7 @@ class TestSyncReasoner(unittest.TestCase):
         self.assertCountEqual(list(reasoner2.object_property_ranges(r1, True)), [G])
 
     def test_sub_object_properties(self):
-        self.assertCountEqual(list(reasoner2.sub_object_properties(r1, False)), [r2, OWLBottomObjectProperty])
+        self.assertCountEqual(list(reasoner2.sub_object_properties(r1, False)), [r2])
         self.assertCountEqual(list(reasoner2.sub_object_properties(r1, True)), [r2])
 
     def test_super_object_properties(self):
@@ -193,7 +193,7 @@ class TestSyncReasoner(unittest.TestCase):
         self.assertCountEqual(list(reasoner2.super_object_properties(r2, True)), [r1])
 
     def test_sub_data_properties(self):
-        self.assertCountEqual(list(reasoner2.sub_data_properties(dp1, False)), [dp2, OWLBottomDataProperty])
+        self.assertCountEqual(list(reasoner2.sub_data_properties(dp1, False)), [dp2])
         self.assertCountEqual(list(reasoner2.sub_data_properties(dp1, True)), [dp2])
 
     def test_super_data_properties(self):
@@ -212,13 +212,13 @@ class TestSyncReasoner(unittest.TestCase):
         self.assertCountEqual(list(self.reasoner.data_property_values(self.d100_25, self.charge)), [OWLLiteral(0.332)])
 
     def test_disjoint_object_properties(self):
-        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r5)), [r1, r2, OWLBottomObjectProperty])
-        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r1)), [r5, OWLBottomObjectProperty])
-        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r2)), [r5, OWLBottomObjectProperty])
+        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r5)), [r1, r2])
+        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r1)), [r5])
+        self.assertCountEqual(list(reasoner2.disjoint_object_properties(r2, True)), [r5, OWLBottomObjectProperty])
 
     def test_disjoint_data_properties(self):
-        self.assertCountEqual(list(reasoner2.disjoint_data_properties(dp1)), [dp3, OWLBottomDataProperty])
-        self.assertCountEqual(list(reasoner2.disjoint_data_properties(dp3)), [dp1,dp2, OWLBottomDataProperty])
+        self.assertCountEqual(list(reasoner2.disjoint_data_properties(dp1)), [dp3])
+        self.assertCountEqual(list(reasoner2.disjoint_data_properties(dp3,True)), [dp1,dp2, OWLBottomDataProperty])
 
     def test_types(self):
         self.assertCountEqual(list(reasoner2.types(c)), [I, J, K, OWLThing])
