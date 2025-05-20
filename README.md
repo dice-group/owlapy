@@ -222,6 +222,28 @@ assert len(onto.get_abox_axioms()) == 750
 
 </details>
 
+### Reasoners Runtime Benchmark
+
+<details><summary> Click me! </summary>
+
+Instance retrieval runtime (in seconds) of each reasoner for different class expressions in Family dataset.
+
+|            Class expression            | StructuralReasoner<br/>(native) | HermiT | Pellet | Openllet | JFact |    ELK | Structural<br/>(owlapi) |  
+|:--------------------------------------:|--------------------------------:|-------:|-------:|---------:|------:|-------:|------------------------:|
+|                 Person                 |                           0.088 |  0.028 |  0.044 |    0.031 | 0.124 |  0.151 |                 < 0.001 | 
+|                ¬Parent                 |                           0.001 |  0.360 |  0.003 |    0.005 | 0.005 |  0.023 |                 < 0.001 | 
+|           ∀ hasParent.Father           |                           0.004 |  0.320 |  0.005 |    0.005 | 0.008 |  0.004 |                 < 0.001 |
+|         ∃ hasSibling.Daughter          |                           0.001 |  0.324 |  0.005 |    0.005 | 0.011 |  0.013 |                 < 0.001 |
+|          ∃ hasChild.(¬Parent)          |                           0.003 |  0.317 |  0.003 |    0.005 | 0.010 |  0.007 |                 < 0.001 |
+|            ≥ 1 married.Male            |                           0.002 |  0.322 |  0.168 |    0.199 | 0.011 |  0.004 |                 < 0.001 |
+|          ≤ 3 hasChild.Person           |                           0.002 |  0.318 |  0.002 |    0.002 | 0.004 |  0.004 |                 < 0.001 |
+|            Brother ⊓ Parent            |                           0.001 |  0.142 |  0.005 |    0.005 | 0.005 |  0.010 |                   0.002 |
+|            Mother ⊔ Father             |                         < 0.001 |  0.054 |  0.006 |    0.007 | 0.007 |  0.016 |                   0.001 |
+| ∃ hasParent.{F9M170 ⊔ F9M147 ⊔ F7M128} |                         < 0.001 |  0.324 |  0.020 |    0.017 | 0.012 |  0.009 |                   0.003 |
+
+
+</details>
+
 
 ## How to cite
 Currently, we are working on our manuscript describing our framework.
