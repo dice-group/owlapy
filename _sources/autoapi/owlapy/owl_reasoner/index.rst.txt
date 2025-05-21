@@ -40,7 +40,7 @@ Module Contents
 
 .. py:data:: logger
 
-.. py:class:: StructuralReasoner(ontology: owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology, *, class_cache: bool = True, property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False)
+.. py:class:: StructuralReasoner(ontology: Union[owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology, str], *, class_cache: bool = True, property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False)
 
    Bases: :py:obj:`owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner`
 
@@ -437,7 +437,7 @@ Module Contents
 
 
 
-   .. py:method:: equivalent_classes(ce: owlapy.class_expression.OWLClassExpression) -> List[owlapy.class_expression.OWLClassExpression]
+   .. py:method:: equivalent_classes(ce: owlapy.class_expression.OWLClassExpression)
 
       Gets the set of named classes that are equivalent to the specified class expression with
       respect to the set of reasoner axioms.
@@ -449,18 +449,20 @@ Module Contents
 
 
 
-   .. py:method:: disjoint_classes(ce: owlapy.class_expression.OWLClassExpression) -> List[owlapy.class_expression.OWLClassExpression]
+   .. py:method:: disjoint_classes(ce: owlapy.class_expression.OWLClassExpression, include_bottom_entity=False)
 
       Gets the classes that are disjoint with the specified class expression.
 
       :param ce: The class expression whose disjoint classes are to be retrieved.
       :type ce: OWLClassExpression
+      :param include_bottom_entity: Whether to consider OWL Nothing. Defaults to False.
+      :type include_bottom_entity: bool,optional
 
       :returns: Disjoint classes of the given class expression.
 
 
 
-   .. py:method:: sub_classes(ce: owlapy.class_expression.OWLClassExpression, direct=False) -> List[owlapy.class_expression.OWLClassExpression]
+   .. py:method:: sub_classes(ce: owlapy.class_expression.OWLClassExpression, direct=False, include_bottom_entity=False)
 
        Gets the set of named classes that are the strict (potentially direct) subclasses of the
        specified class expression with respect to the reasoner axioms.
@@ -469,11 +471,12 @@ Module Contents
            ce (OWLClassExpression): The class expression whose strict (direct) subclasses are to be retrieved.
            direct (bool, optional): Specifies if the direct subclasses should be retrieved (True) or if
               all subclasses (descendant) classes should be retrieved (False). Defaults to False.
+           include_bottom_entity (bool, optional): Specifies if owl nothing should be returned or not.
       :returns: The subclasses of the given class expression depending on `direct` field.
 
 
 
-   .. py:method:: super_classes(ce: owlapy.class_expression.OWLClassExpression, direct=False) -> List[owlapy.class_expression.OWLClassExpression]
+   .. py:method:: super_classes(ce: owlapy.class_expression.OWLClassExpression, direct=False)
 
       Gets the stream of named classes that are the strict (potentially direct) super classes of
       the specified class expression with respect to the imports closure of the root ontology.
@@ -538,7 +541,7 @@ Module Contents
 
 
 
-   .. py:method:: sub_object_properties(p: owlapy.owl_property.OWLObjectProperty, direct: bool = False)
+   .. py:method:: sub_object_properties(p: owlapy.owl_property.OWLObjectProperty, direct: bool = False, include_bottom_entity=False)
 
       Gets the stream of simplified object property expressions that are the strict (potentially direct)
       subproperties of the specified object property expression with respect to the imports closure of the root
@@ -547,6 +550,8 @@ Module Contents
       :param p: The object property expression whose strict (direct) subproperties are to be retrieved.
       :param direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
                      (descendants) should be retrieved (False).
+      :param include_bottom_entity: Specifies if the bottomObjectProperty should be returned.
+      :type include_bottom_entity: bool, optional
 
       :returns: If direct is True, simplified object property expressions, such that for each simplified object property
                 expression, P, the set of reasoner axioms entails DirectSubObjectPropertyOf(P, pe).
@@ -572,7 +577,7 @@ Module Contents
 
 
 
-   .. py:method:: sub_data_properties(p: owlapy.owl_property.OWLDataProperty, direct: bool = False)
+   .. py:method:: sub_data_properties(p: owlapy.owl_property.OWLDataProperty, direct: bool = False, include_bottom_entity=False)
 
       Gets the set of named data properties that are the strict (potentially direct) subproperties of the
       specified data property expression with respect to the imports closure of the root ontology.
@@ -580,6 +585,7 @@ Module Contents
       :param p: The data property whose strict (direct) subproperties are to be retrieved.
       :param direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
                      (descendants) should be retrieved (False).
+      :param include_bottom_entity: Specifies if the bottomDataProperty should be returned.
 
       :returns: If direct is True, each property P where the set of reasoner axioms entails DirectSubDataPropertyOf(P, pe).
                 If direct is False, each property P where the set of reasoner axioms entails
@@ -675,12 +681,14 @@ Module Contents
 
 
 
-   .. py:method:: disjoint_object_properties(p: owlapy.owl_property.OWLObjectProperty)
+   .. py:method:: disjoint_object_properties(p: owlapy.owl_property.OWLObjectProperty, include_bottom_entity=False)
 
       Gets the simplified object properties that are disjoint with the specified object property with respect
       to the set of reasoner axioms.
 
       :param p: The object property whose disjoint object properties are to be retrieved.
+      :param include_bottom_entity: Whether to consider bottomObjectProperty.
+      :type include_bottom_entity: bool,optional
 
       :returns: All simplified object properties e where the root ontology imports closure entails
                 EquivalentObjectProperties(e ObjectPropertyComplementOf(op)) or
@@ -688,12 +696,14 @@ Module Contents
 
 
 
-   .. py:method:: disjoint_data_properties(p: owlapy.owl_property.OWLDataProperty)
+   .. py:method:: disjoint_data_properties(p: owlapy.owl_property.OWLDataProperty, include_bottom_entity=False)
 
       Gets the data properties that are disjoint with the specified data property with respect
       to the set of reasoner axioms.
 
       :param p: The data property whose disjoint data properties are to be retrieved.
+      :param include_bottom_entity: Whether to consider bottomDataProperty.
+      :type include_bottom_entity: bool,optional
 
       :returns: All data properties e where the root ontology imports closure entails
                 EquivalentDataProperties(e DataPropertyComplementOf(dp)) or

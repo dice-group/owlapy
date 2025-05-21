@@ -1,19 +1,19 @@
 # About owlapy
 
-**Version:** owlapy 1.5.0
+**Version:** owlapy 1.5.1
 
 **GitHub repository:** [https://github.com/dice-group/owlapy](https://github.com/dice-group/owlapy)
 
-**Publisher and maintainer:** [DICE](https://dice-research.org/) - data science research group of [Paderborn University](https://www.uni-paderborn.de/en/university).
+**Publisher and maintainer:** [DICE](https://dice-research.org/) - Data Science Research Group of [Paderborn University](https://www.uni-paderborn.de/en/university).
 
-**Contact**: [alkid@mail.uni-paderborn.de](mailto:alkid@mail.uni-paderborn.de)
+**Contact**: [alkid.baci@upb.de](mailto:alkid.baci@upb.de), [caglar.demir@upb.de](mailto:caglar.demir@upb.de)
 
 **License:** MIT License
 
 --------------------------------------------------------------------------------------------
 ## What is owlapy?
 
-Owlapy is an open-source Python library designed for representing and manipulating OWL 2 ontologies, offering a robust 
+**Owlapy** is an open-source Python library designed for representing and manipulating OWL 2 ontologies, offering a robust 
 foundation for knowledge graph and class expression learning projects in machine learning. Inspired by [OWLAPI](https://github.com/owlcs/owlapi)
 (which is also available to use in this library via synchronisation), Owlapy enables ontology creation,
 modification, and reasoning while supporting OWL 2 Structural Specification, Functional-Style Syntax, and advanced 
