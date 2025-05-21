@@ -60,7 +60,7 @@ class EBR(AbstractOWLReasoner):
     def inferred_owl_classes(self) -> set:
         return set(self.classes_in_signature())
 
-    def predict(self, h: str = None, r: str = None, t: str = None) -> List[Tuple[str,float]]:
+    def predict(self, h: List[str] = None, r: List[str] = None, t: List[str] = None) -> List[Tuple[str,float]]:
         if r is None:
             topk = len(self.model.relation_to_idx)
         else:
@@ -176,11 +176,10 @@ class EBR(AbstractOWLReasoner):
         return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual.str, r=self.STR_IRI_TYPE, t=None)]
     def individuals_in_signature(self) -> List[OWLNamedIndividual]:
         set_str_entities=set()
-        for owl_class in self.classes_in_signature():
-            for top_entity, score in self.predict(h=None,
+        for top_entity, score in self.predict(h=None,
                                                   r=self.STR_IRI_TYPE,
-                                                  t=owl_class.iri.str):
-                set_str_entities.add(top_entity)
+                                                  t=[owl_class.iri.str for owl_class in self.classes_in_signature()]):
+            set_str_entities.add(top_entity)
         return [OWLNamedIndividual(entity) for entity in set_str_entities]
 
     def data_properties_in_signature(self) -> List[OWLDataProperty]:
@@ -260,40 +259,44 @@ class EBR(AbstractOWLReasoner):
 
             object_individuals = self.instances(filler_expression)
             result = Counter()
-            for object_individual in object_individuals:
-                subjects = self.get_individuals_with_object_property(
-                    obj=object_individual,
-                    object_property=object_property)
-                # Update the counter for all subjects found
-                result.update(subjects)
+            subjects = self.get_individuals_with_object_property(
+                objs=object_individuals,
+                object_property=object_property)
+            # Update the counter for all subjects found
+            result.update(subjects)
             # Yield only those individuals who meet the cardinality requirement
             for individual, count in result.items():
                 if count >= cardinality:
                     yield individual
         elif isinstance(expression, OWLObjectMaxCardinality):
-            object_property: OWLObjectProperty
             object_property = expression.get_property()
-            filler_expression:OWLClassExpression
             filler_expression = expression.get_filler()
-            cardinality:int
             cardinality = expression.get_cardinality()
+
             # Get all individuals that are instances of the filler expression.
-            object_individuals = { owl_individual for owl_individual
-                                   in self.instances(filler_expression)}
-            # Initialize a dictionary to keep track of counts of related individuals for each entity.
-            str_subject_individuals_to_count = {owl_individual.str: (owl_individual,0) for owl_individual in self.individuals_in_signature()}
-            for object_individual in object_individuals:
-                # Get all individuals related to the object individual via the object property.
-                subject_individuals = self.get_individuals_with_object_property(obj=object_individual,
-                                                              object_property=object_property)
-                # Update the count of related individuals for each object individual.
-                for subject_individual in subject_individuals:
-                    if subject_individual.str in str_subject_individuals_to_count:
-                        owl_obj, count = str_subject_individuals_to_count[subject_individual.str]
-                        # Increment the count.
-                        str_subject_individuals_to_count[subject_individual.str] = (owl_obj, count+1)
-            # Filter out individuals who exceed the specified cardinality.
-            yield from  {ind for str_ind, (ind, count) in str_subject_individuals_to_count.items() if count <= cardinality}
+            object_individuals = list(self.instances(filler_expression))
+
+            # Initialize counts for every subject in the signature.
+            counts = {ind.str: (ind, 0) for ind in self.individuals_in_signature()}
+
+            # Retrieve all subjects related to any of the object individuals at once.
+            subject_individuals = self.get_individuals_with_object_property(
+                objs=object_individuals,
+                object_property=object_property
+            )
+
+            # Increment counts for each related subject.
+            for subj in subject_individuals:
+                if subj.str in counts:
+                    owl_obj, cnt = counts[subj.str]
+                    counts[subj.str] = (owl_obj, cnt + 1)
+
+            # Yield only those subjects whose count does not exceed the max cardinality.
+            yield from {
+                ind for _, (ind, cnt) in counts.items()
+                if cnt <= cardinality
+            }
+        
 
         elif isinstance(expression, OWLObjectUnionOf):
             result = None
@@ -322,24 +325,26 @@ class EBR(AbstractOWLReasoner):
 
     def get_individuals_with_object_property(
             self,
-            object_property: OWLObjectProperty, obj: OWLClass) \
+            object_property: OWLObjectProperty, objs: List[OWLClass]) \
             -> Generator[OWLNamedIndividual, None, None]:
         is_inverse = isinstance(object_property, OWLObjectInverseOf)
 
         if is_inverse:
             object_property = object_property.get_inverse()
-
+        return_subjects = list()
         for entity, score in self.predict(
-                h=obj.str if is_inverse else None,
+                h=[obj.str for obj in objs] if is_inverse else None,
                 r=object_property.str,
-                t=None if is_inverse else obj.str):
-
+                t=None if is_inverse else [obj.str for obj in objs]):
             try:
-                yield OWLNamedIndividual(entity)
+                return_subjects.append(OWLNamedIndividual(entity))
             except Exception as e:  # pragma: no cover
                 # Log the invalid IRI
                 print(f"Invalid IRI detected: {entity}, error: {e}")
                 continue
+
+        return return_subjects
+
     
     def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         """Gets the class expressions that are the direct or indirect domains of this property with respect to the imports closure of the root ontology.
@@ -638,8 +643,5 @@ if __name__ == "__main__":
 
     reasoner = EBR(ontology=ontology, gamma=0.8)
 
-
-    # Example usage
-    # Get all classes in the ontology
-    classes = reasoner.instances(OWLClass("http://example.com/father#person"))
-    print(list(classes))   
+    print(len(reasoner.model.entity_to_idx))
+    print(reasoner.model.predict_topk(h=None, r="http://example.com/father#hasChild", t=["http://example.com/father#anna", "http://example.com/father#heinz", "http://example.com/father#michelle"]))
