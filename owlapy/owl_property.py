@@ -129,6 +129,13 @@ class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
         # documented in parent
         return self.str == "http://www.w3.org/2002/07/owl#topObjectProperty"
 
+    def __eq__(self, other):
+        if isinstance(other, OWLObjectProperty):
+            return self.iri.str == other.iri.str
+
+    def __hash__(self):
+        return hash(self.iri)
+
 
 class OWLObjectInverseOf(OWLObjectPropertyExpression):
     """Represents the inverse of a property expression (ObjectInverseOf). An inverse object property expression

@@ -7,7 +7,7 @@ from collections import defaultdict
 from functools import singledispatchmethod, reduce
 from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
-from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, List, Union
+from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, Union
 
 from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
@@ -36,7 +36,7 @@ _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
-    def __init__(self, ontology: AbstractOWLOntology, *, class_cache: bool = True,
+    def __init__(self, ontology: Union[AbstractOWLOntology, str], *, class_cache: bool = True,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
         """Fast instance checker.
 
@@ -47,6 +47,9 @@ class StructuralReasoner(AbstractOWLReasoner):
             sub_properties: Whether to take sub properties into account for the
                 :func:`StructuralReasoner.instances` retrieval.
             """
+        if isinstance(ontology, str):
+            ontology = Ontology(ontology)
+
         super().__init__(ontology)
         assert isinstance(ontology, Ontology)
         self._world: owlready2.World = ontology._world
@@ -1063,14 +1066,14 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         mapped_ce = self.mapper.map_(ce)
         instances = self._owlapi_reasoner.getInstances(mapped_ce, direct)
-        flattended_instances = instances.getFlattened()
-        assert str(type(flattended_instances)) == "<java class 'java.util.LinkedHashSet'>"
-        return {self.mapper.map_(ind) for ind in flattended_instances}
+        flattened_instances = instances.getFlattened()
+        assert str(type(flattened_instances)) == "<java class 'java.util.LinkedHashSet'>"
+        return {self.mapper.map_(ind) for ind in flattened_instances}
 
     def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
         return run_with_timeout(self._instances, timeout, (ce, direct))
 
-    def equivalent_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
+    def equivalent_classes(self, ce: OWLClassExpression):
         """
         Gets the set of named classes that are equivalent to the specified class expression with
         respect to the set of reasoner axioms.
@@ -1084,12 +1087,13 @@ class SyncReasoner(AbstractOWLReasoner):
         classes = self._owlapi_reasoner.getEquivalentClasses(self.mapper.map_(ce)).getEntities()
         yield from [self.mapper.map_(cls) for cls in classes]
 
-    def disjoint_classes(self, ce: OWLClassExpression) -> List[OWLClassExpression]:
+    def disjoint_classes(self, ce: OWLClassExpression, include_bottom_entity = False):
         """
         Gets the classes that are disjoint with the specified class expression.
 
         Args:
             ce (OWLClassExpression): The class expression whose disjoint classes are to be retrieved.
+            include_bottom_entity(bool,optional): Whether to consider OWL Nothing. Defaults to False.
 
         Returns:
             Disjoint classes of the given class expression.
@@ -1097,9 +1101,13 @@ class SyncReasoner(AbstractOWLReasoner):
         if self.reasoner_name == "ELK":
             raise NotImplementedError("`getDisjointClasses` is not yet implemented for ELK!")
         classes = self._owlapi_reasoner.getDisjointClasses(self.mapper.map_(ce)).getFlattened()
-        yield from [self.mapper.map_(cls) for cls in classes]
+        if include_bottom_entity:
+            yield from [self.mapper.map_(cls) for cls in classes]
+        else:
+            yield from [self.mapper.map_(cls) for cls in classes if not cls.isBottomEntity()]
 
-    def sub_classes(self, ce: OWLClassExpression, direct=False) -> List[OWLClassExpression]:
+
+    def sub_classes(self, ce: OWLClassExpression, direct=False, include_bottom_entity = False):
         """
          Gets the set of named classes that are the strict (potentially direct) subclasses of the
          specified class expression with respect to the reasoner axioms.
@@ -1108,13 +1116,17 @@ class SyncReasoner(AbstractOWLReasoner):
              ce (OWLClassExpression): The class expression whose strict (direct) subclasses are to be retrieved.
              direct (bool, optional): Specifies if the direct subclasses should be retrieved (True) or if
                 all subclasses (descendant) classes should be retrieved (False). Defaults to False.
+             include_bottom_entity (bool, optional): Specifies if owl nothing should be returned or not.
         Returns:
             The subclasses of the given class expression depending on `direct` field.
         """
-        classes = self._owlapi_reasoner.getSubClasses(self.mapper.map_(ce), direct).getFlattened()
-        yield from [self.mapper.map_(cls) for cls in classes]
+        classes = list(self._owlapi_reasoner.getSubClasses(self.mapper.map_(ce), direct).getFlattened())
+        if include_bottom_entity:
+            yield from [self.mapper.map_(cls) for cls in classes]
+        else:
+            yield from [self.mapper.map_(cls) for cls in classes if not cls.isBottomEntity()]
 
-    def super_classes(self, ce: OWLClassExpression, direct=False) -> List[OWLClassExpression]:
+    def super_classes(self, ce: OWLClassExpression, direct=False):
         """
         Gets the stream of named classes that are the strict (potentially direct) super classes of
         the specified class expression with respect to the imports closure of the root ontology.
@@ -1192,7 +1204,7 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(ce) for ce in
                     self._owlapi_reasoner.getObjectPropertyRanges(self.mapper.map_(p), direct).getFlattened()]
 
-    def sub_object_properties(self, p: OWLObjectProperty, direct: bool = False):
+    def sub_object_properties(self, p: OWLObjectProperty, direct: bool = False, include_bottom_entity = False):
         """Gets the stream of simplified object property expressions that are the strict (potentially direct)
         subproperties of the specified object property expression with respect to the imports closure of the root
         ontology.
@@ -1201,6 +1213,7 @@ class SyncReasoner(AbstractOWLReasoner):
             p: The object property expression whose strict (direct) subproperties are to be retrieved.
             direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
                 (descendants) should be retrieved (False).
+            include_bottom_entity (bool, optional): Specifies if the bottomObjectProperty should be returned.
 
         Returns:
             If direct is True, simplified object property expressions, such that for each simplified object property
@@ -1209,8 +1222,13 @@ class SyncReasoner(AbstractOWLReasoner):
             expression, P, the set of reasoner axioms entails StrictSubObjectPropertyOf(P, pe).
             If pe is equivalent to owl:bottomObjectProperty then nothing will be returned.
         """
-        yield from [self.mapper.map_(pe) for pe in
-                    self._owlapi_reasoner.getSubObjectProperties(self.mapper.map_(p), direct).getFlattened()]
+        if include_bottom_entity:
+            yield from [self.mapper.map_(pe) for pe in
+                        self._owlapi_reasoner.getSubObjectProperties(self.mapper.map_(p), direct).getFlattened()]
+        else:
+            yield from [self.mapper.map_(pe) for pe in
+                        self._owlapi_reasoner.getSubObjectProperties(self.mapper.map_(p), direct).getFlattened()
+                        if not pe.isBottomEntity()]
 
     def super_object_properties(self, p: OWLObjectProperty, direct: bool = False):
         """Gets the stream of object properties that are the strict (potentially direct) super properties of the
@@ -1228,7 +1246,7 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(pe) for pe in
                     self._owlapi_reasoner.getSuperObjectProperties(self.mapper.map_(p), direct).getFlattened()]
 
-    def sub_data_properties(self, p: OWLDataProperty, direct: bool = False):
+    def sub_data_properties(self, p: OWLDataProperty, direct: bool = False, include_bottom_entity = False):
         """Gets the set of named data properties that are the strict (potentially direct) subproperties of the
         specified data property expression with respect to the imports closure of the root ontology.
 
@@ -1236,6 +1254,7 @@ class SyncReasoner(AbstractOWLReasoner):
             p: The data property whose strict (direct) subproperties are to be retrieved.
             direct: Specifies if the direct subproperties should be retrieved (True) or if the all subproperties
                 (descendants) should be retrieved (False).
+            include_bottom_entity: Specifies if the bottomDataProperty should be returned.
 
         Returns:
             If direct is True, each property P where the set of reasoner axioms entails DirectSubDataPropertyOf(P, pe).
@@ -1245,8 +1264,13 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         if self.reasoner_name == "ELK":
             raise NotImplementedError("`getSubDataProperties` is not yet implemented by ELK!")
-        yield from [self.mapper.map_(pe) for pe in
-                    self._owlapi_reasoner.getSubDataProperties(self.mapper.map_(p), direct).getFlattened()]
+        if include_bottom_entity:
+            yield from [self.mapper.map_(pe) for pe in
+                        self._owlapi_reasoner.getSubDataProperties(self.mapper.map_(p), direct).getFlattened()]
+        else:
+            yield from [self.mapper.map_(pe) for pe in
+                        self._owlapi_reasoner.getSubDataProperties(self.mapper.map_(p), direct).getFlattened()
+                        if not pe.isBottomEntity()]
 
     def super_data_properties(self, p: OWLDataProperty, direct: bool = False):
         """Gets the stream of data properties that are the strict (potentially direct) super properties of the
@@ -1355,12 +1379,13 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(literal) for literal in
                     self.mapper.to_list(self._owlapi_reasoner.dataPropertyValues(self.mapper.map_(e), self.mapper.map_(p)))]
 
-    def disjoint_object_properties(self, p: OWLObjectProperty):
+    def disjoint_object_properties(self, p: OWLObjectProperty, include_bottom_entity=False):
         """Gets the simplified object properties that are disjoint with the specified object property with respect
         to the set of reasoner axioms.
 
         Args:
             p: The object property whose disjoint object properties are to be retrieved.
+            include_bottom_entity(bool,optional): Whether to consider bottomObjectProperty.
 
         Returns:
             All simplified object properties e where the root ontology imports closure entails
@@ -1369,15 +1394,21 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         if self.reasoner_name == "ELK":
             raise NotImplementedError("`getDisjointObjectProperties` is not yet implemented by ELK!")
-        yield from [self.mapper.map_(pe) for pe in
-                    self._owlapi_reasoner.getDisjointObjectProperties(self.mapper.map_(p)).getFlattened()]
+        if include_bottom_entity:
+            yield from [self.mapper.map_(pe) for pe in
+                        self._owlapi_reasoner.getDisjointObjectProperties(self.mapper.map_(p)).getFlattened()]
+        else:
+            yield from [self.mapper.map_(pe) for pe in
+                        self._owlapi_reasoner.getDisjointObjectProperties(self.mapper.map_(p)).getFlattened()
+                        if not pe.isBottomEntity()]
 
-    def disjoint_data_properties(self, p: OWLDataProperty):
+    def disjoint_data_properties(self, p: OWLDataProperty, include_bottom_entity=False):
         """Gets the data properties that are disjoint with the specified data property with respect
         to the set of reasoner axioms.
 
         Args:
             p: The data property whose disjoint data properties are to be retrieved.
+            include_bottom_entity(bool,optional): Whether to consider bottomDataProperty.
 
         Returns:
             All data properties e where the root ontology imports closure entails
@@ -1386,8 +1417,13 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         if self.reasoner_name == "ELK":
             raise NotImplementedError("`getDisjointDataProperties` is not yet implemented by ELK!")
-        yield from [self.mapper.map_(pe) for pe in
-                    self._owlapi_reasoner.getDisjointDataProperties(self.mapper.map_(p)).getFlattened()]
+        if include_bottom_entity:
+            yield from [self.mapper.map_(pe) for pe in
+                        self._owlapi_reasoner.getDisjointDataProperties(self.mapper.map_(p)).getFlattened()]
+        else:
+            yield from [self.mapper.map_(pe) for pe in
+                        self._owlapi_reasoner.getDisjointDataProperties(self.mapper.map_(p)).getFlattened()
+                        if not pe.isBottomEntity()]
 
     def types(self, individual: OWLNamedIndividual, direct: bool = False):
         """Gets the named classes which are (potentially direct) types of the specified named individual.

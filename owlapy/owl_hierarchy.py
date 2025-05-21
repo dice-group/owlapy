@@ -263,7 +263,7 @@ class ClassHierarchy(AbstractHierarchy[OWLClass]):
 
     def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) -> Iterable[Tuple[OWLClass, Iterable[OWLClass]]]:
         clss = set(reasoner.get_root_ontology().classes_in_signature())
-        clss.add(OWLNothing)
+        # clss.add(OWLNothing)
         yield from ((_, reasoner.sub_classes(_, direct=True))
                     for _ in clss)
 
@@ -299,7 +299,7 @@ class ObjectPropertyHierarchy(AbstractHierarchy[OWLObjectProperty]):
     def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) \
             -> Iterable[Tuple[OWLObjectProperty, Iterable[OWLObjectProperty]]]:
         o_props = set(reasoner.get_root_ontology().object_properties_in_signature())
-        o_props.add(OWLBottomObjectProperty)
+        # o_props.add(OWLBottomObjectProperty)
         return ((_, map(lambda _: cast(OWLObjectProperty, _),
                         filter(lambda _: isinstance(_, OWLObjectProperty),
                                reasoner.sub_object_properties(_, direct=True))))
@@ -349,7 +349,7 @@ class DatatypePropertyHierarchy(AbstractHierarchy[OWLDataProperty]):
     def _hierarchy_down_generator(self, reasoner: AbstractOWLReasoner) \
             -> Iterable[Tuple[OWLDataProperty, Iterable[OWLDataProperty]]]:
         d_props = set(reasoner.get_root_ontology().data_properties_in_signature())
-        d_props.add(OWLBottomDataProperty)
+        # d_props.add(OWLBottomDataProperty)
         return ((_, reasoner.sub_data_properties(_, direct=True))
                 for _ in d_props)
 

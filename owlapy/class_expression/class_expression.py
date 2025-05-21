@@ -84,7 +84,7 @@ class OWLObjectComplementOf(OWLBooleanClassExpression, HasOperands[OWLClassExpre
 
     _operand: OWLClassExpression
 
-    def __new__(cls, op: OWLClassExpression):
+    def __new__(cls, op: OWLClassExpression = None):
         """
         Creates a new instance or returns the operand if op is already a complement.
         """
