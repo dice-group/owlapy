@@ -2,8 +2,8 @@
 [![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
 [![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
 [![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.5.0-blue)](https://pypi.org/project/owlapy/1.5.0/)
-[![Docs](https://img.shields.io/badge/documentation-1.5.0-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Pypi](https://img.shields.io/badge/pypi-1.5.1-blue)](https://pypi.org/project/owlapy/1.5.1/)
+[![Docs](https://img.shields.io/badge/documentation-1.5.1-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
 
@@ -226,21 +226,41 @@ assert len(onto.get_abox_axioms()) == 750
 
 <details><summary> Click me! </summary>
 
-Instance retrieval runtime (in seconds) of each reasoner for different class expressions in Family dataset.
+Instance retrieval runtime (in seconds) of each reasoner for different class expressions in **Family** dataset:
 
-|            Class expression            | StructuralReasoner<br/>(native) | HermiT | Pellet | Openllet | JFact |    ELK | Structural<br/>(owlapi) |  
-|:--------------------------------------:|--------------------------------:|-------:|-------:|---------:|------:|-------:|------------------------:|
-|                 Person                 |                           0.088 |  0.028 |  0.044 |    0.031 | 0.124 |  0.151 |                 < 0.001 | 
-|                ¬Parent                 |                           0.001 |  0.360 |  0.003 |    0.005 | 0.005 |  0.023 |                 < 0.001 | 
-|           ∀ hasParent.Father           |                           0.004 |  0.320 |  0.005 |    0.005 | 0.008 |  0.004 |                 < 0.001 |
-|         ∃ hasSibling.Daughter          |                           0.001 |  0.324 |  0.005 |    0.005 | 0.011 |  0.013 |                 < 0.001 |
-|          ∃ hasChild.(¬Parent)          |                           0.003 |  0.317 |  0.003 |    0.005 | 0.010 |  0.007 |                 < 0.001 |
-|            ≥ 1 married.Male            |                           0.002 |  0.322 |  0.168 |    0.199 | 0.011 |  0.004 |                 < 0.001 |
-|          ≤ 3 hasChild.Person           |                           0.002 |  0.318 |  0.002 |    0.002 | 0.004 |  0.004 |                 < 0.001 |
-|            Brother ⊓ Parent            |                           0.001 |  0.142 |  0.005 |    0.005 | 0.005 |  0.010 |                   0.002 |
-|            Mother ⊔ Father             |                         < 0.001 |  0.054 |  0.006 |    0.007 | 0.007 |  0.016 |                   0.001 |
-| ∃ hasParent.{F9M170 ⊔ F9M147 ⊔ F7M128} |                         < 0.001 |  0.324 |  0.020 |    0.017 | 0.012 |  0.009 |                   0.003 |
+| Class Expressions                      |  StructuralReasoner |  HermiT |  Pellet |     ELK |   JFact |  Openllet |  Structural |
+|----------------------------------------|--------------------:|--------:|--------:|--------:|--------:|----------:|------------:|
+| Person                                 |              0.0007 |  0.0251 |  0.0238 |  0.1526 |  0.1726 |    0.0128 |      0.0748 |
+| (¬Parent)                              |              0.0005 |  0.3532 |   0.004 |  0.0205 |  0.0046 |    0.0032 |      0.0015 |
+| ∀ hasParent.Father                     |              0.0004 |  0.3108 |  0.0043 |  0.0038 |   0.006 |    0.0035 |       0.001 |
+| ∃ hasSibling.Daughter                  |              0.0003 |  0.3176 |   0.005 |  0.0103 |   0.011 |    0.0057 |      0.0008 |
+| ∃ hasChild.(¬Parent)                   |              0.0005 |  0.3335 |   0.004 |  0.0065 |  0.0102 |    0.0042 |      0.0013 |
+| ≥ 1 married.Male                       |              0.0003 |  0.3129 |  0.1711 |  0.0035 |  0.0101 |     0.143 |       0.001 |
+| ≤ 3 hasChild.Person                    |              0.0006 |  0.3114 |   0.003 |  0.0032 |  0.0044 |    0.0038 |      0.0008 |
+| Brother ⊓ Parent                       |              0.0003 |  0.1445 |  0.0039 |  0.0112 |  0.0028 |    0.0032 |      0.0007 |
+| Mother ⊔ Father                        |              0.0003 |  0.0502 |  0.0063 |  0.0167 |  0.0071 |     0.008 |      0.0005 |
+| ∃ hasParent.{F9M170 ⊔ F9M147 ⊔ F7M128} |              0.0006 |  0.3107 |  0.0152 |  0.0063 |  0.0089 |     0.033 |      0.0017 |
 
+-----------------------------------------------------------------
+
+Instance retrieval runtime (in seconds) of each reasoner for different class expressions in **Carcinogenesis** dataset:
+
+| Class Expressions                           |  StructuralReasoner |     HermiT |    Pellet |  Openllet |    JFact |     ELK |  Structural |
+|:--------------------------------------------|--------------------:|-----------:|----------:|----------:|---------:|--------:|------------:|
+| Sulfur                                      |              0.0012 |     0.5098 |    0.3415 |    0.3124 |  30.9185 |  1.0194 |      0.0821 |
+| Structure                                   |              0.0004 |     0.0542 |     0.067 |    0.0677 |   0.0571 |  0.1922 |      0.0527 |
+| ¬Structure                                  |              0.0004 |   225.7262 |    0.2838 |    0.3073 |   0.3142 |  0.0465 |      0.0027 |
+| ∀ hasAtom.Atom                              |              0.0004 |     0.2862 |    0.3253 |    0.3112 |   0.3378 |  0.0063 |      0.0010 |
+| ∃ hasStructure.Amino                        |              0.0005 |    20.5614 |    0.0586 |    0.1081 |   0.2986 |  0.0343 |      0.0011 |
+| ≥ 2 inBond.⊤                                |              0.0003 |   593.4231 |    0.4509 |    0.4633 |   7.8003 |  0.0055 |      0.0007 |
+| ≤ 3 hasAtom.⊤                               |              0.0002 |    21.5695 |    0.3497 |    0.3092 |   0.3407 |  0.0035 |      0.0005 |
+| Ring_size_4 ⊓ Sulfur                        |              0.0004 |  2932.3817 |    0.0281 |    0.0163 |   0.0187 |  0.0232 |      0.0008 |
+| Bond-7 ⊔ Bond-3                             |              0.0003 |   486.6015 |    0.0838 |    0.0654 |     0.05 |  0.1009 |      0.0007 |
+| ∃ hasBond.{bond1838 ⊔ bond1879 ⊔ bond1834}  |              0.0006 |    24.3014 |    1.6182 |    1.2811 |   0.3255 |  0.0391 |      0.0012 |
+| ∃ isMutagenic.{True}                        |              0.0233 |    26.6729 |     32.31 |   28.9644 |   0.1972 |   0.012 |      0.0006 |
+| ∃ charge.xsd:double[> 0.1]                  |              0.0008 |   626.9762 |   752.119 |  750.1382 |   0.2102 |   0.006 |      0.0008 |
+| Compound ⊓ ∃ isMutagenic.{True}             |              0.0009 |    21.8479 |   28.4732 |   29.7676 |   0.1918 |  0.0189 |      0.0007 |
+| Carbon ⊓ ∃ charge.xsd:double[> 0.1]         |              0.0005 |   245.4081 |  734.3972 |  747.7481 |   0.0998 |  0.0031 |      0.0007 |
 
 </details>
 
