@@ -226,6 +226,14 @@ assert len(onto.get_abox_axioms()) == 750
 
 <details><summary> Click me! </summary>
 
+To generate and print the following tables:
+
+```shell
+wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
+
+cd examples && python runtime_benchmark_results.py --pretty_print
+```
+
 Instance retrieval runtime (in seconds) of each reasoner for different class expressions in **Family** dataset:
 
 | Class Expressions                      |  StructuralReasoner |  HermiT |  Pellet |  Openllet |   JFact |     ELK |  Structural |
