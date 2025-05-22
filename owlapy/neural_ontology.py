@@ -56,7 +56,9 @@ class NeuralOntology(AbstractOWLOntology):
 			path = os.path.dirname(path)
 		
 		args.trainer = "PL"
-		args.path_to_store_single_run = os.path.join(path, "trained_model")
+		# Always include the file name in the path
+		file_name = os.path.basename(args.path_single_kg).replace(".owl", "")
+		args.path_to_store_single_run = os.path.join(path, f"{file_name}_trained_model")
 		args.num_epochs = 500
 		args.embedding_dim = 512
 		args.batch_size = 64

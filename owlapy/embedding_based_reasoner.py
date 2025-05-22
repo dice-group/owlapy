@@ -103,6 +103,8 @@ class EBR(AbstractOWLReasoner):
                                                                    r=self.STR_IRI_TYPE,
                                                                    t=self.STR_IRI_OWL_CLASS)]
     def direct_subconcepts(self, named_concept: OWLClass) -> List[OWLClass]:
+        if self.STR_IRI_SUBCLASSOF not in self.model.relation_to_idx:
+                return []
         return [OWLClass(top_entity) for top_entity, score in self.predict(h=None,
                                                                            r=self.STR_IRI_SUBCLASSOF,
                                                                            t=named_concept.str)]
