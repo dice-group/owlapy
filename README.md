@@ -11,6 +11,8 @@ OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.
 
 Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
 
+[DeepWiki](https://deepwiki.com/dice-group/owlapy) can also help you get started with owlapy.
+
 ## Installation
 
 ### Installation from Source
