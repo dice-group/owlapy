@@ -4,6 +4,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
 [![Pypi](https://img.shields.io/badge/pypi-1.5.1-blue)](https://pypi.org/project/owlapy/1.5.1/)
 [![Docs](https://img.shields.io/badge/documentation-1.5.1-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dice-group/owlapy)
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
 
