@@ -7,7 +7,7 @@ from collections import defaultdict
 from functools import singledispatchmethod, reduce
 from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
-from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, Union
+from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, Union, List
 
 from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
@@ -1019,6 +1019,183 @@ class StructuralReasoner(AbstractOWLReasoner):
 
 class SyncReasoner(AbstractOWLReasoner):
 
+    # def create_justifications(self, owl_individuals: Set[OWLNamedIndividual] = None,
+    #                           owl_class_expression: OWLClassExpression = None) -> List[Set[OWLAxiom]]:
+    #     """
+    #     Generate justifications for why the given individual(s) are inferred to be instances of the specified class.
+    #
+    #     Args:
+    #         owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.
+    #         owl_class_expression (OWLClassExpression): Class expression to justify.
+    #
+    #     Returns:
+    #         List of sets of OWLAxioms, each representing a justification.
+    #     """
+    #     if owl_individuals is None or owl_class_expression is None:
+    #         raise ValueError("Both owl_individuals and owl_class_expression are required.")
+    #
+    #     import com.clarkparsia.owlapi.explanation.BlackBoxExplanation;
+    #     import com.clarkparsia.owlapi.explanation.ExplanationGenerator;
+    #     import com.clarkparsia.owlapi.explanation.SingleExplanationGeneratorImpl;
+    #     #from org.semanticweb.owl.explanation.api import ExplanationGeneratorFactory
+    #    # from org.semanticweb.owlapi.explanation.impl import ExplanationGeneratorFactoryImpl
+    #
+    #   #  from org.semanticweb.owl.explanation.api import Explanation
+    #    # from org.semanticweb.owl.explanation.impl.blackbox import BlackBoxExplanation
+    #    from org.semanticweb.owlapi.explanation import ExplanationGeneratorFactoryImpl
+    #
+    #     justifications = []
+    #
+    #     # Java OWL API types
+    #     j_class_expr = self.mapper.map_(owl_class_expression)
+    #     j_ontology = self._owlapi_ontology
+    #
+    #     # Explanation setup
+    #     factory = ExplanationGeneratorFactoryImpl()
+    #     generator = factory.createExplanationGenerator(self._owlapi_reasoner)
+    #
+    #     for ind in owl_individuals:
+    #         j_individual = self.mapper.map_(ind)
+    #         axiom = self._owlapi_manager.getOWLDataFactory().getOWLClassAssertionAxiom(j_class_expr, j_individual)
+    #
+    #         # Get multiple explanations (justifications)
+    #         explanations = generator.getExplanations(axiom, 10)  # limit to 10 justifications
+    #         for explanation in explanations:
+    #             axiom_set = explanation.getAxioms()
+    #             py_axioms = {self.mapper.map_(ax) for ax in axiom_set}
+    #             justifications.append(py_axioms)
+    #
+    #     return justifications
+
+    # def create_justifications(self, owl_individuals: Set[OWLNamedIndividual] = None,
+    #                           owl_class_expression: OWLClassExpression = None) -> List[Set[OWLAxiom]]:
+    #     """
+    #     Generate justifications for why the given individual(s) are inferred to be instances of the specified class.
+    #
+    #     Args:
+    #         owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.
+    #         owl_class_expression (OWLClassExpression): Class expression to justify.
+    #
+    #     Returns:
+    #         List of sets of OWLAxioms, each representing a justification.
+    #     """
+    #     if owl_individuals is None or owl_class_expression is None:
+    #         raise ValueError("Both owl_individuals and owl_class_expression are required.")
+    #
+    #     # Import Clark & Parsia explanation classes via JPype
+    #     from com.clarkparsia.owlapi.explanation import BlackBoxExplanation, SingleExplanationGeneratorImpl, ExplanationGenerator
+    #     from com.clarkparsia.owlapi.explanation.util import MultipleExplanationGenerator
+    #     # Import PelletReasonerFactory
+    #     from openllet.owlapi import PelletReasonerFactory
+    #
+    #     justifications = []
+    #
+    #     # Map to Java OWL API types
+    #     j_class_expr = self.mapper.map_(owl_class_expression)
+    #     j_ontology = self._owlapi_ontology
+    #     j_reasoner = self._owlapi_reasoner
+    #     j_data_factory = self._owlapi_manager.getOWLDataFactory()
+    #
+    #     # Create the reasoner factory (not the reasoner instance)
+    #     reasoner_factory = PelletReasonerFactory.getInstance()
+    #
+    #     # Create explanation generator
+    #     blackbox_exp = BlackBoxExplanation(j_ontology,reasoner_factory, j_reasoner)
+    #     mult_expl_gen = MultipleExplanationGenerator(blackbox_exp)
+    #     #explanation_gen = SingleExplanationGeneratorImpl(blackbox_exp)
+    #     explanation_gen = blackbox_exp
+    #     print("explanation_gen ",explanation_gen)
+    #     print("Explanation generator class:", explanation_gen.getClass().getName())
+    #
+    #     # For each individual, get explanations for class assertion axiom
+    #     for ind in owl_individuals:
+    #         j_individual = self.mapper.map_(ind)
+    #         axiom = j_data_factory.getOWLClassAssertionAxiom(j_class_expr, j_individual)
+    #
+    #         # Get multiple explanations (limit 10)
+    #         explanations = explanation_gen.getExplanations(axiom, 10)
+    #
+    #         for explanation in explanations:
+    #             # explanation is a Set<OWLAxiom>
+    #             py_axioms = {self.mapper.map_(ax) for ax in explanation}
+    #             justifications.append(py_axioms)
+    #
+    #     return justifications
+
+    def create_justifications(self, owl_individuals: Set[OWLNamedIndividual] = None,
+                              owl_class_expression: OWLClassExpression = None) -> List[Set[OWLAxiom]]:
+        """
+        Generate multiple justifications for why the given individual(s) are inferred to be instances of the specified class.
+
+        Args:
+            owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.
+            owl_class_expression (OWLClassExpression): Class expression to justify.
+
+        Returns:
+            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms).
+        """
+        if owl_individuals is None or owl_class_expression is None:
+            raise ValueError("Both owl_individuals and owl_class_expression are required.")
+
+        # Import necessary Java classes
+        from com.clarkparsia.owlapi.explanation import BlackBoxExplanation, ExplanationGenerator,HSTExplanationGenerator,SatisfiabilityConverter
+        from openllet.owlapi import PelletReasonerFactory
+        from org.semanticweb.owlapi.model import OWLClassExpression
+
+        justifications = []
+
+        # Map Python OWL API types to Java OWL API types
+        j_class_expr = self.mapper.map_(owl_class_expression)
+        #print("j_class_expr", j_class_expr)
+        j_individual = self.mapper.map_(owl_individuals)
+        #print("j_individual",j_individual)
+        j_ontology = self._owlapi_ontology
+        #print("j_ontology", j_ontology)
+        j_reasoner = self._owlapi_reasoner
+        j_data_factory = self._owlapi_manager.getOWLDataFactory()
+      #  owl_individuals_istances = self._instances(owl_class_expression, direct=False)
+       # print("owl_individuals_istances", owl_individuals_istances)
+       # j_individuals= self.mapper.map_(owl_individuals_istances)
+        #print("j_individuals", j_individuals)
+
+
+
+        # Create the explanation generator infrastructure
+        reasoner_factory = PelletReasonerFactory.getInstance()
+        blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
+
+        explanation_gen = HSTExplanationGenerator(blackbox_exp)
+        #j_explanations = explanation_gen.getExplanations(j_class_expr)
+        converter = SatisfiabilityConverter(j_data_factory)
+        #print("j_explanations",j_explanations)
+
+
+        # ExplanationGenerator implements ExplanationGenerator interface
+       # explanation_gen = blackbox_exp
+
+        justifications = []
+
+
+        for ind in owl_individuals:
+
+            j_individual = self.mapper.map_(ind)
+
+            # Create OWLClassAssertionAxiom in Java
+            class_assertion_axiom = j_data_factory.getOWLClassAssertionAxiom(j_class_expr, j_individual)
+            # Step 2: Convert to unsatisfiable class
+            unsat_class = converter.convert(class_assertion_axiom)
+
+
+           # print("class_assertion_axiom",class_assertion_axiom)
+
+            # Get justifications
+            j_explanations = explanation_gen.getExplanations(unsat_class)
+
+            for j_expl in j_explanations:
+                py_axioms = {self.mapper.map_(ax) for ax in j_expl}
+                justifications.append(py_axioms)
+
+        return justifications
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
