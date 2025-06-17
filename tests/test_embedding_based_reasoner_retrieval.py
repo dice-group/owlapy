@@ -179,10 +179,7 @@ class TestEmbeddingBasedReasonerRetrieval:
         if not concepts:
             pytest.skip(f"No {group_name} concepts to test")
         
-        # Sample a few concepts for testing (to keep test runtime reasonable)
-        test_concepts = list(concepts)[:3] if len(concepts) > 3 else list(concepts)
-        
-        for concept in test_concepts:
+        for concept in concepts:
             # Get symbolic retrieval results
             symbolic_results, symbolic_time = self._concept_retrieval(self.symbolic_kb, concept)
             
@@ -243,15 +240,15 @@ class TestEmbeddingBasedReasonerRetrieval:
         """Test overall performance across all concept types."""
         # Collect all concepts
         all_concepts = list(chain(
-            list(self.nc)[:2],  # Sample 2 from each group
-            list(self.nnc)[:2],
-            list(self.unions_nc_star)[:2],
-            list(self.intersections_nc_star)[:2],
-            list(self.exist_nc_star)[:2],
-            list(self.for_all_nc_star)[:2],
-            list(self.min_cardinality_nc_star)[:2],
-            list(self.max_cardinality_nc_star)[:2],
-            list(self.exist_nominals)[:2]
+            self.nc,
+            self.nnc,
+            self.unions_nc_star,
+            self.intersections_nc_star,
+            self.exist_nc_star,
+            self.for_all_nc_star,
+            self.min_cardinality_nc_star,
+            self.max_cardinality_nc_star,
+            self.exist_nominals
         ))
         
         total_jaccard = 0.0
