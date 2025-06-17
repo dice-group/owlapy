@@ -34,11 +34,12 @@ class EBR(AbstractOWLReasoner):
     STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
     STR_IRI_SUBPROPERTY = "http://www.w3.org/2000/01/rdf-schema#subPropertyOf"
 
-    def __init__(self, ontology: NeuralOntology, gamma: float = 0.5, device: str = "gpu"):
+    def __init__(self, ontology: NeuralOntology, gamma: float = 0.5, batch_size: int = 1024, device: str = "gpu"):
         super().__init__(ontology)
         self.gamma = gamma
         self.ontology = ontology
         self.model = ontology.model
+        self.batch_size = batch_size
         if device == "gpu" and torch.cuda.is_available():
             self.model.to("cuda")
             print("EBR inference on GPU")
@@ -66,7 +67,7 @@ class EBR(AbstractOWLReasoner):
         else:
             topk = len(self.model.entity_to_idx)
 
-        return [ (top_entity, score) for row in self.model.predict_topk(h=h, r=r, t=t, topk=topk) for top_entity, score in row if score >= self.gamma and is_valid_entity(top_entity)]
+        return [ (top_entity, score) for row in self.model.predict_topk(h=h, r=r, t=t, topk=topk, batch_size=self.batch_size) for top_entity, score in row if score >= self.gamma and is_valid_entity(top_entity)]
 
     def predict_individuals_of_owl_class(self, owl_class: OWLClass) -> List[OWLNamedIndividual]:
             top_entities=set()

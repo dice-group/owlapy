@@ -52,7 +52,7 @@ class TestEmbeddingBasedReasonerRetrieval:
             path_neural_embedding=cls.path_kg, 
             train_if_not_exists=True
         )
-        cls.neural_owl_reasoner = EBR(ontology=neural_ontology, gamma=cls.gamma)
+        cls.neural_owl_reasoner = EBR(ontology=neural_ontology, gamma=cls.gamma, batch_size=2, device="cpu")
         
         # Generate test concepts
         cls._generate_test_concepts()
