@@ -72,9 +72,7 @@ class EBR(AbstractOWLReasoner):
             top_entities=set()
             # Find all subconcepts
             owl_classes = [owl_class] + self.sub_classes(owl_class)
-            c:OWLClass
             top_entity:str
-            score:float
             for top_entity, score in self.predict(h=None,
                                                     r=self.STR_IRI_TYPE,
                                                     t=[c.iri.str for c in owl_classes]):
