@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--namespace', type=str, required=True, help='Namespace (IRI prefix) of ontology.')
     parser.add_argument('--individual_name', type=str, required=True, help='OWL individual name.')
     parser.add_argument('--class_expression', type=str, required=True, help='Class expression to justify.')
-    parser.add_argument('--ce_syntax_choices', type=str, choices=["DL", "Manchester"], default="DL",help='Class expression syntax choice: "DL" or "Manchester". Default is "DL".'
+    parser.add_argument('--ce_syntax_choice', type=str, choices=["DL", "Manchester"], default="DL",help='Class expression syntax choice: "DL" or "Manchester". Default is "DL".'
     )
 
     args = parser.parse_args()
@@ -23,13 +23,13 @@ def main():
     ns = args.namespace
     individual_name = args.individual_name
     class_expr_str = args.class_expression
-    ce_syntax_choices = args.ce_syntax_choices
+    ce_syntax_choice = args.ce_syntax_choice
 
     print(f"Ontology Path: {ontology_path}")
     print(f"Namespace: {ns}")
     print(f"Individual Name: {individual_name}")
     print(f"Class Expression: {class_expr_str}")
-    print(f"ce_syntax_choices: {ce_syntax_choices}")
+    print(f"ce_syntax_choices: {ce_syntax_choice}")
 
     def adjust_namespace(ns: str) -> str:
         if ns.endswith(("#", "/", ":")):
@@ -47,9 +47,9 @@ def main():
     target_individual = OWLNamedIndividual(IRI.create(adjust_namespace(ns) + individual_name))
     print(f"Target Individual: {target_individual}")
 
-    if ce_syntax_choices == "DL":
+    if ce_syntax_choice == "DL":
         target_class = dl_to_owl_expression(class_expr_str, adjust_namespace(ns))
-    elif ce_syntax_choices == "Manchester":
+    elif ce_syntax_choice == "Manchester":
         target_class = manchester_to_owl_expression(class_expr_str, adjust_namespace(ns))
     else:
         raise ValueError(f"Unsupported syntax choice please choose DL or Manchester: {args.ce_syntax_choices}")
