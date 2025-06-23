@@ -153,10 +153,10 @@ def execute(args):
     # (2) Initialize Neural OWL Reasoner
     # Use EBR instead of TripleStoreNeuralReasoner
     if args.path_kge_model:
-        neural_ontology = NeuralOntology(path_neural_embedding=args.path_kge_model)
+        neural_ontology = NeuralOntology(path_neural_embedding=args.path_kge_model, batch_size=args.batch_size, device=args.device, gamma=args.gamma)
     else:
-        neural_ontology = NeuralOntology(path_neural_embedding=args.path_kg, train_if_not_exists=True)
-    neural_owl_reasoner = EBR(ontology=neural_ontology, gamma=args.gamma)
+        neural_ontology = NeuralOntology(path_neural_embedding=args.path_kg, train_if_not_exists=True, batch_size=args.batch_size, device=args.device, gamma=args.gamma)
+    neural_owl_reasoner = EBR(ontology=neural_ontology)
     
     # Fix the random seed.
     random.seed(args.seed)
@@ -356,7 +356,8 @@ def get_default_arguments():
     parser.add_argument("--ratio_sample_object_prop", type=float, default=1, help="To sample OWL Object Properties.")
     parser.add_argument("--min_jaccard_similarity", type=float, default=0.0, help="Minimum Jaccard similarity to be achieve by the reasoner")
     parser.add_argument("--num_nominals", type=int, default=10, help="Number of OWL named individuals to be sampled.")
-
+    parser.add_argument("--batch_size", type=int, default=1, help="Batch size for the KGE model.")
+    parser.add_argument("--device", type=str, default="cpu", help="Device to use for the KGE model.")
     # H is obtained if the forward chain is applied on KG.
     parser.add_argument("--path_report", type=str, default="ALCQHI_Retrieval_Results.csv")
     return parser.parse_args()

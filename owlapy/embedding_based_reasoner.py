@@ -4,7 +4,6 @@ from collections import Counter
 from functools import cached_property
 from typing import Generator, Iterable, List, Set, Tuple
 
-import torch 
 from owlapy.class_expression import OWLThing
 from owlapy.class_expression.class_expression import OWLClassExpression, OWLObjectComplementOf
 from owlapy.class_expression.nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
@@ -16,9 +15,6 @@ from owlapy.owl_object import OWLEntity
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty
 from owlapy.owl_reasoner import AbstractOWLReasoner
 from owlapy.neural_ontology import NeuralOntology
-
-def is_valid_entity(text_input: str):
-    return True if "/" in text_input else False
 
 class EBR(AbstractOWLReasoner):
     """The Embedding-Based Reasoner uses neural embeddings to retrieve concept instances from knowledge bases. """
@@ -34,21 +30,11 @@ class EBR(AbstractOWLReasoner):
     STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
     STR_IRI_SUBPROPERTY = "http://www.w3.org/2000/01/rdf-schema#subPropertyOf"
 
-    def __init__(self, ontology: NeuralOntology, gamma: float = 0.5, batch_size: int = 1024, device: str = "gpu"):
+    def __init__(self, ontology: NeuralOntology):
         super().__init__(ontology)
-        self.gamma = gamma
+        self.gamma = ontology.gamma
         self.ontology = ontology
         self.model = ontology.model
-        self.batch_size = batch_size
-        if device == "gpu" and torch.cuda.is_available():
-            self.model.to("cuda")
-            print("EBR inference on GPU")
-        elif device == "cpu":
-            self.model.to("cpu")
-            print("EBR inference on CPU")
-        else:
-            # warning 
-            print(f"Device {device} not supported, EBR will use CPU")
 
     def __str__(self):
         return f"Embedding-Based Reasoner using: {self.model.model} with gamma: {self.gamma}"
@@ -62,12 +48,7 @@ class EBR(AbstractOWLReasoner):
         return set(self.classes_in_signature())
 
     def predict(self, h: List[str] = None, r: List[str] = None, t: List[str] = None) -> List[Tuple[str,float]]:
-        if r is None:
-            topk = len(self.model.relation_to_idx)
-        else:
-            topk = len(self.model.entity_to_idx)
-
-        return [ (top_entity, score) for row in self.model.predict_topk(h=h, r=r, t=t, topk=topk, batch_size=self.batch_size) for top_entity, score in row if score >= self.gamma and is_valid_entity(top_entity)]
+        return self.ontology.predict(h=h, r=r, t=t)
 
     def predict_individuals_of_owl_class(self, owl_class: OWLClass) -> List[OWLNamedIndividual]:
             top_entities=set()
@@ -98,9 +79,17 @@ class EBR(AbstractOWLReasoner):
         #TODO: Data properties
 
     def classes_in_signature(self) -> List[OWLClass]:
-        return [OWLClass(top_entity) for top_entity, score in self.predict(h=None,
-                                                                   r=self.STR_IRI_TYPE,
-                                                                   t=self.STR_IRI_OWL_CLASS)]
+        return self.ontology.classes_in_signature()
+
+    def individuals_in_signature(self) -> List[OWLNamedIndividual]:
+        return self.ontology.individuals_in_signature()
+
+    def data_properties_in_signature(self) -> List[OWLDataProperty]:
+        return self.ontology.data_properties_in_signature()
+
+    def object_properties_in_signature(self) -> List[OWLObjectProperty]:
+        return self.ontology.object_properties_in_signature()
+
     def direct_subconcepts(self, named_concept: OWLClass) -> List[OWLClass]:
         if self.STR_IRI_SUBCLASSOF not in self.model.relation_to_idx:
                 return []
@@ -175,23 +164,6 @@ class EBR(AbstractOWLReasoner):
 
     def types(self, individual: OWLNamedIndividual) -> List[OWLClass]:
         return [OWLClass(top_entity) for top_entity,score in self.predict(h=individual.str, r=self.STR_IRI_TYPE, t=None)]
-    def individuals_in_signature(self) -> List[OWLNamedIndividual]:
-        set_str_entities=set()
-        for top_entity, score in self.predict(h=None,
-                                                  r=self.STR_IRI_TYPE,
-                                                  t=[owl_class.iri.str for owl_class in self.classes_in_signature()]):
-            set_str_entities.add(top_entity)
-        return [OWLNamedIndividual(entity) for entity in set_str_entities]
-
-    def data_properties_in_signature(self) -> List[OWLDataProperty]:
-        return [OWLDataProperty(top_entity) for top_entity, score in self.predict(h=None,
-                                                     r=self.STR_IRI_TYPE,
-                                                     t=self.STR_IRI_DATA_PROPERTY)]
-
-    def object_properties_in_signature(self) -> List[OWLObjectProperty]:
-        return [OWLObjectProperty(top_entity) for top_entity, score in self.predict(h=None,
-                                                     r=self.STR_IRI_TYPE,
-                                                     t=self.STR_IRI_OBJECT_PROPERTY)]
 
     def boolean_data_properties(self) -> Generator[OWLDataProperty, None, None]:  # pragma: no cover
         return [OWLDataProperty(top_entity) for top_entity,score  in self.predict(h=None, r=self.STR_IRI_RANGE,
