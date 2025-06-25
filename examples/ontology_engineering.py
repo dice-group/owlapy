@@ -1,9 +1,14 @@
+import jpype
+
 from owlapy.class_expression import OWLClass
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology import Ontology
 from owlapy.iri import IRI
 from owlapy.static_funcs import download_external_files
+
+
+
 # (1) Download the datasets if KGs does not exist.
 download_external_files("https://files.dice-research.org/projects/Ontolearn/KGs.zip")
 # (2) Load the father ontology.
