@@ -3,6 +3,7 @@ import os
 
 from parsimonious.exceptions import IncompleteParseError
 
+from examples.ontology_justification import adjust_namespace
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLSubClassOfAxiom
