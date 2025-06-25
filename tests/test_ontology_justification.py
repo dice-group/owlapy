@@ -16,7 +16,7 @@ class TestCreateJustifications(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
+        cls.ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
         cls.namespace = "http://www.benchmark.org/family#"
         try:
             cls.ontology = SyncOntology(cls.ontology_path)
