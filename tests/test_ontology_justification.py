@@ -26,15 +26,15 @@ class TestCreateJustifications(unittest.TestCase):
                 break
 
         if cls.ontology_path is None:
-            raise FileNotFoundError(
-                "Could not locate 'family-benchmark_rich_background.owl' within project structure.")
+            raise FileNotFoundError("Could not locate 'family-benchmark_rich_background.owl' within project structure.")
 
-        cls.namespace = "http://www.benchmark.org/family#"
+        cls.namespace = adjust_namespace("http://www.benchmark.org/family#")
 
         try:
             cls.ontology = SyncOntology(cls.ontology_path)
+            cls.reasoner = SyncReasoner(cls.ontology, reasoner="Pellet")
         except Exception as e:
-            raise RuntimeError(f"Failed to load ontology: {e}")
+            raise RuntimeError(f"Failed to load ontology or initialize reasoner: {e}")
 
     def test_create_justifications_with_DL_syntax(self):
         individual = OWLNamedIndividual(IRI.create(self.namespace + "F10M171"))
