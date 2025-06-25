@@ -27,17 +27,27 @@ class TestCreateJustifications(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Dynamically build ontology path relative to current working directory
+        import os
+
         base_dir = os.getcwd()
-        ontology_path = os.path.normpath(
-            os.path.join(base_dir, "..", "KGs", "Family", "family-benchmark_rich_background.owl"))
+        candidate_paths = [
+            #os.path.normpath(os.path.join(base_dir, "KGs", "Family", "family-benchmark_rich_background.owl")),
+            os.path.normpath(os.path.join(base_dir, "..", "KGs", "Family", "family-benchmark_rich_background.owl")),
+        ]
 
-        cls.ontology_path = ontology_path
+        cls.ontology_path = None
+        for path in candidate_paths:
+            if os.path.exists(path):
+                cls.ontology_path = path
+                break
+
+        if cls.ontology_path is None:
+            raise FileNotFoundError(
+                f"Ontology file not found in any expected location: {candidate_paths}. "
+                "Please check your working directory and file location."
+            )
+
         cls.namespace = "http://www.benchmark.org/family#"
-
-        if not os.path.exists(cls.ontology_path):
-            raise FileNotFoundError(f"Ontology file not found at {cls.ontology_path}. "
-                                    "Please check your working directory and file location.")
 
         try:
             cls.ontology = SyncOntology(cls.ontology_path)
