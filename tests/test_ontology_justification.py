@@ -2,10 +2,13 @@ import unittest
 
 from parsimonious.exceptions import IncompleteParseError
 
+from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
+from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLSubClassOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy import dl_to_owl_expression, manchester_to_owl_expression
 from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_property import OWLObjectProperty
 from owlapy.owl_reasoner import SyncReasoner
 
 
@@ -13,7 +16,7 @@ class TestCreateJustifications(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ontology_path = "E:/Workspace_Dice/DataSource/family.owl"
+        cls.ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
         cls.namespace = "http://www.benchmark.org/family#"
         try:
             cls.ontology = SyncOntology(cls.ontology_path)
@@ -65,11 +68,41 @@ class TestCreateJustifications(unittest.TestCase):
 
         target_class = manchester_to_owl_expression(manchester_expr_str, self.namespace)
         justifications = self.reasoner.create_justifications({individual}, target_class)
+        print(justifications)
 
 
         self.assertIsInstance(justifications, list)
         for justification in justifications:
             self.assertIsInstance(justification, set)
+        self.assertCountEqual(justifications, [{
+            OWLObjectPropertyAssertionAxiom(
+                subject=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F2')),
+                property_=OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'hasChild')),
+                object_=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F3')),
+                annotations=[]), OWLClassAssertionAxiom(
+                individual=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F3')),
+                class_expression=OWLClass(IRI('http://www.benchmark.org/family#', 'Female')),
+                annotations=[])}, {OWLObjectPropertyAssertionAxiom(
+            subject=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F2')),
+            property_=OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'hasChild')),
+            object_=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F3')),
+            annotations=[]), OWLClassAssertionAxiom(
+            individual=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F3')),
+            class_expression=OWLClass(IRI('http://www.benchmark.org/family#', 'Mother')),
+            annotations=[]), OWLSubClassOfAxiom(
+            sub_class=OWLClass(IRI('http://www.benchmark.org/family#', 'Mother')),
+            super_class=OWLClass(IRI('http://www.benchmark.org/family#', 'Female')),
+            annotations=[])}, {OWLSubClassOfAxiom(
+            sub_class=OWLClass(IRI('http://www.benchmark.org/family#', 'Daughter')),
+            super_class=OWLClass(IRI('http://www.benchmark.org/family#', 'Female')),
+            annotations=[]), OWLObjectPropertyAssertionAxiom(
+            subject=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F2')),
+            property_=OWLObjectProperty(IRI('http://www.benchmark.org/family#', 'hasChild')),
+            object_=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F3')),
+            annotations=[]), OWLClassAssertionAxiom(
+            individual=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F3')),
+            class_expression=OWLClass(IRI('http://www.benchmark.org/family#', 'Daughter')),
+            annotations=[])}])
 
     def test_create_justifications_with_Fake_Individual_Invalid_Manchester_syntax(self):
         individual = OWLNamedIndividual(IRI.create(self.namespace + "F10M171"))
