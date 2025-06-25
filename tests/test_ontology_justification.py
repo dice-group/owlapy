@@ -16,7 +16,7 @@ class TestCreateJustifications(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
+        cls.ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
         cls.namespace = "http://www.benchmark.org/family#"
         try:
             cls.ontology = SyncOntology(cls.ontology_path)
@@ -29,7 +29,7 @@ class TestCreateJustifications(unittest.TestCase):
         dl_expr_str = "∃ hasChild.Male"
 
         target_class = dl_to_owl_expression(dl_expr_str, self.namespace)
-        justifications = self.reasoner.create_justifications({individual}, target_class)
+        justifications = self.reasoner.create_justifications({individual}, target_class, save=False)
 
         self.assertIsInstance(justifications, list, "Justifications should be a list.")
         for justification in justifications:
@@ -37,13 +37,13 @@ class TestCreateJustifications(unittest.TestCase):
 
         # Fake individual
         fake_individual = OWLNamedIndividual(IRI.create(self.namespace + "NonExistentPerson"))
-        justifications = self.reasoner.create_justifications({fake_individual}, target_class)
+        justifications = self.reasoner.create_justifications({fake_individual}, target_class, save=False)
         self.assertEqual(len(justifications), 0, "Justifications for non-existent individual should be empty.")
 
         # Invalid DL expression
         with self.assertRaises(IncompleteParseError, msg="Invalid DL expression should raise exception."):
             invalid_expr = dl_to_owl_expression("invalid some Expression", self.namespace)
-            self.reasoner.create_justifications(invalid_expr, target_class)
+            self.reasoner.create_justifications(invalid_expr, target_class, save=False)
 
     def test_create_justifications_with_Fake_Individual_Invalid_DL_syntax(self):
         individual = OWLNamedIndividual(IRI.create(self.namespace + "F10M171"))
@@ -52,24 +52,21 @@ class TestCreateJustifications(unittest.TestCase):
 
         # Fake individual
         fake_individual = OWLNamedIndividual(IRI.create(self.namespace + "NonExistentPerson"))
-        justifications = self.reasoner.create_justifications({fake_individual}, target_class)
+        justifications = self.reasoner.create_justifications({fake_individual}, target_class, save=False)
         self.assertEqual(len(justifications), 0, "Justifications for non-existent individual should be empty.")
 
         # Invalid DL expression
         with self.assertRaises(IncompleteParseError, msg="Invalid DL expression should raise exception."):
             invalid_expr = dl_to_owl_expression("invalid some Expression", self.namespace)
-            self.reasoner.create_justifications(invalid_expr, target_class)
-
-
+            self.reasoner.create_justifications(invalid_expr, target_class, save=False)
 
     def test_create_justifications_with_Manchester_syntax(self):
         individual = OWLNamedIndividual(IRI.create(self.namespace + "F1F2"))
         manchester_expr_str = "hasChild some Female"
 
         target_class = manchester_to_owl_expression(manchester_expr_str, self.namespace)
-        justifications = self.reasoner.create_justifications({individual}, target_class)
+        justifications = self.reasoner.create_justifications({individual}, target_class, save=False)
         print(justifications)
-
 
         self.assertIsInstance(justifications, list)
         for justification in justifications:
@@ -111,28 +108,29 @@ class TestCreateJustifications(unittest.TestCase):
 
         # Fake individual
         fake_individual = OWLNamedIndividual(IRI.create(self.namespace + "Ghost123"))
-        justifications = self.reasoner.create_justifications({fake_individual}, target_class)
+        justifications = self.reasoner.create_justifications({fake_individual}, target_class, save=False)
         self.assertEqual(len(justifications), 0)
 
         # Invalid Manchester expression
         invalid_expr = manchester_to_owl_expression("invalid some Expression", self.namespace)
-        justifications = self.reasoner.create_justifications({individual}, invalid_expr)
+        justifications = self.reasoner.create_justifications({individual}, invalid_expr, save=False)
         self.assertEqual(len(justifications), 0, "Justifications for non-existent individual should be empty.")
 
     def test_create_justifications_empty_inputs(self):
 
         with self.assertRaises(ValueError):
-            self.reasoner.create_justifications(None, None)
+            self.reasoner.create_justifications(None, None, save=False)
 
         with self.assertRaises(ValueError):
-            self.reasoner.create_justifications(set(), None)
+            self.reasoner.create_justifications(set(), None, save=False)
 
     def test_multiple_individuals_and_mixed_results(self):
         valid_individual = OWLNamedIndividual(IRI.create(self.namespace + "F10M171"))
         fake_individual = OWLNamedIndividual(IRI.create(self.namespace + "Ghost"))
 
         class_expr = dl_to_owl_expression("∃ hasChild.Male", self.namespace)
-        justifications = self.reasoner.create_justifications({valid_individual, fake_individual}, class_expr)
+        justifications = self.reasoner.create_justifications({valid_individual, fake_individual}, class_expr,
+                                                             save=False)
 
         self.assertIsInstance(justifications, list)
         for justification in justifications:

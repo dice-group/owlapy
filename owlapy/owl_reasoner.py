@@ -29,13 +29,16 @@ from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObject
     OWLTopDataProperty
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+
 logger = logging.getLogger(__name__)
+import os
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 
 class StructuralReasoner(AbstractOWLReasoner):
     """Tries to check instances fast (but maybe incomplete)."""
+
     def __init__(self, ontology: Union[AbstractOWLOntology, str], *, class_cache: bool = True,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
         """Fast instance checker.
@@ -64,22 +67,22 @@ class StructuralReasoner(AbstractOWLReasoner):
     def _init(self):
         if self.class_cache:
             # Class => individuals
-            self._cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]] = {} 
+            self._cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]] = {}
 
         if self._property_cache:
             # ObjectProperty => { individual => individuals }
             self._obj_prop: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]] = dict()
-             # ObjectProperty => { individual => individuals }
+            # ObjectProperty => { individual => individuals }
             self._obj_prop_inv: Dict[OWLObjectProperty, Mapping[OWLNamedIndividual, Set[OWLNamedIndividual]]] = dict()
             # DataProperty => { individual => literals }
-            self._data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]] = dict() 
+            self._data_prop: Dict[OWLDataProperty, Mapping[OWLNamedIndividual, Set[OWLLiteral]]] = dict()
         else:
             self._has_prop: Mapping[Type[_P], Dict[_P, FrozenSet[OWLNamedIndividual]]] = {
                 OWLDataProperty: {},
                 OWLObjectProperty: {},
                 OWLObjectInverseOf: {},
             }
-           
+
     def reset(self):
         """The reset method shall reset any cached state."""
         self._init()
@@ -737,7 +740,7 @@ class StructuralReasoner(AbstractOWLReasoner):
         opc: Dict[OWLNamedIndividual, Set[OWLLiteral]] = dict()
 
         # shortcut for owlready2
-        from owlapy.owl_ontology  import Ontology
+        from owlapy.owl_ontology import Ontology
         if isinstance(self._ontology, Ontology):
             import owlready2
             # _x => owlready2 objects
@@ -937,7 +940,7 @@ class StructuralReasoner(AbstractOWLReasoner):
 
             def include(lv: OWLLiteral):
                 return lv.get_datatype() == filler.get_datatype() and \
-                       all(map(apply, facet_restrictions, repeat(lv)))
+                    all(map(apply, facet_restrictions, repeat(lv)))
 
             if property_cache:
                 for s, literals in dps.items():
@@ -1018,14 +1021,17 @@ class StructuralReasoner(AbstractOWLReasoner):
 
 
 class SyncReasoner(AbstractOWLReasoner):
+
     def create_justifications(self, owl_individuals: Set[OWLNamedIndividual] = None,
-                              owl_class_expression: OWLClassExpression = None) -> List[Set[OWLAxiom]]:
+                              owl_class_expression: OWLClassExpression = None,
+                              save: bool = False) -> List[Set[OWLAxiom]]:
         """
         Generate multiple justifications for why the given individual(s) are inferred to be instances of the specified class.
 
         Args:
             owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.
             owl_class_expression (OWLClassExpression): Class expression to justify.
+            save (bool): If True, saves all justifications in a new ontology as axioms.
 
         Returns:
             List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms).
@@ -1033,51 +1039,54 @@ class SyncReasoner(AbstractOWLReasoner):
         if owl_individuals is None or owl_class_expression is None:
             raise ValueError("Both owl_individuals and owl_class_expression are required.")
 
-        # Import necessary Java classes
-        from com.clarkparsia.owlapi.explanation import BlackBoxExplanation, ExplanationGenerator,HSTExplanationGenerator,SatisfiabilityConverter
+        from com.clarkparsia.owlapi.explanation import (
+            BlackBoxExplanation, HSTExplanationGenerator, SatisfiabilityConverter
+        )
         from openllet.owlapi import PelletReasonerFactory
 
-        # Map Python OWL API types to Java OWL API types
         j_class_expr = self.mapper.map_(owl_class_expression)
-        j_individual = self.mapper.map_(owl_individuals)
         j_ontology = self._owlapi_ontology
         j_reasoner = self._owlapi_reasoner
         j_data_factory = self._owlapi_manager.getOWLDataFactory()
 
-
-      #  owl_individuals_istances = self._instances(owl_class_expression, direct=False)
-       # print("owl_individuals_istances", owl_individuals_istances)
-       # j_individuals= self.mapper.map_(owl_individuals_istances)
-        #print("j_individuals", j_individuals)
-
-
-
-        # Create the explanation generator infrastructure
         reasoner_factory = PelletReasonerFactory.getInstance()
         blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
-
         explanation_gen = HSTExplanationGenerator(blackbox_exp)
         converter = SatisfiabilityConverter(j_data_factory)
+
         justifications = []
 
-
         for ind in owl_individuals:
-
             j_individual = self.mapper.map_(ind)
-
-            # Create OWLClassAssertionAxiom in Java
             class_assertion_axiom = j_data_factory.getOWLClassAssertionAxiom(j_class_expr, j_individual)
-            # Step 2: Convert to unsatisfiable class
             unsat_class = converter.convert(class_assertion_axiom)
 
-            # Get justifications
             j_explanations = explanation_gen.getExplanations(unsat_class)
 
             for j_expl in j_explanations:
                 py_axioms = {self.mapper.map_(ax) for ax in j_expl}
                 justifications.append(py_axioms)
 
+        # Save to justifications.owl if requested
+        if save:
+            from owlapy.owl_ontology import SyncOntology
+            from owlapy.iri import IRI
+
+            # Create a new in-memory ontology to store justifications
+            just_iri = IRI.create("http://example.org/justifications")
+            just_ontology = SyncOntology(path=just_iri, load=False)
+
+            for axiom_set in justifications:
+                for axiom in axiom_set:
+                    just_ontology.add_axiom(axiom)
+
+            # Save to file
+            save_path = "justifications.owl"
+            just_ontology.save(save_path)
+            print(f"Justifications saved to {os.path.abspath(save_path)}")
+
         return justifications
+
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
@@ -1098,7 +1107,6 @@ class SyncReasoner(AbstractOWLReasoner):
         #   implemented in this class. Current version of elk is 6.0.0.
         #   Maven releases: https://mvnrepository.com/artifact/io.github.liveontologies/elk-owlapi
         #   ElkReasoner GitHub link: https://github.com/liveontologies/elk-reasoner/blob/main/elk-owlapi/src/main/java/org/semanticweb/elk/owlapi/ElkReasoner.java
-
 
         if isinstance(ontology, SyncOntology):
             self.ontology = ontology
@@ -1146,7 +1154,7 @@ class SyncReasoner(AbstractOWLReasoner):
         classes = self._owlapi_reasoner.getEquivalentClasses(self.mapper.map_(ce)).getEntities()
         yield from [self.mapper.map_(cls) for cls in classes]
 
-    def disjoint_classes(self, ce: OWLClassExpression, include_bottom_entity = False):
+    def disjoint_classes(self, ce: OWLClassExpression, include_bottom_entity=False):
         """
         Gets the classes that are disjoint with the specified class expression.
 
@@ -1165,8 +1173,7 @@ class SyncReasoner(AbstractOWLReasoner):
         else:
             yield from [self.mapper.map_(cls) for cls in classes if not cls.isBottomEntity()]
 
-
-    def sub_classes(self, ce: OWLClassExpression, direct=False, include_bottom_entity = False):
+    def sub_classes(self, ce: OWLClassExpression, direct=False, include_bottom_entity=False):
         """
          Gets the set of named classes that are the strict (potentially direct) subclasses of the
          specified class expression with respect to the reasoner axioms.
@@ -1263,7 +1270,7 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(ce) for ce in
                     self._owlapi_reasoner.getObjectPropertyRanges(self.mapper.map_(p), direct).getFlattened()]
 
-    def sub_object_properties(self, p: OWLObjectProperty, direct: bool = False, include_bottom_entity = False):
+    def sub_object_properties(self, p: OWLObjectProperty, direct: bool = False, include_bottom_entity=False):
         """Gets the stream of simplified object property expressions that are the strict (potentially direct)
         subproperties of the specified object property expression with respect to the imports closure of the root
         ontology.
@@ -1305,7 +1312,7 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(pe) for pe in
                     self._owlapi_reasoner.getSuperObjectProperties(self.mapper.map_(p), direct).getFlattened()]
 
-    def sub_data_properties(self, p: OWLDataProperty, direct: bool = False, include_bottom_entity = False):
+    def sub_data_properties(self, p: OWLDataProperty, direct: bool = False, include_bottom_entity=False):
         """Gets the set of named data properties that are the strict (potentially direct) subproperties of the
         specified data property expression with respect to the imports closure of the root ontology.
 
@@ -1422,7 +1429,8 @@ class SyncReasoner(AbstractOWLReasoner):
         if self.reasoner_name == "ELK":
             raise NotImplementedError("`getObjectPropertyValues` is not yet implemented by ELK!")
         yield from [self.mapper.map_(ind) for ind in
-                    self._owlapi_reasoner.getObjectPropertyValues(self.mapper.map_(i), self.mapper.map_(p)).getFlattened()]
+                    self._owlapi_reasoner.getObjectPropertyValues(self.mapper.map_(i),
+                                                                  self.mapper.map_(p)).getFlattened()]
 
     def data_property_values(self, e: OWLEntity, p: OWLDataProperty):
         """Gets the data property values for the specified entity and data property expression.
@@ -1436,7 +1444,8 @@ class SyncReasoner(AbstractOWLReasoner):
             axioms entails DataPropertyAssertion(pe ind l).
         """
         yield from [self.mapper.map_(literal) for literal in
-                    self.mapper.to_list(self._owlapi_reasoner.dataPropertyValues(self.mapper.map_(e), self.mapper.map_(p)))]
+                    self.mapper.to_list(
+                        self._owlapi_reasoner.dataPropertyValues(self.mapper.map_(e), self.mapper.map_(p)))]
 
     def disjoint_object_properties(self, p: OWLObjectProperty, include_bottom_entity=False):
         """Gets the simplified object properties that are disjoint with the specified object property with respect
@@ -1542,7 +1551,8 @@ class SyncReasoner(AbstractOWLReasoner):
             for axiom in ia.createAxioms(self._owlapi_manager.getOWLDataFactory(), self._owlapi_reasoner):
                 yield self.mapper.map_(axiom)
 
-    def infer_axioms_and_save(self, output_path: str = None, output_format: str = None, inference_types: list[str] = None):
+    def infer_axioms_and_save(self, output_path: str = None, output_format: str = None,
+                              inference_types: list[str] = None):
         """
         Generates inferred axioms for the ontology managed by this instance's reasoner and saves them to a file.
         This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner
@@ -1657,7 +1667,8 @@ class SyncReasoner(AbstractOWLReasoner):
     def get_root_ontology(self) -> AbstractOWLOntology:
         return self.ontology
 
-def initialize_reasoner(reasoner:str, owlapi_ontology):
+
+def initialize_reasoner(reasoner: str, owlapi_ontology):
     # () Create a reasoner using the ontology
     if reasoner == "HermiT":
         # noinspection PyUnresolvedReferences
@@ -1687,6 +1698,7 @@ def initialize_reasoner(reasoner:str, owlapi_ontology):
         raise NotImplementedError("Not implemented")
     return owlapi_reasoner
 
+
 def import_and_include_axioms_generators():
     # noinspection PyUnresolvedReferences
     from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
@@ -1701,13 +1713,13 @@ def import_and_include_axioms_generators():
                                              InferredObjectPropertyCharacteristicAxiomGenerator)
 
     return {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
-                                    "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
-                                    "InferredDisjointClassesAxiomGenerator": InferredDisjointClassesAxiomGenerator(),
-                                    "InferredEquivalentClassAxiomGenerator": InferredEquivalentClassAxiomGenerator(),
-                                    "InferredInverseObjectPropertiesAxiomGenerator": InferredInverseObjectPropertiesAxiomGenerator(),
-                                    "InferredEquivalentDataPropertiesAxiomGenerator": InferredEquivalentDataPropertiesAxiomGenerator(),
-                                    "InferredEquivalentObjectPropertyAxiomGenerator": InferredEquivalentObjectPropertyAxiomGenerator(),
-                                    "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
-                                    "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
-                                    "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
-                                    "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator()}
+            "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
+            "InferredDisjointClassesAxiomGenerator": InferredDisjointClassesAxiomGenerator(),
+            "InferredEquivalentClassAxiomGenerator": InferredEquivalentClassAxiomGenerator(),
+            "InferredInverseObjectPropertiesAxiomGenerator": InferredInverseObjectPropertiesAxiomGenerator(),
+            "InferredEquivalentDataPropertiesAxiomGenerator": InferredEquivalentDataPropertiesAxiomGenerator(),
+            "InferredEquivalentObjectPropertyAxiomGenerator": InferredEquivalentObjectPropertyAxiomGenerator(),
+            "InferredSubDataPropertyAxiomGenerator": InferredSubDataPropertyAxiomGenerator(),
+            "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
+            "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
+            "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator()}
