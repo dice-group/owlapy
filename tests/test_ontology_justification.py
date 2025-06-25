@@ -14,46 +14,27 @@ from owlapy.owl_reasoner import SyncReasoner
 
 
 class TestCreateJustifications(unittest.TestCase):
-
-    # @classmethod
-    # def setUpClass(cls):
-    #     cls.ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
-    #     cls.namespace = "http://www.benchmark.org/family#"
-    #     try:
-    #         cls.ontology = SyncOntology(cls.ontology_path)
-    #         cls.reasoner = SyncReasoner(cls.ontology, reasoner="Pellet")
-    #     except Exception as e:
-    #         raise RuntimeError(f"Ontology setup failed: {str(e)}")
-
     @classmethod
     def setUpClass(cls):
-        import os
-
-        base_dir = os.getcwd()
-        candidate_paths = [
-            #os.path.normpath(os.path.join(base_dir, "KGs", "Family", "family-benchmark_rich_background.owl")),
-            os.path.normpath(os.path.join(base_dir, "..", "KGs", "Family", "family-benchmark_rich_background.owl")),
-        ]
-
         cls.ontology_path = None
-        for path in candidate_paths:
-            if os.path.exists(path):
-                cls.ontology_path = path
+        for root, dirs, files in os.walk("."):
+            for file in files:
+                if file == "family-benchmark_rich_background.owl":
+                    cls.ontology_path = os.path.abspath(os.path.join(root, file))
+                    break
+            if cls.ontology_path:
                 break
 
         if cls.ontology_path is None:
             raise FileNotFoundError(
-                f"Ontology file not found in any expected location: {candidate_paths}. "
-                "Please check your working directory and file location."
-            )
+                "Could not locate 'family-benchmark_rich_background.owl' within project structure.")
 
         cls.namespace = "http://www.benchmark.org/family#"
 
         try:
             cls.ontology = SyncOntology(cls.ontology_path)
-            cls.reasoner = SyncReasoner(cls.ontology, reasoner="Pellet")
         except Exception as e:
-            raise RuntimeError(f"Ontology setup failed: {str(e)}")
+            raise RuntimeError(f"Failed to load ontology: {e}")
 
     def test_create_justifications_with_DL_syntax(self):
         individual = OWLNamedIndividual(IRI.create(self.namespace + "F10M171"))
