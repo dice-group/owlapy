@@ -2,6 +2,7 @@
 import operator
 import logging
 import owlready2
+import os
 
 from collections import defaultdict
 from functools import singledispatchmethod, reduce
@@ -31,7 +32,6 @@ from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 
 logger = logging.getLogger(__name__)
-import os
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
