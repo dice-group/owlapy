@@ -7,7 +7,7 @@ from collections import defaultdict
 from functools import singledispatchmethod, reduce
 from itertools import chain, repeat
 from types import MappingProxyType, FunctionType
-from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, Union
+from typing import DefaultDict, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, Union, List
 
 from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
@@ -1018,7 +1018,66 @@ class StructuralReasoner(AbstractOWLReasoner):
 
 
 class SyncReasoner(AbstractOWLReasoner):
+    def create_justifications(self, owl_individuals: Set[OWLNamedIndividual] = None,
+                              owl_class_expression: OWLClassExpression = None) -> List[Set[OWLAxiom]]:
+        """
+        Generate multiple justifications for why the given individual(s) are inferred to be instances of the specified class.
 
+        Args:
+            owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.
+            owl_class_expression (OWLClassExpression): Class expression to justify.
+
+        Returns:
+            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms).
+        """
+        if owl_individuals is None or owl_class_expression is None:
+            raise ValueError("Both owl_individuals and owl_class_expression are required.")
+
+        # Import necessary Java classes
+        from com.clarkparsia.owlapi.explanation import BlackBoxExplanation, ExplanationGenerator,HSTExplanationGenerator,SatisfiabilityConverter
+        from openllet.owlapi import PelletReasonerFactory
+
+        # Map Python OWL API types to Java OWL API types
+        j_class_expr = self.mapper.map_(owl_class_expression)
+        j_individual = self.mapper.map_(owl_individuals)
+        j_ontology = self._owlapi_ontology
+        j_reasoner = self._owlapi_reasoner
+        j_data_factory = self._owlapi_manager.getOWLDataFactory()
+
+
+      #  owl_individuals_istances = self._instances(owl_class_expression, direct=False)
+       # print("owl_individuals_istances", owl_individuals_istances)
+       # j_individuals= self.mapper.map_(owl_individuals_istances)
+        #print("j_individuals", j_individuals)
+
+
+
+        # Create the explanation generator infrastructure
+        reasoner_factory = PelletReasonerFactory.getInstance()
+        blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
+
+        explanation_gen = HSTExplanationGenerator(blackbox_exp)
+        converter = SatisfiabilityConverter(j_data_factory)
+        justifications = []
+
+
+        for ind in owl_individuals:
+
+            j_individual = self.mapper.map_(ind)
+
+            # Create OWLClassAssertionAxiom in Java
+            class_assertion_axiom = j_data_factory.getOWLClassAssertionAxiom(j_class_expr, j_individual)
+            # Step 2: Convert to unsatisfiable class
+            unsat_class = converter.convert(class_assertion_axiom)
+
+            # Get justifications
+            j_explanations = explanation_gen.getExplanations(unsat_class)
+
+            for j_expl in j_explanations:
+                py_axioms = {self.mapper.map_(ax) for ax in j_expl}
+                justifications.append(py_axioms)
+
+        return justifications
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
