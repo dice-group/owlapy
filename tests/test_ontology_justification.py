@@ -1,4 +1,5 @@
 import unittest
+import os
 
 from parsimonious.exceptions import IncompleteParseError
 
@@ -14,10 +15,30 @@ from owlapy.owl_reasoner import SyncReasoner
 
 class TestCreateJustifications(unittest.TestCase):
 
+    # @classmethod
+    # def setUpClass(cls):
+    #     cls.ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
+    #     cls.namespace = "http://www.benchmark.org/family#"
+    #     try:
+    #         cls.ontology = SyncOntology(cls.ontology_path)
+    #         cls.reasoner = SyncReasoner(cls.ontology, reasoner="Pellet")
+    #     except Exception as e:
+    #         raise RuntimeError(f"Ontology setup failed: {str(e)}")
+
     @classmethod
     def setUpClass(cls):
-        cls.ontology_path = "../KGs/Family/family-benchmark_rich_background.owl"
+        # Dynamically build ontology path relative to current working directory
+        base_dir = os.getcwd()
+        ontology_path = os.path.normpath(
+            os.path.join(base_dir, "..", "KGs", "Family", "family-benchmark_rich_background.owl"))
+
+        cls.ontology_path = ontology_path
         cls.namespace = "http://www.benchmark.org/family#"
+
+        if not os.path.exists(cls.ontology_path):
+            raise FileNotFoundError(f"Ontology file not found at {cls.ontology_path}. "
+                                    "Please check your working directory and file location.")
+
         try:
             cls.ontology = SyncOntology(cls.ontology_path)
             cls.reasoner = SyncReasoner(cls.ontology, reasoner="Pellet")
