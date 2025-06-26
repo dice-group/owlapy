@@ -21,6 +21,49 @@ from .owl_object import OWLObject
 from .owl_datatype import OWLDatatype
 
 import concurrent.futures
+
+def jaccard_similarity(set1, set2) -> float:
+    """Calculate the Jaccard similarity between two sets.
+    
+    Args:
+        set1: First set
+        set2: Second set
+        
+    Returns:
+        Jaccard similarity: intersection(set1, set2) / union(set1, set2)
+    """
+    if len(set1) == 0 and len(set2) == 0:
+        return 1.0
+    intersection = len(set1.intersection(set2))
+    union = len(set1.union(set2))
+    return intersection / union
+
+
+def f1_set_similarity(set1, set2) -> float:
+    """Calculate the F1 score between two sets.
+    
+    Args:
+        set1: First set (treated as ground truth)
+        set2: Second set (treated as prediction)
+        
+    Returns:
+        F1 score
+    """
+    if len(set1) == 0 and len(set2) == 0:
+        return 1.0
+    
+    if len(set2) == 0:
+        return 0.0
+    
+    true_positives = len(set1.intersection(set2))
+    precision = true_positives / len(set2) if len(set2) > 0 else 0
+    recall = true_positives / len(set1) if len(set1) > 0 else 0
+    
+    if precision + recall == 0:
+        return 0.0
+    
+    return 2 * (precision * recall) / (precision + recall)
+
 def run_with_timeout(func, timeout, args=(), **kwargs):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(func, *args, **kwargs)
@@ -603,7 +646,6 @@ class ConceptOperandSorter:
             return n
         else:
             return t
-
 
 class OperandSetTransform:
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:

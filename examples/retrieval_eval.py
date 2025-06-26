@@ -45,6 +45,7 @@ from owlapy.owl_reasoner import StructuralReasoner
 from owlapy.embedding_based_reasoner import EBR
 from owlapy.owl_ontology import Ontology
 from owlapy.neural_ontology import NeuralOntology
+from owlapy.utils import jaccard_similarity, f1_set_similarity
 from owlapy.class_expression import (
     OWLObjectUnionOf,
     OWLObjectIntersectionOf,
@@ -71,48 +72,6 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 pd.set_option('display.colheader_justify', 'left')
 pd.set_option('display.expand_frame_repr', False)
-
-# Define utility functions that were previously imported from ontolearn
-def jaccard_similarity(set1, set2):
-    """Calculate the Jaccard similarity between two sets.
-    
-    Args:
-        set1: First set
-        set2: Second set
-        
-    Returns:
-        Jaccard similarity: intersection(set1, set2) / union(set1, set2)
-    """
-    if len(set1) == 0 and len(set2) == 0:
-        return 1.0
-    intersection = len(set1.intersection(set2))
-    union = len(set1.union(set2))
-    return intersection / union
-
-def f1_set_similarity(set1, set2):
-    """Calculate the F1 score between two sets.
-    
-    Args:
-        set1: First set (treated as ground truth)
-        set2: Second set (treated as prediction)
-        
-    Returns:
-        F1 score
-    """
-    if len(set1) == 0 and len(set2) == 0:
-        return 1.0
-    
-    if len(set2) == 0:
-        return 0.0
-    
-    true_positives = len(set1.intersection(set2))
-    precision = true_positives / len(set2) if len(set2) > 0 else 0
-    recall = true_positives / len(set1) if len(set1) > 0 else 0
-    
-    if precision + recall == 0:
-        return 0.0
-    
-    return 2 * (precision * recall) / (precision + recall)
 
 def concept_reducer(concepts, opt):
     """Create all combinations of concepts with the given operator.
