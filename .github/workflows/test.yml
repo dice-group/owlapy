@@ -25,11 +25,15 @@ jobs:
         run: |
           wget https://files.dice-research.org/projects/Ontolearn/KGs.zip
           unzip KGs.zip
-          pip install scikit-learn
           python -m pytest -p no:warnings -x
 
-      - name: Coverage report
-        run: |
-          pip install coverage
-          coverage run -m pytest
-          coverage report -m
+# Removed because of an error is generated when trying to create the report.
+# It happens because of some pytorch conflict. One of our tests namely test_z_do_last_ebr_retrieval.py uses pytorch
+# (also via dicee but the exact root is unknown) and it deletes the tmp files before the coverage can access it.
+# In case of update of coverage report (on new releases) just do it manually (run it locally).
+#
+#      - name: Coverage report
+#        run: |
+#          pip install coverage
+#          coverage run -m pytest
+#          coverage report -m
