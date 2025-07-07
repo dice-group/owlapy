@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 # Replace ontolearn dependencies with owlapy components
 from owlapy.owl_reasoner import StructuralReasoner
 from owlapy.owl_ontology import Ontology
-from owlapy.incomplete_kb import make_kb_incomplete, make_kb_inconsistent
+from owlapy.util_owl_static_funcs import make_kb_incomplete, make_kb_inconsistent
 from owlapy.utils import jaccard_similarity
 import pandas as pd
 from typing import Set
