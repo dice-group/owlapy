@@ -1,0 +1,17 @@
+from owlapy.class_expression import OWLClass
+from owlapy.owl_property import OWLObjectProperty
+from owlapy.swrl import IVariable, ClassAtom, ObjectPropertyAtom, Rule
+
+x_var = IVariable("http://example.com/father#x")
+y_var = IVariable("http://example.com/father#y")
+male = OWLClass("http://example.com/father#male")
+has_child = OWLObjectProperty("http://example.com/father#hasChild")
+has_father = OWLObjectProperty("http://example.com/father#hasFather")
+
+atom1 = ClassAtom(male, x_var)
+atom2 = ObjectPropertyAtom(has_child, x_var, y_var)
+atom3 = ObjectPropertyAtom(has_father, y_var, x_var)
+
+rule1 = Rule([atom1, atom2], [atom3])
+
+print(rule1)
