@@ -2,8 +2,8 @@ from owlapy.class_expression import OWLClass
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.swrl import IVariable, ClassAtom, ObjectPropertyAtom, Rule
 
-x_var = IVariable("http://example.com/father#x")
-y_var = IVariable("http://example.com/father#y")
+x_var = IVariable("http://www.w3.org/2003/11/swrl#x")
+y_var = IVariable("http://www.w3.org/2003/11/swrl#y")
 male = OWLClass("http://example.com/father#male")
 has_child = OWLObjectProperty("http://example.com/father#hasChild")
 has_father = OWLObjectProperty("http://example.com/father#hasFather")
