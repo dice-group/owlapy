@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Tuple, List, Optional, Union
+from typing import List, Union
 import re
 
 from owlapy.class_expression import OWLClass
@@ -10,11 +10,16 @@ from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 
 
-# TODO: add support for built-in Atoms
+builtin_predicates = ["add", "subtract", "multiply", "divide", "mod", "pow", "abs", "round", "floor", "ceiling",
+                       "equal", "notEqual", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual",
+                       "stringConcat", "substring", "contains", "startsWith", "endsWith", "stringLength",
+                       "matches", "normalizeSpace", "lowerCase", "upperCase", "dateTime", "addDayTimeDuration",
+                       "subtractDateTimes", "year", "month", "day", "hour", "isInteger", "isString", "isDateTime",
+                       "isBoolean", "isNumeric"]
 
 class Variable(metaclass=ABCMeta):
     """Represents a variable in SWRL syntax"""
-    iri: IRI
+    iri: IRI # should have the correct namespace, e.g: http://www.w3.org/2003/11/swrl#x
 
     def __init__(self, iri:Union[IRI, str]):
         if isinstance(iri, str):
@@ -60,11 +65,10 @@ class IVariable(Variable):
 
 class Atom(metaclass=ABCMeta):
     """Represents an Atom in SWRL syntax"""
-    arguments: List[Variable]
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.arguments == other.arguments
+            return self.__repr__() == other.__repr__()
 
     @abstractmethod
     def is_class_assertion(self):
@@ -82,6 +86,9 @@ class Atom(metaclass=ABCMeta):
     def is_different_from(self):
         pass
 
+    @abstractmethod
+    def is_builtin(self):
+        pass
 
 def r(argument):
     """Returns the right string format of a given argument depending on its type"""
@@ -114,6 +121,9 @@ class ClassAtom(Atom):
     def is_different_from(self):
         return False
 
+    def is_builtin(self):
+        return False
+
     def __str__(self):
         return f"{r(self.cls)}({r(self.argument1)})"
 
@@ -144,6 +154,9 @@ class DataRangeAtom(Atom):
     def is_different_from(self):
         return False
 
+    def is_builtin(self):
+        return False
+
     def __str__(self):
         return f"{r(self.datatype)}({r(self.argument1)})"
 
@@ -171,6 +184,9 @@ class PropertyAtom(Atom, metaclass=ABCMeta):
         return False
 
     def is_different_from(self):
+        return False
+
+    def is_builtin(self):
         return False
 
     def __str__(self):
@@ -222,6 +238,9 @@ class SameAsAtom(Atom):
     def is_different_from(self):
         return False
 
+    def is_builtin(self):
+        return False
+
     def __str__(self):
         return f"sameAs({r(self.argument1)}, {r(self.argument2)})"
 
@@ -252,6 +271,9 @@ class DifferentFromAtom(Atom):
     def is_different_from(self):
         return True
 
+    def is_builtin(self):
+        return False
+
     def __str__(self):
         return f"differentFrom({r(self.argument1)}, {r(self.argument2)})"
 
@@ -260,6 +282,47 @@ class DifferentFromAtom(Atom):
 
     def __hash__(self):
         return hash(f"DifferentFrom({str(self.argument1)}, {str(self.argument2)})")
+
+
+class BuiltInAtom(Atom):
+    predicate: IRI # should have the correct prefix, e.g: http://www.w3.org/2003/11/swrlb#divide
+    arguments: List[Union[DVariable, OWLLiteral]]
+
+    def __init__(self, predicate: IRI, arguments: List[Union[DVariable, OWLLiteral]]):
+        self.predicate = predicate
+        self.arguments = arguments
+
+
+    def is_class_assertion(self):
+        return False
+
+    def is_property_assertion(self):
+        return False
+
+    def is_same_as(self):
+        return False
+
+    def is_different_from(self):
+        return False
+
+    def is_builtin(self):
+        return True
+
+    def __str__(self):
+        args_to_print = ""
+        for arg in self.arguments:
+            if isinstance(arg, OWLLiteral):
+                args_to_print += str(arg._v) + ", "
+            else:
+                args_to_print += str(arg) + ", "
+        return f"{str(self.predicate.reminder)}({args_to_print[:-2]})"
+
+    def __repr__(self):
+        args_list ="["
+        for arg in self.arguments:
+            args_list = arg.__repr__()
+        args_list += "]"
+        return f"BuiltInAtom(IRI.create({self.predicate.str}), {args_list})"
 
 
 class Rule:
