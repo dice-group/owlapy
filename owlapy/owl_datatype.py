@@ -21,7 +21,7 @@ class OWLDatatype(OWLEntity, OWLDataRange):
 
     _iri: IRI
 
-    def __init__(self, iri: Union[IRI, HasIRI]):
+    def __init__(self, iri: Union[IRI, HasIRI, str]):
         """Gets an instance of OWLDatatype that has the specified IRI.
 
         Args:
@@ -29,9 +29,11 @@ class OWLDatatype(OWLEntity, OWLDataRange):
         """
         if isinstance(iri, HasIRI):
             self._iri = iri.iri
-        else:
+        elif isinstance(iri, IRI):
             assert isinstance(iri, IRI)
             self._iri = iri
+        else:
+            self._iri = IRI.create(iri)
 
     @property
     def iri(self) -> IRI:
