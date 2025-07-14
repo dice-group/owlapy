@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Union, Optional
+from typing import List, Union
 import re
 
 from owlapy.class_expression import OWLClass
