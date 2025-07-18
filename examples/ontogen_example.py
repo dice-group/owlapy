@@ -66,13 +66,7 @@ In 1981, after additional surgery, she recovered her voice. Ms. Francis returned
 “I often say, I’d like to be remembered not for the highs I’ve reached but for the depths from which I’ve risen,” she told Mr. James. “There were exhilarating highs and abysmal lows. But it was fighting to get out of those lows that I feel most proud of.
 """
 
-entity_types = ["ORGANIZATION", "PERSON"]
-
-# print(get_entities(text_example_1))
-# print(get_entities(text_example_2))
-# print(get_entities(text_example_3))
 
 ontogen = GraphExtractor(model="Qwen/Qwen3-32B-AWQ",api_key="<KEY>", api_base="http://tentris-ml.cs.upb.de:8501/v1",
                          temperature=0.1, seed=42, enable_logging=True)
-
-ontogen(text=text_example_5, generate_types = True, save_path="example5_ontology") # creates generated_ontology.owl in the current directory
+ontogen(text=text_example_5, generate_types = True, extract_spl_triples=True)
