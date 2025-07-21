@@ -1,4 +1,7 @@
+import time
+
 from owlapy.ontogen.data_extraction import GraphExtractor
+from owlapy.owl_ontology import SyncOntology
 
 text_example_1 = """NeoChip’s (NC) shares surged in their first week of trading on the NewTech Exchange. 
 However, market analysts caution that the chipmaker’s public debut may not reflect trends for other technology IPOs. 
@@ -66,7 +69,54 @@ In 1981, after additional surgery, she recovered her voice. Ms. Francis returned
 “I often say, I’d like to be remembered not for the highs I’ve reached but for the depths from which I’ve risen,” she told Mr. James. “There were exhilarating highs and abysmal lows. But it was fighting to get out of those lows that I feel most proud of.
 """
 
-
-ontogen = GraphExtractor(model="openai/gpt-4o", api_key="<ENTER_API_KEY>", api_base=None,
+start = time.time()
+ontogen = GraphExtractor(model="Qwen/Qwen3-32B-AWQ",api_key="<ENTER_YOUR_KEY>", api_base=None,
                          temperature=0.1, seed=42, enable_logging=True)
-ontogen(text=text_example_5, generate_types = True, extract_spl_triples=True)
+ontogen.forward(text=text_example_3, generate_types = True, extract_spl_triples=True)
+print(f"Runtime: {time.time() - start}")
+
+onto = SyncOntology(path="generated_ontology.owl")
+
+[print(ax) for ax in onto.get_abox_axioms()]
+[print(ax) for ax in onto.get_tbox_axioms()]
+
+
+# ================= Results using model=Qwen/Qwen3-32B-AWQ, temperature=0.1, seed=42 =================
+# For text example no.1 (runtime ~ 62s)
+# GraphExtractor: INFO  :: Generated the following entities: ['NEOCHIP', 'NEWTECH EXCHANGE', 'QUANTUM SYSTEMS', 'IoT']
+# GraphExtractor: INFO  :: Generated the following triples: [('NEOCHIP', 'TRADING ON', 'NEWTECH EXCHANGE'), ('NEOCHIP', 'ACQUIRED BY', 'QUANTUM SYSTEMS'), ('NEOCHIP', 'SPECIALIZES IN', 'IOT')]
+# GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: [('NEOCHIP', 'ORGANIZATION'), ('NEWTECH EXCHANGE', 'ORGANIZATION'), ('QUANTUM SYSTEMS', 'ORGANIZATION'), ('IoT', 'CONCEPT')]
+# GraphExtractor: INFO  :: Generated the following numeric literals: ['2016']
+# GraphExtractor: INFO  :: Generated the following s-p-l triples: []
+
+#######################
+# For text example no.2 (runtime ~ 72s)
+# GraphExtractor: INFO  :: Generated the following entities: ['TRUMP', 'NATO', 'OVAL OFFICE', 'BBC', 'BUTLER', 'PENNSYLVANIA']
+# GraphExtractor: INFO  :: Generated the following triples: [('TRUMP', 'ENDORSED', 'NATO'), ('TRUMP', 'MADE PHONE CALL TO', 'BBC'), ('TRUMP', 'INTERVIEWED FROM', 'OVAL OFFICE'), ('BUTLER', 'LOCATED IN', 'PENNSYLVANIA')]
+# GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: [('TRUMP', 'PERSON'), ('NATO', 'ORGANIZATION'), ('OVAL OFFICE', 'GEO'), ('BBC', 'ORGANIZATION'), ('BUTLER', 'GEO'), ('PENNSYLVANIA', 'GEO')]
+# GraphExtractor: INFO  :: Generated the following numeric literals: ['20', '1']
+# GraphExtractor: INFO  :: Generated the following s-p-l triples: []
+
+#######################
+# For text example no.3 (runtime ~ 44s)
+# GraphExtractor: INFO  :: Generated the following entities: ['J.P. MORGAN & CO.', 'JPMORGAN CHASE', 'J. P. MORGAN', 'HOUSE OF MORGAN', 'MORGAN']
+# GraphExtractor: INFO  :: Generated the following triples: [('J. P. MORGAN', 'FOUNDED', 'J.P. MORGAN & CO.'), ('J.P. MORGAN & CO.', 'SUBSIDIARY OF', 'JPMORGAN CHASE'), ('J.P. MORGAN & CO.', 'ALTERNATIVELY KNOWN AS', 'HOUSE OF MORGAN'), ('J.P. MORGAN & CO.', 'ALTERNATIVELY KNOWN AS', 'MORGAN')]
+# GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: [('J.P. MORGAN & CO.', 'ORGANIZATION'), ('JPMORGAN CHASE', 'ORGANIZATION'), ('J. P. MORGAN', 'PERSON'), ('HOUSE OF MORGAN', 'ORGANIZATION'), ('MORGAN', 'ORGANIZATION')]
+# GraphExtractor: INFO  :: Generated the following numeric literals: ['1871']
+# GraphExtractor: INFO  :: Generated the following s-p-l triples: [('J.P. MORGAN & CO.', 'FOUNDED IN', '1871')]
+
+#######################
+# For text example no.4 (runtime ~ 36s)
+# GraphExtractor: INFO  :: Generated the following entities: ['SEAN O’DOWD', 'BCG', 'SCHOLASTIC CAPITAL']
+# GraphExtractor: INFO  :: Generated the following triples: [("SEAN O'DOWD", 'FORMER CONSULTANT AT', 'BCG'), ("SEAN O'DOWD", 'CEO OF', 'SCHOLASTIC CAPITAL')]
+# GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: [('SEAN O’DOWD', 'PERSON'), ('BCG', 'ORGANIZATION'), ('SCHOLASTIC CAPITAL', 'ORGANIZATION')]
+# GraphExtractor: INFO  :: Generated the following numeric literals: []
+# GraphExtractor: INFO  :: Generated the following s-p-l triples: []
+
+#######################
+# For text example no.5 (runtime ~ 127s)
+# GraphExtractor: INFO  :: Generated the following entities: ['CONCETTA FRANCONERO', 'CONNIE FRANCIS', 'IRONBOUND NEIGHBORHOOD', 'NEWARK', 'IRVINGTON, N.J.', 'TED MACK', 'ORIGINAL AMATEUR HOUR', 'ARTHUR GODFREY', 'TALENT SCOUTS', 'STARTIME', 'MGM RECORDS', 'WHO’S SORRY NOW', 'AMERICAN BANDSTAND', 'MAMA', 'EVERYBODY’S SOMEONE’S FOOL', 'WHERE THE BOYS ARE', 'FOLLOW THE BOYS', 'LOOKING FOR LOVE', 'WHEN THE BOYS MEET THE GIRLS', 'COPACABANA', 'BOBBY DARIN', 'THE BEATLES', 'WESTBURY MUSIC FAIR', 'LONG ISLAND', 'GARY JAMES', 'DICK KANELLIS', 'IZADORE MARION', 'JOSEPH GARZILLI', 'BOB PARKINSON', 'GEORGE', 'WHO’S SORRY NOW?']
+# GraphExtractor: INFO  :: Generated the following triples: [('CONCETTA FRANCONERO', 'BECAME', 'CONNIE FRANCIS'), ('CONCETTA FRANCONERO', 'BORN IN', 'NEWARK'), ('CONCETTA FRANCONERO', 'Grew up in', 'IRONBOUND NEIGHBORHOOD'), ('CONNIE FRANCIS', 'APPEARED ON', 'TED MACK'), ('CONNIE FRANCIS', 'APPEARED ON', 'ORIGINAL AMATEUR HOUR'), ('CONNIE FRANCIS', 'APPEARED ON', 'ARTHUR GODFREY'), ('CONNIE FRANCIS', 'APPEARED ON', 'TALENT SCOUTS'), ('CONNIE FRANCIS', 'PART OF', 'STARTIME'), ('CONNIE FRANCIS', 'RECORDED', 'WHO’S SORRY NOW'), ('WHO’S SORRY NOW', 'FIRST HEARD ON', 'AMERICAN BANDSTAND'), ('CONNIE FRANCIS', 'RECORDED', 'MAMA'), ('CONNIE FRANCIS', 'RECORDED', 'EVERYBODY’S SOMEONE’S FOOL'), ('CONNIE FRANCIS', 'STARRED IN', 'WHERE THE BOYS ARE'), ('CONNIE FRANCIS', 'STARRED IN', 'FOLLOW THE BOYS'), ('CONNIE FRANCIS', 'STARRED IN', 'LOOKING FOR LOVE'), ('CONNIE FRANCIS', 'STARRED IN', 'WHEN THE BOYS MEET THE GIRLS'), ('CONNIE FRANCIS', 'PERFORMED AT', 'COPACABANA'), ('CONNIE FRANCIS', 'ROMANTIC INVOLVEMENT WITH', 'BOBBY DARIN'), ('CONNIE FRANCIS', 'OUTGROWN BY', 'THE BEATLES'), ('CONNIE FRANCIS', 'PERFORMED AT', 'WESTBURY MUSIC FAIR'), ('CONNIE FRANCIS', 'INTERVIEWED BY', 'GARY JAMES'), ('CONNIE FRANCIS', 'MARRIED TO', 'DICK KANELLIS'), ('CONNIE FRANCIS', 'MARRIED TO', 'IZADORE MARION'), ('CONNIE FRANCIS', 'MARRIED TO', 'JOSEPH GARZILLI'), ('CONNIE FRANCIS', 'MARRIED TO', 'BOB PARKINSON'), ('CONNIE FRANCIS', 'BROTHER', 'GEORGE')]
+# GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: [('CONCETTA FRANCONERO', 'PERSON'), ('CONNIE FRANCIS', 'PERSON'), ('IRONBOUND NEIGHBORHOOD', 'GEO'), ('NEWARK', 'GEO'), ('IRVINGTON, N.J.', 'GEO'), ('TED MACK', 'PERSON'), ('ORIGINAL AMATEUR HOUR', 'WORK'), ('ARTHUR GODFREY', 'PERSON'), ('TALENT SCOUTS', 'WORK'), ('STARTIME', 'WORK'), ('MGM RECORDS', 'ORGANIZATION'), ('WHO’S SORRY NOW', 'WORK'), ('AMERICAN BANDSTAND', 'WORK'), ('MAMA', 'WORK'), ('EVERYBODY’S SOMEONE’S FOOL', 'WORK'), ('WHERE THE BOYS ARE', 'WORK'), ('FOLLOW THE BOYS', 'WORK'), ('LOOKING FOR LOVE', 'WORK'), ('WHEN THE BOYS MEET THE GIRLS', 'WORK'), ('COPACABANA', 'GEO'), ('BOBBY DARIN', 'PERSON'), ('THE BEATLES', 'PERSON'), ('WESTBURY MUSIC FAIR', 'GEO'), ('LONG ISLAND', 'GEO'), ('GARY JAMES', 'PERSON'), ('DICK KANELLIS', 'PERSON'), ('IZADORE MARION', 'PERSON'), ('JOSEPH GARZILLI', 'PERSON'), ('BOB PARKINSON', 'PERSON'), ('GEORGE', 'PERSON'), ('WHO’S SORRY NOW?', 'WORK')]
+# GraphExtractor: INFO  :: Generated the following numeric literals: ['1937', '3', '4', '11', '1955', '2', '10', '1958', '6', '1,000,000', '4', '1960', '1963', '1964', '1965', '1964', '1974', '$2.5 million', '1981', '4', '3']
+# GraphExtractor: INFO  :: Generated the following s-p-l triples: [('CONCETTA FRANCONERO', 'BORN ON', '1937'), ('CONCETTA FRANCONERO', 'AGE WHEN GAVE ACCORDION', '3'), ('CONCETTA FRANCONERO', 'STAGE DEBUT AGE', '4'), ('CONCETTA FRANCONERO', 'APPEARED ON LOCAL TV SHOW AT AGE', '11'), ('MGM RECORDS', 'YEAR SIGNED', '1955'), ('MGM RECORDS', 'NUMBER OF SINGLES RECORDED', '10'), ('WHO’S SORRY NOW', 'RELEASED ON', '1958'), ('WHO’S SORRY NOW', 'COPIES SOLD IN 6 MONTHS', '1,000,000'), ('EVERYBODY’S SOMEONE’S FOOL', 'YEAR BECAME EUROPE’S TOP SINGLE', '1960'), ('WHERE THE BOYS ARE', 'RELEASED IN', '1960'), ('FOLLOW THE BOYS', 'RELEASED IN', '1963'), ('LOOKING FOR LOVE', 'RELEASED IN', '1964'), ('WHEN THE BOYS MEET THE GIRLS', 'RELEASED IN', '1965'), ('MGM RECORDS', 'LAST TOP 40 HIT YEAR', '1964'), ('MOTEL LAWSUIT DAMAGES AWARDED', 'AMOUNT', '$2.5 million'), ('MOTEL LAWSUIT DAMAGES AWARDED', 'YEAR', '1974'), ('VOICE RECOVERY', 'YEAR', '1981')]
