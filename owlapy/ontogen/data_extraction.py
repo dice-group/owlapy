@@ -64,8 +64,8 @@ class SPLTriples(dspy.Signature):
 
 
 def configure_dspy(signature):
-    lm = dspy.LM(model="openai/Qwen/Qwen3-32B-AWQ", api_key="<KEY>",
-                 api_base="http://tentris-ml.cs.upb.de:8501/v1",
+    lm = dspy.LM(model="openai/gpt-4o", api_key="<ENTER_API_KEY>",
+                 api_base=None,
                  temperature=0.1, seed=42, cache=True, cache_in_memory=True)
     dspy.configure(lm=lm)
     model = dspy.Predict(signature)
@@ -174,8 +174,8 @@ class GraphExtractor(dspy.Module):
                                           "when you want to generate types (i.e. when generate_types = True)")
 
         if self.logging:
-            print(f"GraphExtractor: INFO  :: In the generated triples, you may see entities or literals that were not"
-                  f"part of the extracted entities or literals. They are filtered before added to the ontology.")
+            print("GraphExtractor: INFO  :: In the generated triples, you may see entities or literals that were not"
+                  "part of the extracted entities or literals. They are filtered before added to the ontology.")
         entities = self.entity_extractor(text=text, few_shot_examples= examples_for_entity_extraction).entities
         if self.logging:
             print(f"GraphExtractor: INFO  :: Generated the following entities: {entities}")

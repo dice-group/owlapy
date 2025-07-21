@@ -67,6 +67,6 @@ In 1981, after additional surgery, she recovered her voice. Ms. Francis returned
 """
 
 
-ontogen = GraphExtractor(model="Qwen/Qwen3-32B-AWQ",api_key="<KEY>", api_base="http://tentris-ml.cs.upb.de:8501/v1",
+ontogen = GraphExtractor(model="openai/gpt-4o", api_key="<ENTER_API_KEY>", api_base=None,
                          temperature=0.1, seed=42, enable_logging=True)
 ontogen(text=text_example_5, generate_types = True, extract_spl_triples=True)
