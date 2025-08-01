@@ -1,0 +1,491 @@
+owlapy.swrl
+===========
+
+.. py:module:: owlapy.swrl
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.swrl.BUILTINS
+   owlapy.swrl.DATATYPES
+   owlapy.swrl.SWRL
+   owlapy.swrl.SWRLB
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.swrl.Variable
+   owlapy.swrl.DVariable
+   owlapy.swrl.IVariable
+   owlapy.swrl.Atom
+   owlapy.swrl.ClassAtom
+   owlapy.swrl.DataRangeAtom
+   owlapy.swrl.PropertyAtom
+   owlapy.swrl.ObjectPropertyAtom
+   owlapy.swrl.DataPropertyAtom
+   owlapy.swrl.SameAsAtom
+   owlapy.swrl.DifferentFromAtom
+   owlapy.swrl.BuiltInAtom
+   owlapy.swrl.Rule
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.swrl.r
+   owlapy.swrl.t
+
+
+Module Contents
+---------------
+
+.. py:data:: BUILTINS
+   :value: ['add', 'subtract', 'multiply', 'divide', 'mod', 'pow', 'abs', 'round', 'floor', 'ceiling',...
+
+
+.. py:data:: DATATYPES
+   :value: ['decimal', 'integer', 'nonNegativeInteger', 'nonPositiveInteger', 'positiveInteger',...
+
+
+.. py:data:: SWRL
+   :value: 'http://www.w3.org/2003/11/swrl#'
+
+
+.. py:data:: SWRLB
+   :value: 'http://www.w3.org/2003/11/swrlb#'
+
+
+.. py:class:: Variable(iri: Union[owlapy.iri.IRI, str])
+
+   Represents a variable in SWRL syntax
+
+
+   .. py:attribute:: iri
+      :type:  owlapy.iri.IRI
+
+
+   .. py:method:: is_i_variable()
+
+
+   .. py:method:: is_d_variable()
+
+
+   .. py:method:: __eq__(other)
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __hash__()
+
+
+.. py:class:: DVariable(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`Variable`
+
+
+   Represents a data variable in SWRL syntax
+
+
+   .. py:method:: __repr__()
+
+
+.. py:class:: IVariable(iri: Union[owlapy.iri.IRI, str])
+
+   Bases: :py:obj:`Variable`
+
+
+   Represents a individual variable in SWRL syntax
+
+
+   .. py:method:: __repr__()
+
+
+.. py:class:: Atom
+
+   Represents an Atom in SWRL syntax
+
+
+   .. py:method:: __eq__(other)
+
+
+   .. py:method:: from_string(atom_str: str, namespace: str, dp_predicates: List[str] = None)
+      :staticmethod:
+
+
+      Parses a SWRL atom like 'parent(?x, ?y)' or 'person(?x)'.
+
+      :returns: An Atom object.
+
+
+
+   .. py:method:: is_class_assertion()
+      :abstractmethod:
+
+
+
+   .. py:method:: is_property_assertion()
+      :abstractmethod:
+
+
+
+   .. py:method:: is_same_as()
+      :abstractmethod:
+
+
+
+   .. py:method:: is_different_from()
+      :abstractmethod:
+
+
+
+   .. py:method:: is_builtin()
+      :abstractmethod:
+
+
+
+.. py:function:: r(argument)
+
+   Returns the right string format of a given argument depending on its type
+
+
+.. py:function:: t(argument)
+
+   Returns the representation for a given argument
+
+
+.. py:class:: ClassAtom(cls: owlapy.class_expression.OWLClass, argument1: Union[IVariable, owlapy.owl_individual.OWLNamedIndividual])
+
+   Bases: :py:obj:`Atom`
+
+
+   Represents a class atom in SWRL syntax
+
+
+   .. py:attribute:: argument1
+      :type:  Union[IVariable, owlapy.owl_individual.OWLNamedIndividual]
+
+
+   .. py:attribute:: cls
+      :type:  owlapy.class_expression.OWLClass
+
+
+   .. py:method:: is_class_assertion()
+
+
+   .. py:method:: is_property_assertion()
+
+
+   .. py:method:: is_same_as()
+
+
+   .. py:method:: is_different_from()
+
+
+   .. py:method:: is_builtin()
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __hash__()
+
+
+.. py:class:: DataRangeAtom(datatype: owlapy.owl_datatype.OWLDatatype, argument1: DVariable)
+
+   Bases: :py:obj:`Atom`
+
+
+   Represents a data range atom in SWRL syntax
+
+
+   .. py:attribute:: argument1
+      :type:  DVariable
+
+
+   .. py:attribute:: datatype
+      :type:  owlapy.owl_datatype.OWLDatatype
+
+
+   .. py:method:: is_class_assertion()
+
+
+   .. py:method:: is_property_assertion()
+
+
+   .. py:method:: is_same_as()
+
+
+   .. py:method:: is_different_from()
+
+
+   .. py:method:: is_builtin()
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __hash__()
+
+
+.. py:class:: PropertyAtom(prop: Union[owlapy.owl_property.OWLObjectProperty, owlapy.owl_property.OWLDataProperty], argument1, argument2)
+
+   Bases: :py:obj:`Atom`
+
+
+   Represents a property atom in SWRL syntax
+
+
+   .. py:attribute:: argument1
+
+
+   .. py:attribute:: argument2
+
+
+   .. py:attribute:: prop
+
+
+   .. py:method:: is_class_assertion()
+
+
+   .. py:method:: is_property_assertion()
+
+
+   .. py:method:: is_same_as()
+
+
+   .. py:method:: is_different_from()
+
+
+   .. py:method:: is_builtin()
+
+
+   .. py:method:: __str__()
+
+
+.. py:class:: ObjectPropertyAtom(prop: owlapy.owl_property.OWLObjectProperty, argument1: Union[owlapy.owl_individual.OWLNamedIndividual, IVariable], argument2: Union[owlapy.owl_individual.OWLNamedIndividual, IVariable])
+
+   Bases: :py:obj:`PropertyAtom`
+
+
+   Represents an object property atom in SWRL syntax
+
+
+   .. py:attribute:: argument1
+      :type:  Union[owlapy.owl_individual.OWLNamedIndividual, IVariable]
+
+
+   .. py:attribute:: argument2
+      :type:  Union[owlapy.owl_individual.OWLNamedIndividual, IVariable]
+
+
+   .. py:attribute:: prop
+      :type:  owlapy.owl_property.OWLObjectProperty
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __hash__()
+
+
+.. py:class:: DataPropertyAtom(prop: owlapy.owl_property.OWLDataProperty, argument1: Union[owlapy.owl_individual.OWLNamedIndividual, IVariable], argument2: Union[owlapy.owl_literal.OWLLiteral, DVariable])
+
+   Bases: :py:obj:`PropertyAtom`
+
+
+   Represents a data property atom in SWRL syntax
+
+
+   .. py:attribute:: argument1
+      :type:  Union[owlapy.owl_individual.OWLNamedIndividual, IVariable]
+
+
+   .. py:attribute:: argument2
+      :type:  Union[owlapy.owl_literal.OWLLiteral, DVariable]
+
+
+   .. py:attribute:: prop
+      :type:  owlapy.owl_property.OWLDataProperty
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __hash__()
+
+
+.. py:class:: SameAsAtom(argument1: Union[IVariable, owlapy.owl_individual.OWLNamedIndividual], argument2: Union[IVariable, owlapy.owl_individual.OWLNamedIndividual])
+
+   Bases: :py:obj:`Atom`
+
+
+   Represents a 'same-as' atom in SWRL syntax
+
+
+   .. py:attribute:: argument1
+      :type:  Union[IVariable, owlapy.owl_individual.OWLNamedIndividual]
+
+
+   .. py:attribute:: argument2
+      :type:  Union[IVariable, owlapy.owl_individual.OWLNamedIndividual]
+
+
+   .. py:method:: is_class_assertion()
+
+
+   .. py:method:: is_property_assertion()
+
+
+   .. py:method:: is_same_as()
+
+
+   .. py:method:: is_different_from()
+
+
+   .. py:method:: is_builtin()
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __hash__()
+
+
+.. py:class:: DifferentFromAtom(argument1: Union[IVariable, owlapy.owl_individual.OWLNamedIndividual], argument2: Union[IVariable, owlapy.owl_individual.OWLNamedIndividual])
+
+   Bases: :py:obj:`Atom`
+
+
+   Represents a 'different-from' atom in SWRL syntax
+
+
+   .. py:attribute:: argument1
+      :type:  Union[IVariable, owlapy.owl_individual.OWLNamedIndividual]
+
+
+   .. py:attribute:: argument2
+      :type:  Union[IVariable, owlapy.owl_individual.OWLNamedIndividual]
+
+
+   .. py:method:: is_class_assertion()
+
+
+   .. py:method:: is_property_assertion()
+
+
+   .. py:method:: is_same_as()
+
+
+   .. py:method:: is_different_from()
+
+
+   .. py:method:: is_builtin()
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __hash__()
+
+
+.. py:class:: BuiltInAtom(predicate: owlapy.iri.IRI, arguments: List[Union[DVariable, owlapy.owl_literal.OWLLiteral]])
+
+   Bases: :py:obj:`Atom`
+
+
+   Represents a built-in atom in SWRL syntax
+
+
+   .. py:attribute:: predicate
+      :type:  owlapy.iri.IRI
+
+
+   .. py:attribute:: arguments
+      :type:  List[Union[DVariable, owlapy.owl_literal.OWLLiteral]]
+
+
+   .. py:method:: is_class_assertion()
+
+
+   .. py:method:: is_property_assertion()
+
+
+   .. py:method:: is_same_as()
+
+
+   .. py:method:: is_different_from()
+
+
+   .. py:method:: is_builtin()
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+
+.. py:class:: Rule(body_atoms: Union[Atom, List[Atom]], head_atoms: Union[Atom, List[Atom]])
+
+   Represents a rule in SWRL syntax
+
+
+   .. py:attribute:: body_atoms
+      :type:  Union[Atom, List[Atom]]
+
+
+   .. py:attribute:: head_atoms
+      :type:  Union[Atom, List[Atom]]
+
+
+   .. py:attribute:: body
+
+
+   .. py:attribute:: head
+
+
+   .. py:method:: from_string(rule: str, namespace: str, dp_predicates: List[str] = None)
+      :staticmethod:
+
+
+      Parses a SWRL rule given as a string.
+      Use '^' for composition of atoms and '->' for consequent implication.
+      E.g. of a valid rule: 'parent(?x,?y) ^ brother(?y,?z) -> uncle(?x,?z)'
+
+      :param rule: The SWRL rule in string format that is to be parsed
+      :param namespace: The namespace of the ontology
+      :param dp_predicates: (optional) List of data property predicates that will help in the correct mapping of
+                            property type (by default property atoms are considered as object property atoms except when
+                            specifying data property predicates in this argument)
+
+      :returns: A SWRL Rule object.
+
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: __repr__()
+
+

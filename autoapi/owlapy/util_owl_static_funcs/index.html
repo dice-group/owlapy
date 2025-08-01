@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.util_owl_static_funcs &mdash; OWLAPY 1.5.1 documentation</title>
+  <title>owlapy.util_owl_static_funcs &mdash; OWLAPY 1.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -18,14 +18,14 @@
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=44dfd65d"></script>
+      <script src="../../../_static/documentation_options.js?v=72d88caf"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="owlapy.utils" href="../utils/index.html" />
-    <link rel="prev" title="owlapy.static_funcs" href="../static_funcs/index.html" /> 
+    <link rel="prev" title="owlapy.swrl" href="../swrl/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -81,6 +81,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.util_owl_static_funcs</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
@@ -89,6 +90,9 @@
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.rdf_kg_to_csv"><code class="docutils literal notranslate"><span class="pre">rdf_kg_to_csv()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.create_ontology"><code class="docutils literal notranslate"><span class="pre">create_ontology()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.generate_ontology"><code class="docutils literal notranslate"><span class="pre">generate_ontology()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.make_kb_incomplete_ass"><code class="docutils literal notranslate"><span class="pre">make_kb_incomplete_ass()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.make_kb_incomplete"><code class="docutils literal notranslate"><span class="pre">make_kb_incomplete()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.util_owl_static_funcs.make_kb_inconsistent"><code class="docutils literal notranslate"><span class="pre">make_kb_inconsistent()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -148,6 +152,15 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.generate_ontology" title="owlapy.util_owl_static_funcs.generate_ontology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_ontology</span></code></a>([graph_as_json, output_path, ...])</p></td>
 <td><p>Generates an ontology using quadruples from a given json file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.make_kb_incomplete_ass" title="owlapy.util_owl_static_funcs.make_kb_incomplete_ass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_kb_incomplete_ass</span></code></a>(kb_path, output_path, rate, seed)</p></td>
+<td><p>Makes the knowledge base incomplete by removing a certain percentage of statements (triples).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.make_kb_incomplete" title="owlapy.util_owl_static_funcs.make_kb_incomplete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_kb_incomplete</span></code></a>(→ Set[str])</p></td>
+<td><p>Makes the knowledge base incomplete by removing a certain percentage of individuals.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.util_owl_static_funcs.make_kb_inconsistent" title="owlapy.util_owl_static_funcs.make_kb_inconsistent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_kb_inconsistent</span></code></a>(kb_path, output_path, rate, seed)</p></td>
+<td><p>This function makes the knowledge base (KB) inconsistent by introducing incorrect statements.</p></td>
 </tr>
 </tbody>
 </table>
@@ -301,6 +314,52 @@ including potential examples that may help identify entities better.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.util_owl_static_funcs.make_kb_incomplete_ass">
+<span class="sig-prename descclassname"><span class="pre">owlapy.util_owl_static_funcs.</span></span><span class="sig-name descname"><span class="pre">make_kb_incomplete_ass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kb_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/util_owl_static_funcs.html#make_kb_incomplete_ass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.util_owl_static_funcs.make_kb_incomplete_ass" title="Link to this definition"></a></dt>
+<dd><p>Makes the knowledge base incomplete by removing a certain percentage of statements (triples).</p>
+<section id="inputs">
+<h3>Inputs:<a class="headerlink" href="#inputs" title="Link to this heading"></a></h3>
+<p>kb_path: Path to the input knowledge base.
+output_path: Path to save the modified (incomplete) knowledge base.
+rate: Percentage of statements to remove (0-100).
+seed: random seed for reproducibility.</p>
+</section>
+<section id="output">
+<h3>Output:<a class="headerlink" href="#output" title="Link to this heading"></a></h3>
+<p>Incomplete KB at level rate %</p>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.util_owl_static_funcs.make_kb_incomplete">
+<span class="sig-prename descclassname"><span class="pre">owlapy.util_owl_static_funcs.</span></span><span class="sig-name descname"><span class="pre">make_kb_incomplete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kb_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/util_owl_static_funcs.html#make_kb_incomplete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.util_owl_static_funcs.make_kb_incomplete" title="Link to this definition"></a></dt>
+<dd><p>Makes the knowledge base incomplete by removing a certain percentage of individuals.</p>
+<section id="id1">
+<h3>Inputs:<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>kb_path: Path to the input knowledge base.
+output_path: Path to save the modified (incomplete) knowledge base.
+rate: Percentage of individuals to remove (0-100).
+seed: random seed for reproducibility.</p>
+</section>
+<section id="id2">
+<h3>Output:<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>Incomplete KB at level rate %</p>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.util_owl_static_funcs.make_kb_inconsistent">
+<span class="sig-prename descclassname"><span class="pre">owlapy.util_owl_static_funcs.</span></span><span class="sig-name descname"><span class="pre">make_kb_inconsistent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kb_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/util_owl_static_funcs.html#make_kb_inconsistent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.util_owl_static_funcs.make_kb_inconsistent" title="Link to this definition"></a></dt>
+<dd><p>This function makes the knowledge base (KB) inconsistent by introducing incorrect statements.</p>
+<p>Parameters:
+kb_path (str): Path to the original OWL ontology file.
+output_path (str): Path to save the inconsistent ontology file.
+rate (float): Percentage of incorrect statements to introduce (0-100).
+seed (int): Seed for reproducibility.
+max_attempts (int): Maximum attempts to find a valid incorrect statement.</p>
+</dd></dl>
+
 </section>
 </section>
 
@@ -308,7 +367,7 @@ including potential examples that may help identify entities better.</p></li>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../static_funcs/index.html" class="btn btn-neutral float-left" title="owlapy.static_funcs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../swrl/index.html" class="btn btn-neutral float-left" title="owlapy.swrl" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../utils/index.html" class="btn btn-neutral float-right" title="owlapy.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

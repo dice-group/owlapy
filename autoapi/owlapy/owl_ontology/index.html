@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_ontology &mdash; OWLAPY 1.5.1 documentation</title>
+  <title>owlapy.owl_ontology &mdash; OWLAPY 1.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=44dfd65d"></script>
+      <script src="../../../_static/documentation_options.js?v=72d88caf"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -76,6 +76,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.owl_ontology</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#attributes">Attributes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology.OWLOntologyID"><code class="docutils literal notranslate"><span class="pre">OWLOntologyID</span></code></a><ul>
@@ -186,6 +187,34 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.FromOwlready2.map_datarange"><code class="docutils literal notranslate"><span class="pre">FromOwlready2.map_datarange()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology.is_valid_entity"><code class="docutils literal notranslate"><span class="pre">is_valid_entity()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology"><code class="docutils literal notranslate"><span class="pre">NeuralOntology</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.STR_IRI_TYPE"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.STR_IRI_TYPE</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.STR_IRI_OWL_CLASS"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.STR_IRI_OWL_CLASS</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.STR_IRI_OBJECT_PROPERTY"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.STR_IRI_OBJECT_PROPERTY</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.STR_IRI_DATA_PROPERTY"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.STR_IRI_DATA_PROPERTY</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.gamma"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.gamma</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.batch_size"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.batch_size</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.predict"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.predict()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.classes_in_signature"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.classes_in_signature()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.individuals_in_signature"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.individuals_in_signature()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.data_properties_in_signature"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.data_properties_in_signature()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.object_properties_in_signature"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.object_properties_in_signature()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.equivalent_classes_axioms"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.equivalent_classes_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.general_class_axioms"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.general_class_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.data_property_domain_axioms"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.data_property_domain_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.data_property_range_axioms"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.data_property_range_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.object_property_domain_axioms"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.object_property_domain_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.get_ontology_id"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.get_ontology_id()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.add_axiom"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.add_axiom()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.remove_axiom"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.remove_axiom()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.save"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.save()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.__eq__"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.__eq__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.__hash__"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.__repr__"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology.object_property_range_axioms"><code class="docutils literal notranslate"><span class="pre">NeuralOntology.object_property_range_axioms()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -197,6 +226,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../utils/index.html">owlapy.utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
@@ -270,6 +300,19 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_ontology.FromOwlready2" title="owlapy.owl_ontology.FromOwlready2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FromOwlready2</span></code></a></p></td>
 <td><p>Map owlready2 classes to owlapy model classes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_ontology.NeuralOntology" title="owlapy.owl_ontology.NeuralOntology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NeuralOntology</span></code></a></p></td>
+<td><p>Represents an OWL 2 Ontology  in the OWL 2 specification.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_ontology.is_valid_entity" title="owlapy.owl_ontology.is_valid_entity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_valid_entity</span></code></a>(text_input)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -1158,6 +1201,251 @@ saved.</p>
 <dt class="sig sig-object py" id="owlapy.owl_ontology.FromOwlready2.map_datarange">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">map_datarange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">owlready2.ClassConstruct</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataRange" title="owlapy.owl_data_ranges.OWLDataRange"><span class="pre">owlapy.owl_data_ranges.OWLDataRange</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#FromOwlready2.map_datarange"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.FromOwlready2.map_datarange" title="Link to this definition"></a></dt>
 <dd><p>Map data range classes.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.is_valid_entity">
+<span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology.</span></span><span class="sig-name descname"><span class="pre">is_valid_entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#is_valid_entity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.is_valid_entity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.owl_ontology.</span></span><span class="sig-name descname"><span class="pre">NeuralOntology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_neural_embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_if_not_exists</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></code></a></p>
+<p>Represents an OWL 2 Ontology  in the OWL 2 specification.</p>
+<p>An OWLOntology consists of a possibly empty set of OWLAxioms and a possibly empty set of OWLAnnotations.
+An ontology can have an ontology IRI which can be used to identify the ontology. If it has an ontology IRI then
+it may also have an ontology version IRI. Since OWL 2, an ontology need not have an ontology IRI. (See the OWL 2
+Structural Specification).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.STR_IRI_TYPE">
+<span class="sig-name descname"><span class="pre">STR_IRI_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'</span></em><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.STR_IRI_TYPE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.STR_IRI_OWL_CLASS">
+<span class="sig-name descname"><span class="pre">STR_IRI_OWL_CLASS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://www.w3.org/2002/07/owl#Class'</span></em><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.STR_IRI_OWL_CLASS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.STR_IRI_OBJECT_PROPERTY">
+<span class="sig-name descname"><span class="pre">STR_IRI_OBJECT_PROPERTY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://www.w3.org/2002/07/owl#ObjectProperty'</span></em><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.STR_IRI_OBJECT_PROPERTY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.STR_IRI_DATA_PROPERTY">
+<span class="sig-name descname"><span class="pre">STR_IRI_DATA_PROPERTY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://www.w3.org/2002/07/owl#DatatypeProperty'</span></em><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.STR_IRI_DATA_PROPERTY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.gamma">
+<span class="sig-name descname"><span class="pre">gamma</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></em><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.gamma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.batch_size">
+<span class="sig-name descname"><span class="pre">batch_size</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1024</span></em><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.batch_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.predict" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.classes_in_signature">
+<span class="sig-name descname"><span class="pre">classes_in_signature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass" title="owlapy.class_expression.OWLClass"><span class="pre">owlapy.class_expression.OWLClass</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.classes_in_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.classes_in_signature" title="Link to this definition"></a></dt>
+<dd><p>Gets the classes in the signature of this object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Classes in the signature of this object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.individuals_in_signature">
+<span class="sig-name descname"><span class="pre">individuals_in_signature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.individuals_in_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.individuals_in_signature" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that obtains the individuals that are in the signature of this object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Individuals that are in the signature of this object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.data_properties_in_signature">
+<span class="sig-name descname"><span class="pre">data_properties_in_signature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.data_properties_in_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.data_properties_in_signature" title="Link to this definition"></a></dt>
+<dd><p>Get the data properties that are in the signature of this object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Data properties that are in the signature of this object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.object_properties_in_signature">
+<span class="sig-name descname"><span class="pre">object_properties_in_signature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="pre">owlapy.owl_property.OWLObjectProperty</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.object_properties_in_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.object_properties_in_signature" title="Link to this definition"></a></dt>
+<dd><p>A convenience method that obtains the object properties that are in the signature of this object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Object properties that are in the signature of this object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.equivalent_classes_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">equivalent_classes_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass" title="owlapy.class_expression.OWLClass"><span class="pre">owlapy.class_expression.OWLClass</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLEquivalentClassesAxiom" title="owlapy.owl_axiom.OWLEquivalentClassesAxiom"><span class="pre">owlapy.owl_axiom.OWLEquivalentClassesAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.equivalent_classes_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.equivalent_classes_axioms" title="Link to this definition"></a></dt>
+<dd><p>Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>c</strong> – The class for which the EquivalentClasses axioms should be retrieved.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>EquivalentClasses axioms contained in this ontology.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.general_class_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">general_class_axioms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLClassAxiom" title="owlapy.owl_axiom.OWLClassAxiom"><span class="pre">owlapy.owl_axiom.OWLClassAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.general_class_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.general_class_axioms" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Get the general class axioms of this ontology. This includes SubClass axioms with a complex class expression</dt><dd><p>as the sub class and EquivalentClass axioms and DisjointClass axioms with only complex class expressions.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>General class axioms contained in this ontology.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.data_property_domain_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_property_domain_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLDataPropertyDomainAxiom" title="owlapy.owl_axiom.OWLDataPropertyDomainAxiom"><span class="pre">owlapy.owl_axiom.OWLDataPropertyDomainAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.data_property_domain_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.data_property_domain_axioms" title="Link to this definition"></a></dt>
+<dd><p>Gets the OWLDataPropertyDomainAxiom objects where the property is equal to the specified property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>property</strong> – The property which is equal to the property of the retrieved axioms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The axioms matching the search.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.data_property_range_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_property_range_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLDataPropertyRangeAxiom" title="owlapy.owl_axiom.OWLDataPropertyRangeAxiom"><span class="pre">owlapy.owl_axiom.OWLDataPropertyRangeAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.data_property_range_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.data_property_range_axioms" title="Link to this definition"></a></dt>
+<dd><p>Gets the OWLDataPropertyRangeAxiom objects where the property is equal to the specified property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>property</strong> – The property which is equal to the property of the retrieved axioms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The axioms matching the search.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.object_property_domain_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">object_property_domain_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="pre">owlapy.owl_property.OWLObjectProperty</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLObjectPropertyDomainAxiom" title="owlapy.owl_axiom.OWLObjectPropertyDomainAxiom"><span class="pre">owlapy.owl_axiom.OWLObjectPropertyDomainAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.object_property_domain_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.object_property_domain_axioms" title="Link to this definition"></a></dt>
+<dd><p>Gets the OWLObjectPropertyDomainAxiom objects where the property is equal to the specified property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>property</strong> – The property which is equal to the property of the retrieved axioms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The axioms matching the search.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.get_ontology_id">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_ontology_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">owlapy.abstracts.abstract_owl_ontology._OI</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.get_ontology_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.get_ontology_id" title="Link to this definition"></a></dt>
+<dd><p>Gets the OWLOntologyID belonging to this object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The OWLOntologyID.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.add_axiom">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.add_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.add_axiom" title="Link to this definition"></a></dt>
+<dd><p>Add the specified axiom/axioms to the ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axiom</strong> – Can be a single axiom or a collection of axioms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.remove_axiom">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.remove_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.remove_axiom" title="Link to this definition"></a></dt>
+<dd><p>Removes the specified axiom/axioms to the ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axiom</strong> – Can be a single axiom or a collection of axioms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.save">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.save" title="Link to this definition"></a></dt>
+<dd><p>Saves this ontology, using its IRI to determine where/how the ontology should be
+saved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>document_iri</strong> – Whether you want to save in a different location.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.NeuralOntology.object_property_range_axioms">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">object_property_range_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="pre">owlapy.owl_property.OWLObjectProperty</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLObjectPropertyRangeAxiom" title="owlapy.owl_axiom.OWLObjectPropertyRangeAxiom"><span class="pre">owlapy.owl_axiom.OWLObjectPropertyRangeAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#NeuralOntology.object_property_range_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.NeuralOntology.object_property_range_axioms" title="Link to this definition"></a></dt>
+<dd><p>Gets the OWLObjectPropertyRangeAxiom objects where the property is equal to the specified property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>property</strong> – The property which is equal to the property of the retrieved axioms.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The axioms matching the search.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

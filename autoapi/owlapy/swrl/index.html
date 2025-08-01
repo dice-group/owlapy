@@ -1,0 +1,973 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.swrl &mdash; OWLAPY 1.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=72d88caf"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="owlapy.util_owl_static_funcs" href="../util_owl_static_funcs/index.html" />
+    <link rel="prev" title="owlapy.static_funcs" href="../static_funcs/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.swrl</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.BUILTINS"><code class="docutils literal notranslate"><span class="pre">BUILTINS</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.DATATYPES"><code class="docutils literal notranslate"><span class="pre">DATATYPES</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.SWRL"><code class="docutils literal notranslate"><span class="pre">SWRL</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.SWRLB"><code class="docutils literal notranslate"><span class="pre">SWRLB</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.Variable"><code class="docutils literal notranslate"><span class="pre">Variable</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.iri"><code class="docutils literal notranslate"><span class="pre">Variable.iri</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.is_i_variable"><code class="docutils literal notranslate"><span class="pre">Variable.is_i_variable()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.is_d_variable"><code class="docutils literal notranslate"><span class="pre">Variable.is_d_variable()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.__eq__"><code class="docutils literal notranslate"><span class="pre">Variable.__eq__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.__str__"><code class="docutils literal notranslate"><span class="pre">Variable.__str__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.__hash__"><code class="docutils literal notranslate"><span class="pre">Variable.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.DVariable"><code class="docutils literal notranslate"><span class="pre">DVariable</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DVariable.__repr__"><code class="docutils literal notranslate"><span class="pre">DVariable.__repr__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.IVariable"><code class="docutils literal notranslate"><span class="pre">IVariable</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.IVariable.__repr__"><code class="docutils literal notranslate"><span class="pre">IVariable.__repr__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.Atom"><code class="docutils literal notranslate"><span class="pre">Atom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Atom.__eq__"><code class="docutils literal notranslate"><span class="pre">Atom.__eq__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Atom.from_string"><code class="docutils literal notranslate"><span class="pre">Atom.from_string()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Atom.is_class_assertion"><code class="docutils literal notranslate"><span class="pre">Atom.is_class_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Atom.is_property_assertion"><code class="docutils literal notranslate"><span class="pre">Atom.is_property_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Atom.is_same_as"><code class="docutils literal notranslate"><span class="pre">Atom.is_same_as()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Atom.is_different_from"><code class="docutils literal notranslate"><span class="pre">Atom.is_different_from()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Atom.is_builtin"><code class="docutils literal notranslate"><span class="pre">Atom.is_builtin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.r"><code class="docutils literal notranslate"><span class="pre">r()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.t"><code class="docutils literal notranslate"><span class="pre">t()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.ClassAtom"><code class="docutils literal notranslate"><span class="pre">ClassAtom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.argument1"><code class="docutils literal notranslate"><span class="pre">ClassAtom.argument1</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.cls"><code class="docutils literal notranslate"><span class="pre">ClassAtom.cls</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.is_class_assertion"><code class="docutils literal notranslate"><span class="pre">ClassAtom.is_class_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.is_property_assertion"><code class="docutils literal notranslate"><span class="pre">ClassAtom.is_property_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.is_same_as"><code class="docutils literal notranslate"><span class="pre">ClassAtom.is_same_as()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.is_different_from"><code class="docutils literal notranslate"><span class="pre">ClassAtom.is_different_from()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.is_builtin"><code class="docutils literal notranslate"><span class="pre">ClassAtom.is_builtin()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.__str__"><code class="docutils literal notranslate"><span class="pre">ClassAtom.__str__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">ClassAtom.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">ClassAtom.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.argument1"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.argument1</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.datatype"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.datatype</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.is_class_assertion"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.is_class_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.is_property_assertion"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.is_property_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.is_same_as"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.is_same_as()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.is_different_from"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.is_different_from()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.is_builtin"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.is_builtin()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.__str__"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.__str__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.PropertyAtom"><code class="docutils literal notranslate"><span class="pre">PropertyAtom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.argument1"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.argument1</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.argument2"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.argument2</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.prop"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.prop</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.is_class_assertion"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.is_class_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.is_property_assertion"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.is_property_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.is_same_as"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.is_same_as()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.is_different_from"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.is_different_from()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.is_builtin"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.is_builtin()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.PropertyAtom.__str__"><code class="docutils literal notranslate"><span class="pre">PropertyAtom.__str__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.argument1"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.argument1</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.argument2"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.argument2</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.prop"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.prop</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.argument1"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.argument1</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.argument2"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.argument2</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.prop"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.prop</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.SameAsAtom"><code class="docutils literal notranslate"><span class="pre">SameAsAtom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.argument1"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.argument1</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.argument2"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.argument2</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.is_class_assertion"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.is_class_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.is_property_assertion"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.is_property_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.is_same_as"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.is_same_as()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.is_different_from"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.is_different_from()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.is_builtin"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.is_builtin()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.__str__"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.__str__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.argument1"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.argument1</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.argument2"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.argument2</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.is_class_assertion"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.is_class_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.is_property_assertion"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.is_property_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.is_same_as"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.is_same_as()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.is_different_from"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.is_different_from()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.is_builtin"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.is_builtin()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.__str__"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.__str__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.__hash__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.predicate"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.predicate</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.arguments"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.arguments</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.is_class_assertion"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.is_class_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.is_property_assertion"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.is_property_assertion()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.is_same_as"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.is_same_as()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.is_different_from"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.is_different_from()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.is_builtin"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.is_builtin()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.__str__"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.__str__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.__repr__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.Rule"><code class="docutils literal notranslate"><span class="pre">Rule</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.body_atoms"><code class="docutils literal notranslate"><span class="pre">Rule.body_atoms</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.head_atoms"><code class="docutils literal notranslate"><span class="pre">Rule.head_atoms</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.body"><code class="docutils literal notranslate"><span class="pre">Rule.body</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.head"><code class="docutils literal notranslate"><span class="pre">Rule.head</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.from_string"><code class="docutils literal notranslate"><span class="pre">Rule.from_string()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.__str__"><code class="docutils literal notranslate"><span class="pre">Rule.__str__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.__repr__"><code class="docutils literal notranslate"><span class="pre">Rule.__repr__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy</a></li>
+      <li class="breadcrumb-item active">owlapy.swrl</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/owlapy/swrl/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.swrl">
+<span id="owlapy-swrl"></span><h1>owlapy.swrl<a class="headerlink" href="#module-owlapy.swrl" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.BUILTINS" title="owlapy.swrl.BUILTINS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BUILTINS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.DATATYPES" title="owlapy.swrl.DATATYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DATATYPES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.SWRL" title="owlapy.swrl.SWRL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SWRL</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.SWRLB" title="owlapy.swrl.SWRLB"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SWRLB</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.Variable" title="owlapy.swrl.Variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variable</span></code></a></p></td>
+<td><p>Represents a variable in SWRL syntax</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.DVariable" title="owlapy.swrl.DVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DVariable</span></code></a></p></td>
+<td><p>Represents a data variable in SWRL syntax</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IVariable</span></code></a></p></td>
+<td><p>Represents a individual variable in SWRL syntax</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a></p></td>
+<td><p>Represents an Atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.ClassAtom" title="owlapy.swrl.ClassAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ClassAtom</span></code></a></p></td>
+<td><p>Represents a class atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.DataRangeAtom" title="owlapy.swrl.DataRangeAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataRangeAtom</span></code></a></p></td>
+<td><p>Represents a data range atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.PropertyAtom" title="owlapy.swrl.PropertyAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PropertyAtom</span></code></a></p></td>
+<td><p>Represents a property atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom" title="owlapy.swrl.ObjectPropertyAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ObjectPropertyAtom</span></code></a></p></td>
+<td><p>Represents an object property atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom" title="owlapy.swrl.DataPropertyAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataPropertyAtom</span></code></a></p></td>
+<td><p>Represents a data property atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.SameAsAtom" title="owlapy.swrl.SameAsAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SameAsAtom</span></code></a></p></td>
+<td><p>Represents a 'same-as' atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom" title="owlapy.swrl.DifferentFromAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DifferentFromAtom</span></code></a></p></td>
+<td><p>Represents a 'different-from' atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.BuiltInAtom" title="owlapy.swrl.BuiltInAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BuiltInAtom</span></code></a></p></td>
+<td><p>Represents a built-in atom in SWRL syntax</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.Rule" title="owlapy.swrl.Rule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Rule</span></code></a></p></td>
+<td><p>Represents a rule in SWRL syntax</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.swrl.r" title="owlapy.swrl.r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">r</span></code></a>(argument)</p></td>
+<td><p>Returns the right string format of a given argument depending on its type</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.swrl.t" title="owlapy.swrl.t"><code class="xref py py-obj docutils literal notranslate"><span class="pre">t</span></code></a>(argument)</p></td>
+<td><p>Returns the representation for a given argument</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.swrl.BUILTINS">
+<span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">BUILTINS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['add',</span> <span class="pre">'subtract',</span> <span class="pre">'multiply',</span> <span class="pre">'divide',</span> <span class="pre">'mod',</span> <span class="pre">'pow',</span> <span class="pre">'abs',</span> <span class="pre">'round',</span> <span class="pre">'floor',</span> <span class="pre">'ceiling',...</span></em><a class="headerlink" href="#owlapy.swrl.BUILTINS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.swrl.DATATYPES">
+<span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">DATATYPES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['decimal',</span> <span class="pre">'integer',</span> <span class="pre">'nonNegativeInteger',</span> <span class="pre">'nonPositiveInteger',</span> <span class="pre">'positiveInteger',...</span></em><a class="headerlink" href="#owlapy.swrl.DATATYPES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.swrl.SWRL">
+<span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">SWRL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://www.w3.org/2003/11/swrl#'</span></em><a class="headerlink" href="#owlapy.swrl.SWRL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.swrl.SWRLB">
+<span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">SWRLB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://www.w3.org/2003/11/swrlb#'</span></em><a class="headerlink" href="#owlapy.swrl.SWRLB" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.Variable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">Variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Variable" title="Link to this definition"></a></dt>
+<dd><p>Represents a variable in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.Variable.iri">
+<span class="sig-name descname"><span class="pre">iri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></em><a class="headerlink" href="#owlapy.swrl.Variable.iri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Variable.is_i_variable">
+<span class="sig-name descname"><span class="pre">is_i_variable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Variable.is_i_variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Variable.is_i_variable" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Variable.is_d_variable">
+<span class="sig-name descname"><span class="pre">is_d_variable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Variable.is_d_variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Variable.is_d_variable" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Variable.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Variable.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Variable.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Variable.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Variable.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Variable.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Variable.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Variable.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Variable.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.DVariable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">DVariable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DVariable" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.Variable" title="owlapy.swrl.Variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variable</span></code></a></p>
+<p>Represents a data variable in SWRL syntax</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DVariable.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DVariable.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DVariable.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.IVariable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">IVariable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#IVariable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.IVariable" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.Variable" title="owlapy.swrl.Variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variable</span></code></a></p>
+<p>Represents a individual variable in SWRL syntax</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.IVariable.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#IVariable.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.IVariable.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.Atom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">Atom</span></span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Atom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Atom" title="Link to this definition"></a></dt>
+<dd><p>Represents an Atom in SWRL syntax</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Atom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Atom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Atom.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Atom.from_string">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dp_predicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Atom.from_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Atom.from_string" title="Link to this definition"></a></dt>
+<dd><p>Parses a SWRL atom like ‘parent(?x, ?y)’ or ‘person(?x)’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An Atom object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Atom.is_class_assertion">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_class_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Atom.is_class_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Atom.is_class_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Atom.is_property_assertion">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_property_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Atom.is_property_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Atom.is_property_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Atom.is_same_as">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_same_as</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Atom.is_same_as"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Atom.is_same_as" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Atom.is_different_from">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_different_from</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Atom.is_different_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Atom.is_different_from" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Atom.is_builtin">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_builtin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Atom.is_builtin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Atom.is_builtin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.swrl.r">
+<span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.r" title="Link to this definition"></a></dt>
+<dd><p>Returns the right string format of a given argument depending on its type</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.swrl.t">
+<span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">t</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#t"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.t" title="Link to this definition"></a></dt>
+<dd><p>Returns the representation for a given argument</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">ClassAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass" title="owlapy.class_expression.OWLClass"><span class="pre">owlapy.class_expression.OWLClass</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a></p>
+<p>Represents a class atom in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.argument1">
+<span class="sig-name descname"><span class="pre">argument1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></em><a class="headerlink" href="#owlapy.swrl.ClassAtom.argument1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.cls">
+<span class="sig-name descname"><span class="pre">cls</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass" title="owlapy.class_expression.OWLClass"><span class="pre">owlapy.class_expression.OWLClass</span></a></em><a class="headerlink" href="#owlapy.swrl.ClassAtom.cls" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.is_class_assertion">
+<span class="sig-name descname"><span class="pre">is_class_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.is_class_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.is_class_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.is_property_assertion">
+<span class="sig-name descname"><span class="pre">is_property_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.is_property_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.is_property_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.is_same_as">
+<span class="sig-name descname"><span class="pre">is_same_as</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.is_same_as"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.is_same_as" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.is_different_from">
+<span class="sig-name descname"><span class="pre">is_different_from</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.is_different_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.is_different_from" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.is_builtin">
+<span class="sig-name descname"><span class="pre">is_builtin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.is_builtin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.is_builtin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">DataRangeAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_datatype/index.html#owlapy.owl_datatype.OWLDatatype" title="owlapy.owl_datatype.OWLDatatype"><span class="pre">owlapy.owl_datatype.OWLDatatype</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.swrl.DVariable" title="owlapy.swrl.DVariable"><span class="pre">DVariable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a></p>
+<p>Represents a data range atom in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.argument1">
+<span class="sig-name descname"><span class="pre">argument1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.DVariable" title="owlapy.swrl.DVariable"><span class="pre">DVariable</span></a></em><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.argument1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.datatype">
+<span class="sig-name descname"><span class="pre">datatype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../owl_datatype/index.html#owlapy.owl_datatype.OWLDatatype" title="owlapy.owl_datatype.OWLDatatype"><span class="pre">owlapy.owl_datatype.OWLDatatype</span></a></em><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.datatype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.is_class_assertion">
+<span class="sig-name descname"><span class="pre">is_class_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.is_class_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.is_class_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.is_property_assertion">
+<span class="sig-name descname"><span class="pre">is_property_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.is_property_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.is_property_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.is_same_as">
+<span class="sig-name descname"><span class="pre">is_same_as</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.is_same_as"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.is_same_as" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.is_different_from">
+<span class="sig-name descname"><span class="pre">is_different_from</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.is_different_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.is_different_from" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.is_builtin">
+<span class="sig-name descname"><span class="pre">is_builtin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.is_builtin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.is_builtin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">PropertyAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="pre">owlapy.owl_property.OWLObjectProperty</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#PropertyAtom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.PropertyAtom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a></p>
+<p>Represents a property atom in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.argument1">
+<span class="sig-name descname"><span class="pre">argument1</span></span><a class="headerlink" href="#owlapy.swrl.PropertyAtom.argument1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.argument2">
+<span class="sig-name descname"><span class="pre">argument2</span></span><a class="headerlink" href="#owlapy.swrl.PropertyAtom.argument2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.prop">
+<span class="sig-name descname"><span class="pre">prop</span></span><a class="headerlink" href="#owlapy.swrl.PropertyAtom.prop" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.is_class_assertion">
+<span class="sig-name descname"><span class="pre">is_class_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#PropertyAtom.is_class_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.PropertyAtom.is_class_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.is_property_assertion">
+<span class="sig-name descname"><span class="pre">is_property_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#PropertyAtom.is_property_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.PropertyAtom.is_property_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.is_same_as">
+<span class="sig-name descname"><span class="pre">is_same_as</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#PropertyAtom.is_same_as"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.PropertyAtom.is_same_as" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.is_different_from">
+<span class="sig-name descname"><span class="pre">is_different_from</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#PropertyAtom.is_different_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.PropertyAtom.is_different_from" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.is_builtin">
+<span class="sig-name descname"><span class="pre">is_builtin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#PropertyAtom.is_builtin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.PropertyAtom.is_builtin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.PropertyAtom.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#PropertyAtom.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.PropertyAtom.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.ObjectPropertyAtom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">ObjectPropertyAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="pre">owlapy.owl_property.OWLObjectProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ObjectPropertyAtom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ObjectPropertyAtom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.PropertyAtom" title="owlapy.swrl.PropertyAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PropertyAtom</span></code></a></p>
+<p>Represents an object property atom in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.ObjectPropertyAtom.argument1">
+<span class="sig-name descname"><span class="pre">argument1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a></em><a class="headerlink" href="#owlapy.swrl.ObjectPropertyAtom.argument1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.ObjectPropertyAtom.argument2">
+<span class="sig-name descname"><span class="pre">argument2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a></em><a class="headerlink" href="#owlapy.swrl.ObjectPropertyAtom.argument2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.ObjectPropertyAtom.prop">
+<span class="sig-name descname"><span class="pre">prop</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectProperty" title="owlapy.owl_property.OWLObjectProperty"><span class="pre">owlapy.owl_property.OWLObjectProperty</span></a></em><a class="headerlink" href="#owlapy.swrl.ObjectPropertyAtom.prop" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ObjectPropertyAtom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ObjectPropertyAtom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ObjectPropertyAtom.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ObjectPropertyAtom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ObjectPropertyAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ObjectPropertyAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.DataPropertyAtom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">DataPropertyAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.DVariable" title="owlapy.swrl.DVariable"><span class="pre">DVariable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataPropertyAtom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataPropertyAtom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.PropertyAtom" title="owlapy.swrl.PropertyAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PropertyAtom</span></code></a></p>
+<p>Represents a data property atom in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.DataPropertyAtom.argument1">
+<span class="sig-name descname"><span class="pre">argument1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a></em><a class="headerlink" href="#owlapy.swrl.DataPropertyAtom.argument1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.DataPropertyAtom.argument2">
+<span class="sig-name descname"><span class="pre">argument2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.DVariable" title="owlapy.swrl.DVariable"><span class="pre">DVariable</span></a></em><a class="headerlink" href="#owlapy.swrl.DataPropertyAtom.argument2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.DataPropertyAtom.prop">
+<span class="sig-name descname"><span class="pre">prop</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLDataProperty" title="owlapy.owl_property.OWLDataProperty"><span class="pre">owlapy.owl_property.OWLDataProperty</span></a></em><a class="headerlink" href="#owlapy.swrl.DataPropertyAtom.prop" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataPropertyAtom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataPropertyAtom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataPropertyAtom.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataPropertyAtom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataPropertyAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataPropertyAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">SameAsAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a></p>
+<p>Represents a ‘same-as’ atom in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.argument1">
+<span class="sig-name descname"><span class="pre">argument1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></em><a class="headerlink" href="#owlapy.swrl.SameAsAtom.argument1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.argument2">
+<span class="sig-name descname"><span class="pre">argument2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></em><a class="headerlink" href="#owlapy.swrl.SameAsAtom.argument2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.is_class_assertion">
+<span class="sig-name descname"><span class="pre">is_class_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.is_class_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.is_class_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.is_property_assertion">
+<span class="sig-name descname"><span class="pre">is_property_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.is_property_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.is_property_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.is_same_as">
+<span class="sig-name descname"><span class="pre">is_same_as</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.is_same_as"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.is_same_as" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.is_different_from">
+<span class="sig-name descname"><span class="pre">is_different_from</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.is_different_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.is_different_from" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.is_builtin">
+<span class="sig-name descname"><span class="pre">is_builtin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.is_builtin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.is_builtin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">DifferentFromAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a></p>
+<p>Represents a ‘different-from’ atom in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.argument1">
+<span class="sig-name descname"><span class="pre">argument1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></em><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.argument1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.argument2">
+<span class="sig-name descname"><span class="pre">argument2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.IVariable" title="owlapy.swrl.IVariable"><span class="pre">IVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></em><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.argument2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.is_class_assertion">
+<span class="sig-name descname"><span class="pre">is_class_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.is_class_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.is_class_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.is_property_assertion">
+<span class="sig-name descname"><span class="pre">is_property_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.is_property_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.is_property_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.is_same_as">
+<span class="sig-name descname"><span class="pre">is_same_as</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.is_same_as"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.is_same_as" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.is_different_from">
+<span class="sig-name descname"><span class="pre">is_different_from</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.is_different_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.is_different_from" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.is_builtin">
+<span class="sig-name descname"><span class="pre">is_builtin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.is_builtin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.is_builtin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">BuiltInAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.swrl.DVariable" title="owlapy.swrl.DVariable"><span class="pre">DVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a></p>
+<p>Represents a built-in atom in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.predicate">
+<span class="sig-name descname"><span class="pre">predicate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></em><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.predicate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.arguments">
+<span class="sig-name descname"><span class="pre">arguments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.swrl.DVariable" title="owlapy.swrl.DVariable"><span class="pre">DVariable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.arguments" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.is_class_assertion">
+<span class="sig-name descname"><span class="pre">is_class_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.is_class_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.is_class_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.is_property_assertion">
+<span class="sig-name descname"><span class="pre">is_property_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.is_property_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.is_property_assertion" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.is_same_as">
+<span class="sig-name descname"><span class="pre">is_same_as</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.is_same_as"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.is_same_as" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.is_different_from">
+<span class="sig-name descname"><span class="pre">is_different_from</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.is_different_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.is_different_from" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.is_builtin">
+<span class="sig-name descname"><span class="pre">is_builtin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.is_builtin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.is_builtin" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">owlapy.swrl.</span></span><span class="sig-name descname"><span class="pre">Rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body_atoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><span class="pre">Atom</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><span class="pre">Atom</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_atoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><span class="pre">Atom</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><span class="pre">Atom</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Rule" title="Link to this definition"></a></dt>
+<dd><p>Represents a rule in SWRL syntax</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.body_atoms">
+<span class="sig-name descname"><span class="pre">body_atoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><span class="pre">Atom</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><span class="pre">Atom</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#owlapy.swrl.Rule.body_atoms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.head_atoms">
+<span class="sig-name descname"><span class="pre">head_atoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><span class="pre">Atom</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.swrl.Atom" title="owlapy.swrl.Atom"><span class="pre">Atom</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#owlapy.swrl.Rule.head_atoms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.body">
+<span class="sig-name descname"><span class="pre">body</span></span><a class="headerlink" href="#owlapy.swrl.Rule.body" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.head">
+<span class="sig-name descname"><span class="pre">head</span></span><a class="headerlink" href="#owlapy.swrl.Rule.head" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.from_string">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dp_predicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Rule.from_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Rule.from_string" title="Link to this definition"></a></dt>
+<dd><p>Parses a SWRL rule given as a string.
+Use ‘^’ for composition of atoms and ‘-&gt;’ for consequent implication.
+E.g. of a valid rule: ‘parent(?x,?y) ^ brother(?y,?z) -&gt; uncle(?x,?z)’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rule</strong> – The SWRL rule in string format that is to be parsed</p></li>
+<li><p><strong>namespace</strong> – The namespace of the ontology</p></li>
+<li><p><strong>dp_predicates</strong> – (optional) List of data property predicates that will help in the correct mapping of
+property type (by default property atoms are considered as object property atoms except when
+specifying data property predicates in this argument)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A SWRL Rule object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Rule.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Rule.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Rule.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Rule.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../static_funcs/index.html" class="btn btn-neutral float-left" title="owlapy.static_funcs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../util_owl_static_funcs/index.html" class="btn btn-neutral float-right" title="owlapy.util_owl_static_funcs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

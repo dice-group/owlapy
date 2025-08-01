@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reasoners &mdash; OWLAPY 1.5.1 documentation</title>
+  <title>Reasoners &mdash; OWLAPY 1.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=44dfd65d"></script>
+      <script src="../_static/documentation_options.js?v=72d88caf"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -145,6 +145,25 @@ together with a reasoner name from the possible set of reasoners: <code class="d
 can perform. You will get a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> if you try to use them. Note that we use these reasoners via jar
 distributions, and we do not consider updating them. But in such cases we keep an eye open for new releases
 that may address these limitations.</strong></p>
+</li>
+<li><p><a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR" title="owlapy.owl_reasoner.EBR"><span class="xref myst py py-class"><strong>EBR</strong></span></a></p>
+<p>Embedding-based reasoner (EBR) is a native Python model that leverages knowledge graph embeddings for inference,
+which instead of strict logical deduction, uses the model’s scoring function to approximate reasoning tasks, such
+as retrieving instances of class expressions. For example, to find instances of a class C, EBR identifies
+individuals x for which the triple <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">rdf:type,</span> <span class="pre">C)</span></code> receives a score above a given <strong>threshold</strong>.
+This approach extends compositionally to handle arbitaray complex expression in SROIQ by combining the instances
+retrieved for their constituent parts.</p>
+<p><strong>Initialization:</strong></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>```python
+from owlapy.owl_reasoner import EBR
+from owlapy.owl_ontology import NeuralOntology
+
+onto = NeuralOntology(path_neural_embedding=&quot;KGs/Family/trained_model&quot;)
+sync_reasoner = EBR(ontology=onto)
+```
+</pre></div>
+</div>
+<p>EBR requires only 1 argument to initialize and that is a <code class="docutils literal notranslate"><span class="pre">NeuralOntology</span></code>.</p>
 </li>
 </ul>
 <section id="usage-of-the-reasoner">

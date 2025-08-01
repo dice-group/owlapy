@@ -1,0 +1,305 @@
+data_extraction
+===============
+
+.. py:module:: data_extraction
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   data_extraction.Entity
+   data_extraction.Triple
+   data_extraction.TypeAssertion
+   data_extraction.TypeGeneration
+   data_extraction.Literal
+   data_extraction.SPLTriples
+   data_extraction.GraphExtractor
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   data_extraction.configure_dspy
+   data_extraction.get_entities
+   data_extraction.get_triples
+   data_extraction.assign_types
+   data_extraction.generate_types
+   data_extraction.get_numeric_literals
+   data_extraction.get_spl_triples
+
+
+Module Contents
+---------------
+
+.. py:class:: Entity
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: 'Given a piece of text as input identify key entities extracted form the text.'
+
+
+
+   .. py:attribute:: text
+      :type:  str
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+
+
+.. py:class:: Triple
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a piece of text and entities, identify triples of type source_entity-relation-target_entity
+             where source_entity and target_entity are strictly part of the given entities."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: text
+      :type:  str
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+
+
+   .. py:attribute:: triples
+      :type:  list[tuple[str, str, str]]
+
+
+.. py:class:: TypeAssertion
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: 'Given a list of entities, a list of types and textual contex, assign types to the entities.'
+
+
+
+   .. py:attribute:: text
+      :type:  str
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+
+
+   .. py:attribute:: entity_types
+      :type:  list[str]
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+
+
+   .. py:attribute:: pairs
+      :type:  list[tuple[str, str]]
+
+
+.. py:class:: TypeGeneration
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: 'Given a list of entities and textual contex, assign meaningful general types to the entities.'
+
+
+
+   .. py:attribute:: text
+      :type:  str
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+
+
+   .. py:attribute:: pairs
+      :type:  list[tuple[str, str]]
+
+
+.. py:class:: Literal
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: 'Given a piece of text as input identify key numerical values extracted form the text.'
+
+
+
+   .. py:attribute:: text
+      :type:  str
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+
+
+   .. py:attribute:: l_values
+      :type:  list[str]
+
+
+.. py:class:: SPLTriples
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a piece of text, entities and numeric literals, identify triples of type 
+             source_entity-relation-target_value where source_entity is strictly part of the given entities and the target_value 
+             is strictly part of the given numeric literals."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: text
+      :type:  str
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+
+
+   .. py:attribute:: numeric_literals
+      :type:  list[str]
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+
+
+   .. py:attribute:: triples
+      :type:  list[tuple[str, str, str]]
+
+
+.. py:function:: configure_dspy(signature)
+
+.. py:function:: get_entities(text, few_shot_examples=EXAMPLES_FOR_ENTITY_EXTRACTION)
+
+.. py:function:: get_triples(text, entities, few_shot_examples=EXAMPLES_FOR_TRIPLES_EXTRACTION)
+
+.. py:function:: assign_types(text, entities, entity_types, few_shot_examples=EXAMPLES_FOR_TYPE_ASSERTION)
+
+.. py:function:: generate_types(text, entities, few_shot_examples=EXAMPLES_FOR_TYPE_GENERATION)
+
+.. py:function:: get_numeric_literals(text, few_shot_examples=EXAMPLES_FOR_LITERAL_EXTRACTION)
+
+.. py:function:: get_spl_triples(text, entities, literals, few_shot_examples=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION)
+
+.. py:class:: GraphExtractor(model, api_key, api_base, temperature=0.1, seed=42, cache=False, cache_in_memory=False, enable_logging=False)
+
+   Bases: :py:obj:`dspy.Module`
+
+
+   .. py:attribute:: logging
+      :value: False
+
+
+
+   .. py:attribute:: entity_extractor
+
+
+   .. py:attribute:: triples_extractor
+
+
+   .. py:attribute:: type_asserter
+
+
+   .. py:attribute:: type_generator
+
+
+   .. py:attribute:: literal_extractor
+
+
+   .. py:attribute:: spl_triples_extractor
+
+
+   .. py:method:: snake_case(text)
+      :staticmethod:
+
+
+
+   .. py:method:: forward(text: str, ontology_namespace='http://example.com/ontogen#', entity_types: List[str] = None, generate_types=False, extract_spl_triples=False, examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION, examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION, examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION, examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION, examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION, examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION, save_path='generated_ontology.owl') -> owlapy.owl_ontology.Ontology
+
+      Extract an ontology from a given textual input.
+
+      :param text: Text input from which the ontology will be extracted.
+      :type text: str
+      :param ontology_namespace: Namespace to use for the ontology.
+      :type ontology_namespace: str
+      :param entity_types: List of entity types to assign to extracted entities.
+                           Leave empty if generate_types is True.
+      :type entity_types: List[str]
+      :param generate_types: Whether to generate types for extracted entities.
+      :type generate_types: bool
+      :param extract_spl_triples: Whether to extract triples of type s-p-l where l is a numeric literal. This
+                                  triples will be represented using data properties and a literal value of type string (although they
+                                  are numeric values).
+      :type extract_spl_triples: bool
+      :param examples_for_entity_extraction: Few-shot examples for entity extraction.
+      :type examples_for_entity_extraction: str
+      :param examples_for_triples_extraction: Few-shot examples for triple extraction.
+      :type examples_for_triples_extraction: str
+      :param examples_for_type_assertion: Few-shot examples for type assertion.
+      :type examples_for_type_assertion: str
+      :param examples_for_type_generation: Few-shot examples for type generation and assertion.
+      :type examples_for_type_generation: str
+      :param examples_for_literal_extraction: Few-shot examples for literal extraction.
+      :type examples_for_literal_extraction: str
+      :param examples_for_spl_triples_extraction: Few-shot examples for s-p-l triples extraction.
+      :type examples_for_spl_triples_extraction: str
+      :param save_path: Path to save the generated ontology.
+      :type save_path: str
+
+      Returns (Ontology): An ontology object.
+
+
+

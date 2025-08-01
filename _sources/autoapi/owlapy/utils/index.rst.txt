@@ -39,6 +39,8 @@ Functions
 
 .. autoapisummary::
 
+   owlapy.utils.jaccard_similarity
+   owlapy.utils.f1_set_similarity
    owlapy.utils.run_with_timeout
    owlapy.utils.concept_reducer
    owlapy.utils.concept_reducer_properties
@@ -50,6 +52,27 @@ Functions
 
 Module Contents
 ---------------
+
+.. py:function:: jaccard_similarity(set1, set2) -> float
+
+   Calculate the Jaccard similarity between two sets.
+
+   :param set1: First set
+   :param set2: Second set
+
+   :returns: intersection(set1, set2) / union(set1, set2)
+   :rtype: Jaccard similarity
+
+
+.. py:function:: f1_set_similarity(set1, set2) -> float
+
+   Calculate the F1 score between two sets.
+
+   :param set1: First set (treated as ground truth)
+   :param set2: Second set (treated as prediction)
+
+   :returns: F1 score
+
 
 .. py:function:: run_with_timeout(func, timeout, args=(), **kwargs)
 

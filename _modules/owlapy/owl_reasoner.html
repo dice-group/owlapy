@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.owl_reasoner &mdash; OWLAPY 1.5.1 documentation</title>
+  <title>owlapy.owl_reasoner &mdash; OWLAPY 1.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=44dfd65d"></script>
+      <script src="../../_static/documentation_options.js?v=72d88caf"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -85,12 +85,14 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">owlready2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span><span class="p">,</span> <span class="n">reduce</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">Counter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span><span class="p">,</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">cached_property</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">repeat</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span><span class="p">,</span> <span class="n">FunctionType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">DefaultDict</span><span class="p">,</span><span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span>
+                    <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> \
     <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> \
@@ -103,15 +105,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">SyncOntology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">,</span> <span class="n">NeuralOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> \
-    <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span>
+    <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">OWLBottomObjectProperty</span><span class="p">,</span> <span class="n">OWLTopObjectProperty</span><span class="p">,</span> <span class="n">OWLBottomDataProperty</span><span class="p">,</span> \
     <span class="n">OWLTopDataProperty</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_with_timeout</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
+
+
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">_P</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_P&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">OWLPropertyExpression</span><span class="p">)</span>
@@ -121,6 +125,7 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StructuralReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Tries to check instances fast (but maybe incomplete).&quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AbstractOWLOntology</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">class_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">property_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">negation_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sub_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fast instance checker.</span>
@@ -149,22 +154,22 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_cache</span><span class="p">:</span>
             <span class="c1"># Class =&gt; individuals</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache</span><span class="p">:</span>
             <span class="c1"># ObjectProperty =&gt; { individual =&gt; individuals }</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_obj_prop</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-             <span class="c1"># ObjectProperty =&gt; { individual =&gt; individuals }</span>
+            <span class="c1"># ObjectProperty =&gt; { individual =&gt; individuals }</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_obj_prop_inv</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="c1"># DataProperty =&gt; { individual =&gt; literals }</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_prop</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_prop</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_has_prop</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">_P</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="n">OWLDataProperty</span><span class="p">:</span> <span class="p">{},</span>
                 <span class="n">OWLObjectProperty</span><span class="p">:</span> <span class="p">{},</span>
                 <span class="n">OWLObjectInverseOf</span><span class="p">:</span> <span class="p">{},</span>
             <span class="p">}</span>
-           
+
 <div class="viewcode-block" id="StructuralReasoner.reset">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner.reset">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -897,7 +902,7 @@
         <span class="n">opc</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c1"># shortcut for owlready2</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w">  </span><span class="kn">import</span> <span class="n">Ontology</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">):</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">owlready2</span>
             <span class="c1"># _x =&gt; owlready2 objects</span>
@@ -1097,7 +1102,7 @@
 
             <span class="k">def</span><span class="w"> </span><span class="nf">include</span><span class="p">(</span><span class="n">lv</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">lv</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">==</span> <span class="n">filler</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="ow">and</span> \
-                       <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">apply</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">repeat</span><span class="p">(</span><span class="n">lv</span><span class="p">)))</span>
+                    <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">apply</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">repeat</span><span class="p">(</span><span class="n">lv</span><span class="p">)))</span>
 
             <span class="k">if</span> <span class="n">property_cache</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">literals</span> <span class="ow">in</span> <span class="n">dps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1188,6 +1193,74 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SyncReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>
 
+<div class="viewcode-block" id="SyncReasoner.create_justifications">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.create_justifications">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owl_individuals</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">owl_class_expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate multiple justifications for why the given individual(s) are inferred to be instances of the specified class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.</span>
+<span class="sd">            owl_class_expression (OWLClassExpression): Class expression to justify.</span>
+<span class="sd">            save (bool): If True, saves all justifications in a new ontology as axioms.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">owl_individuals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">owl_class_expression</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both owl_individuals and owl_class_expression are required.&quot;</span><span class="p">)</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">com.clarkparsia.owlapi.explanation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">BlackBoxExplanation</span><span class="p">,</span> <span class="n">HSTExplanationGenerator</span><span class="p">,</span> <span class="n">SatisfiabilityConverter</span>
+        <span class="p">)</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+
+        <span class="n">j_class_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">owl_class_expression</span><span class="p">)</span>
+        <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
+        <span class="n">j_reasoner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span>
+        <span class="n">j_data_factory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span>
+
+        <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="n">blackbox_exp</span> <span class="o">=</span> <span class="n">BlackBoxExplanation</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">,</span> <span class="n">reasoner_factory</span><span class="p">,</span> <span class="n">j_reasoner</span><span class="p">)</span>
+        <span class="n">explanation_gen</span> <span class="o">=</span> <span class="n">HSTExplanationGenerator</span><span class="p">(</span><span class="n">blackbox_exp</span><span class="p">)</span>
+        <span class="n">converter</span> <span class="o">=</span> <span class="n">SatisfiabilityConverter</span><span class="p">(</span><span class="n">j_data_factory</span><span class="p">)</span>
+
+        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">owl_individuals</span><span class="p">:</span>
+            <span class="n">j_individual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+            <span class="n">class_assertion_axiom</span> <span class="o">=</span> <span class="n">j_data_factory</span><span class="o">.</span><span class="n">getOWLClassAssertionAxiom</span><span class="p">(</span><span class="n">j_class_expr</span><span class="p">,</span> <span class="n">j_individual</span><span class="p">)</span>
+            <span class="n">unsat_class</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">class_assertion_axiom</span><span class="p">)</span>
+
+            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">explanation_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">unsat_class</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
+                <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="p">}</span>
+                <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
+
+        <span class="c1"># Save to justifications.owl if requested</span>
+        <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+
+            <span class="c1"># Create a new in-memory ontology to store justifications</span>
+            <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/justifications&quot;</span><span class="p">)</span>
+            <span class="n">just_ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">just_iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">axiom_set</span> <span class="ow">in</span> <span class="n">justifications</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axiom_set</span><span class="p">:</span>
+                    <span class="n">just_ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
+
+            <span class="c1"># Save to file</span>
+            <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;justifications.owl&quot;</span>
+            <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">justifications</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SyncOntology</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">reasoner</span><span class="o">=</span><span class="s2">&quot;HermiT&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.</span>
@@ -1208,7 +1281,6 @@
         <span class="c1">#   implemented in this class. Current version of elk is 6.0.0.</span>
         <span class="c1">#   Maven releases: https://mvnrepository.com/artifact/io.github.liveontologies/elk-owlapi</span>
         <span class="c1">#   ElkReasoner GitHub link: https://github.com/liveontologies/elk-reasoner/blob/main/elk-owlapi/src/main/java/org/semanticweb/elk/owlapi/ElkReasoner.java</span>
-
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="n">ontology</span>
@@ -1264,7 +1336,7 @@
 
 <div class="viewcode-block" id="SyncReasoner.disjoint_classes">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.disjoint_classes">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">include_bottom_entity</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">include_bottom_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the classes that are disjoint with the specified class expression.</span>
 
@@ -1284,10 +1356,9 @@
             <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">classes</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">isBottomEntity</span><span class="p">()]</span></div>
 
 
-
 <div class="viewcode-block" id="SyncReasoner.sub_classes">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.sub_classes">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">sub_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include_bottom_entity</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include_bottom_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">         Gets the set of named classes that are the strict (potentially direct) subclasses of the</span>
 <span class="sd">         specified class expression with respect to the reasoner axioms.</span>
@@ -1399,7 +1470,7 @@
 
 <div class="viewcode-block" id="SyncReasoner.sub_object_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.sub_object_properties">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">sub_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">include_bottom_entity</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">include_bottom_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the stream of simplified object property expressions that are the strict (potentially direct)</span>
 <span class="sd">        subproperties of the specified object property expression with respect to the imports closure of the root</span>
 <span class="sd">        ontology.</span>
@@ -1447,7 +1518,7 @@
 
 <div class="viewcode-block" id="SyncReasoner.sub_data_properties">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.sub_data_properties">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">sub_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">include_bottom_entity</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">include_bottom_entity</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the set of named data properties that are the strict (potentially direct) subproperties of the</span>
 <span class="sd">        specified data property expression with respect to the imports closure of the root ontology.</span>
 
@@ -1582,7 +1653,8 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getObjectPropertyValues` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getObjectPropertyValues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">))</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getObjectPropertyValues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
+                                                                  <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">))</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()]</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.data_property_values">
@@ -1599,7 +1671,8 @@
 <span class="sd">            axioms entails DataPropertyAssertion(pe ind l).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">literal</span><span class="p">)</span> <span class="k">for</span> <span class="n">literal</span> <span class="ow">in</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">dataPropertyValues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">)))]</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">dataPropertyValues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">)))]</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.disjoint_object_properties">
@@ -1723,7 +1796,8 @@
 
 <div class="viewcode-block" id="SyncReasoner.infer_axioms_and_save">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.infer_axioms_and_save">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">infer_axioms_and_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inference_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">infer_axioms_and_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">inference_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates inferred axioms for the ontology managed by this instance&#39;s reasoner and saves them to a file.</span>
 <span class="sd">        This function uses the OWL API to generate inferred class assertion axioms based on the ontology and reasoner</span>
@@ -1855,9 +1929,10 @@
 </div>
 
 
+
 <div class="viewcode-block" id="initialize_reasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.initialize_reasoner">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">owlapi_ontology</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">owlapi_ontology</span><span class="p">):</span>
     <span class="c1"># () Create a reasoner using the ontology</span>
     <span class="k">if</span> <span class="n">reasoner</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
         <span class="c1"># noinspection PyUnresolvedReferences</span>
@@ -1888,6 +1963,7 @@
     <span class="k">return</span> <span class="n">owlapi_reasoner</span></div>
 
 
+
 <div class="viewcode-block" id="import_and_include_axioms_generators">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.import_and_include_axioms_generators">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">import_and_include_axioms_generators</span><span class="p">():</span>
@@ -1904,16 +1980,734 @@
                                              <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredSubClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredDisjointClassesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredEquivalentClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredInverseObjectPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredEquivalentDataPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredEquivalentObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredSubDataPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredSubObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
-                                    <span class="s2">&quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">()}</span></div>
+            <span class="s2">&quot;InferredSubClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredDisjointClassesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredEquivalentClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredInverseObjectPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredEquivalentDataPropertiesAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredEquivalentObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredSubDataPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredSubObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
+            <span class="s2">&quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">()}</span></div>
+
+
+
+<div class="viewcode-block" id="EBR">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EBR</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The Embedding-Based Reasoner uses neural embeddings to retrieve concept instances from knowledge bases. &quot;&quot;&quot;</span>
+
+    <span class="n">STR_IRI_SUBCLASSOF</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2000/01/rdf-schema#subClassOf&quot;</span>
+    <span class="n">STR_IRI_TYPE</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&quot;</span>
+    <span class="n">STR_IRI_OWL_CLASS</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#Class&quot;</span>
+    <span class="n">STR_IRI_OBJECT_PROPERTY</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#ObjectProperty&quot;</span>
+    <span class="n">STR_IRI_RANGE</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2000/01/rdf-schema#range&quot;</span>
+    <span class="n">STR_IRI_DOMAIN</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2000/01/rdf-schema#domain&quot;</span>
+    <span class="n">STR_IRI_DOUBLE</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2001/XMLSchema#double&quot;</span>
+    <span class="n">STR_IRI_BOOLEAN</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2001/XMLSchema#boolean&quot;</span>
+    <span class="n">STR_IRI_DATA_PROPERTY</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2002/07/owl#DatatypeProperty&quot;</span>
+    <span class="n">STR_IRI_SUBPROPERTY</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/2000/01/rdf-schema#subPropertyOf&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">NeuralOntology</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="n">ontology</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">model</span>
+
+<div class="viewcode-block" id="EBR.__str__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.__str__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Embedding-Based Reasoner using: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2"> with gamma: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inferred_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">())</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inferred_owl_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">())</span>
+
+<div class="viewcode-block" id="EBR.predict">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="n">h</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.predict_individuals_of_owl_class">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.predict_individuals_of_owl_class">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_individuals_of_owl_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owl_class</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="n">top_entities</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="c1"># Find all subconcepts</span>
+        <span class="n">owl_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">owl_class</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">owl_class</span><span class="p">)</span>
+        <span class="n">top_entity</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                              <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_TYPE</span><span class="p">,</span>
+                                              <span class="n">t</span><span class="o">=</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">iri</span><span class="o">.</span><span class="n">str</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">owl_classes</span><span class="p">]):</span>
+            <span class="n">top_entities</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">top_entities</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="EBR.abox">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.abox">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">abox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">str_iri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span>
+        <span class="n">Tuple</span><span class="p">[</span>
+            <span class="n">Tuple</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">],</span>
+            <span class="n">Tuple</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">],</span>
+            <span class="n">Tuple</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLLiteral</span><span class="p">]],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="c1"># Initialize an owl named individual object.</span>
+        <span class="n">subject_</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">str_iri</span><span class="p">)</span>
+        <span class="c1"># Return a triple indicating the type.</span>
+        <span class="k">for</span> <span class="n">cl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">types</span><span class="p">(</span><span class="n">subject_</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">subject_</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_TYPE</span><span class="p">),</span> <span class="n">cl</span>
+
+        <span class="c1"># Return a triple based on an object property.</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">subject_</span><span class="p">,</span> <span class="n">op</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">subject_</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">o</span></div>
+
+        <span class="c1"># TODO: Data properties</span>
+
+<div class="viewcode-block" id="EBR.classes_in_signature">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.classes_in_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">classes_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="EBR.individuals_in_signature">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.individuals_in_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">individuals_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="EBR.data_properties_in_signature">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.data_properties_in_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data_properties_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="EBR.object_properties_in_signature">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.object_properties_in_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_properties_in_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="EBR.direct_subconcepts">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.direct_subconcepts">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">direct_subconcepts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">named_concept</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBCLASSOF</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">relation_to_idx</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                                           <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBCLASSOF</span><span class="p">,</span>
+                                                                           <span class="n">t</span><span class="o">=</span><span class="n">named_concept</span><span class="o">.</span><span class="n">str</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="EBR.sub_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.sub_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">named_concept</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">visited</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">visited</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">all_subconcepts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">subconcept</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">direct_subconcepts</span><span class="p">(</span><span class="n">named_concept</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">subconcept</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">()</span> <span class="ow">or</span> <span class="n">subconcept</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">subconcept</span><span class="p">)</span>
+            <span class="n">all_subconcepts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subconcept</span><span class="p">)</span>
+            <span class="n">all_subconcepts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">subconcept</span><span class="p">,</span> <span class="n">visited</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">all_subconcepts</span></div>
+
+
+<div class="viewcode-block" id="EBR.most_general_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.most_general_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">most_general_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;At least it has single subclass and there is no superclass&quot;&quot;&quot;</span>
+        <span class="n">owl_concepts_not_having_parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">():</span>
+            <span class="n">direct_parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_direct_parents</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+                <span class="c1"># Ignore c if (c subclass x) \in KG.</span>
+                <span class="n">direct_parents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">direct_parents</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">sub_c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">named_concept</span><span class="o">=</span><span class="n">c</span><span class="p">):</span>
+                    <span class="n">owl_concepts_not_having_parents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sub_c</span><span class="p">)</span>
+                    <span class="k">break</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">owl_concepts_not_having_parents</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="EBR.least_general_named_concepts">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.least_general_named_concepts">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">least_general_named_concepts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;At least it has single superclass and there is no subclass&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">_class</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">concept</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span>
+                    <span class="n">named_concept</span><span class="o">=</span><span class="n">_class</span>
+            <span class="p">):</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># checks if superclasses is not empty -&gt; there is at least one superclass</span>
+                <span class="k">if</span> <span class="nb">list</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">get_direct_parents</span><span class="p">(</span><span class="n">_class</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">_class</span></div>
+
+
+<div class="viewcode-block" id="EBR.get_direct_parents">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.get_direct_parents">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_direct_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">named_concept</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="n">named_concept</span><span class="o">.</span><span class="n">str</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBCLASSOF</span><span class="p">,</span>
+                                                                   <span class="n">t</span><span class="o">=</span><span class="kc">None</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="EBR.super_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.super_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">super_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Only named classes are supported in the embedding-based reasoner&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_direct_parents</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="n">all_superclasses</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">collect_superclasses</span><span class="p">(</span><span class="n">concept</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_direct_parents</span><span class="p">(</span><span class="n">concept</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">parent</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                        <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+                        <span class="n">all_superclasses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+                        <span class="n">collect_superclasses</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+            <span class="n">collect_superclasses</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">all_superclasses</span></div>
+
+
+<div class="viewcode-block" id="EBR.types">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.types">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">individual</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="n">individual</span><span class="o">.</span><span class="n">str</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_TYPE</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="kc">None</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="EBR.boolean_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.boolean_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">boolean_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_RANGE</span><span class="p">,</span>
+                                                                                  <span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_BOOLEAN</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="EBR.double_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.double_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">double_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_RANGE</span><span class="p">,</span>
+            <span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_DOUBLE</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="EBR.individuals">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.individuals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span>
+        <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">expression</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">expression</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.instances">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.instances">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span>
+        <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot; Given an OWLClass A, retrieve its instances Retrieval(A)={ x | phi(x, type, A) ≥ γ } &quot;&quot;&quot;</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_individuals_of_owl_class</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot; Handling complement of class expressions:</span>
+<span class="sd">            Given an OWLObjectComplementOf ¬A, hence (A is an OWLClass),</span>
+<span class="sd">            retrieve its instances =&gt; Retrieval(¬A)= All Instance Set-DIFF { x | phi(x, type, A) ≥ γ } &quot;&quot;&quot;</span>
+            <span class="n">excluded_individuals</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]</span>
+            <span class="n">excluded_individuals</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()))</span>
+            <span class="n">all_individuals</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()}</span>
+            <span class="k">yield from</span> <span class="n">all_individuals</span> <span class="o">-</span> <span class="n">excluded_individuals</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot; Handling intersection of class expressions:</span>
+<span class="sd">            Given an OWLObjectIntersectionOf (C ⊓ D),  </span>
+<span class="sd">            retrieve its instances by intersecting the instance of each operands.</span>
+<span class="sd">            {x | phi(x, type, C) ≥ γ} ∩ {x | phi(x, type, D) ≥ γ}</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c1"># Get the class expressions</span>
+            <span class="c1">#</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">expression</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+                <span class="n">retrieval_of_op</span> <span class="o">=</span> <span class="p">{</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">expression</span><span class="o">=</span><span class="n">op</span><span class="p">)}</span>
+                <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">retrieval_of_op</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">retrieval_of_op</span><span class="p">)</span>
+            <span class="k">yield from</span> <span class="n">result</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Given an OWLObjectAllValuesFrom ∀ r.C, retrieve its instances =&gt; </span>
+<span class="sd">            Retrieval(¬∃ r.¬C) =             </span>
+<span class="sd">            Entities \setminus {x | ∃ y: \phi(y, type, C) &lt; \gamma AND \phi(x,r,y)  ≥ \gamma } </span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">object_property</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+            <span class="n">filler_expression</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">OWLObjectComplementOf</span><span class="p">(</span>
+                <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="n">object_property</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="n">filler_expression</span><span class="p">))))</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Given an OWLObjectSomeValuesFrom ∃ r.C, retrieve its instances =&gt; </span>
+<span class="sd">            Retrieval(∃ r.C) = </span>
+<span class="sd">            {x | ∃ y : phi(y, type, C) ≥ \gamma AND phi(x, r, y) ≥ \gamma }  </span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">object_property</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+            <span class="n">filler_expression</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+            <span class="n">cardinality</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">):</span>
+                <span class="n">cardinality</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+
+            <span class="n">object_individuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">filler_expression</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+            <span class="n">subjects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_individuals_with_object_property</span><span class="p">(</span>
+                <span class="n">objs</span><span class="o">=</span><span class="n">object_individuals</span><span class="p">,</span>
+                <span class="n">object_property</span><span class="o">=</span><span class="n">object_property</span><span class="p">)</span>
+            <span class="c1"># Update the counter for all subjects found</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
+            <span class="c1"># Yield only those individuals who meet the cardinality requirement</span>
+            <span class="k">for</span> <span class="n">individual</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">cardinality</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">individual</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">):</span>
+            <span class="n">object_property</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+            <span class="n">filler_expression</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+            <span class="n">cardinality</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+
+            <span class="c1"># Get all individuals that are instances of the filler expression.</span>
+            <span class="n">object_individuals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">filler_expression</span><span class="p">))</span>
+
+            <span class="c1"># Initialize counts for every subject in the signature.</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">:</span> <span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()}</span>
+
+            <span class="c1"># Retrieve all subjects related to any of the object individuals at once.</span>
+            <span class="n">subject_individuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_individuals_with_object_property</span><span class="p">(</span>
+                <span class="n">objs</span><span class="o">=</span><span class="n">object_individuals</span><span class="p">,</span>
+                <span class="n">object_property</span><span class="o">=</span><span class="n">object_property</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Increment counts for each related subject.</span>
+            <span class="k">for</span> <span class="n">subj</span> <span class="ow">in</span> <span class="n">subject_individuals</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subj</span><span class="o">.</span><span class="n">str</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">:</span>
+                    <span class="n">owl_obj</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span><span class="n">subj</span><span class="o">.</span><span class="n">str</span><span class="p">]</span>
+                    <span class="n">counts</span><span class="p">[</span><span class="n">subj</span><span class="o">.</span><span class="n">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">owl_obj</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Yield only those subjects whose count does not exceed the max cardinality.</span>
+            <span class="k">yield from</span> <span class="p">{</span>
+                <span class="n">ind</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">cnt</span><span class="p">)</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">cnt</span> <span class="o">&lt;=</span> <span class="n">cardinality</span>
+            <span class="p">}</span>
+
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">expression</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+                <span class="n">retrieval_of_op</span> <span class="o">=</span> <span class="p">{</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">expression</span><span class="o">=</span><span class="n">op</span><span class="p">)}</span>
+                <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">retrieval_of_op</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">retrieval_of_op</span><span class="p">)</span>
+            <span class="k">yield from</span> <span class="n">result</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+            <span class="k">yield from</span> <span class="n">expression</span><span class="o">.</span><span class="n">individuals</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Instances for </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span><span class="si">}</span><span class="s2"> are not implemented yet&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.object_property_values">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.object_property_values">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_property_values</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">object_property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_property</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_property</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_inverse</span> <span class="o">:=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_property</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">):</span>
+            <span class="n">object_property</span> <span class="o">=</span> <span class="n">object_property</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">is_inverse</span> <span class="k">else</span> <span class="n">subject</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+            <span class="n">r</span><span class="o">=</span><span class="n">object_property</span><span class="o">.</span><span class="n">iri</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">subject</span><span class="o">.</span><span class="n">str</span> <span class="k">if</span> <span class="n">is_inverse</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="EBR.get_individuals_with_object_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.get_individuals_with_object_property">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_individuals_with_object_property</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">object_property</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">objs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLClass</span><span class="p">])</span> \
+            <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="n">is_inverse</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_property</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_inverse</span><span class="p">:</span>
+            <span class="n">object_property</span> <span class="o">=</span> <span class="n">object_property</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
+        <span class="n">return_subjects</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">h</span><span class="o">=</span><span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">str</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objs</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_inverse</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">r</span><span class="o">=</span><span class="n">object_property</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">is_inverse</span> <span class="k">else</span> <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">str</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objs</span><span class="p">]):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">return_subjects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">entity</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="c1"># Log the invalid IRI</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid IRI detected: </span><span class="si">{</span><span class="n">entity</span><span class="si">}</span><span class="s2">, error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+        <span class="k">return</span> <span class="n">return_subjects</span></div>
+
+
+<div class="viewcode-block" id="EBR.data_property_domains">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.data_property_domains">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the class expressions that are the direct or indirect domains of this property with respect to the imports closure of the root ontology.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pe: The property expression whose domains are to be retrieved.</span>
+<span class="sd">            direct: Specifies if the direct domains should be retrieved (True), or if all domains should be retrieved (False).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The class expressions that are the domains of the specified property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get all classes that are domains of this property</span>
+        <span class="n">domain_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">=</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+            <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_DOMAIN</span><span class="p">,</span>
+            <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+            <span class="c1"># If only direct domains are requested, return them as is</span>
+            <span class="k">yield from</span> <span class="n">domain_classes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If all domains are requested, also include all superclasses of each domain</span>
+            <span class="n">all_domains</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">domain_classes</span><span class="p">)</span>
+            <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">domain_classes</span><span class="p">:</span>
+                <span class="n">all_domains</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="bp">cls</span><span class="p">))</span>
+            <span class="k">yield from</span> <span class="n">all_domains</span>
+
+            <span class="c1"># If no domain is found, yield OWLThing as the default domain</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_domains</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">OWLThing</span></div>
+
+
+<div class="viewcode-block" id="EBR.object_property_domains">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.object_property_domains">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_property_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="c1"># Check if the property is inverse</span>
+        <span class="n">is_inverse</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_inverse</span><span class="p">:</span>
+            <span class="c1"># For inverse properties, the domains are the ranges of the original property</span>
+            <span class="n">original_property</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_property_ranges</span><span class="p">(</span><span class="n">original_property</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Get all classes that are domains of this property</span>
+            <span class="n">domain_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">h</span><span class="o">=</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_DOMAIN</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+            <span class="p">)]</span>
+
+            <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="c1"># If only direct domains are requested, return them as is</span>
+                <span class="k">yield from</span> <span class="n">domain_classes</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If all domains are requested, also include all superclasses of each domain</span>
+                <span class="n">all_domains</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">domain_classes</span><span class="p">)</span>
+                <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">domain_classes</span><span class="p">:</span>
+                    <span class="n">all_domains</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="bp">cls</span><span class="p">))</span>
+                <span class="k">yield from</span> <span class="n">all_domains</span>
+
+                <span class="c1"># If no domain is found, yield OWLThing as the default domain</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">all_domains</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">OWLThing</span></div>
+
+
+<div class="viewcode-block" id="EBR.object_property_ranges">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.object_property_ranges">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">object_property_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="c1"># Check if the property is inverse</span>
+        <span class="n">is_inverse</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_inverse</span><span class="p">:</span>
+            <span class="n">pe</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
+            <span class="c1"># For inverse properties, the ranges are the domains of the original property</span>
+            <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                    <span class="n">h</span><span class="o">=</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                    <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_DOMAIN</span><span class="p">,</span>
+                    <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+                <span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Get all domains and their superclasses</span>
+                <span class="n">domain_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                    <span class="n">h</span><span class="o">=</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                    <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_DOMAIN</span><span class="p">,</span>
+                    <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+                <span class="p">)]</span>
+                <span class="n">all_domains</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">domain_classes</span><span class="p">)</span>
+                <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">domain_classes</span><span class="p">:</span>
+                    <span class="n">all_domains</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="bp">cls</span><span class="p">))</span>
+                <span class="k">yield from</span> <span class="n">all_domains</span>
+
+                <span class="c1"># If no range is found, yield OWLThing as the default range</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">all_domains</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">OWLThing</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># For regular properties, get ranges directly</span>
+            <span class="n">range_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">h</span><span class="o">=</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_RANGE</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+            <span class="p">)]</span>
+
+            <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="c1"># If only direct ranges are requested, return them as is</span>
+                <span class="k">yield from</span> <span class="n">range_classes</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If all ranges are requested, also include all superclasses of each range</span>
+                <span class="n">all_ranges</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">range_classes</span><span class="p">)</span>
+                <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">range_classes</span><span class="p">:</span>
+                    <span class="n">all_ranges</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="bp">cls</span><span class="p">))</span>
+                <span class="k">yield from</span> <span class="n">all_ranges</span>
+
+                <span class="c1"># If no range is found, yield OWLThing as the default range</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">all_ranges</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">OWLThing</span></div>
+
+
+<div class="viewcode-block" id="EBR.equivalent_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.equivalent_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Equivalent classes are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.disjoint_classes">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.disjoint_classes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Disjoint classes are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.different_individuals">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.different_individuals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">different_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Different individuals are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.same_individuals">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.same_individuals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">same_individuals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Same individuals are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.equivalent_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.equivalent_object_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Equivalent object properties are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.equivalent_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.equivalent_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">equivalent_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Equivalent data properties are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.data_property_values">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.data_property_values">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLLiteral&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Data property values are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.disjoint_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.disjoint_object_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Disjoint object properties are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.disjoint_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.disjoint_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disjoint_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Disjoint data properties are not implemented for the embedding-based reasoner&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EBR.sub_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.sub_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="c1"># Get direct sub properties</span>
+        <span class="n">sub_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBPROPERTY</span><span class="p">,</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">dp</span><span class="o">.</span><span class="n">str</span>
+        <span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+            <span class="c1"># If only direct sub properties are requested, return them as is</span>
+            <span class="k">yield from</span> <span class="n">sub_properties</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If all sub properties are requested, also include all sub properties of each sub property</span>
+            <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="n">all_sub_properties</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">collect_sub_properties</span><span class="p">(</span><span class="n">property_</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">sub_prop</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                        <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBPROPERTY</span><span class="p">,</span>
+                        <span class="n">t</span><span class="o">=</span><span class="n">property_</span><span class="o">.</span><span class="n">str</span>
+                <span class="p">)]:</span>
+                    <span class="k">if</span> <span class="n">sub_prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                        <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sub_prop</span><span class="p">)</span>
+                        <span class="n">all_sub_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_prop</span><span class="p">)</span>
+                        <span class="n">collect_sub_properties</span><span class="p">(</span><span class="n">sub_prop</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">sub_properties</span><span class="p">:</span>
+                <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                <span class="n">all_sub_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                <span class="n">collect_sub_properties</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+            <span class="k">yield from</span> <span class="n">all_sub_properties</span></div>
+
+
+<div class="viewcode-block" id="EBR.super_data_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.super_data_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">super_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+        <span class="c1"># Get direct super properties</span>
+        <span class="n">super_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">=</span><span class="n">dp</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+            <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBPROPERTY</span><span class="p">,</span>
+            <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+            <span class="c1"># If only direct super properties are requested, return them as is</span>
+            <span class="k">yield from</span> <span class="n">super_properties</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If all super properties are requested, also include all super properties of each super property</span>
+            <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="n">all_super_properties</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">collect_super_properties</span><span class="p">(</span><span class="n">property_</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">super_prop</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                        <span class="n">h</span><span class="o">=</span><span class="n">property_</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                        <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBPROPERTY</span><span class="p">,</span>
+                        <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+                <span class="p">)]:</span>
+                    <span class="k">if</span> <span class="n">super_prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                        <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">super_prop</span><span class="p">)</span>
+                        <span class="n">all_super_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">super_prop</span><span class="p">)</span>
+                        <span class="n">collect_super_properties</span><span class="p">(</span><span class="n">super_prop</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">super_properties</span><span class="p">:</span>
+                <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                <span class="n">all_super_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                <span class="n">collect_super_properties</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+            <span class="k">yield from</span> <span class="n">all_super_properties</span></div>
+
+
+<div class="viewcode-block" id="EBR.sub_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.sub_object_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sub_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span>
+        <span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="c1"># Check if the property is inverse</span>
+        <span class="n">is_inverse</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_inverse</span><span class="p">:</span>
+            <span class="c1"># For inverse properties, the sub properties are the inverse of the super properties of the original property</span>
+            <span class="n">original_property</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">super_prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">super_object_properties</span><span class="p">(</span><span class="n">original_property</span><span class="p">,</span> <span class="n">direct</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">OWLObjectInverseOf</span><span class="p">(</span><span class="n">super_prop</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Get direct sub properties</span>
+            <span class="n">sub_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBPROPERTY</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="n">op</span><span class="o">.</span><span class="n">str</span>
+            <span class="p">)]</span>
+
+            <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="c1"># If only direct sub properties are requested, return them as is</span>
+                <span class="k">yield from</span> <span class="n">sub_properties</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If all sub properties are requested, also include all sub properties of each sub property</span>
+                <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="n">all_sub_properties</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">collect_sub_properties</span><span class="p">(</span><span class="n">property_</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">sub_prop</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                            <span class="n">h</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBPROPERTY</span><span class="p">,</span>
+                            <span class="n">t</span><span class="o">=</span><span class="n">property_</span><span class="o">.</span><span class="n">str</span>
+                    <span class="p">)]:</span>
+                        <span class="k">if</span> <span class="n">sub_prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sub_prop</span><span class="p">)</span>
+                            <span class="n">all_sub_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_prop</span><span class="p">)</span>
+                            <span class="n">collect_sub_properties</span><span class="p">(</span><span class="n">sub_prop</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">sub_properties</span><span class="p">:</span>
+                    <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                    <span class="n">all_sub_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                    <span class="n">collect_sub_properties</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+                <span class="k">yield from</span> <span class="n">all_sub_properties</span></div>
+
+
+<div class="viewcode-block" id="EBR.super_object_properties">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.super_object_properties">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">super_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span>
+        <span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="c1"># Check if the property is inverse</span>
+        <span class="n">is_inverse</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_inverse</span><span class="p">:</span>
+            <span class="c1"># For inverse properties, the super properties are the inverse of the sub properties of the original property</span>
+            <span class="n">original_property</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">sub_prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_object_properties</span><span class="p">(</span><span class="n">original_property</span><span class="p">,</span> <span class="n">direct</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">OWLObjectInverseOf</span><span class="p">(</span><span class="n">sub_prop</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Get direct super properties</span>
+            <span class="n">super_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">h</span><span class="o">=</span><span class="n">op</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBPROPERTY</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+            <span class="p">)]</span>
+
+            <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+                <span class="c1"># If only direct super properties are requested, return them as is</span>
+                <span class="k">yield from</span> <span class="n">super_properties</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If all super properties are requested, also include all super properties of each super property</span>
+                <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="n">all_super_properties</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">collect_super_properties</span><span class="p">(</span><span class="n">property_</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">super_prop</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">top_entity</span><span class="p">)</span> <span class="k">for</span> <span class="n">top_entity</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                            <span class="n">h</span><span class="o">=</span><span class="n">property_</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                            <span class="n">r</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">STR_IRI_SUBPROPERTY</span><span class="p">,</span>
+                            <span class="n">t</span><span class="o">=</span><span class="kc">None</span>
+                    <span class="p">)]:</span>
+                        <span class="k">if</span> <span class="n">super_prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">super_prop</span><span class="p">)</span>
+                            <span class="n">all_super_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">super_prop</span><span class="p">)</span>
+                            <span class="n">collect_super_properties</span><span class="p">(</span><span class="n">super_prop</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">super_properties</span><span class="p">:</span>
+                    <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                    <span class="n">all_super_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                    <span class="n">collect_super_properties</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+                <span class="k">yield from</span> <span class="n">all_super_properties</span></div>
+
+
+<div class="viewcode-block" id="EBR.get_root_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.EBR.get_root_ontology">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NeuralOntology</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span></div>
+</div>
 
 </pre></div>
 

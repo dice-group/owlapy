@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.util_owl_static_funcs &mdash; OWLAPY 1.5.1 documentation</title>
+  <title>owlapy.util_owl_static_funcs &mdash; OWLAPY 1.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=44dfd65d"></script>
+      <script src="../../_static/documentation_options.js?v=72d88caf"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -90,11 +90,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rdflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">URIRef</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">RDFS</span><span class="p">,</span> <span class="n">OWL</span><span class="p">,</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">RDF</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rdflib.namespace</span><span class="w"> </span><span class="kn">import</span> <span class="n">XSD</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlready2</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ontology</span><span class="p">,</span> <span class="n">destroy_entity</span>
 
 
 <div class="viewcode-block" id="save_owl_class_expressions">
@@ -468,6 +470,202 @@
             <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">URIRef</span><span class="p">(</span><span class="n">namespace</span> <span class="o">+</span> <span class="n">subj</span><span class="p">),</span> <span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">cls</span><span class="p">))</span>
 
     <span class="n">g</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">destination</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">output_format</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="make_kb_incomplete_ass">
+<a class="viewcode-back" href="../../autoapi/owlapy/util_owl_static_funcs/index.html#owlapy.util_owl_static_funcs.make_kb_incomplete_ass">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_kb_incomplete_ass</span><span class="p">(</span><span class="n">kb_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes the knowledge base incomplete by removing a certain percentage of statements (triples).</span>
+
+<span class="sd">    Inputs:</span>
+<span class="sd">    ---------------</span>
+
+<span class="sd">    kb_path: Path to the input knowledge base.</span>
+<span class="sd">    output_path: Path to save the modified (incomplete) knowledge base.</span>
+<span class="sd">    rate: Percentage of statements to remove (0-100).</span>
+<span class="sd">    seed: random seed for reproducibility.</span>
+
+<span class="sd">    Output:</span>
+<span class="sd">    ---------------</span>
+
+<span class="sd">    Incomplete KB at level rate %</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># Load the ontology</span>
+    <span class="n">kb</span> <span class="o">=</span> <span class="n">get_ontology</span><span class="p">(</span><span class="n">kb_path</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+    <span class="c1"># Get all individuals in the ontology</span>
+    <span class="n">all_individuals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">kb</span><span class="o">.</span><span class="n">individuals</span><span class="p">())</span>
+
+    <span class="c1"># Collect all triples (subject-predicate-object) related to the individuals</span>
+    <span class="n">all_triples</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">individual</span> <span class="ow">in</span> <span class="n">all_individuals</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">individual</span><span class="o">.</span><span class="n">get_properties</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">prop</span><span class="p">[</span><span class="n">individual</span><span class="p">]:</span>
+                <span class="n">all_triples</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">individual</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+    <span class="c1"># Calculate the number of triples to remove based on the rate</span>
+    <span class="n">num_to_remove</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_triples</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rate</span> <span class="o">/</span> <span class="mi">100</span><span class="p">))</span>
+
+    <span class="c1"># Randomly select triples to remove</span>
+    <span class="n">triples_to_remove</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">all_triples</span><span class="p">,</span> <span class="n">num_to_remove</span><span class="p">)</span>
+
+    <span class="c1"># Remove the selected triples</span>
+    <span class="k">for</span> <span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">triples_to_remove</span><span class="p">:</span>
+        <span class="n">predicate</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+    <span class="c1"># Save the modified ontology to a new file</span>
+    <span class="n">kb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;rdfxml&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="make_kb_incomplete">
+<a class="viewcode-back" href="../../autoapi/owlapy/util_owl_static_funcs/index.html#owlapy.util_owl_static_funcs.make_kb_incomplete">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_kb_incomplete</span><span class="p">(</span><span class="n">kb_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes the knowledge base incomplete by removing a certain percentage of individuals.</span>
+
+<span class="sd">    Inputs:</span>
+<span class="sd">    ---------------</span>
+
+<span class="sd">    kb_path: Path to the input knowledge base.</span>
+<span class="sd">    output_path: Path to save the modified (incomplete) knowledge base.</span>
+<span class="sd">    rate: Percentage of individuals to remove (0-100).</span>
+<span class="sd">    seed: random seed for reproducibility.</span>
+
+<span class="sd">    Output:</span>
+<span class="sd">    ---------------</span>
+
+<span class="sd">    Incomplete KB at level rate %</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># Load the ontology</span>
+    <span class="n">kb</span> <span class="o">=</span> <span class="n">get_ontology</span><span class="p">(</span><span class="n">kb_path</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+    <span class="c1"># Get all individuals (instances) in the ABox</span>
+    <span class="n">all_individuals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">kb</span><span class="o">.</span><span class="n">individuals</span><span class="p">())</span>
+
+    <span class="c1"># Calculate the number of individuals to remove based on the rate</span>
+    <span class="n">num_to_remove</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_individuals</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rate</span> <span class="o">/</span> <span class="mi">100</span><span class="p">))</span>
+
+    <span class="c1"># Randomly select individuals to remove</span>
+    <span class="n">individuals_to_remove</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">all_individuals</span><span class="p">,</span> <span class="n">num_to_remove</span><span class="p">)</span>
+
+    <span class="c1"># Remove the selected individuals</span>
+    <span class="k">for</span> <span class="n">individual</span> <span class="ow">in</span> <span class="n">individuals_to_remove</span><span class="p">:</span>
+        <span class="n">destroy_entity</span><span class="p">(</span><span class="n">individual</span><span class="p">)</span>
+
+    <span class="c1"># Save the modified ontology to a new file</span>
+    <span class="n">kb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;rdfxml&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="make_kb_inconsistent">
+<a class="viewcode-back" href="../../autoapi/owlapy/util_owl_static_funcs/index.html#owlapy.util_owl_static_funcs.make_kb_inconsistent">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_kb_inconsistent</span><span class="p">(</span><span class="n">kb_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function makes the knowledge base (KB) inconsistent by introducing incorrect statements.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    kb_path (str): Path to the original OWL ontology file.</span>
+<span class="sd">    output_path (str): Path to save the inconsistent ontology file.</span>
+<span class="sd">    rate (float): Percentage of incorrect statements to introduce (0-100).</span>
+<span class="sd">    seed (int): Seed for reproducibility.</span>
+<span class="sd">    max_attempts (int): Maximum attempts to find a valid incorrect statement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Set the random seed for reproducibility</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># Load the ontology</span>
+    <span class="n">onto</span> <span class="o">=</span> <span class="n">get_ontology</span><span class="p">(</span><span class="n">kb_path</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+    <span class="c1"># Get all individuals, classes, and properties</span>
+    <span class="n">all_individuals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">onto</span><span class="o">.</span><span class="n">individuals</span><span class="p">())</span>
+    <span class="n">all_classes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">onto</span><span class="o">.</span><span class="n">classes</span><span class="p">())</span>
+    <span class="n">all_object_properties</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">onto</span><span class="o">.</span><span class="n">object_properties</span><span class="p">())</span>
+    <span class="n">all_data_properties</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">onto</span><span class="o">.</span><span class="n">data_properties</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">count_triples</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Count the number of triples (statements) in the ontology.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">onto</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">sparql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT ?s ?p ?o</span>
+<span class="s2">            WHERE {</span>
+<span class="s2">                ?s ?p ?o .</span>
+<span class="s2">            }</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_incorrect_class_assertion</span><span class="p">(</span><span class="n">individual</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate an incorrect class assertion by adding a disjoint or contradictory class.&quot;&quot;&quot;</span>
+        <span class="n">class_candidates</span> <span class="o">=</span> <span class="p">[</span><span class="bp">cls</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">all_classes</span> <span class="k">if</span> <span class="bp">cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">individual</span><span class="o">.</span><span class="n">is_a</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">class_candidates</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">selected_class</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">class_candidates</span><span class="p">)</span>
+        <span class="n">individual</span><span class="o">.</span><span class="n">is_a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">selected_class</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added incorrect class assertion: </span><span class="si">{</span><span class="n">individual</span><span class="si">}</span><span class="s2"> rdf:type </span><span class="si">{</span><span class="n">selected_class</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Added incorrect class assertion: </span><span class="si">{</span><span class="n">individual</span><span class="si">}</span><span class="s2"> rdf:type </span><span class="si">{</span><span class="n">selected_class</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_incorrect_object_property</span><span class="p">(</span><span class="n">individual</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate an incorrect object property assertion.&quot;&quot;&quot;</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">all_object_properties</span><span class="p">)</span>
+        <span class="n">incorrect_object</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">all_individuals</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">incorrect_object</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">prop</span><span class="p">[</span><span class="n">individual</span><span class="p">]:</span>
+            <span class="n">prop</span><span class="p">[</span><span class="n">individual</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">incorrect_object</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added incorrect object property assertion: </span><span class="si">{</span><span class="n">individual</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">incorrect_object</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Added incorrect object property assertion: </span><span class="si">{</span><span class="n">individual</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">incorrect_object</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_incorrect_data_property</span><span class="p">(</span><span class="n">individual</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate an incorrect data property assertion (if exist in the KB).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_data_properties</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">all_data_properties</span><span class="p">)</span>
+            <span class="n">incorrect_value</span> <span class="o">=</span> <span class="s2">&quot;inconsistent_value&quot;</span>  <span class="c1"># Example of an incorrect data value</span>
+
+            <span class="k">if</span> <span class="n">incorrect_value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">prop</span><span class="p">[</span><span class="n">individual</span><span class="p">]:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">individual</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">incorrect_value</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added incorrect data property assertion: </span><span class="si">{</span><span class="n">individual</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">incorrect_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Added incorrect data property assertion: </span><span class="si">{</span><span class="n">individual</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">incorrect_value</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert_incorrect_statements</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Insert incorrect statements based on the specified rate.&quot;&quot;&quot;</span>
+        <span class="n">num_triples</span> <span class="o">=</span> <span class="n">count_triples</span><span class="p">()</span>  <span class="c1"># Use the total number of triples in the KB</span>
+        <span class="n">num_incorrect</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_triples</span> <span class="o">*</span> <span class="p">(</span><span class="n">rate</span> <span class="o">/</span> <span class="mi">100</span><span class="p">))</span>
+
+        <span class="n">incorrect_statements</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_incorrect</span><span class="p">):</span>
+            <span class="n">attempts</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">attempts</span> <span class="o">&lt;</span> <span class="n">max_attempts</span><span class="p">:</span>
+                <span class="n">individual</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">all_individuals</span><span class="p">)</span>
+                <span class="n">statement_type</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s1">&#39;class&#39;</span><span class="p">,</span> <span class="s1">&#39;object_property&#39;</span><span class="p">])</span>  <span class="c1"># could also add data properties later on</span>
+
+                <span class="k">if</span> <span class="n">statement_type</span> <span class="o">==</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">generate_incorrect_class_assertion</span><span class="p">(</span><span class="n">individual</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">statement_type</span> <span class="o">==</span> <span class="s1">&#39;object_property&#39;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">generate_incorrect_object_property</span><span class="p">(</span><span class="n">individual</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="n">incorrect_statements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+                <span class="n">attempts</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">incorrect_statements</span>
+
+    <span class="c1"># Insert incorrect statements</span>
+    <span class="n">inconsistencies</span> <span class="o">=</span> <span class="n">insert_incorrect_statements</span><span class="p">()</span>
+
+    <span class="c1"># Save the modified ontology</span>
+    <span class="n">onto</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;rdfxml&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Return the list of inconsistencies added</span>
+    <span class="k">return</span> <span class="n">inconsistencies</span></div>
+
 
 </pre></div>
 

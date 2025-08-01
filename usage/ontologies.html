@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ontologies &mdash; OWLAPY 1.5.1 documentation</title>
+  <title>Ontologies &mdash; OWLAPY 1.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=44dfd65d"></script>
+      <script src="../_static/documentation_options.js?v=72d88caf"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -62,6 +62,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#save-an-ontology">Save an Ontology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generate-an-ontology-from-text">Generate an ontology from text</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#worlds">Worlds</a></li>
 </ul>
 </li>
@@ -260,6 +261,32 @@ It requires one argument, the IRI of the new ontology.</p>
 </div>
 <p>The above line of code will save the ontology <code class="docutils literal notranslate"><span class="pre">onto</span></code> in the file <em>test.owl</em> which will be
 created in the same directory as the file you are running this code.</p>
+</section>
+<section id="generate-an-ontology-from-text">
+<h2>Generate an ontology from text<a class="headerlink" href="#generate-an-ontology-from-text" title="Link to this heading"></a></h2>
+<p>In owlapy you will find a module named ontogen, a fancy name we chose for an ontology generating module using LLMs.
+We use <a class="reference external" href="https://dspy.ai/">DSPy</a> for this function and to make use of it you have to create a object of <code class="docutils literal notranslate"><span class="pre">GraphExtractor</span></code>
+where we specify some general settings for the LLM and then use it as a callable object given the necessary parameters
+like following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.ontogen.data_extraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphExtractor</span>
+
+<span class="n">ontogen</span> <span class="o">=</span> <span class="n">GraphExtractor</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;openai/gpt-4o&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;ENTER_API_KEY&gt;&quot;</span><span class="p">,</span> <span class="n">api_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">enable_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ontogen</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Text to be used for ontology generation&quot;</span><span class="p">,</span> <span class="n">generate_types</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A few things to mention here:</p>
+<ul class="simple">
+<li><p>model name should be a string of the form <code class="docutils literal notranslate"><span class="pre">llm_provider/llm_name</span></code> supported by LiteLLM,</p></li>
+<li><p>enter your API key and API endpoint in the respective fields,</p></li>
+<li><p>if you want to see what is being generated/extracted during the function set <code class="docutils literal notranslate"><span class="pre">enable-logging=True</span></code>,</p></li>
+<li><p>Using the <code class="docutils literal notranslate"><span class="pre">ontogen</span></code> object as a callable one will forward the call to the method <code class="docutils literal notranslate"><span class="pre">forward</span></code>, therefore you can
+also write <code class="docutils literal notranslate"><span class="pre">ontogen.forward</span></code> to view the docstring and the list of possible arguments.</p></li>
+<li><p>In the example above we use <code class="docutils literal notranslate"><span class="pre">generate_types=True</span></code> which will initiate a process of generating classes for the
+extracted entities and leave the other arguments to their default values.</p></li>
+</ul>
+<p>After setting some text that you desire, the successful execution of the example code will generate a file named
+<code class="docutils literal notranslate"><span class="pre">generated_ontology.owl</span></code> in your local directory.</p>
 </section>
 <section id="worlds">
 <h2>Worlds<a class="headerlink" href="#worlds" title="Link to this heading"></a></h2>

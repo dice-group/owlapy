@@ -14,6 +14,9 @@ Functions
    owlapy.util_owl_static_funcs.rdf_kg_to_csv
    owlapy.util_owl_static_funcs.create_ontology
    owlapy.util_owl_static_funcs.generate_ontology
+   owlapy.util_owl_static_funcs.make_kb_incomplete_ass
+   owlapy.util_owl_static_funcs.make_kb_incomplete
+   owlapy.util_owl_static_funcs.make_kb_inconsistent
 
 
 Module Contents
@@ -134,5 +137,53 @@ Module Contents
                    Describe the ontology focus area, weak points that can help the LLM to understand the data better,
                    including potential examples that may help identify entities better.
    :param temperature: Temperature to use for the LLM during class generation.
+
+
+.. py:function:: make_kb_incomplete_ass(kb_path, output_path, rate, seed)
+
+   Makes the knowledge base incomplete by removing a certain percentage of statements (triples).
+
+   Inputs:
+   ---------------
+
+   kb_path: Path to the input knowledge base.
+   output_path: Path to save the modified (incomplete) knowledge base.
+   rate: Percentage of statements to remove (0-100).
+   seed: random seed for reproducibility.
+
+   Output:
+   ---------------
+
+   Incomplete KB at level rate %
+
+
+.. py:function:: make_kb_incomplete(kb_path, output_path, rate, seed) -> Set[str]
+
+   Makes the knowledge base incomplete by removing a certain percentage of individuals.
+
+   Inputs:
+   ---------------
+
+   kb_path: Path to the input knowledge base.
+   output_path: Path to save the modified (incomplete) knowledge base.
+   rate: Percentage of individuals to remove (0-100).
+   seed: random seed for reproducibility.
+
+   Output:
+   ---------------
+
+   Incomplete KB at level rate %
+
+
+.. py:function:: make_kb_inconsistent(kb_path, output_path, rate, seed, max_attempts=100)
+
+   This function makes the knowledge base (KB) inconsistent by introducing incorrect statements.
+
+   Parameters:
+   kb_path (str): Path to the original OWL ontology file.
+   output_path (str): Path to save the inconsistent ontology file.
+   rate (float): Percentage of incorrect statements to introduce (0-100).
+   seed (int): Seed for reproducibility.
+   max_attempts (int): Maximum attempts to find a valid incorrect statement.
 
 
