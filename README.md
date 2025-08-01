@@ -247,13 +247,12 @@ justifications = reasoner.create_justifications({individual}, target_class, save
 ```
 </details>
 
-### Ontology generation (from text)
+### Ontology Generation
 
 <details><summary> Click me! </summary>
 
 
 ```python
-import time
 from owlapy.ontogen.data_extraction import GraphExtractor
 from owlapy.owl_ontology import SyncOntology
 
