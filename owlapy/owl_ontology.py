@@ -803,6 +803,7 @@ class Ontology(AbstractOWLOntology):
 
         if isinstance(ontology_iri, str):
             onto = self._world.get_ontology(ontology_iri)
+            self._iri = IRI.create(ontology_iri)
         else:
             onto = self._world.get_ontology(ontology_iri.as_str())
         if load:
