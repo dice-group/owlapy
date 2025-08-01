@@ -58,8 +58,7 @@ In Owlapy, we provide two main reasoner classes:
     object of type [SyncOntology](owlapy.owl_ontology.SyncOntology),
     together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"ELK"`, `"JFact"`, 
    `"Openllet"`, `"StructuralReasoner"` specified as a string value.
- 
-   
+
    **Note that SyncReasoner with `reasoner` argument set to `"StructuralReasoner"` is referring to 
    _StructuralReasoner_ implemented in OWLAPI. That is different from our StructuralReasoner.**
 
@@ -68,6 +67,25 @@ In Owlapy, we provide two main reasoner classes:
   distributions, and we do not consider updating them. But in such cases we keep an eye open for new releases 
   that may address these limitations.**
 
+- [**EBR**](owlapy.owl_reasoner.EBR)
+  
+  Embedding-based reasoner (EBR) is a native Python model that leverages knowledge graph embeddings for inference, 
+  which instead of strict logical deduction, uses the model's scoring function to approximate reasoning tasks, such 
+  as retrieving instances of class expressions. For example, to find instances of a class C, EBR identifies 
+  individuals x for which the triple `(x, rdf:type, C)` receives a score above a given **threshold**. 
+  This approach extends compositionally to handle arbitaray complex expression in SROIQ by combining the instances 
+  retrieved for their constituent parts. 
+
+    **Initialization:**
+  
+      ```python
+      from owlapy.owl_reasoner import EBR
+      from owlapy.owl_ontology import NeuralOntology
+      
+      onto = NeuralOntology(path_neural_embedding="KGs/Family/trained_model")
+      sync_reasoner = EBR(ontology=onto)
+      ```
+    EBR requires only 1 argument to initialize and that is a `NeuralOntology`. 
   
 ## Usage of the Reasoner
 All the reasoners available in Owlapy inherit from the
