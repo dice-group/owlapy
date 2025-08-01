@@ -18,12 +18,11 @@ from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom,
     OWLDataAllValuesFrom, OWLNothing, OWLThing
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
-from owlapy.neural_ontology import NeuralOntology
 from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_object import OWLEntity
-from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology
+from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology, NeuralOntology
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
     OWLPropertyExpression, OWLDataPropertyExpression, OWLProperty

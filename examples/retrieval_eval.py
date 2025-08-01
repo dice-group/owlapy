@@ -42,8 +42,7 @@ OWLObjectUnionOf                        1.0  1.0         -0.002939
 """
 # Replace ontolearn dependencies with owlapy components
 from owlapy.owl_reasoner import StructuralReasoner, EBR
-from owlapy.owl_ontology import Ontology
-from owlapy.neural_ontology import NeuralOntology
+from owlapy.owl_ontology import Ontology, NeuralOntology
 from owlapy.utils import jaccard_similarity, f1_set_similarity
 from owlapy.class_expression import (
     OWLObjectUnionOf,
