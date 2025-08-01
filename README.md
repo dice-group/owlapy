@@ -2,8 +2,8 @@
 [![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
 [![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
 [![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.5.1-blue)](https://pypi.org/project/owlapy/1.5.1/)
-[![Docs](https://img.shields.io/badge/documentation-1.5.1-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Pypi](https://img.shields.io/badge/pypi-1.6.0-blue)](https://pypi.org/project/owlapy/1.6.0/)
+[![Docs](https://img.shields.io/badge/documentation-1.6.0-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dice-group/owlapy)
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
@@ -162,7 +162,7 @@ from owlapy.static_funcs import stopJVM
 from owlapy.owl_ontology import Ontology
 
 ontology_path = "KGs/Family/family-benchmark_rich_background.owl"
-# Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet'
+# Available OWL Reasoners: 'HermiT', 'Pellet', 'JFact', 'Openllet', 'ELK', 'Structural'
 sync_reasoner = SyncReasoner(ontology = ontology_path, reasoner="Pellet")
 onto = Ontology(ontology_path)
 # Iterate over defined owl Classes in the signature
@@ -219,11 +219,62 @@ path_kg = "iris_kg.owl"
 # Construct an RDF Knowledge Graph from a CSV file
 csv_to_rdf_kg(path_csv="iris_dataset.csv", path_kg=path_kg, namespace="http://owlapy.com/iris")
 onto = SyncOntology(path_kg)
-assert len(onto.get_abox_axioms()) == 750
+print(len(onto.get_abox_axioms()))
 
 ```
 
 </details>
+
+
+### Create Justifications
+
+<details><summary> Click me!</summary>
+
+```python
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_reasoner import SyncReasoner
+from owlapy.owl_ontology import SyncOntology
+from owlapy import manchester_to_owl_expression
+
+individual = OWLNamedIndividual("http://www.benchmark.org/family#F1F2")
+manchester_expr_str = "hasChild some Female"
+
+ontology = SyncOntology("../KGs/Family/family-benchmark_rich_background.owl")
+reasoner = SyncReasoner(ontology, reasoner="Pellet")
+target_class = manchester_to_owl_expression(manchester_expr_str, "http://www.benchmark.org/family#")
+justifications = reasoner.create_justifications({individual}, target_class, save=True)
+[print(justification) for justification in justifications]
+```
+</details>
+
+### Ontology generation (from text)
+
+<details><summary> Click me! </summary>
+
+
+```python
+import time
+from owlapy.ontogen.data_extraction import GraphExtractor
+from owlapy.owl_ontology import SyncOntology
+
+text_example = """J.P. Morgan & Co. is an American financial institution specialized in investment banking, 
+asset management and private banking founded by financier J. P. Morgan in 1871. Through a series of mergers and 
+acquisitions, the company is now a subsidiary of JPMorgan Chase, the largest banking institution in the world. 
+The company has been historically referred to as the "House of Morgan" or simply Morgan."""
+
+# Extract a graph from text using an LLM
+ontogen = GraphExtractor(model="<ENTER_MODELS_NAME> (e.g. 'Qwen/Qwen3-32B-AWQ')",api_key="<ENTER_YOUR_KEY>", api_base="<ENTER_YOUR_API_BASE_URL>",
+                         temperature=0.1, seed=42, enable_logging=True)
+ontogen.forward(text=text_example, generate_types = True, extract_spl_triples=True)
+
+# Open the generated ontology and print axioms
+onto = SyncOntology(path="generated_ontology.owl")
+[print(ax) for ax in onto.get_abox_axioms()]
+[print(ax) for ax in onto.get_tbox_axioms()]
+```
+
+</details>
+
 
 ### Reasoners Runtime Benchmark
 

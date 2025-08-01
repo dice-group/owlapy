@@ -15,3 +15,8 @@ atom3 = ObjectPropertyAtom(has_father, y_var, x_var)
 rule1 = Rule([atom1, atom2], [atom3])
 
 print(rule1)
+
+rule2 = Rule.from_string(rule = "parent(felix,?y) ^ brother(?y,?z) -> uncle(?felix,?z)",
+                         namespace="http://example.com/family#")
+
+print(rule2.__repr__())

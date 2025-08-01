@@ -13,10 +13,8 @@ import time
 from typing import Tuple, Set
 from itertools import chain
 
-from owlapy.owl_reasoner import StructuralReasoner
-from owlapy.embedding_based_reasoner import EBR
-from owlapy.owl_ontology import Ontology
-from owlapy.neural_ontology import NeuralOntology
+from owlapy.owl_reasoner import StructuralReasoner, EBR
+from owlapy.owl_ontology import Ontology, NeuralOntology
 from owlapy.class_expression import (
     OWLObjectUnionOf,
     OWLObjectIntersectionOf,
