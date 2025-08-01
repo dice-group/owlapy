@@ -189,6 +189,33 @@ The above line of code will save the ontology `onto` in the file *test.owl* whic
 created in the same directory as the file you are running this code.
 
 
+## Generate an ontology from text
+In owlapy you will find a module named ontogen, a fancy name we chose for an ontology generating module using LLMs.
+We use [DSPy](https://dspy.ai/) for this function and to make use of it you have to create a object of `GraphExtractor`
+where we specify some general settings for the LLM and then use it as a callable object given the necessary parameters
+like following:
+
+```python
+from owlapy.ontogen.data_extraction import GraphExtractor
+
+ontogen = GraphExtractor(model="openai/gpt-4o", api_key="<ENTER_API_KEY>", api_base=None,
+                         temperature=0.1, seed=42, enable_logging=True)
+ontogen(text="Text to be used for ontology generation", generate_types = True)
+```
+
+A few things to mention here: 
+- model name should be a string of the form `llm_provider/llm_name` supported by LiteLLM,
+- enter your API key and API endpoint in the respective fields,
+- if you want to see what is being generated/extracted during the function set `enable-logging=True`,
+- Using the `ontogen` object as a callable one will forward the call to the method `forward`, therefore you can
+   also write `ontogen.forward` to view the docstring and the list of possible arguments.
+- In the example above we use `generate_types=True` which will initiate a process of generating classes for the 
+  extracted entities and leave the other arguments to their default values.
+
+After setting some text that you desire, the successful execution of the example code will generate a file named
+`generated_ontology.owl` in your local directory.
+
+
 ## Worlds
 
 Owlready2 stores every triple in a ‘World’ object, and it can handle several Worlds in parallel.

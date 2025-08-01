@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 setup(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
-    version="1.5.1",
+    version="1.6.0",
     packages=find_packages(),
     include_package_data=True,
     package_data={'owlapy': ['jar_dependencies/*.jar'],},
@@ -23,7 +23,8 @@ setup(
         "tqdm>=4.66.5",
         "fastapi>=0.115.5",
         "httpx>=0.27.2",
-        "uvicorn>=0.32.1"],
+        "uvicorn>=0.32.1",
+        "dicee==0.2.0"],
     author='Caglar Demir',
     author_email='caglardemir8@gmail.com',
     url='https://github.com/dice-group/owlapy',

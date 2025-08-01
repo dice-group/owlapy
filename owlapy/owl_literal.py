@@ -437,7 +437,7 @@ class _OWLNumericLiteralInterface(OWLLiteral):
             else:
                 # double-precision
                 value = round(float(value), 15)
-        elif isinstance(value, Decimal) or type_ is DecimalOWLDatatype:
+        elif isinstance(value, Decimal) or type_ == DecimalOWLDatatype:
             value = Decimal(value)
         else:
             raise TypeError("You either entered an unaccepted value type or an unaccepted datatype.")
@@ -733,22 +733,22 @@ class _OWLDateAndTimeLiteralInterface(_OWLLiteralBasicsInterface):
     _type: OWLDatatype
 
     def __init__(self, value, type_=None):
-        if isinstance(value, datetime) or type_ is DateTimeOWLDatatype:
+        if isinstance(value, datetime) or type_ == DateTimeOWLDatatype:
             if isinstance(value, str):
                 if value[-1] == "Z":
                     value = value.replace("Z", "+00:00")
                 value = datetime.fromisoformat(value)
-        if isinstance(value, date) or type_ is DateOWLDatatype:
+        if isinstance(value, date) or type_ == DateOWLDatatype:
             if isinstance(value, str):
                 if value[-1] == "Z":
                     value = value.replace("Z", "+00:00")
                 value = date.fromisoformat(value)
-        if isinstance(value, time) or type_ is TimeOWLDatatype:
+        if isinstance(value, time) or type_ == TimeOWLDatatype:
             if isinstance(value, str):
                 if value[-1] == "Z":
                     value = value.replace("Z", "+00:00")
                 value = time.fromisoformat(value)
-        if isinstance(value, Timedelta) or type_ is DurationOWLDatatype:
+        if isinstance(value, Timedelta) or type_ == DurationOWLDatatype:
             value = Timedelta(value) if isinstance(value, str) else value
         assert type(value) in [datetime, date, time, Timedelta]
         self._v = value
