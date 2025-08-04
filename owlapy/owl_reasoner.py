@@ -1106,7 +1106,7 @@ class SyncReasoner(AbstractOWLReasoner):
         #  TODO: ELK does not support specific methods. That means that mapping methods in owlapy will
         #   also raise NotImplementedError. Check for new release of elk and if any of these method is
         #   implemented, remove the `raise NotImplementedError` statement for the respective mapping
-        #   implemented in this class. Current version of elk is 6.0.0.
+        #   implemented in this class. Current version of elk is 0.6.0.
         #   Maven releases: https://mvnrepository.com/artifact/io.github.liveontologies/elk-owlapi
         #   ElkReasoner GitHub link: https://github.com/liveontologies/elk-reasoner/blob/main/elk-owlapi/src/main/java/org/semanticweb/elk/owlapi/ElkReasoner.java
 

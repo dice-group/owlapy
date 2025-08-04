@@ -39,8 +39,8 @@ class OWLClass(OWLClassExpression, OWLEntity):
         return self._iri.as_str()
 
     @property
-    def reminder(self) -> str:
-        """The reminder of the IRI """
+    def remainder(self) -> str:
+        """The remainder of the IRI """
         return self._iri.get_remainder()
 
     def is_owl_thing(self) -> bool:

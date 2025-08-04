@@ -173,12 +173,12 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
                 continue
             
             try:
-                row_index = int(subject_ind.reminder)
+                row_index = int(subject_ind.remainder)
             except ValueError:
-                row_index = subject_ind.reminder
+                row_index = subject_ind.remainder
 
             # Extract column fragment from property IRI: namespace#<column_name>
-            column_fragment = property_exp.iri.reminder.rsplit('#', 1)[-1]
+            column_fragment = property_exp.iri.remainder.rsplit('#', 1)[-1]
             value = literal_value
             try:
                 if '.' in literal_value:

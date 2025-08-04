@@ -69,13 +69,13 @@ from owlapy.owl_ontology import SyncOntology
 ontology_path = "KGs/Family/father.owl"
 onto = SyncOntology(ontology_path)
 
-print({owl_class.reminder for owl_class in onto.classes_in_signature()}) 
+print({owl_class.remainder for owl_class in onto.classes_in_signature()}) 
 # {'Thing', 'female', 'male', 'person'}
 
-print({individual.reminder for individual in onto.individuals_in_signature()}) 
+print({individual.remainder for individual in onto.individuals_in_signature()}) 
 # {'michelle', 'stefan', 'martin', 'anna', 'heinz', 'markus'}
 
-print({object_property.reminder for object_property in onto.object_properties_in_signature()})
+print({object_property.remainder for object_property in onto.object_properties_in_signature()})
 # {'hasChild'}
 
 for owl_subclass_of_axiom in onto.get_tbox_axioms():
