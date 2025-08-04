@@ -300,7 +300,7 @@ class GraphExtractor(dspy.Module):
             for cls in onto.classes_in_signature():
                 try:
                     superclasses, subclasses = extract_hierarchy_from_dbpedia(cls.remainder)
-                except Exception as e:
+                except Exception:
                     continue
                 if self.logging:
                     print(f"GraphExtractor: INFO  :: For class {cls.remainder} found superclasses: {[IRI.create(s).remainder for s in superclasses]} and subclasses: {[IRI.create(s).remainder for s in subclasses]}")
