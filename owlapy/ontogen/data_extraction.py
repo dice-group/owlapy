@@ -162,7 +162,9 @@ def extract_hierarchy_from_dbpedia(cls):
     return superclasses, subclasses
 
 class GraphExtractor(dspy.Module):
-    def __init__(self,model, api_key, api_base, temperature=0.1, seed=42, cache=False, cache_in_memory=False,
+    def __init__(self,model="gpt-4o", api_key="<YOUR_GITHUB_PAT>",
+                 api_base="https://models.github.ai/inference",
+                 temperature=0.1, seed=42, cache=False, cache_in_memory=False,
                  enable_logging=False):
         """
         A module to extract an RDF graph from a given text input.
