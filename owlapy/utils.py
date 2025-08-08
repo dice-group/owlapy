@@ -1,5 +1,7 @@
 """Owlapy utils."""
 from collections import Counter
+from itertools import repeat
+
 from owlapy.owl_individual import OWLNamedIndividual
 from sortedcontainers import SortedSet
 from functools import singledispatchmethod, total_ordering
@@ -448,7 +450,10 @@ def _avoid_overly_redundand_operands(operands: List[_O], max_count: int = 2) -> 
 
 
 def _sort_by_ordered_owl_object(i: Iterable[_O]) -> Iterable[_O]:
-    return sorted(i, key=OrderedOWLObject)
+    try:
+        return sorted(i, key=OrderedOWLObject)
+    except AttributeError:
+        print(i)
 
 
 class ConceptOperandSorter:
@@ -647,148 +652,201 @@ class ConceptOperandSorter:
         else:
             return t
 
-class OperandSetTransform:
+
+class CESimplifier:
+    """Simplifies OWLClassExpression by removing redundant operands and normalizing the structure."""
+
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:
         return self._simplify(o).get_nnf()
 
+    def _process_cardinality_restriction(self,restriction, nary_ce):
+        if nary_ce is not None:
+            operands = set(nary_ce.operands())
+            same_root = []
+            for op in operands:
+                if (isinstance(op, type(restriction))
+                        and op.get_cardinality() == restriction.get_cardinality()
+                        and op.get_property() == restriction.get_property()):
+                    same_root.append(op)
+            if not len(same_root) == 1:
+                fillers = _sort_by_ordered_owl_object([p.get_filler() for p in same_root])
+                if isinstance(nary_ce, OWLObjectUnionOf):
+                    return type(restriction)(cardinality=restriction.get_cardinality(),
+                                               property=restriction.get_property(),
+                                               filler=self._simplify(OWLObjectUnionOf(fillers)))
+                if isinstance(nary_ce, OWLObjectIntersectionOf):
+                    return type(restriction)(cardinality=restriction.get_cardinality(),
+                                               property=restriction.get_property(),
+                                               filler=self._simplify(OWLObjectIntersectionOf(fillers)))
+                if isinstance(nary_ce, OWLDataUnionOf):
+                    return type(restriction)(cardinality=restriction.get_cardinality(),
+                                             property=restriction.get_property(),
+                                             filler=self._simplify(OWLDataUnionOf(fillers)))
+                if isinstance(nary_ce, OWLDataIntersectionOf):
+                    return type(restriction)(cardinality=restriction.get_cardinality(),
+                                             property=restriction.get_property(),
+                                             filler=self._simplify(OWLDataIntersectionOf(fillers)))
+        return type(restriction)(cardinality=restriction.get_cardinality(),
+                                 property=restriction.get_property(),
+                                 filler=self._simplify(restriction.get_filler()))
+
+
+    def _process_existential_restriction(self, restriction, nary_ce):
+        if nary_ce is not None:
+            operands = set(nary_ce.operands())
+            same_root = []
+            for op in operands:
+                if isinstance(op, type(restriction)) and op.get_property() == restriction.get_property():
+                    same_root.append(op)
+            if not len(same_root) == 1:
+                fillers = _sort_by_ordered_owl_object([p.get_filler() for p in same_root])
+                if isinstance(nary_ce, OWLObjectUnionOf):
+                    return type(restriction)(property=restriction.get_property(),
+                                             filler=self._simplify(OWLObjectUnionOf(fillers)))
+                if isinstance(nary_ce, OWLObjectIntersectionOf):
+                    return type(restriction)(property=restriction.get_property(),
+                                             filler=self._simplify(OWLObjectIntersectionOf(fillers)))
+                if isinstance(nary_ce, OWLDataUnionOf):
+                    return type(restriction)(property=restriction.get_property(),
+                                             filler=self._simplify(OWLDataUnionOf(fillers)))
+                if isinstance(nary_ce, OWLDataIntersectionOf):
+                    return type(restriction)(property=restriction.get_property(),
+                                             filler=self._simplify(OWLDataIntersectionOf(fillers)))
+        return type(restriction)(property=restriction.get_property(), filler=self._simplify(restriction.get_filler()))
+
     # single dispatch is still not implemented in mypy, see https://github.com/python/mypy/issues/2904
     @singledispatchmethod
-    def _simplify(self, o: _O) -> _O:
+    def _simplify(self, o: _O, nary_ce) -> _O:
         raise NotImplementedError(o)
 
     @_simplify.register
-    def _(self, o: OWLClass) -> OWLClass:
+    def _(self, o: OWLClass, nary_ce = None) -> OWLClass:
         return o
 
     @_simplify.register
-    def _(self, p: OWLObjectProperty) -> OWLObjectProperty:
+    def _(self, p: OWLObjectProperty, nary_ce = None) -> OWLObjectProperty:
         return p
 
     @_simplify.register
-    def _(self, p: OWLDataProperty) -> OWLDataProperty:
+    def _(self, p: OWLDataProperty, nary_ce = None) -> OWLDataProperty:
         return p
 
     @_simplify.register
-    def _(self, i: OWLNamedIndividual) -> OWLNamedIndividual:
+    def _(self, i: OWLNamedIndividual, nary_ce = None) -> OWLNamedIndividual:
         return i
 
     @_simplify.register
-    def _(self, i: OWLLiteral) -> OWLLiteral:
+    def _(self, i: OWLLiteral, nary_ce = None) -> OWLLiteral:
         return i
 
     @_simplify.register
-    def _(self, e: OWLObjectSomeValuesFrom) -> OWLObjectSomeValuesFrom:
-        return OWLObjectSomeValuesFrom(property=e.get_property(), filler=self._simplify(e.get_filler()))
+    def _(self, e: OWLObjectSomeValuesFrom, nary_ce = None) -> OWLObjectSomeValuesFrom:
+        return self._process_existential_restriction(e, nary_ce)
 
     @_simplify.register
-    def _(self, e: OWLObjectAllValuesFrom) -> OWLObjectAllValuesFrom:
-        return OWLObjectAllValuesFrom(property=e.get_property(), filler=self._simplify(e.get_filler()))
+    def _(self, e: OWLObjectAllValuesFrom, nary_ce = None) -> OWLObjectAllValuesFrom:
+        return self._process_existential_restriction(e, nary_ce)
 
     @_simplify.register
-    def _(self, c: OWLObjectUnionOf) -> OWLClassExpression:
-        s = set(map(self._simplify, set(c.operands())))
-        if OWLThing in s:
+    def _(self, c: OWLObjectUnionOf, nary_ce = None) -> OWLClassExpression:
+        s = set(map(self._simplify, set(c.operands()), repeat(c)))
+        s.discard(OWLThing)
+        if not s:
             return OWLThing
-        elif len(s) == 1:
+        if len(s) == 1:
             return s.pop()
         return OWLObjectUnionOf(_sort_by_ordered_owl_object(s))
 
     @_simplify.register
-    def _(self, c: OWLObjectIntersectionOf) -> OWLClassExpression:
-        s = set(map(self._simplify, set(c.operands())))
+    def _(self, c: OWLObjectIntersectionOf, nary_ce = None) -> OWLClassExpression:
+        s = set(map(self._simplify, set(c.operands()), repeat(c)))
         s.discard(OWLThing)
         if not s:
             return OWLThing
-        elif len(s) == 1:
+        if len(s) == 1:
             return s.pop()
         return OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s))
 
     @_simplify.register
-    def _(self, n: OWLObjectComplementOf) -> OWLObjectComplementOf:
+    def _(self, n: OWLObjectComplementOf, nary_ce = None) -> OWLObjectComplementOf:
         return n
 
     @_simplify.register
-    def _(self, p: OWLObjectInverseOf) -> OWLObjectInverseOf:
+    def _(self, p: OWLObjectInverseOf, nary_ce = None) -> OWLObjectInverseOf:
         return p
 
     @_simplify.register
-    def _(self, r: OWLObjectMinCardinality) -> OWLObjectMinCardinality:
-        return OWLObjectMinCardinality(cardinality=r.get_cardinality(), property=r.get_property(),
-                                       filler=self._simplify(r.get_filler()))
+    def _(self, r: OWLObjectMinCardinality, nary_ce = None) -> OWLObjectMinCardinality:
+        return self._process_cardinality_restriction(r, nary_ce)
 
     @_simplify.register
-    def _(self, r: OWLObjectExactCardinality) -> OWLObjectExactCardinality:
-        return OWLObjectExactCardinality(cardinality=r.get_cardinality(), property=r.get_property(),
-                                         filler=self._simplify(r.get_filler()))
+    def _(self, r: OWLObjectExactCardinality, nary_ce = None) -> OWLObjectExactCardinality:
+        return self._process_cardinality_restriction(r, nary_ce)
 
     @_simplify.register
-    def _(self, r: OWLObjectMaxCardinality) -> OWLObjectMaxCardinality:
-        return OWLObjectMaxCardinality(cardinality=r.get_cardinality(), property=r.get_property(),
-                                       filler=self._simplify(r.get_filler()))
+    def _(self, r: OWLObjectMaxCardinality, nary_ce = None) -> OWLObjectMaxCardinality:
+        return self._process_cardinality_restriction(r, nary_ce)
 
     @_simplify.register
-    def _(self, r: OWLObjectHasSelf) -> OWLObjectHasSelf:
+    def _(self, r: OWLObjectHasSelf, nary_ce = None) -> OWLObjectHasSelf:
         return r
 
     @_simplify.register
-    def _(self, r: OWLObjectHasValue) -> OWLObjectHasValue:
+    def _(self, r: OWLObjectHasValue, nary_ce = None) -> OWLObjectHasValue:
         return r
 
     @_simplify.register
-    def _(self, r: OWLObjectOneOf) -> OWLObjectOneOf:
+    def _(self, r: OWLObjectOneOf, nary_ce = None) -> OWLObjectOneOf:
         return OWLObjectOneOf(_sort_by_ordered_owl_object(set(r.individuals())))
 
     @_simplify.register
-    def _(self, e: OWLDataSomeValuesFrom) -> OWLDataSomeValuesFrom:
-        return OWLDataSomeValuesFrom(property=e.get_property(), filler=self._simplify(e.get_filler()))
+    def _(self, e: OWLDataSomeValuesFrom, nary_ce = None) -> OWLDataSomeValuesFrom:
+        return self._process_existential_restriction(e, nary_ce)
 
     @_simplify.register
-    def _(self, e: OWLDataAllValuesFrom) -> OWLDataAllValuesFrom:
-        return OWLDataAllValuesFrom(property=e.get_property(), filler=self._simplify(e.get_filler()))
+    def _(self, e: OWLDataAllValuesFrom, nary_ce = None) -> OWLDataAllValuesFrom:
+        return self._process_existential_restriction(e, nary_ce)
 
     @_simplify.register
-    def _(self, c: OWLDataUnionOf) -> OWLDataRange:
-        s = set(map(self._simplify, set(c.operands())))
+    def _(self, c: OWLDataUnionOf, nary_ce = None) -> OWLDataRange:
+        s = set(map(self._simplify, set(c.operands()), repeat(c)))
         if len(s) == 1:
             return s.pop()
         return OWLDataUnionOf(_sort_by_ordered_owl_object(s))
 
     @_simplify.register
-    def _(self, c: OWLDataIntersectionOf) -> OWLDataRange:
-        s = set(map(self._simplify, set(c.operands())))
+    def _(self, c: OWLDataIntersectionOf, nary_ce = None) -> OWLDataRange:
+        s = set(map(self._simplify, set(c.operands()), repeat(c)))
         if len(s) == 1:
             return s.pop()
         return OWLDataIntersectionOf(_sort_by_ordered_owl_object(s))
 
     @_simplify.register
-    def _(self, n: OWLDatatypeRestriction) -> OWLDatatypeRestriction:
+    def _(self, n: OWLDatatypeRestriction, nary_ce = None) -> OWLDatatypeRestriction:
         return n
 
     @_simplify.register
-    def _(self, n: OWLDataComplementOf) -> OWLDataComplementOf:
+    def _(self, n: OWLDataComplementOf, nary_ce = None) -> OWLDataComplementOf:
         return n
 
     @_simplify.register
-    def _(self, r: OWLDataMinCardinality) -> OWLDataMinCardinality:
-        return OWLDataMinCardinality(cardinality=r.get_cardinality(), property=r.get_property(),
-                                     filler=self._simplify(r.get_filler()))
+    def _(self, r: OWLDataMinCardinality, nary_ce = None) -> OWLDataMinCardinality:
+        return self._process_cardinality_restriction(r, nary_ce)
 
     @_simplify.register
-    def _(self, r: OWLDataExactCardinality) -> OWLDataExactCardinality:
-        return OWLDataExactCardinality(cardinality=r.get_cardinality(), property=r.get_property(),
-                                       filler=self._simplify(r.get_filler()))
+    def _(self, r: OWLDataExactCardinality, nary_ce = None) -> OWLDataExactCardinality:
+        return self._process_cardinality_restriction(r, nary_ce)
 
     @_simplify.register
-    def _(self, r: OWLDataMaxCardinality) -> OWLDataMaxCardinality:
-        return OWLDataMaxCardinality(cardinality=r.get_cardinality(), property=r.get_property(),
-                                     filler=self._simplify(r.get_filler()))
+    def _(self, r: OWLDataMaxCardinality, nary_ce = None) -> OWLDataMaxCardinality:
+        return self._process_cardinality_restriction(r, nary_ce)
 
     @_simplify.register
-    def _(self, r: OWLDataHasValue) -> OWLDataHasValue:
+    def _(self, r: OWLDataHasValue, nary_ce = None) -> OWLDataHasValue:
         return r
 
     @_simplify.register
-    def _(self, r: OWLDataOneOf) -> OWLDataOneOf:
+    def _(self, r: OWLDataOneOf, nary_ce = None) -> OWLDataOneOf:
         return OWLDataOneOf(_sort_by_ordered_owl_object(set(r.values())))
 
 
@@ -875,10 +933,6 @@ class OrderedOWLObject:
 
     def __eq__(self, other):
         return self.o == other.o
-
-
-def _sort_by_ordered_owl_object(i: Iterable[_O]) -> Iterable[_O]:
-    return sorted(i, key=OrderedOWLObject)
 
 
 class NNF:
@@ -1311,3 +1365,10 @@ class LRUCache(Generic[_K, _V]):
             self.root[:] = [self.root, self.root, None, None]
             self.hits = self.misses = 0
             self.full = False
+
+
+transformer = CESimplifier()
+
+def simplify_class_expression(ce: OWLClassExpression) -> OWLClassExpression:
+    """Simplify a class expression by removing redundant expressions and sorting operands."""
+    return transformer.simplify(ce)
