@@ -653,8 +653,153 @@ class ConceptOperandSorter:
             return t
 
 
+class TopLevelCNF:
+    """This class contains functions to transform a class expression into Top-Level Conjunctive Normal Form."""
+
+    def get_top_level_cnf(self, ce: OWLClassExpression) -> OWLClassExpression:
+        """Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
+
+        Args:
+            ce: Class Expression.
+
+        Returns:
+            Class Expression in Top-Level Conjunctive Normal Form.
+            """
+        c = _get_top_level_form(ce.get_nnf(), OWLObjectUnionOf, OWLObjectIntersectionOf)
+        return combine_nary_expressions(c)
+
+
+class TopLevelDNF:
+    """This class contains functions to transform a class expression into Top-Level Disjunctive Normal Form."""
+
+    def get_top_level_dnf(self, ce: OWLClassExpression) -> OWLClassExpression:
+        """Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
+
+        Args:
+            ce: Class Expression.
+
+        Returns:
+            Class Expression in Top-Level Disjunctive Normal Form.
+            """
+        c = _get_top_level_form(ce.get_nnf(), OWLObjectIntersectionOf, OWLObjectUnionOf)
+        return combine_nary_expressions(c)
+
+
+def _get_top_level_form(ce: OWLClassExpression,
+                        type_a: Type[OWLNaryBooleanClassExpression],
+                        type_b: Type[OWLNaryBooleanClassExpression]) -> OWLClassExpression:
+    """ Transforms a class expression (that's already in NNF) into Top-Level Conjunctive/Disjunctive Normal Form.
+    Here type_a specifies the operand which should be distributed inwards over type_b.
+
+    Conjunctive Normal form:
+        type_a = OWLObjectUnionOf
+        type_b = OWLObjectIntersectionOf
+    Disjunctive Normal form:
+        type_a = OWLObjectIntersectionOf
+        type_b = OWLObjectUnionOf
+    """
+
+    def distributive_law(a: OWLClassExpression, b: OWLNaryBooleanClassExpression) -> OWLNaryBooleanClassExpression:
+        return type_b(type_a([a, op]) for op in b.operands())
+
+    if isinstance(ce, type_a):
+        ce = cast(OWLNaryBooleanClassExpression, combine_nary_expressions(ce))
+        type_b_exprs = [op for op in ce.operands() if isinstance(op, type_b)]
+        non_type_b_exprs = [op for op in ce.operands() if not isinstance(op, type_b)]
+        if not len(type_b_exprs):
+            return ce
+
+        if len(non_type_b_exprs):
+            expr = non_type_b_exprs[0] if len(non_type_b_exprs) == 1 \
+                else type_a(non_type_b_exprs)
+            expr = distributive_law(expr, type_b_exprs[0])
+        else:
+            expr = type_b_exprs[0]
+
+        if len(type_b_exprs) == 1:
+            return _get_top_level_form(expr, type_a, type_b)
+
+        for type_b_expr in type_b_exprs[1:]:
+            expr = distributive_law(type_b_expr, expr)
+        return _get_top_level_form(expr, type_a, type_b)
+    elif isinstance(ce, type_b):
+        return type_b(_get_top_level_form(op, type_a, type_b) for op in ce.operands())
+    elif isinstance(ce, OWLClassExpression):
+        return ce
+    else:
+        raise ValueError('Top-Level CNF/DNF only applicable on class expressions', ce)
+
+
+# def factor_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf]):
+#     """Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible."""
+#
+#     # Case 1: Top-level union => try factoring common operand from all disjuncts
+#     if isinstance(expr, OWLObjectUnionOf):
+#         operands = expr.operands()
+#         # Each disjunct must be an intersection for factoring to apply
+#         if all(isinstance(op, OWLObjectIntersectionOf) for op in operands):
+#             # Get sets of operands from each disjunct
+#             operand_sets = [set(op.operands()) for op in operands]
+#             # Find common conjunct(s) across all disjuncts
+#             common = set(operand_sets[0]).intersection(*operand_sets[1:])
+#             if common:
+#                 # Remove common part from each disjunct
+#                 new_disjuncts = []
+#                 for s in operand_sets:
+#                     remaining = tuple(s - common)
+#                     if len(remaining) == 1:
+#                         new_disjuncts.append(remaining[0])
+#                     else:
+#                         new_disjuncts.append(OWLObjectIntersectionOf(remaining))
+#                 # Build factored expression: common ⊓ (remaining disjunction)
+#                 if len(new_disjuncts) == 1:
+#                     factored_inner = new_disjuncts[0]
+#                 else:
+#                     factored_inner = OWLObjectUnionOf(new_disjuncts)
+#                 if len(common) == 1:
+#                     return OWLObjectIntersectionOf(tuple(common) + (factored_inner,))
+#                 else:
+#                     return OWLObjectIntersectionOf((OWLObjectIntersectionOf(tuple(common)), factored_inner))
+#         return expr  # no factoring possible
+#
+#     # Case 2: Top-level intersection => try factoring common operand from all conjuncts
+#     elif isinstance(expr, OWLObjectIntersectionOf):
+#         operands = expr.operands()
+#         if all(isinstance(op, OWLObjectUnionOf) for op in operands):
+#             operand_sets = [set(op.operands()) for op in operands]
+#             common = set(operand_sets[0]).intersection(*operand_sets[1:])
+#             if common:
+#                 new_conjuncts = []
+#                 for s in operand_sets:
+#                     remaining = tuple(s - common)
+#                     if len(remaining) == 1:
+#                         new_conjuncts.append(remaining[0])
+#                     else:
+#                         new_conjuncts.append(OWLObjectUnionOf(remaining))
+#                 if len(new_conjuncts) == 1:
+#                     factored_inner = new_conjuncts[0]
+#                 else:
+#                     factored_inner = OWLObjectIntersectionOf(new_conjuncts)
+#                 if len(common) == 1:
+#                     return OWLObjectUnionOf(tuple(common) + (factored_inner,))
+#                 else:
+#                     return OWLObjectUnionOf((OWLObjectUnionOf(tuple(common)), factored_inner))
+#         return expr  # no factoring possible
+#
+#     else:
+#         raise TypeError("Expression must be OWLObjectIntersectionOf or OWLObjectUnionOf")
+
+
 class CESimplifier:
-    """Simplifies OWLClassExpression by removing redundant operands and normalizing the structure."""
+    """Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.
+        Simplifications include:
+        - Merging redundant cardinality restrictions
+        - Merging redundant existential restrictions
+        - Normalizing union and intersection of class expressions
+        - Absorption of redundant class expressions
+        - Converting to negation normal form (NNF)
+    """
+    dnf = TopLevelDNF()
 
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:
         return self._simplify(o).get_nnf()
@@ -749,23 +894,46 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, c: OWLObjectUnionOf, nary_ce = None) -> OWLClassExpression:
+        if nary_ce is not None:
+            nary_ce_operands = set(nary_ce.operands())
+            c_operands = set(c.operands())
+            intersection = nary_ce_operands.intersection(c_operands)
+            if len(intersection) > 0:
+                return intersection.pop()
+        # else:
+        #     c_dnf = self.dnf.get_top_level_dnf(c)
+        #     if c != c_dnf:
+        #         return self._simplify(c_dnf)
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         s.discard(OWLThing)
-        if not s:
+        if OWLThing in s:
             return OWLThing
         if len(s) == 1:
             return s.pop()
-        return OWLObjectUnionOf(_sort_by_ordered_owl_object(s))
+
+        ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
+        return ce_to_return
 
     @_simplify.register
     def _(self, c: OWLObjectIntersectionOf, nary_ce = None) -> OWLClassExpression:
+        if nary_ce is not None:
+            nary_ce_operands = set(nary_ce.operands())
+            c_operands = set(c.operands())
+            intersection = nary_ce_operands.intersection(c_operands)
+            if len(intersection) > 0:
+                return intersection.pop()
+        # else:
+        #     c_dnf = self.dnf.get_top_level_dnf(c)
+        #     if c != c_dnf:
+        #         return self._simplify(c_dnf)
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         s.discard(OWLThing)
         if not s:
             return OWLThing
         if len(s) == 1:
             return s.pop()
-        return OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s))
+        ce_to_return = combine_nary_expressions(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
+        return ce_to_return
 
     @_simplify.register
     def _(self, n: OWLObjectComplementOf, nary_ce = None) -> OWLObjectComplementOf:
@@ -812,14 +980,14 @@ class CESimplifier:
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         if len(s) == 1:
             return s.pop()
-        return OWLDataUnionOf(_sort_by_ordered_owl_object(s))
+        return combine_nary_expressions(OWLDataUnionOf(_sort_by_ordered_owl_object(s)))
 
     @_simplify.register
     def _(self, c: OWLDataIntersectionOf, nary_ce = None) -> OWLDataRange:
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         if len(s) == 1:
             return s.pop()
-        return OWLDataIntersectionOf(_sort_by_ordered_owl_object(s))
+        return combine_nary_expressions(OWLDataIntersectionOf(_sort_by_ordered_owl_object(s)))
 
     @_simplify.register
     def _(self, n: OWLDatatypeRestriction, nary_ce = None) -> OWLDatatypeRestriction:
@@ -1120,84 +1288,6 @@ class NNF:
             return OWLDataMinCardinality(card, ce.get_property(), filler)
         return OWLDataMaxCardinality(card, ce.get_property(), filler)
 
-
-# OWL-APy custom util start
-
-class TopLevelCNF:
-    """This class contains functions to transform a class expression into Top-Level Conjunctive Normal Form."""
-
-    def get_top_level_cnf(self, ce: OWLClassExpression) -> OWLClassExpression:
-        """Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
-
-        Args:
-            ce: Class Expression.
-
-        Returns:
-            Class Expression in Top-Level Conjunctive Normal Form.
-            """
-        c = _get_top_level_form(ce.get_nnf(), OWLObjectUnionOf, OWLObjectIntersectionOf)
-        return combine_nary_expressions(c)
-
-
-class TopLevelDNF:
-    """This class contains functions to transform a class expression into Top-Level Disjunctive Normal Form."""
-
-    def get_top_level_dnf(self, ce: OWLClassExpression) -> OWLClassExpression:
-        """Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
-
-        Args:
-            ce: Class Expression.
-
-        Returns:
-            Class Expression in Top-Level Disjunctive Normal Form.
-            """
-        c = _get_top_level_form(ce.get_nnf(), OWLObjectIntersectionOf, OWLObjectUnionOf)
-        return combine_nary_expressions(c)
-
-
-def _get_top_level_form(ce: OWLClassExpression,
-                        type_a: Type[OWLNaryBooleanClassExpression],
-                        type_b: Type[OWLNaryBooleanClassExpression]) -> OWLClassExpression:
-    """ Transforms a class expression (that's already in NNF) into Top-Level Conjunctive/Disjunctive Normal Form.
-    Here type_a specifies the operand which should be distributed inwards over type_b.
-
-    Conjunctive Normal form:
-        type_a = OWLObjectUnionOf
-        type_b = OWLObjectIntersectionOf
-    Disjunctive Normal form:
-        type_a = OWLObjectIntersectionOf
-        type_b = OWLObjectUnionOf
-    """
-
-    def distributive_law(a: OWLClassExpression, b: OWLNaryBooleanClassExpression) -> OWLNaryBooleanClassExpression:
-        return type_b(type_a([a, op]) for op in b.operands())
-
-    if isinstance(ce, type_a):
-        ce = cast(OWLNaryBooleanClassExpression, combine_nary_expressions(ce))
-        type_b_exprs = [op for op in ce.operands() if isinstance(op, type_b)]
-        non_type_b_exprs = [op for op in ce.operands() if not isinstance(op, type_b)]
-        if not len(type_b_exprs):
-            return ce
-
-        if len(non_type_b_exprs):
-            expr = non_type_b_exprs[0] if len(non_type_b_exprs) == 1 \
-                else type_a(non_type_b_exprs)
-            expr = distributive_law(expr, type_b_exprs[0])
-        else:
-            expr = type_b_exprs[0]
-
-        if len(type_b_exprs) == 1:
-            return _get_top_level_form(expr, type_a, type_b)
-
-        for type_b_expr in type_b_exprs[1:]:
-            expr = distributive_law(type_b_expr, expr)
-        return _get_top_level_form(expr, type_a, type_b)
-    elif isinstance(ce, type_b):
-        return type_b(_get_top_level_form(op, type_a, type_b) for op in ce.operands())
-    elif isinstance(ce, OWLClassExpression):
-        return ce
-    else:
-        raise ValueError('Top-Level CNF/DNF only applicable on class expressions', ce)
 
 
 @overload
