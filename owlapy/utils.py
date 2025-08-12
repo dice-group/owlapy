@@ -1,11 +1,14 @@
 """Owlapy utils."""
 from collections import Counter
+from copy import copy
 from itertools import repeat
 
 from owlapy.owl_individual import OWLNamedIndividual
 from sortedcontainers import SortedSet
 from functools import singledispatchmethod, total_ordering
 from typing import Iterable, List, Type,Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, ClassVar
+
+from . import dl_to_owl_expression, owl_expression_to_dl
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
 from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
@@ -730,64 +733,83 @@ def _get_top_level_form(ce: OWLClassExpression,
         raise ValueError('Top-Level CNF/DNF only applicable on class expressions', ce)
 
 
-# def factor_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf]):
-#     """Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible."""
-#
-#     # Case 1: Top-level union => try factoring common operand from all disjuncts
-#     if isinstance(expr, OWLObjectUnionOf):
-#         operands = expr.operands()
-#         # Each disjunct must be an intersection for factoring to apply
-#         if all(isinstance(op, OWLObjectIntersectionOf) for op in operands):
-#             # Get sets of operands from each disjunct
-#             operand_sets = [set(op.operands()) for op in operands]
-#             # Find common conjunct(s) across all disjuncts
-#             common = set(operand_sets[0]).intersection(*operand_sets[1:])
-#             if common:
-#                 # Remove common part from each disjunct
-#                 new_disjuncts = []
-#                 for s in operand_sets:
-#                     remaining = tuple(s - common)
-#                     if len(remaining) == 1:
-#                         new_disjuncts.append(remaining[0])
-#                     else:
-#                         new_disjuncts.append(OWLObjectIntersectionOf(remaining))
-#                 # Build factored expression: common ⊓ (remaining disjunction)
-#                 if len(new_disjuncts) == 1:
-#                     factored_inner = new_disjuncts[0]
-#                 else:
-#                     factored_inner = OWLObjectUnionOf(new_disjuncts)
-#                 if len(common) == 1:
-#                     return OWLObjectIntersectionOf(tuple(common) + (factored_inner,))
-#                 else:
-#                     return OWLObjectIntersectionOf((OWLObjectIntersectionOf(tuple(common)), factored_inner))
-#         return expr  # no factoring possible
-#
-#     # Case 2: Top-level intersection => try factoring common operand from all conjuncts
-#     elif isinstance(expr, OWLObjectIntersectionOf):
-#         operands = expr.operands()
-#         if all(isinstance(op, OWLObjectUnionOf) for op in operands):
-#             operand_sets = [set(op.operands()) for op in operands]
-#             common = set(operand_sets[0]).intersection(*operand_sets[1:])
-#             if common:
-#                 new_conjuncts = []
-#                 for s in operand_sets:
-#                     remaining = tuple(s - common)
-#                     if len(remaining) == 1:
-#                         new_conjuncts.append(remaining[0])
-#                     else:
-#                         new_conjuncts.append(OWLObjectUnionOf(remaining))
-#                 if len(new_conjuncts) == 1:
-#                     factored_inner = new_conjuncts[0]
-#                 else:
-#                     factored_inner = OWLObjectIntersectionOf(new_conjuncts)
-#                 if len(common) == 1:
-#                     return OWLObjectUnionOf(tuple(common) + (factored_inner,))
-#                 else:
-#                     return OWLObjectUnionOf((OWLObjectUnionOf(tuple(common)), factored_inner))
-#         return expr  # no factoring possible
-#
-#     else:
-#         raise TypeError("Expression must be OWLObjectIntersectionOf or OWLObjectUnionOf")
+def factor_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf]):
+    """Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible."""
+
+    assert(isinstance(expr, Union[OWLObjectIntersectionOf, OWLObjectUnionOf])), "factor_expression"
+
+    if isinstance(expr, OWLObjectUnionOf):
+        type_a = OWLObjectUnionOf
+        type_b = OWLObjectIntersectionOf
+    else:
+        type_a = OWLObjectIntersectionOf
+        type_b = OWLObjectUnionOf
+
+    ce = cast(OWLNaryBooleanClassExpression, combine_nary_expressions(expr))
+    type_b_nary_expressions = {op for op in ce.operands() if isinstance(op, type_b)}
+    non_type_b_nary_expressions = {op for op in ce.operands() if not isinstance(op, type_b)}
+
+
+    # todo AB: need to remove duplicates not only here but on other returns.
+    #   A solution was to have duplicates removed since the createation of nary objects but if
+    #   there is only 1 operand left after removing duplicates it will fail to create an object...
+    #   So in short, find a some solid solution to this.
+    ce_no_repetitions = type_a([*type_b_nary_expressions, *non_type_b_nary_expressions])
+    if ce != ce_no_repetitions:
+        # if repeated operands are found just continue factoring the expression without repeated operands
+        return factor_expression(ce_no_repetitions)
+
+    if len(non_type_b_nary_expressions) and len(type_b_nary_expressions):
+        # check if a non-nary expression occurs in any of the nary expression then omit the nary expression and continue
+        # or return the non-nary expression if these were the only 2 operands left
+        for i in non_type_b_nary_expressions:
+            for j in type_b_nary_expressions:
+                j_op = set(j.operands())
+                if i in j_op:
+                    ce_op = set(ce.operands())
+                    if len(ce_op) == 2:
+                        return i
+                    else:
+                        ce_op.remove(j)
+                        return factor_expression(type_a(ce_op))
+
+    if len(type_b_nary_expressions) < 2:
+        if len(type_b_nary_expressions) == 1:
+            # if we are left with only 1 nary expression of type_b then run factor_expression for its operands
+            # where type_a and type_b switch places to factorize any nary expression of type_b left there.
+            return type_a({*non_type_b_nary_expressions, *[factor_expression(exp) for exp in type_b_nary_expressions]})
+        # if no nary expression is left just return ce
+        return ce
+    else:
+        for i in type_b_nary_expressions:
+            # we take each nary expression of type_b in the operands of ce and see if any other operand of the same
+            # type has any common expression. The moment we find a common expression we perform a factorization for
+            # those 2 nary expressions and depending on the length of the operands to process we decide whether to
+            # return the factorization or go through another cycle of factorization using the union of the
+            # localized factorization with what's left from other operands.
+            i_op = set(i.operands())
+            for j in copy(type_b_nary_expressions) - {i}:
+                j_op = set(j.operands())
+                common = i_op.intersection(j_op)
+                if len(common):
+                    i_op.update(j_op)
+                    remaining = i_op - common
+                    if len(common) > 1:
+                        localized_factorization = type_b(common)
+                    else:
+                        localized_factorization = type_b([*common,type_a(remaining)])
+                    if len(type_b_nary_expressions) == 2:
+                        return combine_nary_expressions(localized_factorization)
+                    else:
+                        type_b_nary_expressions_without_i_j = copy(type_b_nary_expressions) - {i,j}
+                        return factor_expression(type_a([*type_b_nary_expressions_without_i_j, localized_factorization]))
+    if len(type_b_nary_expressions):
+        # if reach this point we make a last check to see if there is any nary expression of type_b in ce and process
+        # each of them before returning the type_a object.
+        return type_a({*non_type_b_nary_expressions, *[factor_expression(exp) for exp in type_b_nary_expressions]})
+
+    # no nary expression of type_b? -> just return ce, nothing to do here
+    return ce
 
 
 class CESimplifier:
@@ -800,6 +822,7 @@ class CESimplifier:
         - Converting to negation normal form (NNF)
     """
     dnf = TopLevelDNF()
+    sorter = ConceptOperandSorter()
 
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:
         return self._simplify(o).get_nnf()
@@ -912,6 +935,8 @@ class CESimplifier:
             return s.pop()
 
         ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
+        if nary_ce is None:
+            return self.sorter.sort(factor_expression(ce_to_return))
         return ce_to_return
 
     @_simplify.register
@@ -933,6 +958,8 @@ class CESimplifier:
         if len(s) == 1:
             return s.pop()
         ce_to_return = combine_nary_expressions(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
+        if nary_ce is None: # check if we are at the root nary expression
+            return self.sorter.sort(factor_expression(ce_to_return))
         return ce_to_return
 
     @_simplify.register
