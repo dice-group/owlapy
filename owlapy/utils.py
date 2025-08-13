@@ -6,7 +6,8 @@ from itertools import repeat
 from owlapy.owl_individual import OWLNamedIndividual
 from sortedcontainers import SortedSet
 from functools import singledispatchmethod, total_ordering
-from typing import Iterable, List, Type,Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, ClassVar
+from typing import Iterable, List, Type, Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, \
+    ClassVar, Set
 
 from . import dl_to_owl_expression, owl_expression_to_dl
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
@@ -656,36 +657,31 @@ class ConceptOperandSorter:
             return t
 
 
-class TopLevelCNF:
-    """This class contains functions to transform a class expression into Top-Level Conjunctive Normal Form."""
 
-    def get_top_level_cnf(self, ce: OWLClassExpression) -> OWLClassExpression:
-        """Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
+def get_top_level_cnf(ce: OWLClassExpression) -> OWLClassExpression:
+    """Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
 
-        Args:
-            ce: Class Expression.
+    Args:
+        ce: Class Expression.
 
-        Returns:
-            Class Expression in Top-Level Conjunctive Normal Form.
-            """
-        c = _get_top_level_form(ce.get_nnf(), OWLObjectUnionOf, OWLObjectIntersectionOf)
-        return combine_nary_expressions(c)
+    Returns:
+        Class Expression in Top-Level Conjunctive Normal Form.
+        """
+    c = _get_top_level_form(ce.get_nnf(), OWLObjectUnionOf, OWLObjectIntersectionOf)
+    return combine_nary_expressions(c)
 
 
-class TopLevelDNF:
-    """This class contains functions to transform a class expression into Top-Level Disjunctive Normal Form."""
+def get_top_level_dnf(ce: OWLClassExpression) -> OWLClassExpression:
+    """Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
 
-    def get_top_level_dnf(self, ce: OWLClassExpression) -> OWLClassExpression:
-        """Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
+    Args:
+        ce: Class Expression.
 
-        Args:
-            ce: Class Expression.
-
-        Returns:
-            Class Expression in Top-Level Disjunctive Normal Form.
-            """
-        c = _get_top_level_form(ce.get_nnf(), OWLObjectIntersectionOf, OWLObjectUnionOf)
-        return combine_nary_expressions(c)
+    Returns:
+        Class Expression in Top-Level Disjunctive Normal Form.
+        """
+    c = _get_top_level_form(ce.get_nnf(), OWLObjectIntersectionOf, OWLObjectUnionOf)
+    return combine_nary_expressions(c)
 
 
 def _get_top_level_form(ce: OWLClassExpression,
@@ -706,7 +702,10 @@ def _get_top_level_form(ce: OWLClassExpression,
         return type_b(type_a([a, op]) for op in b.operands())
 
     if isinstance(ce, type_a):
-        ce = cast(OWLNaryBooleanClassExpression, combine_nary_expressions(ce))
+        ce = combine_nary_expressions(ce)
+        if not isinstance(ce, type_a):
+            return ce
+        ce = cast(OWLNaryBooleanClassExpression, ce)
         type_b_exprs = [op for op in ce.operands() if isinstance(op, type_b)]
         non_type_b_exprs = [op for op in ce.operands() if not isinstance(op, type_b)]
         if not len(type_b_exprs):
@@ -733,10 +732,15 @@ def _get_top_level_form(ce: OWLClassExpression,
         raise ValueError('Top-Level CNF/DNF only applicable on class expressions', ce)
 
 
-def factor_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf]):
-    """Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible."""
+def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf], transform_to_dnf_on_first_iteration = False):
+    """Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This
+    factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)
+    for that."""
 
     assert(isinstance(expr, Union[OWLObjectIntersectionOf, OWLObjectUnionOf])), "factor_expression"
+
+    if transform_to_dnf_on_first_iteration:
+        expr = get_top_level_dnf(expr)
 
     if isinstance(expr, OWLObjectUnionOf):
         type_a = OWLObjectUnionOf
@@ -750,14 +754,10 @@ def factor_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf]):
     non_type_b_nary_expressions = {op for op in ce.operands() if not isinstance(op, type_b)}
 
 
-    # todo AB: need to remove duplicates not only here but on other returns.
-    #   A solution was to have duplicates removed since the createation of nary objects but if
-    #   there is only 1 operand left after removing duplicates it will fail to create an object...
-    #   So in short, find a some solid solution to this.
     ce_no_repetitions = type_a([*type_b_nary_expressions, *non_type_b_nary_expressions])
     if ce != ce_no_repetitions:
         # if repeated operands are found just continue factoring the expression without repeated operands
-        return factor_expression(ce_no_repetitions)
+        return factor_nary_expression(ce_no_repetitions)
 
     if len(non_type_b_nary_expressions) and len(type_b_nary_expressions):
         # check if a non-nary expression occurs in any of the nary expression then omit the nary expression and continue
@@ -771,13 +771,13 @@ def factor_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf]):
                         return i
                     else:
                         ce_op.remove(j)
-                        return factor_expression(type_a(ce_op))
+                        return factor_nary_expression(type_a(ce_op))
 
     if len(type_b_nary_expressions) < 2:
         if len(type_b_nary_expressions) == 1:
             # if we are left with only 1 nary expression of type_b then run factor_expression for its operands
             # where type_a and type_b switch places to factorize any nary expression of type_b left there.
-            return type_a({*non_type_b_nary_expressions, *[factor_expression(exp) for exp in type_b_nary_expressions]})
+            return type_a({*non_type_b_nary_expressions, *[factor_nary_expression(exp) for exp in type_b_nary_expressions]})
         # if no nary expression is left just return ce
         return ce
     else:
@@ -795,18 +795,24 @@ def factor_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf]):
                     i_op.update(j_op)
                     remaining = i_op - common
                     if len(common) > 1:
-                        localized_factorization = type_b(common)
+                        if len(remaining) > 1:
+                            # if more than 1 remaining, put them in a type_a expression
+                            localized_factorization = type_b({*common, type_a(remaining)})
+                        else:
+                            # if 1 remaining, rule it out. The way this function is structured make this line
+                            # safe because it only omits redundant remains
+                            localized_factorization = type_b(common)
                     else:
-                        localized_factorization = type_b([*common,type_a(remaining)])
+                        localized_factorization = type_b({*common,type_a(remaining)})
                     if len(type_b_nary_expressions) == 2:
                         return combine_nary_expressions(localized_factorization)
                     else:
                         type_b_nary_expressions_without_i_j = copy(type_b_nary_expressions) - {i,j}
-                        return factor_expression(type_a([*type_b_nary_expressions_without_i_j, localized_factorization]))
+                        return factor_nary_expression(type_a({*type_b_nary_expressions_without_i_j, localized_factorization}))
     if len(type_b_nary_expressions):
         # if reach this point we make a last check to see if there is any nary expression of type_b in ce and process
         # each of them before returning the type_a object.
-        return type_a({*non_type_b_nary_expressions, *[factor_expression(exp) for exp in type_b_nary_expressions]})
+        return type_a({*non_type_b_nary_expressions, *[factor_nary_expression(exp) for exp in type_b_nary_expressions]})
 
     # no nary expression of type_b? -> just return ce, nothing to do here
     return ce
@@ -821,8 +827,9 @@ class CESimplifier:
         - Absorption of redundant class expressions
         - Converting to negation normal form (NNF)
     """
-    dnf = TopLevelDNF()
     sorter = ConceptOperandSorter()
+
+    # Todo: review ordering of negated concepts (e.g ordering when simplifying TestSimplifier.test_nnf.ce9 is random)
 
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:
         return self._simplify(o).get_nnf()
@@ -882,7 +889,6 @@ class CESimplifier:
                                              filler=self._simplify(OWLDataIntersectionOf(fillers)))
         return type(restriction)(property=restriction.get_property(), filler=self._simplify(restriction.get_filler()))
 
-    # single dispatch is still not implemented in mypy, see https://github.com/python/mypy/issues/2904
     @singledispatchmethod
     def _simplify(self, o: _O, nary_ce) -> _O:
         raise NotImplementedError(o)
@@ -923,12 +929,8 @@ class CESimplifier:
             intersection = nary_ce_operands.intersection(c_operands)
             if len(intersection) > 0:
                 return intersection.pop()
-        # else:
-        #     c_dnf = self.dnf.get_top_level_dnf(c)
-        #     if c != c_dnf:
-        #         return self._simplify(c_dnf)
+
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
-        s.discard(OWLThing)
         if OWLThing in s:
             return OWLThing
         if len(s) == 1:
@@ -936,7 +938,7 @@ class CESimplifier:
 
         ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
         if nary_ce is None:
-            return self.sorter.sort(factor_expression(ce_to_return))
+            return self.sorter.sort(factor_nary_expression(ce_to_return, True))
         return ce_to_return
 
     @_simplify.register
@@ -947,24 +949,22 @@ class CESimplifier:
             intersection = nary_ce_operands.intersection(c_operands)
             if len(intersection) > 0:
                 return intersection.pop()
-        # else:
-        #     c_dnf = self.dnf.get_top_level_dnf(c)
-        #     if c != c_dnf:
-        #         return self._simplify(c_dnf)
+
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         s.discard(OWLThing)
         if not s:
             return OWLThing
         if len(s) == 1:
             return s.pop()
+
         ce_to_return = combine_nary_expressions(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
         if nary_ce is None: # check if we are at the root nary expression
-            return self.sorter.sort(factor_expression(ce_to_return))
+            return self.sorter.sort(factor_nary_expression(ce_to_return, True))
         return ce_to_return
 
     @_simplify.register
-    def _(self, n: OWLObjectComplementOf, nary_ce = None) -> OWLObjectComplementOf:
-        return n
+    def _(self, n: OWLObjectComplementOf, nary_ce = None) -> OWLClassExpression:
+        return n.get_nnf()
 
     @_simplify.register
     def _(self, p: OWLObjectInverseOf, nary_ce = None) -> OWLObjectInverseOf:
@@ -1334,14 +1334,16 @@ def combine_nary_expressions(ce: OWLPropertyRange) -> OWLPropertyRange:
     E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -> OWLObjectUnionOf(A, B, C).
     """
     if isinstance(ce, (OWLNaryBooleanClassExpression, OWLNaryDataRange)):
-        expressions: List[OWLPropertyRange] = []
+        expressions: Set[OWLPropertyRange] = set()
         for op in ce.operands():
             expr = combine_nary_expressions(op)
             if type(expr) is type(ce):
                 expr = cast(Union[OWLNaryBooleanClassExpression, OWLNaryDataRange], expr)
-                expressions.extend(expr.operands())
+                expressions.update(expr.operands())
             else:
-                expressions.append(expr)
+                expressions.add(expr)
+        if len(expressions) == 1:
+            return expressions.pop()
         return type(ce)(_sort_by_ordered_owl_object(expressions))  # type: ignore
     elif isinstance(ce, OWLObjectComplementOf):
         return OWLObjectComplementOf(combine_nary_expressions(ce.get_operand()))

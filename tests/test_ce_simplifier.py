@@ -89,31 +89,61 @@ class TestSimplifier(unittest.TestCase):
 
 
     def test_absorption_law(self):
-        ce1 = "A ⊔ (A ⊓ B)"             # ==> "A"
-        ce2 = "A ⊓ (A ⊓ B)"             # ==> "A"
-        ce3 = "A ⊓ (B ⊔ (A ⊓ B))"       # ==> "A ⊓ B"
-        ce4 = "A ⊔ (A ⊓ (B ⊔ C))"  # ==> "A"
+        ce1 = "A ⊔ (A ⊓ B)"              # ==> "A"
+        ce2 = "A ⊓ (A ⊓ B)"              # ==> "A"
+        ce3 = "A ⊓ (B ⊔ (A ⊓ B))"        # ==> "A ⊓ B"
+        ce4 = "A ⊔ (A ⊓ (B ⊔ C))"        # ==> "A"
         ce5 = "(A ⊓ B) ⊔ (A ⊓ (B ⊔ C))"  # ==> "A ⊓ (B ⊔ C)"
         ce6 = "(A ⊔ B) ⊓ (A ⊔ (B ⊓ C))"  # ==> "A ⊔ (B ⊓ C)"
-        ce7 = "A ⊔ (A ⊓ ∃r.B)"  # ==> "A"
-        ce8 = "((∀r.A ⊓ ∃r.A) ⊔ ∀r.A)"  # ==> "∀ r.A"
-        ce9 = "A ⊓ (B ⊔ (A ⊓ C))"  # ==> "A ⊓ (B ⊔ C)"
-        ce10 = "(A ⊓ (B ⊔ A)) ⊔ C"  # ==> "A ⊔ C"
-        ce11 = "(A ⊔ (B ⊓ A)) ⊓ D"  # ==> "A ⊓ D"
-        ce12 = "(A ⊔ B) ⊓ ((A ⊔ B) ⊔ C)"  # ==> "A ⊔ B"
-        ce13 = "((A ⊔ (B ⊓ C)) ⊓ (A ⊔ B)) ⊓ (A ⊔ (B ⊓ C))"  # ==> "A ⊔ (B ⊓ C)"
+        ce7 = "A ⊔ (A ⊓ ∃r.B)"           # ==> "A"
+        ce8 = "((∀r.A ⊓ ∃r.A) ⊔ ∀r.A)"   # ==> "∀ r.A"
+        ce9 = "A ⊓ (B ⊔ (A ⊓ C))"        # ==> "A ⊓ (B ⊔ C)"
+        ce10 = "(A ⊓ (B ⊔ A)) ⊔ C"       # ==> "A ⊔ C"
+        ce11 = "(A ⊔ (B ⊓ A)) ⊓ D"       # ==> "A ⊓ D"
+        ce12 = "(A ⊔ B) ⊓ ((A ⊔ B) ⊔ C)" # ==> "A ⊔ B"
+        ce13 = "((A ⊔ (B ⊓ C)) ⊓ (A ⊔ B)) ⊓ (A ⊔ (B ⊓ C))"                  # ==> "A ⊔ (B ⊓ C)"
+        ce14 = "A ⊓ (B ⊔ (A ⊓ ((A ⊔ (B ⊓ C)) ⊓ (A ⊔ B)) ⊓ (A ⊔ (B ⊓ C))))"  # ==> "A"
 
 
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce1, self.ns))), "A")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce2, self.ns))), "A")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce3, self.ns))), "A ⊓ B")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce4, self.ns))), "A")
-        # self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce5, self.ns))), "A ⊓ (B ⊔ C)")
-        # self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce6, self.ns))), "A ⊔ (B ⊓ C)")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce5, self.ns))), "A ⊓ (B ⊔ C)")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce6, self.ns))), "A ⊔ (B ⊓ C)")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce7, self.ns))), "A")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce8, self.ns))), "∀ r.A")
-        # self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce9, self.ns))), "A ⊓ (B ⊔ C)")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce9, self.ns))), "A ⊓ (B ⊔ C)")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce10, self.ns))), "A ⊔ C")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce11, self.ns))), "A ⊓ D")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce12, self.ns))), "A ⊔ B")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce13, self.ns))), "A ⊔ (B ⊓ C)")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce14, self.ns))), "A")
+
+
+    def test_simplification_through_factorization(self):
+        ce1 = "(A ⊓ B) ⊔ (A ⊓ B)"  # ==> "A ⊓ B"
+        ce2 = "(A ⊓ B) ⊔ (A ⊓ C)"  # ==> "A ⊓ (B ⊔ C)"
+        ce3 = "(A ⊔ B) ⊓ (A ⊔ B)"  # ==> "A ⊓ B"
+        ce4 = "(A ⊔ B) ⊓ (A ⊔ C)"  # ==> "A ⊔ (B ⊓ C)"
+        ce5 = "(A ⊔ B) ⊓ (C ⊔ E)"  # ==> "(A ⊔ B) ⊓ (C ⊔ E)" (same)
+        ce6 = "((∀ r.A) ⊓ (∃ r.B)) ⊔ ((∀ r.B) ⊓ (∃ r.A))"  # ==> "((∃ r.A) ⊓ (∀ r.B)) ⊔ ((∃ r.B) ⊓ (∀ r.A))" (same)
+        ce7 = "(A ⊓ B) ⊔ (A ⊓ B ⊓ E)"  # ==> "A ⊓ B"
+        ce8 = "(A ⊓ B) ⊓ (A ⊓ (B ⊓ (C ⊔ E)))"  # ==> "A ⊓ B ⊓ (C ⊔ E)"
+        ce9 = "(A ⊓ B) ⊓ (C ⊓ (B ⊔ (C ⊔ E)))"  # ==> "A ⊓ B ⊓ C"
+        ce10 = "(∀r_2.⊥) ⊓ (∀r_2.¬C)" # ==> ∀ r_2.(⊥ ⊓ (¬C))
+        ce11 = "(∀r_1.∀r_2.∀r_3.⊥) ⊓ (∀r_1.∀r_2.¬C)" # ==> "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊥)))"
+        ce12 = "(∀r_1.∀r_2.∀r_3.(¬⊥ ⊔ B ⊔ E)) ⊓ (∀r_1.∀r_2.¬(C ⊔ (C ⊓ B)))" # ==> "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊥)))"
+
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce1, self.ns))), "A ⊓ B")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce2, self.ns))), "A ⊓ (B ⊔ C)")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce3, self.ns))), "A ⊔ B")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce4, self.ns))), "A ⊔ (B ⊓ C)")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce5, self.ns))), "(A ⊔ B) ⊓ (C ⊔ E)")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce6, self.ns))), "((∃ r.A) ⊓ (∀ r.B)) ⊔ ((∃ r.B) ⊓ (∀ r.A))")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce7, self.ns))), "A ⊓ B")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce8, self.ns))), "A ⊓ B ⊓ (C ⊔ E)")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce9, self.ns))), "A ⊓ B ⊓ C" )
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce10, self.ns))), "∀ r_2.(⊥ ⊓ (¬C))")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce11, self.ns))), "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊥)))")
+        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce12, self.ns))), "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊤)))")
