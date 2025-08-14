@@ -24,23 +24,40 @@ class TestSimplifier(unittest.TestCase):
         ce16 = "((A ⊓ B) ⊔ C) ⊔ ((A ⊓ B) ⊔ C)"              # ==> "C ⊔ (A ⊓ B)"
         ce17 = "A ⊓ (B ⊔ C ⊔ B ⊔ C) ⊓ A ⊓ (B ⊔ C)"          # ==> "A ⊓ (B ⊔ C)"
 
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce1, self.ns))), "A ⊓ C")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce2, self.ns))), "A ⊔ C")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce3, self.ns))), "A ⊓ C")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce4, self.ns))), "A")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce5, self.ns))), "A ⊓ C")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce6, self.ns))), "A ⊓ (B ⊔ C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce7, self.ns))), "A ⊓ ((¬C) ⊔ (∀ r1.B))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce8, self.ns))), "A ⊓ (B ⊔ C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce9, self.ns))), "B ⊔ C")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce10, self.ns))), "A ⊔ (B ⊓ C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce11, self.ns))), "C ⊔ (A ⊓ B)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce12, self.ns))), "A ⊓ (B ⊔ C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce13, self.ns))), "A ⊓ B")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce14, self.ns))), "(∃ s.B) ⊓ (∀ r.A)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce15, self.ns))), "A ⊔ B ⊔ C")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce16, self.ns))), "C ⊔ (A ⊓ B)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce17, self.ns))), "A ⊓ (B ⊔ C)")
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce1, self.ns)),
+                         dl_to_owl_expression("A ⊓ C", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce2, self.ns)),
+                         dl_to_owl_expression("A ⊔ C", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce3, self.ns)),
+                         dl_to_owl_expression("A ⊓ C", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce4, self.ns)),
+                         dl_to_owl_expression("A", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce5, self.ns)),
+                         dl_to_owl_expression("A ⊓ C", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce6, self.ns)),
+                         dl_to_owl_expression("A ⊓ (B ⊔ C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce7, self.ns)),
+                         dl_to_owl_expression("A ⊓ ((¬C) ⊔ (∀ r1.B))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce8, self.ns)),
+                         dl_to_owl_expression("A ⊓ (B ⊔ C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce9, self.ns)),
+                         dl_to_owl_expression("B ⊔ C", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce10, self.ns)),
+                         dl_to_owl_expression("A ⊔ (B ⊓ C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce11, self.ns)),
+                         dl_to_owl_expression("C ⊔ (A ⊓ B)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce12, self.ns)),
+                         dl_to_owl_expression("A ⊓ (B ⊔ C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce13, self.ns)),
+                         dl_to_owl_expression("A ⊓ B", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce14, self.ns)),
+                         dl_to_owl_expression("(∃ s.B) ⊓ (∀ r.A)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce15, self.ns)),
+                         dl_to_owl_expression("A ⊔ B ⊔ C", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce16, self.ns)),
+                         dl_to_owl_expression("C ⊔ (A ⊓ B)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce17, self.ns)),
+                         dl_to_owl_expression("A ⊓ (B ⊔ C)", self.ns))
 
 
     def test_nnf(self):
@@ -66,26 +83,46 @@ class TestSimplifier(unittest.TestCase):
         ce19 = "¬(∃ r.(A ⊓ ∀ s.B))"     # ==> "∀ r.((¬A) ⊔ (∃ s.(¬B)))"
         ce20 = "¬((A ⊓ B) ⊔ (∀ r.C))"   # ==> "((¬A) ⊔ (¬B)) ⊓ (∃ r.(¬C))"
 
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce1, self.ns))), "A")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce2, self.ns))),"¬C")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce3, self.ns))),"(¬A) ⊔ (¬B)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce4, self.ns))),"(¬A) ⊓ (¬B)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce5, self.ns))),"∃ r.(¬C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce6, self.ns))),"∀ r.(¬C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce7, self.ns))),"⊥")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce8, self.ns))),"⊤")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce9, self.ns))),"(¬A) ⊔ ((¬B) ⊓ (¬C))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce10, self.ns))),"(¬C) ⊓ ((¬A) ⊔ (¬B))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce11, self.ns))),"∃ r.((¬A) ⊔ (¬B))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce12, self.ns))),"∀ r.((¬A) ⊓ (¬B))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce13, self.ns))),"∃ r.(∀ s.(¬A))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce14, self.ns))),"∀ r.(∃ s.(¬B))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce15, self.ns))),"A ⊔ (¬B)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce16, self.ns))),"(∀ s.(¬B)) ⊔ (∃ r.(¬A))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce17, self.ns))),"(∀ r.(¬A)) ⊓ (∃ s.(¬B))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce18, self.ns))),"∃ r.((¬A) ⊓ (∀ s.(¬B)))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce19, self.ns))),"∀ r.((¬A) ⊔ (∃ s.(¬B)))")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce20, self.ns))),"((¬A) ⊔ (¬B)) ⊓ (∃ r.(¬C))")
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce1, self.ns)),
+                         dl_to_owl_expression("A", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce2, self.ns)),
+                         dl_to_owl_expression("¬C", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce3, self.ns)),
+                         dl_to_owl_expression("(¬A) ⊔ (¬B)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce4, self.ns)),
+                         dl_to_owl_expression("(¬A) ⊓ (¬B)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce5, self.ns)),
+                         dl_to_owl_expression("∃ r.(¬C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce6, self.ns)),
+                         dl_to_owl_expression("∀ r.(¬C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce7, self.ns)),
+                         dl_to_owl_expression("⊥", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce8, self.ns)),
+                         dl_to_owl_expression("⊤", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce9, self.ns)),
+                         dl_to_owl_expression("((¬B) ⊓ (¬C)) ⊔ (¬A)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce10, self.ns)),
+                         dl_to_owl_expression("((¬A) ⊔ (¬B)) ⊓ (¬C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce11, self.ns)),
+                         dl_to_owl_expression("∃ r.((¬A) ⊔ (¬B))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce12, self.ns)),
+                         dl_to_owl_expression("∀ r.((¬A) ⊓ (¬B))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce13, self.ns)),
+                         dl_to_owl_expression("∃ r.(∀ s.(¬A))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce14, self.ns)),
+                         dl_to_owl_expression("∀ r.(∃ s.(¬B))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce15, self.ns)),
+                         dl_to_owl_expression("A ⊔ (¬B)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce16, self.ns)),
+                         dl_to_owl_expression("(∃ r.(¬A)) ⊔ (∀ s.(¬B))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce17, self.ns)),
+                         dl_to_owl_expression("(∃ s.(¬B)) ⊓ (∀ r.(¬A))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce18, self.ns)),
+                         dl_to_owl_expression("∃ r.((¬A) ⊓ (∀ s.(¬B)))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce19, self.ns)),
+                         dl_to_owl_expression("∀ r.((¬A) ⊔ (∃ s.(¬B)))", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce20, self.ns)),
+                         dl_to_owl_expression("((¬A) ⊔ (¬B)) ⊓ (∃ r.(¬C))", self.ns))
 
 
     def test_absorption_law(self):
@@ -103,23 +140,38 @@ class TestSimplifier(unittest.TestCase):
         ce12 = "(A ⊔ B) ⊓ ((A ⊔ B) ⊔ C)" # ==> "A ⊔ B"
         ce13 = "((A ⊔ (B ⊓ C)) ⊓ (A ⊔ B)) ⊓ (A ⊔ (B ⊓ C))"                  # ==> "A ⊔ (B ⊓ C)"
         ce14 = "A ⊓ (B ⊔ (A ⊓ ((A ⊔ (B ⊓ C)) ⊓ (A ⊔ B)) ⊓ (A ⊔ (B ⊓ C))))"  # ==> "A"
+        ce15 = "A ⊓ ((A ⊔ (E ⊔ D)) ⊓ B)"
 
-
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce1, self.ns))), "A")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce2, self.ns))), "A")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce3, self.ns))), "A ⊓ B")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce4, self.ns))), "A")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce5, self.ns))), "A ⊓ (B ⊔ C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce6, self.ns))), "A ⊔ (B ⊓ C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce7, self.ns))), "A")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce8, self.ns))), "∀ r.A")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce9, self.ns))), "A ⊓ (B ⊔ C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce10, self.ns))), "A ⊔ C")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce11, self.ns))), "A ⊓ D")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce12, self.ns))), "A ⊔ B")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce13, self.ns))), "A ⊔ (B ⊓ C)")
-        self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce14, self.ns))), "A")
-
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce1, self.ns)),
+                         dl_to_owl_expression("A", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce2, self.ns)),
+                         dl_to_owl_expression("A ⊓ B", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce3, self.ns)),
+                         dl_to_owl_expression("A ⊓ B", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce4, self.ns)),
+                         dl_to_owl_expression("A", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce5, self.ns)),
+                         dl_to_owl_expression("A ⊓ (B ⊔ C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce6, self.ns)),
+                         dl_to_owl_expression("A ⊔ (B ⊓ C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce7, self.ns)),
+                         dl_to_owl_expression("A", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce8, self.ns)),
+                         dl_to_owl_expression("∀ r.A", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce9, self.ns)),
+                         dl_to_owl_expression("A ⊓ (B ⊔ C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce10, self.ns)),
+                         dl_to_owl_expression("A ⊔ C", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce11, self.ns)),
+                         dl_to_owl_expression("A ⊓ D", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce12, self.ns)),
+                         dl_to_owl_expression("A ⊔ B", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce13, self.ns)),
+                         dl_to_owl_expression("A ⊔ (B ⊓ C)", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce14, self.ns)),
+                         dl_to_owl_expression("A", self.ns))
+        self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce15, self.ns)),
+                         dl_to_owl_expression("A ⊓ B", self.ns))
 
     def test_simplification_through_factorization(self):
         ce1 = "(A ⊓ B) ⊔ (A ⊓ B)"  # ==> "A ⊓ B"
@@ -147,3 +199,18 @@ class TestSimplifier(unittest.TestCase):
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce10, self.ns))), "∀ r_2.(⊥ ⊓ (¬C))")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce11, self.ns))), "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊥)))")
         self.assertEqual(owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce12, self.ns))), "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊤)))")
+
+    def test_other_stuff(self):
+        ce1 = "A ⊔ (¬A)" # ==> ⊤ (Law of the excluded middle)
+        ce2 = "A ⊓ (¬A)" # ==> ⊥ (Law of non-contradiction)
+        ce3 = "¬(A ⊓ (¬A))" # ==> ⊤
+        ce4 = "¬(A ⊔ (¬A))" # ==> ⊥
+
+        self.assertEqual("⊤",owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce1, self.ns))))
+        self.assertEqual("⊥",owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce2, self.ns))))
+        self.assertEqual("⊤",owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce3, self.ns))))
+        self.assertEqual('⊥',owl_expression_to_dl(simplify_class_expression(dl_to_owl_expression(ce4, self.ns))))
+
+
+    def test_simplifier_robustness(self):
+        print("test_simplifier_robustness")

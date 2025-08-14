@@ -832,7 +832,7 @@ class CESimplifier:
     # Todo: review ordering of negated concepts (e.g ordering when simplifying TestSimplifier.test_nnf.ce9 is random)
 
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:
-        return self._simplify(o).get_nnf()
+        return self._simplify(o)
 
     def _process_cardinality_restriction(self,restriction, nary_ce):
         if nary_ce is not None:
@@ -923,33 +923,59 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, c: OWLObjectUnionOf, nary_ce = None) -> OWLClassExpression:
+        c_c = combine_nary_expressions(c)
+        if c != c_c:
+            return self._simplify(c_c)
         if nary_ce is not None:
+            # Absorption law (e.g. A ⊔ (A ⊓ B) = A )
             nary_ce_operands = set(nary_ce.operands())
             c_operands = set(c.operands())
             intersection = nary_ce_operands.intersection(c_operands)
             if len(intersection) > 0:
+                # We just pop the first element because this union (c) that we are currently processing will be absorbed
+                # or in simple terms, completely removed. The returned ce will not affect the nary_ce concept because
+                # it will be removed as a duplicate ce when the outer recursion cycle reaches the s = set(...) line.
+                # E.g A ⊔ (A ⊓ B) ==> s = {A, {A,(A ⊓ B)}.intersect{A,B}.pop()} ==> s = {A, A} = {A}
                 return intersection.pop()
 
+        # simplify each operand, put results in a set to remove duplicates
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         if OWLThing in s:
             return OWLThing
         if len(s) == 1:
             return s.pop()
+        # Check if C and ¬C (C can be non-atomic) are both part of operands and apply the law of the excluded middle
+        for el in copy(s):
+            if isinstance(el, OWLObjectComplementOf) and el.get_operand() in s:
+                s = s - {el, el.get_operand()}
+                s.add(OWLThing)
+                if len(s) == 1:
+                    return OWLThing
+                return self._simplify(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
 
         ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
-        if nary_ce is None:
+        if nary_ce is None: # check if we are at the root nary expression and apply factorization
             return self.sorter.sort(factor_nary_expression(ce_to_return, True))
         return ce_to_return
 
     @_simplify.register
     def _(self, c: OWLObjectIntersectionOf, nary_ce = None) -> OWLClassExpression:
+        c_c = combine_nary_expressions(c)
+        if c != c_c:
+            return self._simplify(c_c)
         if nary_ce is not None:
+            # Absorption law (e.g. A ⊓ (A ⊔ B) = A)
             nary_ce_operands = set(nary_ce.operands())
             c_operands = set(c.operands())
             intersection = nary_ce_operands.intersection(c_operands)
             if len(intersection) > 0:
+                # We just pop the first element because this intersection (c) that we are currently processing will be
+                # absorbed or in simple terms, completely removed. The returned ce will not affect the nary_ce concept
+                # because it will be removed as a duplicate ce when the outer recursion cycle reaches the s = set(...)
+                # line. E.g A ⊓ (A ⊔ B) ==> s = {A, {A,(A ⊓ B)}.intersect{A,B}.pop()} ==> s = {A, A} = {A}
                 return intersection.pop()
 
+        # simplify each operand, put results in a set to remove duplicates
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         s.discard(OWLThing)
         if not s:
@@ -957,14 +983,26 @@ class CESimplifier:
         if len(s) == 1:
             return s.pop()
 
+        # Check if C and ¬C are both part of operands and apply the law of non-contradiction
+        for el in copy(s):
+            if isinstance(el, OWLObjectComplementOf) and el.get_operand() in s:
+                s = s - {el, el.get_operand()}
+                s.add(OWLNothing)
+                if len(s) == 1:
+                    return OWLNothing
+                return self._simplify(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
+
         ce_to_return = combine_nary_expressions(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
-        if nary_ce is None: # check if we are at the root nary expression
+        if nary_ce is None: # check if we are at the root nary expression and apply factorization
             return self.sorter.sort(factor_nary_expression(ce_to_return, True))
         return ce_to_return
 
     @_simplify.register
     def _(self, n: OWLObjectComplementOf, nary_ce = None) -> OWLClassExpression:
-        return n.get_nnf()
+        nnnf = n.get_nnf()
+        if not isinstance(nnnf, OWLObjectComplementOf):
+            return self._simplify(nnnf)
+        return nnnf
 
     @_simplify.register
     def _(self, p: OWLObjectInverseOf, nary_ce = None) -> OWLObjectInverseOf:
@@ -1333,6 +1371,8 @@ def combine_nary_expressions(ce: OWLPropertyRange) -> OWLPropertyRange:
 
     E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -> OWLObjectUnionOf(A, B, C).
     """
+    # TODO: Check this scenario because its buggy: "(A ⊓ B) ⊔ (A ⊓ B)"  should return "A ⊓ B" but it gives A ⊔ B
+    #       Not sure if the problem is here or at simplify method of CESimplifier. Check it out.
     if isinstance(ce, (OWLNaryBooleanClassExpression, OWLNaryDataRange)):
         expressions: Set[OWLPropertyRange] = set()
         for op in ce.operands():
