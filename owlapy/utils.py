@@ -9,7 +9,6 @@ from functools import singledispatchmethod, total_ordering
 from typing import Iterable, List, Type, Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, \
     ClassVar, Set
 
-from . import dl_to_owl_expression, owl_expression_to_dl
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
 from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
