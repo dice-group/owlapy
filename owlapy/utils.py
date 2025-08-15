@@ -28,6 +28,9 @@ from .owl_datatype import OWLDatatype
 
 import concurrent.futures
 
+from .vocab import OWLFacet
+
+
 def jaccard_similarity(set1, set2) -> float:
     """Calculate the Jaccard similarity between two sets.
     
@@ -827,9 +830,15 @@ class CESimplifier:
         - Absorption of redundant class expressions
         - Converting to negation normal form (NNF)
     """
-    sorter = ConceptOperandSorter()
 
-    # Todo: review ordering of negated concepts (e.g ordering when simplifying TestSimplifier.test_nnf.ce9 is random)
+
+    # TODO AB:
+    #   - Consider scenarios for restrictions using nominals (OWLObjectOneOf) that share the same property.
+    #   - Consider scenarios when hasValue restrictions are contradictory
+    #   - An OWLObjectHasValue can be transformed to OWLObjectSomeValuesFrom. See if you can do some simplification
+    #     after transforming it.
+
+    sorter = ConceptOperandSorter()
 
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:
         return self._simplify(o)
@@ -1030,6 +1039,16 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, r: OWLObjectOneOf, nary_ce = None) -> OWLObjectOneOf:
+        if nary_ce is not None and isinstance(nary_ce, OWLObjectUnionOf):
+            nary_ce_op_without_r = set(nary_ce.operands) - {r}
+            r_inds = set(r.individuals())
+            for op in nary_ce_op_without_r:
+                if isinstance(op, OWLObjectOneOf):
+                    op_inds = set(op.individuals())
+                    if r_inds.issubset(op_inds):
+                        return OWLObjectOneOf(_sort_by_ordered_owl_object(op_inds))
+                    if op_inds.issubset(r_inds):
+                        return OWLObjectOneOf(_sort_by_ordered_owl_object(r_inds))
         return OWLObjectOneOf(_sort_by_ordered_owl_object(set(r.individuals())))
 
     @_simplify.register
@@ -1056,11 +1075,41 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, n: OWLDatatypeRestriction, nary_ce = None) -> OWLDatatypeRestriction:
+        fr = n.get_facet_restrictions()
+        if not isinstance(fr, OWLFacetRestriction):
+
+            # remove duplicated OWLFacetRestriction
+            s = {r for r in fr}
+            if len(s) == 1:
+                return OWLDatatypeRestriction(n.get_datatype(),s)
+
+            # remove redundant OWLFacetRestriction (that are already covered by another facet restriction)
+            for i in copy(s):
+                for j in copy(s) - {i}:
+                    if i.get_facet() == j.get_facet():
+                        i_v = i.get_facet_value._v
+                        j_v = j.get_facet_value._v
+                        if i == OWLFacet.MAX_EXCLUSIVE or i == OWLFacet.MAX_INCLUSIVE or i == OWLFacet.MAX_LENGTH:
+                            if i_v <= j_v:
+                                s.remove(i)
+                            else:
+                                s.remove(j)
+                        elif i == OWLFacet.MIN_EXCLUSIVE or i == OWLFacet.MIN_INCLUSIVE or i == OWLFacet.MIN_LENGTH:
+                            if i_v <= j_v:
+                                s.remove(j)
+                            else:
+                                s.remove(i)
+                        elif i == OWLFacet.LENGTH and i_v == j_v:
+                            s.remove(i)
+            return OWLDatatypeRestriction(n.get_datatype(), s)
         return n
 
     @_simplify.register
     def _(self, n: OWLDataComplementOf, nary_ce = None) -> OWLDataComplementOf:
-        return n
+        nnnf = n.get_nnf()
+        if not isinstance(nnnf, OWLDataComplementOf):
+            return self._simplify(nnnf)
+        return nnnf
 
     @_simplify.register
     def _(self, r: OWLDataMinCardinality, nary_ce = None) -> OWLDataMinCardinality:
@@ -1371,8 +1420,7 @@ def combine_nary_expressions(ce: OWLPropertyRange) -> OWLPropertyRange:
 
     E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -> OWLObjectUnionOf(A, B, C).
     """
-    # TODO: Check this scenario because its buggy: "(A ⊓ B) ⊔ (A ⊓ B)"  should return "A ⊓ B" but it gives A ⊔ B
-    #       Not sure if the problem is here or at simplify method of CESimplifier. Check it out.
+
     if isinstance(ce, (OWLNaryBooleanClassExpression, OWLNaryDataRange)):
         expressions: Set[OWLPropertyRange] = set()
         for op in ce.operands():
