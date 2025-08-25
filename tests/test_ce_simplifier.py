@@ -1,5 +1,6 @@
 import unittest
 from owlapy import dl_to_owl_expression, owl_expression_to_dl
+from owlapy.owl_reasoner import StructuralReasoner
 from owlapy.utils import simplify_class_expression
 
 class TestSimplifier(unittest.TestCase):
@@ -185,7 +186,7 @@ class TestSimplifier(unittest.TestCase):
         ce9 = "(A ⊓ B) ⊓ (C ⊓ (B ⊔ (C ⊔ E)))"  # ==> "A ⊓ B ⊓ C"
         ce10 = "(∀r_2.⊥) ⊓ (∀r_2.¬C)" # ==> ∀ r_2.(⊥ ⊓ (¬C))
         ce11 = "(∀r_1.∀r_2.∀r_3.⊥) ⊓ (∀r_1.∀r_2.¬C)" # ==> "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊥)))"
-        ce12 = "(∀r_1.∀r_2.∀r_3.(¬⊥ ⊔ B ⊔ E)) ⊓ (∀r_1.∀r_2.¬(C ⊔ (C ⊓ B)))" # ==> "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊥)))"
+        ce12 = "(∀r_1.∀r_2.∀r_3.(¬⊥ ⊔ B ⊔ E)) ⊓ (∀r_1.∀r_2.¬(C ⊔ (C ⊓ B)))" # ==> "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊤)))"
 
         self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce1, self.ns)),
                          dl_to_owl_expression("A ⊓ B", self.ns))
@@ -225,4 +226,40 @@ class TestSimplifier(unittest.TestCase):
 
 
     def test_simplifier_robustness(self):
-        print("test_simplifier_robustness")
+        # use reasoner to check if instances of simplified(C) == instances of C
+        family_reasoner = StructuralReasoner("../KGs/Family/family-benchmark_rich_background.owl")
+        carcino_reasoner = StructuralReasoner("../KGs/Carcinogenesis/carcinogenesis.owl")
+        NS = "http://www.benchmark.org/family#"
+        ns_carcino = "http://dl-learner.org/carcinogenesis#"
+
+
+        # Family class expressions
+        ce1 = "Child ⊓ Brother ⊓ Child ⊓ Child ⊓ Brother" # ==> "Child ⊓ Brother"
+        ce2 = "((Father ⊔ Brother) ⊓ (Father ⊔ Brother)) ⊔ ((Father ⊔ Brother) ⊓ (Father ⊔ Brother))"   # ==> "Father ⊔ Brother"
+        ce3 = "(∀hasChild.Male ⊓ ∃married.Female) ⊓ (∃married.Female ⊓ ∀hasChild.Male)"  # ==> "(∃ married.Female) ⊓ (∀ hasChild.Male)"
+        ce4 = "¬((∀ hasChild.Male) ⊓ (∃ married.Female))"   # ==> "(∀ married.(¬Female)) ⊔ (∃ hasChild.(¬Male))"
+        ce5 = "(∀married.∀hasChild.∀hasSibling.(¬⊥ ⊔ Female ⊔ Male)) ⊓ (∀married.∀hasChild.¬(Daughter ⊔ (Daughter ⊓ Female)))" # ==> "∀ married.(∀ hasChild.((¬Daughter) ⊓ (∀ hasSibling.⊥)))"
+        ce6 = "¬(Male ⊓ (¬Male))"  # ==> ⊤
+        ce7 = "¬(Male ⊔ (¬Male))"  # ==> ⊥
+        ce8 = "(Male ⊓ Child) ⊓ (Male ⊓ (Child ⊓ (Son ⊔ Brother)))"  # ==> "Male ⊓ Child ⊓ (Son ⊔ Brother)"
+
+        # Carcino class expressions
+
+
+
+        self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce1, NS))),
+                              family_reasoner.instances(dl_to_owl_expression("Child ⊓ Brother", NS)))
+        self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce2, NS))),
+                              family_reasoner.instances(dl_to_owl_expression("Father ⊔ Brother", NS)))
+        self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce3, NS))),
+                              family_reasoner.instances(dl_to_owl_expression("(∃ married.Female) ⊓ (∀ hasChild.Male)", NS)))
+        self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce4, NS))),
+                              family_reasoner.instances(dl_to_owl_expression("(∀ married.(¬Female)) ⊔ (∃ hasChild.(¬Male))", NS)))
+        self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce5, NS))),
+                              family_reasoner.instances(dl_to_owl_expression("∀ married.(∀ hasChild.((¬Daughter) ⊓ (∀ hasSibling.⊤)))", NS)))
+        self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce6, NS))),
+                              family_reasoner.instances(dl_to_owl_expression("⊤", NS)))
+        self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce7, NS))),
+                              family_reasoner.instances(dl_to_owl_expression("⊥", NS)))
+        self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce8, NS))),
+                              family_reasoner.instances(dl_to_owl_expression("Male ⊓ Child ⊓ (Son ⊔ Brother)", NS)))
