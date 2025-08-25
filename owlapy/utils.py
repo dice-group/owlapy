@@ -832,6 +832,9 @@ class CESimplifier:
 
 
     # TODO AB:
+    #   - Consider scenarios where we have bool nary expressions for classes C and C' where C' \sqsubseteq C?
+    #       This will require a TBox, and the use of reasoner, meaning we need to pass the ontology. Is this really
+    #       what we want to do here? Passing an ontology can be set optional...
     #   - Consider scenarios for restrictions using nominals (OWLObjectOneOf) that share the same property.
     #   - Consider scenarios when hasValue restrictions are contradictory
     #   - An OWLObjectHasValue can be transformed to OWLObjectSomeValuesFrom. See if you can do some simplification
@@ -1060,6 +1063,9 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, c: OWLDataUnionOf, nary_ce = None) -> OWLDataRange:
+        c_c = combine_nary_expressions(c)
+        if c != c_c:
+            return self._simplify(c_c)
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         if len(s) == 1:
             return s.pop()
@@ -1067,6 +1073,9 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, c: OWLDataIntersectionOf, nary_ce = None) -> OWLDataRange:
+        c_c = combine_nary_expressions(c)
+        if c != c_c:
+            return self._simplify(c_c)
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
         if len(s) == 1:
             return s.pop()
@@ -1075,7 +1084,47 @@ class CESimplifier:
     @_simplify.register
     def _(self, n: OWLDatatypeRestriction, nary_ce = None) -> OWLDatatypeRestriction:
         fr = n.get_facet_restrictions()
-        if not isinstance(fr, OWLFacetRestriction):
+
+        if len(fr) == 1 and nary_ce is not None:
+            fr = fr[0]
+            for ce in set(nary_ce.operands()) - {n}:
+                if isinstance(ce, OWLDatatypeRestriction):
+                    if n.get_datatype() == ce.get_datatype():
+                        ce_fr = ce.get_facet_restrictions()
+                        # todo: cover scenarios when len(ce_fr) > 1
+                        if len(ce_fr) == 1 and fr.get_facet() == ce_fr[0].get_facet():
+                            ce_fr = ce_fr[0]
+                            i_v = fr.get_facet_value()._v
+                            j_v = ce_fr.get_facet_value()._v
+                            fr_fc = fr.get_facet()
+                            if fr_fc == OWLFacet.MAX_EXCLUSIVE or fr_fc == OWLFacet.MAX_INCLUSIVE or fr_fc == OWLFacet.MAX_LENGTH:
+                                if isinstance(nary_ce, OWLDataUnionOf):
+                                    if i_v <= j_v:
+                                        return ce
+                                    else:
+                                        return n
+                                elif isinstance(nary_ce, OWLDataIntersectionOf):
+                                    if i_v <= j_v:
+                                        return n
+                                    else:
+                                        return ce
+                            elif fr_fc == OWLFacet.MIN_EXCLUSIVE or fr_fc == OWLFacet.MIN_INCLUSIVE or fr_fc == OWLFacet.MIN_LENGTH:
+                                if isinstance(nary_ce, OWLDataUnionOf):
+                                    if i_v <= j_v:
+                                        return n
+                                    else:
+                                        return ce
+                                elif isinstance(nary_ce, OWLDataIntersectionOf):
+                                    if i_v <= j_v:
+                                        return ce
+                                    else:
+                                        return n
+                            elif fr_fc == OWLFacet.LENGTH and i_v == j_v:
+                                return n
+
+
+
+        if len(n.get_facet_restrictions()) > 1: # check if it is a collection of OWLFacetRestriction
 
             # remove duplicated OWLFacetRestriction
             s = {r for r in fr}
@@ -1083,21 +1132,24 @@ class CESimplifier:
                 return OWLDatatypeRestriction(n.get_datatype(),s)
 
             # remove redundant OWLFacetRestriction (that are already covered by another facet restriction)
+            # multiple facet restrictions for a datatype restrictions are interpreted conjuctively
             for i in copy(s):
                 for j in copy(s) - {i}:
-                    if i.get_facet() == j.get_facet():
-                        i_v = i.get_facet_value._v
-                        j_v = j.get_facet_value._v
-                        if i == OWLFacet.MAX_EXCLUSIVE or i == OWLFacet.MAX_INCLUSIVE or i == OWLFacet.MAX_LENGTH:
-                            if i_v <= j_v:
-                                s.remove(i)
-                            else:
-                                s.remove(j)
-                        elif i == OWLFacet.MIN_EXCLUSIVE or i == OWLFacet.MIN_INCLUSIVE or i == OWLFacet.MIN_LENGTH:
+                    i_fc = i.get_facet()
+                    j_fc = j.get_facet()
+                    if i_fc == j_fc:
+                        i_v = i.get_facet_value()._v
+                        j_v = j.get_facet_value()._v
+                        if i_fc == OWLFacet.MAX_EXCLUSIVE or i_fc == OWLFacet.MAX_INCLUSIVE or i_fc == OWLFacet.MAX_LENGTH:
                             if i_v <= j_v:
                                 s.remove(j)
                             else:
                                 s.remove(i)
+                        elif i_fc == OWLFacet.MIN_EXCLUSIVE or i_fc == OWLFacet.MIN_INCLUSIVE or i_fc == OWLFacet.MIN_LENGTH:
+                            if i_v <= j_v:
+                                s.remove(i)
+                            else:
+                                s.remove(j)
                         elif i == OWLFacet.LENGTH and i_v == j_v:
                             s.remove(i)
             return OWLDatatypeRestriction(n.get_datatype(), s)
