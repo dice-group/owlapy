@@ -9,6 +9,7 @@ from functools import singledispatchmethod, total_ordering
 from typing import Iterable, List, Type, Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, \
     ClassVar, Set
 
+from . import owl_expression_to_dl
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
 from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
@@ -832,13 +833,14 @@ class CESimplifier:
 
 
     # TODO AB:
-    #   - Consider scenarios where we have bool nary expressions for classes C and C' where C' \sqsubseteq C?
-    #       This will require a TBox, and the use of reasoner, meaning we need to pass the ontology. Is this really
-    #       what we want to do here? Passing an ontology can be set optional...
-    #   - Consider scenarios for restrictions using nominals (OWLObjectOneOf) that share the same property.
+    #   - Should we consider semantic simplifications? For examples, consider scenarios where we have bool nary
+    #       expressions for classes C and C' where C' \sqsubseteq C? This will require a TBox, and the use of reasoner,
+    #       meaning we need to pass the ontology. Is this really what we want to do here or just syntactic?
+    #       Passing an ontology can be set optional or we can implement a new function for that.
     #   - Consider scenarios when hasValue restrictions are contradictory
     #   - An OWLObjectHasValue can be transformed to OWLObjectSomeValuesFrom. See if you can do some simplification
     #     after transforming it.
+    #  - Find solution for scenarios such as this: {a ⊔ b} ⊔ ({b ⊔ c} ⊓ D). Should return {a ⊔ b} ⊔ (D ⊓ {c}).
 
     sorter = ConceptOperandSorter()
 
@@ -857,21 +859,21 @@ class CESimplifier:
             if not len(same_root) == 1:
                 fillers = _sort_by_ordered_owl_object([p.get_filler() for p in same_root])
                 if isinstance(nary_ce, OWLObjectUnionOf):
+                    if isinstance(list(fillers)[0],OWLDataRange):
+                        return type(restriction)(cardinality=restriction.get_cardinality(),
+                                                 property=restriction.get_property(),
+                                                 filler=self._simplify(OWLDataUnionOf(fillers)))
                     return type(restriction)(cardinality=restriction.get_cardinality(),
                                                property=restriction.get_property(),
                                                filler=self._simplify(OWLObjectUnionOf(fillers)))
                 if isinstance(nary_ce, OWLObjectIntersectionOf):
+                    if isinstance(list(fillers)[0],OWLDataRange):
+                        return type(restriction)(cardinality=restriction.get_cardinality(),
+                                                 property=restriction.get_property(),
+                                                 filler=self._simplify(OWLDataIntersectionOf(fillers)))
                     return type(restriction)(cardinality=restriction.get_cardinality(),
                                                property=restriction.get_property(),
                                                filler=self._simplify(OWLObjectIntersectionOf(fillers)))
-                if isinstance(nary_ce, OWLDataUnionOf):
-                    return type(restriction)(cardinality=restriction.get_cardinality(),
-                                             property=restriction.get_property(),
-                                             filler=self._simplify(OWLDataUnionOf(fillers)))
-                if isinstance(nary_ce, OWLDataIntersectionOf):
-                    return type(restriction)(cardinality=restriction.get_cardinality(),
-                                             property=restriction.get_property(),
-                                             filler=self._simplify(OWLDataIntersectionOf(fillers)))
         return type(restriction)(cardinality=restriction.get_cardinality(),
                                  property=restriction.get_property(),
                                  filler=self._simplify(restriction.get_filler()))
@@ -887,17 +889,19 @@ class CESimplifier:
             if not len(same_root) == 1:
                 fillers = _sort_by_ordered_owl_object([p.get_filler() for p in same_root])
                 if isinstance(nary_ce, OWLObjectUnionOf):
+                    if isinstance(list(fillers)[0],OWLDataRange):
+                        # Union of data ranges should be treated as OWLDataUnionOf
+                        return type(restriction)(property=restriction.get_property(),
+                                                 filler=self._simplify(OWLDataUnionOf(fillers)))
                     return type(restriction)(property=restriction.get_property(),
                                              filler=self._simplify(OWLObjectUnionOf(fillers)))
                 if isinstance(nary_ce, OWLObjectIntersectionOf):
+                    if isinstance(list(fillers)[0],OWLDataRange):
+                        # Intersection of data ranges should be treated as OWLDataIntersectionOf
+                        return type(restriction)(property=restriction.get_property(),
+                                                 filler=self._simplify(OWLDataIntersectionOf(fillers)))
                     return type(restriction)(property=restriction.get_property(),
                                              filler=self._simplify(OWLObjectIntersectionOf(fillers)))
-                if isinstance(nary_ce, OWLDataUnionOf):
-                    return type(restriction)(property=restriction.get_property(),
-                                             filler=self._simplify(OWLDataUnionOf(fillers)))
-                if isinstance(nary_ce, OWLDataIntersectionOf):
-                    return type(restriction)(property=restriction.get_property(),
-                                             filler=self._simplify(OWLDataIntersectionOf(fillers)))
         return type(restriction)(property=restriction.get_property(), filler=self._simplify(restriction.get_filler()))
 
     @singledispatchmethod
@@ -1041,17 +1045,20 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, r: OWLObjectOneOf, nary_ce = None) -> OWLObjectOneOf:
-        if nary_ce is not None and isinstance(nary_ce, OWLObjectUnionOf):
-            nary_ce_op_without_r = set(nary_ce.operands) - {r}
-            r_inds = set(r.individuals())
+        r_inds = set(r.individuals())
+        if nary_ce is not None:
+            # Absorb oneOfs from the nary expression.
+            nary_ce_op_without_r = set(nary_ce.operands()) - {r}
+            ooos = []
             for op in nary_ce_op_without_r:
                 if isinstance(op, OWLObjectOneOf):
-                    op_inds = set(op.individuals())
-                    if r_inds.issubset(op_inds):
-                        return OWLObjectOneOf(_sort_by_ordered_owl_object(op_inds))
-                    if op_inds.issubset(r_inds):
-                        return OWLObjectOneOf(_sort_by_ordered_owl_object(r_inds))
-        return OWLObjectOneOf(_sort_by_ordered_owl_object(set(r.individuals())))
+                    ooos.append(op)
+            if len(ooos) > 0:
+                if isinstance(nary_ce, OWLObjectUnionOf):
+                    return OWLObjectOneOf(_sort_by_ordered_owl_object(r_inds.union({inds for ooo in ooos for inds in ooo.individuals()})))
+                if isinstance(nary_ce, OWLObjectIntersectionOf):
+                    return OWLObjectOneOf(_sort_by_ordered_owl_object(r_inds.intersection(*(ooo.individuals() for ooo in ooos))))
+        return OWLObjectOneOf(_sort_by_ordered_owl_object(r_inds))
 
     @_simplify.register
     def _(self, e: OWLDataSomeValuesFrom, nary_ce = None) -> OWLDataSomeValuesFrom:
@@ -1122,8 +1129,6 @@ class CESimplifier:
                             elif fr_fc == OWLFacet.LENGTH and i_v == j_v:
                                 return n
 
-
-
         if len(n.get_facet_restrictions()) > 1: # check if it is a collection of OWLFacetRestriction
 
             # remove duplicated OWLFacetRestriction
@@ -1142,16 +1147,16 @@ class CESimplifier:
                         j_v = j.get_facet_value()._v
                         if i_fc == OWLFacet.MAX_EXCLUSIVE or i_fc == OWLFacet.MAX_INCLUSIVE or i_fc == OWLFacet.MAX_LENGTH:
                             if i_v <= j_v:
-                                s.remove(j)
+                                s.discard(j)
                             else:
-                                s.remove(i)
+                                s.discard(i)
                         elif i_fc == OWLFacet.MIN_EXCLUSIVE or i_fc == OWLFacet.MIN_INCLUSIVE or i_fc == OWLFacet.MIN_LENGTH:
                             if i_v <= j_v:
-                                s.remove(i)
+                                s.discard(i)
                             else:
-                                s.remove(j)
+                                s.discard(j)
                         elif i == OWLFacet.LENGTH and i_v == j_v:
-                            s.remove(i)
+                            s.discard(i)
             return OWLDatatypeRestriction(n.get_datatype(), s)
         return n
 
