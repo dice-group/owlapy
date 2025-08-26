@@ -244,7 +244,10 @@ class TestSimplifier(unittest.TestCase):
         ce8 = "(Male ⊓ Child) ⊓ (Male ⊓ (Child ⊓ (Son ⊔ Brother)))"  # ==> "Male ⊓ Child ⊓ (Son ⊔ Brother)"
 
         # Carcino class expressions
-
+        ce9 = "(∃ charge.xsd:double[≥ 0.1]) ⊓ (∃ charge.xsd:double[< 0.2])" # ==> ∃ charge.(xsd:double[< 0.2] ⊓ xsd:double[≥ 0.1])
+        ce10 = "∃ charge.xsd:integer[> 1 ⊓ > 2 ⊓ > 3]" # ==> ∃ charge.∃ charge.xsd:integer[> 3]
+        ce11 = "({d156_1 ⊔ d156_10 ⊔ d156_19}) ⊔ ({d156_11 ⊔ d156_10})" # ==> "{d156_1 ⊔ d156_10 ⊔ d156_19 ⊔ d156_11}"
+        ce12 = "({d156_1 ⊔ d156_10 ⊔ d156_19}) ⊓ ({d156_11 ⊔ d156_10})" # ==> "{d156_10}"
 
 
         self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce1, NS))),
@@ -263,3 +266,14 @@ class TestSimplifier(unittest.TestCase):
                               family_reasoner.instances(dl_to_owl_expression("⊥", NS)))
         self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce8, NS))),
                               family_reasoner.instances(dl_to_owl_expression("Male ⊓ Child ⊓ (Son ⊔ Brother)", NS)))
+
+        # checking dataproperty-related ces in carcino
+        self.assertCountEqual(carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce9, ns_carcino))),
+                              carcino_reasoner.instances(dl_to_owl_expression("∃ charge.(xsd:double[< 0.2] ⊓ xsd:double[≥ 0.1])", ns_carcino)))
+        self.assertCountEqual(carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce10, ns_carcino))),
+                              carcino_reasoner.instances(dl_to_owl_expression("∃ charge.∃ charge.xsd:integer[> 3]", ns_carcino)))
+        self.assertCountEqual(carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce11, ns_carcino))),
+                              carcino_reasoner.instances(dl_to_owl_expression("{d156_1 ⊔ d156_10 ⊔ d156_19 ⊔ d156_11}", ns_carcino)))
+        self.assertCountEqual(carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce12, ns_carcino))),
+                              carcino_reasoner.instances(dl_to_owl_expression("{d156_10}", ns_carcino)))
+
