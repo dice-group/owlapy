@@ -9,7 +9,6 @@ from functools import singledispatchmethod, total_ordering
 from typing import Iterable, List, Type, Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, \
     ClassVar, Set
 
-from . import owl_expression_to_dl
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
 from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
@@ -752,10 +751,14 @@ def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf
         type_a = OWLObjectIntersectionOf
         type_b = OWLObjectUnionOf
 
+    if not isinstance(expr, type_a) and not isinstance(expr, type_b):
+        # sometime when the get_top_level_dnf will remove duplicates (due to its processing) and we are left
+        # with a single expression (no nary expression) so we just return it.
+        return expr
+
     ce = cast(OWLNaryBooleanClassExpression, combine_nary_expressions(expr))
     type_b_nary_expressions = {op for op in ce.operands() if isinstance(op, type_b)}
     non_type_b_nary_expressions = {op for op in ce.operands() if not isinstance(op, type_b)}
-
 
     ce_no_repetitions = type_a([*type_b_nary_expressions, *non_type_b_nary_expressions])
     if ce != ce_no_repetitions:
@@ -778,9 +781,16 @@ def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf
 
     if len(type_b_nary_expressions) < 2:
         if len(type_b_nary_expressions) == 1:
+            simplifier = CESimplifier()
             # if we are left with only 1 nary expression of type_b then run factor_expression for its operands
             # where type_a and type_b switch places to factorize any nary expression of type_b left there.
-            return type_a({*non_type_b_nary_expressions, *[factor_nary_expression(exp) for exp in type_b_nary_expressions]})
+            ce = type_a({*non_type_b_nary_expressions, *[factor_nary_expression(exp) for exp in type_b_nary_expressions]})
+            # Sometimes we need another step of simplification before returning the result because the dnf can leave the
+            # expression in a state where simplification can cover what factorization could not.
+            # For example: {a ⊔ b} ⊔ ({b ⊔ c} ⊓ D) should return {a ⊔ b} ⊔ (D ⊓ {c}) but if not simplified it would
+            # return {a} ⊔ {b} ⊔ (D ⊓ {c})  which is not as compact.
+            s = set(map(simplifier._simplify, set(ce.operands()), repeat(ce)))
+            return type_a(s)
         # if no nary expression is left just return ce
         return ce
     else:
@@ -840,7 +850,6 @@ class CESimplifier:
     #   - Consider scenarios when hasValue restrictions are contradictory
     #   - An OWLObjectHasValue can be transformed to OWLObjectSomeValuesFrom. See if you can do some simplification
     #     after transforming it.
-    #  - Find solution for scenarios such as this: {a ⊔ b} ⊔ ({b ⊔ c} ⊓ D). Should return {a ⊔ b} ⊔ (D ⊓ {c}).
 
     sorter = ConceptOperandSorter()
 
@@ -879,7 +888,7 @@ class CESimplifier:
                                  filler=self._simplify(restriction.get_filler()))
 
 
-    def _process_existential_restriction(self, restriction, nary_ce):
+    def _process_quantified_restriction(self, restriction, nary_ce):
         if nary_ce is not None:
             operands = set(nary_ce.operands())
             same_root = []
@@ -903,6 +912,18 @@ class CESimplifier:
                     return type(restriction)(property=restriction.get_property(),
                                              filler=self._simplify(OWLObjectIntersectionOf(fillers)))
         return type(restriction)(property=restriction.get_property(), filler=self._simplify(restriction.get_filler()))
+
+    def _simplify_quantified_restrictions_with_oneof_filler(self, e, nary_ce):
+        s = set(e.get_filler().individuals())
+        for op in nary_ce.operands():
+            if isinstance(op, OWLObjectHasValue):
+                if isinstance(nary_ce, OWLObjectIntersectionOf):
+                    s = s.intersection({op.get_filler()})
+                elif isinstance(nary_ce, OWLObjectUnionOf):
+                    s.add(op.get_filler())
+        if len(s) == 0:
+            return OWLNothing
+        return OWLObjectSomeValuesFrom(property=e.get_property(), filler=OWLObjectOneOf(s))
 
     @singledispatchmethod
     def _simplify(self, o: _O, nary_ce) -> _O:
@@ -930,11 +951,17 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, e: OWLObjectSomeValuesFrom, nary_ce = None) -> OWLObjectSomeValuesFrom:
-        return self._process_existential_restriction(e, nary_ce)
+        e = self._process_quantified_restriction(e, nary_ce)
+        if isinstance(e.get_filler(), OWLObjectOneOf):
+            e = self._simplify_quantified_restrictions_with_oneof_filler(e, nary_ce)
+        return e
 
     @_simplify.register
     def _(self, e: OWLObjectAllValuesFrom, nary_ce = None) -> OWLObjectAllValuesFrom:
-        return self._process_existential_restriction(e, nary_ce)
+        e = self._process_quantified_restriction(e, nary_ce)
+        if isinstance(e.get_filler(), OWLObjectOneOf):
+            e = self._simplify_quantified_restrictions_with_oneof_filler(e, nary_ce)
+        return e
 
     @_simplify.register
     def _(self, c: OWLObjectUnionOf, nary_ce = None) -> OWLClassExpression:
@@ -969,7 +996,7 @@ class CESimplifier:
                 return self._simplify(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
 
         ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
-        if nary_ce is None: # check if we are at the root nary expression and apply factorization
+        if nary_ce is None and isinstance(ce_to_return, OWLObjectUnionOf): # check if we are at the root nary expression and apply factorization
             return self.sorter.sort(factor_nary_expression(ce_to_return, True))
         return ce_to_return
 
@@ -1007,8 +1034,10 @@ class CESimplifier:
                     return OWLNothing
                 return self._simplify(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
 
+        # the following line can remove duplicates and return a type other than OWLObjectIntersectionOf, so we need to
+        # check below if we are still left with an OWLObjectIntersectionOf.
         ce_to_return = combine_nary_expressions(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
-        if nary_ce is None: # check if we are at the root nary expression and apply factorization
+        if nary_ce is None and isinstance(ce_to_return, OWLObjectIntersectionOf): # check if we are at the root nary expression and apply factorization
             return self.sorter.sort(factor_nary_expression(ce_to_return, True))
         return ce_to_return
 
@@ -1040,8 +1069,42 @@ class CESimplifier:
         return r
 
     @_simplify.register
-    def _(self, r: OWLObjectHasValue, nary_ce = None) -> OWLObjectHasValue:
-        return r
+    def _(self, r: OWLObjectHasValue, nary_ce = None) -> Union[OWLObjectHasValue, OWLObjectSomeValuesFrom]:
+        r_prop = r.get_property()
+        if nary_ce is not None:
+            nary_ce_op_without_r = set(nary_ce.operands()) - {r}
+            ohvs = []
+            for op in nary_ce_op_without_r:
+                # get all expressions that have the same property and the filler is either an individual or a set of individuals
+                if (isinstance(op, OWLObjectHasValue) and op.get_property() == r_prop) or \
+                    (isinstance(op, OWLObjectSomeValuesFrom) and op.get_property() == r_prop and isinstance(op.get_filler(),OWLObjectOneOf)):
+                    ohvs.append(op)
+            if len(ohvs) > 0:
+                s = {r.get_filler()}
+                if isinstance(nary_ce, OWLObjectUnionOf):
+                    # merge all fillers of hasValue and someValuesFrom (if the filler is a oneOf) into a single someValuesFrom with a oneOf filler
+                    for ohv in ohvs:
+                        if isinstance(ohv, OWLObjectHasValue):
+                            s.add(ohv.get_filler())
+                        if isinstance(ohv, OWLObjectSomeValuesFrom) and isinstance(ohv.get_filler(),OWLObjectOneOf):
+                            s.update(ohv.get_filler().individuals())
+                    return OWLObjectSomeValuesFrom(property=r_prop, filler=OWLObjectOneOf(s))
+
+                if isinstance(nary_ce, OWLObjectIntersectionOf):
+                    # intersect all fillers of hasValue and someValuesFrom (if the filler is a oneOf) into a single
+                    # hasValue or someValuesFrom with a oneOf filler in case that the intersection has more than 1 individual
+                    for ohv in ohvs:
+                        if isinstance(ohv, OWLObjectHasValue):
+                            s = s.intersection({ohv.get_filler()})
+                        if isinstance(ohv, OWLObjectSomeValuesFrom) and isinstance(ohv.get_filler(), OWLObjectOneOf):
+                            s = s.intersection(set(ohv.get_filler().individuals()))
+                    if len(s) == 0:
+                        return OWLNothing
+                    elif len(s) == 1:
+                        return OWLObjectHasValue(property=r_prop, individual=s.pop())
+                    else:
+                        return OWLObjectSomeValuesFrom(property=r_prop, filler=OWLObjectOneOf(s))
+            return r
 
     @_simplify.register
     def _(self, r: OWLObjectOneOf, nary_ce = None) -> OWLObjectOneOf:
@@ -1057,16 +1120,19 @@ class CESimplifier:
                 if isinstance(nary_ce, OWLObjectUnionOf):
                     return OWLObjectOneOf(_sort_by_ordered_owl_object(r_inds.union({inds for ooo in ooos for inds in ooo.individuals()})))
                 if isinstance(nary_ce, OWLObjectIntersectionOf):
-                    return OWLObjectOneOf(_sort_by_ordered_owl_object(r_inds.intersection(*(ooo.individuals() for ooo in ooos))))
+                    s = r_inds.intersection(*(ooo.individuals() for ooo in ooos))
+                    if len(s) == 0: # if intersection of multiple oneOfs is empty the expression is not satisfiable
+                        return OWLNothing
+                    return OWLObjectOneOf(_sort_by_ordered_owl_object(s))
         return OWLObjectOneOf(_sort_by_ordered_owl_object(r_inds))
 
     @_simplify.register
     def _(self, e: OWLDataSomeValuesFrom, nary_ce = None) -> OWLDataSomeValuesFrom:
-        return self._process_existential_restriction(e, nary_ce)
+        return self._process_quantified_restriction(e, nary_ce)
 
     @_simplify.register
     def _(self, e: OWLDataAllValuesFrom, nary_ce = None) -> OWLDataAllValuesFrom:
-        return self._process_existential_restriction(e, nary_ce)
+        return self._process_quantified_restriction(e, nary_ce)
 
     @_simplify.register
     def _(self, c: OWLDataUnionOf, nary_ce = None) -> OWLDataRange:
