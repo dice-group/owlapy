@@ -19,7 +19,8 @@ from owlapy.class_expression import OWLClassExpression, OWLClass, OWLObjectCardi
     OWLDataAllValuesFrom, OWLDataSomeValuesFrom, OWLObjectAllValuesFrom, \
     OWLDataOneOf, OWLObjectIntersectionOf, \
     OWLDataCardinalityRestriction, OWLNaryBooleanClassExpression, OWLObjectUnionOf, \
-    OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf, OWLQuantifiedObjectRestriction
+    OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf, OWLQuantifiedObjectRestriction, \
+    OWLCardinalityRestriction
 from .owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange, OWLDataRange, \
     OWLPropertyRange
 from .owl_object import OWLObject
@@ -739,7 +740,7 @@ def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf
     factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)
     for that."""
 
-    assert(isinstance(expr, Union[OWLObjectIntersectionOf, OWLObjectUnionOf])), "factor_expression"
+    assert(isinstance(expr, Union[OWLObjectIntersectionOf, OWLObjectUnionOf])), "Expression must be an OWLObjectIntersectionOf or an OWLObjectUnionOf"
 
     if transform_to_dnf_on_first_iteration:
         expr = get_top_level_dnf(expr)
@@ -841,22 +842,51 @@ class CESimplifier:
         - Converting to negation normal form (NNF)
     """
 
+    # TODO AB: This simplifier considers only syntactic simplifications (CWA). It can be extended to consider semantic
+    #          simplifications. This will require passing a reasoner to access TBox information.
+    #          Implementation idea: you can either set it as an option here or create a new class that extends this one.
 
-    # TODO AB:
-    #   - Should we consider semantic simplifications? For examples, consider scenarios where we have bool nary
-    #       expressions for classes C and C' where C' \sqsubseteq C? This will require a TBox, and the use of reasoner,
-    #       meaning we need to pass the ontology. Is this really what we want to do here or just syntactic?
-    #       Passing an ontology can be set optional or we can implement a new function for that.
-    #   - Consider scenarios when hasValue restrictions are contradictory
-    #   - An OWLObjectHasValue can be transformed to OWLObjectSomeValuesFrom. See if you can do some simplification
-    #     after transforming it.
+    # TODO AB: Consider scenarios when cardinality restrictions contradict each other and return OWLNothing. Rare
+    #          scenario but possible.
 
     sorter = ConceptOperandSorter()
 
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:
         return self._simplify(o)
 
-    def _process_cardinality_restriction(self,restriction, nary_ce):
+
+    def _merge_card_r_with_same_body(self, restriction, nary_ce):
+        operands = set(nary_ce.operands())
+        same_prop_and_filler = []
+        for op in operands:
+            if (isinstance(op, type(restriction))
+                    and op.get_filler() == restriction.get_filler()
+                    and op.get_property() == restriction.get_property()):
+                same_prop_and_filler.append(op)
+        same_prop_and_filler_vals = [p.get_cardinality() for p in same_prop_and_filler]
+        max_card = max(same_prop_and_filler_vals)
+        min_card = min(same_prop_and_filler_vals)
+        cardinality = restriction.get_cardinality()
+        if isinstance(restriction, (OWLObjectMinCardinality, OWLDataMinCardinality)):
+            if isinstance(nary_ce,  OWLObjectIntersectionOf):
+                cardinality = max_card
+            if isinstance(nary_ce, OWLObjectUnionOf):
+                cardinality = min_card
+        if isinstance(restriction, (OWLObjectMaxCardinality, OWLDataMaxCardinality)):
+            if isinstance(nary_ce, OWLObjectIntersectionOf):
+                cardinality = min_card
+            # if nary_ce is an intersection then we leave cardinality as it is
+            if isinstance(nary_ce, OWLObjectUnionOf):
+                cardinality = max_card
+        # if isinstance(restriction, (OWLObjectExactCardinality, OWLDataExactCardinality)):
+            # TODO AB: implement solution when we have exact cardinality restrictions. Need to take in consideration
+            #          scenarios when the cardinality in this kind of restrictions is subsumed by min/max cardinality restriction.
+
+        return type(restriction)(cardinality=cardinality,
+                                 property=restriction.get_property(),
+                                 filler=self._simplify(restriction.get_filler()))
+
+    def _process_cardinality_restriction(self, restriction, nary_ce):
         if nary_ce is not None:
             operands = set(nary_ce.operands())
             same_root = []
@@ -996,6 +1026,18 @@ class CESimplifier:
                 return self._simplify(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
 
         ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
+        if isinstance(ce_to_return, OWLObjectUnionOf):
+            for op in ce_to_return.operands():
+                # Simplify cardinality restrictions with same property and filler.
+                # This has to be done here because _process_cardinality_restriction simplifies only restrictions with the
+                # same prop and cardinality and it cannot do both at the same time.
+                if isinstance(op, OWLCardinalityRestriction):
+                    s = set(map(self._merge_card_r_with_same_body , set(r for r in ce_to_return.operands() if isinstance(r, OWLCardinalityRestriction)), repeat(ce_to_return)))
+                    s = s.union(set(ce for ce in ce_to_return.operands() if not isinstance(ce, OWLCardinalityRestriction)))
+                    if len(s) == 1:
+                        return s.pop()
+                    ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
+                    break
         if nary_ce is None and isinstance(ce_to_return, OWLObjectUnionOf): # check if we are at the root nary expression and apply factorization
             return self.sorter.sort(factor_nary_expression(ce_to_return, True))
         return ce_to_return
@@ -1037,6 +1079,19 @@ class CESimplifier:
         # the following line can remove duplicates and return a type other than OWLObjectIntersectionOf, so we need to
         # check below if we are still left with an OWLObjectIntersectionOf.
         ce_to_return = combine_nary_expressions(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
+
+        if isinstance(ce_to_return, OWLObjectIntersectionOf):
+            for op in ce_to_return.operands():
+                # Simplify cardinality restrictions with same property and filler.
+                # This has to be done here because _process_cardinality_restriction simplifies only restrictions with the
+                # same prop and cardinality, and it cannot do both at the same time.
+                if isinstance(op, OWLCardinalityRestriction):
+                    s = set(map(self._merge_card_r_with_same_body , set(r for r in ce_to_return.operands() if isinstance(r, OWLCardinalityRestriction)), repeat(ce_to_return)))
+                    s = s.union(set(ce for ce in ce_to_return.operands() if not isinstance(ce, OWLCardinalityRestriction)))
+                    if len(s) == 1:
+                        return s.pop()
+                    ce_to_return = combine_nary_expressions(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
+                    break
         if nary_ce is None and isinstance(ce_to_return, OWLObjectIntersectionOf): # check if we are at the root nary expression and apply factorization
             return self.sorter.sort(factor_nary_expression(ce_to_return, True))
         return ce_to_return
