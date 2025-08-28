@@ -1,5 +1,10 @@
 import unittest
 from owlapy import dl_to_owl_expression, owl_expression_to_dl
+from owlapy.class_expression import OWLObjectHasValue, OWLObjectSomeValuesFrom, OWLObjectOneOf, OWLObjectUnionOf, \
+    OWLObjectIntersectionOf
+from owlapy.iri import IRI
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_property import OWLObjectProperty
 from owlapy.owl_reasoner import StructuralReasoner
 from owlapy.utils import simplify_class_expression
 
@@ -227,8 +232,8 @@ class TestSimplifier(unittest.TestCase):
 
     def test_simplifier_robustness(self):
         # use reasoner to check if instances of simplified(C) == instances of C
-        family_reasoner = StructuralReasoner("../KGs/Family/family-benchmark_rich_background.owl")
-        carcino_reasoner = StructuralReasoner("../KGs/Carcinogenesis/carcinogenesis.owl")
+        family_reasoner = StructuralReasoner("KGs/Family/family-benchmark_rich_background.owl")
+        carcino_reasoner = StructuralReasoner("KGs/Carcinogenesis/carcinogenesis.owl")
         NS = "http://www.benchmark.org/family#"
         ns_carcino = "http://dl-learner.org/carcinogenesis#"
 
@@ -248,6 +253,11 @@ class TestSimplifier(unittest.TestCase):
         ce10 = "∃ charge.xsd:integer[> 1 ⊓ > 2 ⊓ > 3]" # ==> ∃ charge.∃ charge.xsd:integer[> 3]
         ce11 = "({d156_1 ⊔ d156_10 ⊔ d156_19}) ⊔ ({d156_11 ⊔ d156_10})" # ==> "{d156_1 ⊔ d156_10 ⊔ d156_19 ⊔ d156_11}"
         ce12 = "({d156_1 ⊔ d156_10 ⊔ d156_19}) ⊓ ({d156_11 ⊔ d156_10})" # ==> "{d156_10}"
+        ce15 = "({d156_1 ⊔ d156_11 ⊔ d156_19}) ⊔ (({d156_11 ⊔ d156_1 ⊔ d156_10}) ⊓ Oxygen-50)" # ==> "{d156_1 ⊔ d156_11 ⊔ d156_19} ⊔ ({d156_10} ⊓ Oxygen-50)"
+        ce16 = "({d156_1 ⊔ d156_11 ⊔ d156_19}) ⊓ (({d156_11 ⊔ d156_1 ⊔ d156_10}) ⊓ Oxygen-50)" # ==> "({d156_11 ⊔ d156_1}) ⊓ (Oxygen-50)"
+        ce17 = "(∃ charge.xsd:double[≥ 0.1]) ⊓ (∃ charge.xsd:double[≥  0.15])" # ==> ∃ charge.xsd:double[≥ 0.15]
+        ce18 = "(∃ charge.xsd:double[≥ 0.1]) ⊔ (∃ charge.xsd:double[≥  0.15])" # ==> ∃ charge.xsd:double[≥ 0.1]
+
 
 
         self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce1, NS))),
@@ -277,3 +287,41 @@ class TestSimplifier(unittest.TestCase):
         self.assertCountEqual(carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce12, ns_carcino))),
                               carcino_reasoner.instances(dl_to_owl_expression("{d156_10}", ns_carcino)))
 
+        hv1 = OWLObjectHasValue(property=OWLObjectProperty("http://dl-learner.org/carcinogenesis#hasAtom"),
+                               individual=OWLNamedIndividual(
+                                   IRI.create("http://dl-learner.org/carcinogenesis#d156_10")))
+        hv2 = OWLObjectHasValue(property=OWLObjectProperty("http://dl-learner.org/carcinogenesis#hasAtom"),
+                               individual=OWLNamedIndividual(
+                                   IRI.create("http://dl-learner.org/carcinogenesis#d156_10")))
+        sv1 = OWLObjectSomeValuesFrom(property=OWLObjectProperty("http://dl-learner.org/carcinogenesis#hasAtom"),
+                                      filler=OWLObjectOneOf([OWLNamedIndividual(
+                                          IRI.create("http://dl-learner.org/carcinogenesis#d156_10")),
+                                                             OWLNamedIndividual(IRI.create(
+                                                                 "http://dl-learner.org/carcinogenesis#d156_11"))]))
+        sv2 = OWLObjectSomeValuesFrom(property=OWLObjectProperty("http://dl-learner.org/carcinogenesis#hasAtom"),
+                                      filler=OWLObjectOneOf([OWLNamedIndividual(
+                                          IRI.create("http://dl-learner.org/carcinogenesis#d156_10")),
+                                                             OWLNamedIndividual(IRI.create(
+                                                                 "http://dl-learner.org/carcinogenesis#d156_12"))]))
+        c13 = OWLObjectUnionOf([hv1, hv2, sv1, sv2])
+        c14 = OWLObjectIntersectionOf([hv1, hv2, sv1, sv2])
+
+        self.assertCountEqual(
+            carcino_reasoner.instances(simplify_class_expression(c13)),
+            carcino_reasoner.instances(dl_to_owl_expression("∃ hasAtom.{d156_10 ⊔ d156_12 ⊔ d156_11}", ns_carcino)))
+        self.assertCountEqual(
+            carcino_reasoner.instances(simplify_class_expression(c14)),
+            carcino_reasoner.instances(dl_to_owl_expression("∃ hasAtom.{d156_10}", ns_carcino)))
+
+        self.assertCountEqual(
+            carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce15, ns_carcino))),
+            carcino_reasoner.instances(dl_to_owl_expression("{d156_1 ⊔ d156_11 ⊔ d156_19} ⊔ ({d156_10} ⊓ Oxygen-50)", ns_carcino)))
+        self.assertCountEqual(
+            carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce16, ns_carcino))),
+            carcino_reasoner.instances(dl_to_owl_expression("({d156_11 ⊔ d156_1}) ⊓ (Oxygen-50)", ns_carcino)))
+        self.assertCountEqual(
+            carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce17, ns_carcino))),
+            carcino_reasoner.instances(dl_to_owl_expression("∃ charge.xsd:double[≥ 0.15]", ns_carcino)))
+        self.assertCountEqual(
+            carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce18, ns_carcino))),
+            carcino_reasoner.instances(dl_to_owl_expression("∃ charge.xsd:double[≥ 0.1]", ns_carcino)))
