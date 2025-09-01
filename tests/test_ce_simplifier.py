@@ -1,11 +1,11 @@
 import unittest
 from owlapy import dl_to_owl_expression, owl_expression_to_dl
 from owlapy.class_expression import OWLObjectHasValue, OWLObjectSomeValuesFrom, OWLObjectOneOf, OWLObjectUnionOf, \
-    OWLObjectIntersectionOf
+    OWLObjectIntersectionOf, OWLObjectMinCardinality
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_property import OWLObjectProperty
-from owlapy.owl_reasoner import StructuralReasoner
+from owlapy.owl_reasoner import StructuralReasoner, SyncReasoner
 from owlapy.utils import simplify_class_expression
 
 class TestSimplifier(unittest.TestCase):
@@ -234,6 +234,7 @@ class TestSimplifier(unittest.TestCase):
         # use reasoner to check if instances of simplified(C) == instances of C
         family_reasoner = StructuralReasoner("KGs/Family/family-benchmark_rich_background.owl")
         carcino_reasoner = StructuralReasoner("KGs/Carcinogenesis/carcinogenesis.owl")
+        carcino_syncreasoner = SyncReasoner("KGs/Carcinogenesis/carcinogenesis.owl")
         NS = "http://www.benchmark.org/family#"
         ns_carcino = "http://dl-learner.org/carcinogenesis#"
 
@@ -257,7 +258,8 @@ class TestSimplifier(unittest.TestCase):
         ce16 = "({d156_1 ⊔ d156_11 ⊔ d156_19}) ⊓ (({d156_11 ⊔ d156_1 ⊔ d156_10}) ⊓ Oxygen-50)" # ==> "({d156_11 ⊔ d156_1}) ⊓ (Oxygen-50)"
         ce17 = "(∃ charge.xsd:double[≥ 0.1]) ⊓ (∃ charge.xsd:double[≥  0.15])" # ==> ∃ charge.xsd:double[≥ 0.15]
         ce18 = "(∃ charge.xsd:double[≥ 0.1]) ⊔ (∃ charge.xsd:double[≥  0.15])" # ==> ∃ charge.xsd:double[≥ 0.1]
-
+        ce21 = "≤ 0 cytogen_ca.xsd:boolean ⊔ ≤ 2 cytogen_ca.xsd:boolean"
+        ce22 = "≤ 0 cytogen_ca.xsd:boolean ⊓ ≤ 2 cytogen_ca.xsd:boolean"
 
 
         self.assertCountEqual(family_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce1, NS))),
@@ -325,3 +327,36 @@ class TestSimplifier(unittest.TestCase):
         self.assertCountEqual(
             carcino_reasoner.instances(simplify_class_expression(dl_to_owl_expression(ce18, ns_carcino))),
             carcino_reasoner.instances(dl_to_owl_expression("∃ charge.xsd:double[≥ 0.1]", ns_carcino)))
+
+        omc1 = OWLObjectMinCardinality(2, property=OWLObjectProperty("http://dl-learner.org/carcinogenesis#hasAtom"),
+                                      filler=OWLObjectOneOf([OWLNamedIndividual(
+                                          IRI.create("http://dl-learner.org/carcinogenesis#d156_10")),
+                                                             OWLNamedIndividual(IRI.create(
+                                                                 "http://dl-learner.org/carcinogenesis#d156_11")),
+                                                             OWLNamedIndividual(IRI.create(
+                                                                 "http://dl-learner.org/carcinogenesis#d156_12"))]))
+        omc2 = OWLObjectMinCardinality(20, property=OWLObjectProperty("http://dl-learner.org/carcinogenesis#hasAtom"),
+                                      filler=OWLObjectOneOf([OWLNamedIndividual(
+                                          IRI.create("http://dl-learner.org/carcinogenesis#d156_10")),
+                                                             OWLNamedIndividual(IRI.create(
+                                                                 "http://dl-learner.org/carcinogenesis#d156_11")),
+                                                             OWLNamedIndividual(IRI.create(
+                                                                 "http://dl-learner.org/carcinogenesis#d156_12"))]))
+        ce19 = OWLObjectUnionOf([omc1, omc2])
+        ce20 = OWLObjectIntersectionOf([omc1, omc2])
+
+        self.assertCountEqual(
+            carcino_reasoner.instances(simplify_class_expression(ce19)),
+            carcino_reasoner.instances(dl_to_owl_expression("≥ 2 hasAtom.{d156_11 ⊔ d156_10 ⊔ d156_12}", ns_carcino)))
+
+        self.assertCountEqual(
+            carcino_reasoner.instances(simplify_class_expression(ce20)),
+            carcino_reasoner.instances(dl_to_owl_expression("≥ 20 hasAtom.{d156_11 ⊔ d156_10 ⊔ d156_12}", ns_carcino)))
+
+        self.assertCountEqual(
+            carcino_syncreasoner.instances(simplify_class_expression(dl_to_owl_expression(ce21, ns_carcino))),
+            carcino_syncreasoner.instances(dl_to_owl_expression("≤ 2 cytogen_ca.xsd:boolean", ns_carcino)))
+
+        self.assertCountEqual(
+            carcino_syncreasoner.instances(simplify_class_expression(dl_to_owl_expression(ce22, ns_carcino))),
+            carcino_syncreasoner.instances(dl_to_owl_expression("≤ 0 cytogen_ca.xsd:boolean", ns_carcino)))
