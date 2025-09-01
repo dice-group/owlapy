@@ -852,10 +852,10 @@ class CESimplifier:
     sorter = ConceptOperandSorter()
 
     def simplify(self, o: OWLClassExpression) -> OWLClassExpression:
-        return self._simplify(o)
+        return self._simplify(o, None)
 
 
-    def _merge_card_r_with_same_body(self, restriction, nary_ce):
+    def _merge_card_r_with_same_body(self, restriction, nary_ce = None):
         operands = set(nary_ce.operands())
         same_prop_and_filler = []
         for op in operands:
@@ -878,15 +878,17 @@ class CESimplifier:
             # if nary_ce is an intersection then we leave cardinality as it is
             if isinstance(nary_ce, OWLObjectUnionOf):
                 cardinality = max_card
-        # if isinstance(restriction, (OWLObjectExactCardinality, OWLDataExactCardinality)):
+        # if isinstance(restriction, OWLObjectExactCardinality):
             # TODO AB: implement solution when we have exact cardinality restrictions. Need to take in consideration
             #          scenarios when the cardinality in this kind of restrictions is subsumed by min/max cardinality restriction.
+            #          Immediate idea includes a lot of "ifs" which does not feel right. Find a better way if possible.
+
 
         return type(restriction)(cardinality=cardinality,
                                  property=restriction.get_property(),
                                  filler=self._simplify(restriction.get_filler()))
 
-    def _process_cardinality_restriction(self, restriction, nary_ce):
+    def _process_cardinality_restriction(self, restriction, nary_ce = None):
         if nary_ce is not None:
             operands = set(nary_ce.operands())
             same_root = []
@@ -915,10 +917,10 @@ class CESimplifier:
                                                filler=self._simplify(OWLObjectIntersectionOf(fillers)))
         return type(restriction)(cardinality=restriction.get_cardinality(),
                                  property=restriction.get_property(),
-                                 filler=self._simplify(restriction.get_filler()))
+                                 filler=self._simplify(restriction.get_filler(), None))
 
 
-    def _process_quantified_restriction(self, restriction, nary_ce):
+    def _process_quantified_restriction(self, restriction, nary_ce = None):
         if nary_ce is not None:
             operands = set(nary_ce.operands())
             same_root = []
@@ -978,6 +980,10 @@ class CESimplifier:
     @_simplify.register
     def _(self, i: OWLLiteral, nary_ce = None) -> OWLLiteral:
         return i
+
+    @_simplify.register
+    def _(self, n: OWLDatatype, nary_ce = None) -> OWLDatatype:
+        return n
 
     @_simplify.register
     def _(self, e: OWLObjectSomeValuesFrom, nary_ce = None) -> OWLObjectSomeValuesFrom:
@@ -1209,17 +1215,48 @@ class CESimplifier:
             return s.pop()
         return combine_nary_expressions(OWLDataIntersectionOf(_sort_by_ordered_owl_object(s)))
 
-    @_simplify.register
-    def _(self, n: OWLDatatypeRestriction, nary_ce = None) -> OWLDatatypeRestriction:
-        fr = n.get_facet_restrictions()
 
+    def datatype_restriction_inwards_simplification(self, n):
+        # remove duplicated OWLFacetRestriction
+        s = {r for r in n.get_facet_restrictions()}
+        if len(s) == 1:
+            return OWLDatatypeRestriction(n.get_datatype(), s)
+
+        # remove redundant OWLFacetRestriction (that are already covered by another facet restriction)
+        # multiple facet restrictions for a datatype restrictions are interpreted conjuctively
+        for i in copy(s):
+            for j in copy(s) - {i}:
+                i_fc = i.get_facet()
+                j_fc = j.get_facet()
+                if i_fc == j_fc:
+                    i_v = i.get_facet_value()._v
+                    j_v = j.get_facet_value()._v
+                    if i_fc == OWLFacet.MAX_EXCLUSIVE or i_fc == OWLFacet.MAX_INCLUSIVE or i_fc == OWLFacet.MAX_LENGTH:
+                        if i_v <= j_v:
+                            s.discard(j)
+                        else:
+                            s.discard(i)
+                    elif i_fc == OWLFacet.MIN_EXCLUSIVE or i_fc == OWLFacet.MIN_INCLUSIVE or i_fc == OWLFacet.MIN_LENGTH:
+                        if i_v <= j_v:
+                            s.discard(i)
+                        else:
+                            s.discard(j)
+                    elif i == OWLFacet.LENGTH and i_v == j_v:
+                        s.discard(i)
+        return OWLDatatypeRestriction(n.get_datatype(), s)
+
+    @_simplify.register
+    def _(self, n: OWLDatatypeRestriction, nary_ce=None) -> OWLDatatypeRestriction:
+        if len(n.get_facet_restrictions()) > 1:  # check if it is a collection of OWLFacetRestriction
+            n = self.datatype_restriction_inwards_simplification(n)
+        fr = n.get_facet_restrictions()
         if len(fr) == 1 and nary_ce is not None:
             fr = fr[0]
             for ce in set(nary_ce.operands()) - {n}:
                 if isinstance(ce, OWLDatatypeRestriction):
                     if n.get_datatype() == ce.get_datatype():
                         ce_fr = ce.get_facet_restrictions()
-                        # todo: cover scenarios when len(ce_fr) > 1
+                        # todo: scenarios when len(ce_fr) > 1 are not covered but rarely a simplification can be made
                         if len(ce_fr) == 1 and fr.get_facet() == ce_fr[0].get_facet():
                             ce_fr = ce_fr[0]
                             i_v = fr.get_facet_value()._v
@@ -1250,36 +1287,37 @@ class CESimplifier:
                             elif fr_fc == OWLFacet.LENGTH and i_v == j_v:
                                 return n
 
-        if len(n.get_facet_restrictions()) > 1: # check if it is a collection of OWLFacetRestriction
 
-            # remove duplicated OWLFacetRestriction
-            s = {r for r in fr}
-            if len(s) == 1:
-                return OWLDatatypeRestriction(n.get_datatype(),s)
-
-            # remove redundant OWLFacetRestriction (that are already covered by another facet restriction)
-            # multiple facet restrictions for a datatype restrictions are interpreted conjuctively
-            for i in copy(s):
-                for j in copy(s) - {i}:
-                    i_fc = i.get_facet()
-                    j_fc = j.get_facet()
-                    if i_fc == j_fc:
-                        i_v = i.get_facet_value()._v
-                        j_v = j.get_facet_value()._v
-                        if i_fc == OWLFacet.MAX_EXCLUSIVE or i_fc == OWLFacet.MAX_INCLUSIVE or i_fc == OWLFacet.MAX_LENGTH:
-                            if i_v <= j_v:
-                                s.discard(j)
-                            else:
-                                s.discard(i)
-                        elif i_fc == OWLFacet.MIN_EXCLUSIVE or i_fc == OWLFacet.MIN_INCLUSIVE or i_fc == OWLFacet.MIN_LENGTH:
-                            if i_v <= j_v:
-                                s.discard(i)
-                            else:
-                                s.discard(j)
-                        elif i == OWLFacet.LENGTH and i_v == j_v:
-                            s.discard(i)
-            return OWLDatatypeRestriction(n.get_datatype(), s)
         return n
+
+    # @_simplify.register
+    # def _(self, n: OWLDatatypeRestriction, nary_ce = None) -> OWLDatatypeRestriction:
+    #     original_n = n
+    #     if len(n.get_facet_restrictions()) > 1:  # check whether we have to do with a collection of OWLFacetRestriction
+    #         n = self.datatype_restriction_inwards_simplification(n)
+    #
+    #     fr = n.get_facet_restrictions()
+    #
+    #     if nary_ce is not None:
+    #         same_datatype_as_n = []
+    #         for dr in set(nary_ce.operands()) - {n}:
+    #             if isinstance(dr, OWLDatatypeRestriction):
+    #                 if n.get_datatype() == dr.get_datatype():
+    #                     simp_dr = self.datatype_restriction_inwards_simplification(dr)
+    #                     same_datatype_as_n.append(simp_dr)
+    #         s = {*fr}
+    #         for dtr in same_datatype_as_n:
+    #             dtr_frs = dtr.get_facet_restrictions()
+    #             s.update(dtr_frs)
+    #         op_without_n = set(nary_ce.operands()) - {original_n}
+    #         if len(op_without_n) > 1:
+    #             if isinstance(nary_ce, OWLDataIntersectionOf):
+    #                 return self._simplify(OWLDatatypeRestriction(n.get_datatype(), s),
+    #                                       nary_ce=type(nary_ce)(op_without_n))
+    #         else:
+    #             if isinstance(nary_ce, OWLDataIntersectionOf):
+    #                 return self._simplify(OWLDatatypeRestriction(n.get_datatype(), s))
+    #     return n
 
     @_simplify.register
     def _(self, n: OWLDataComplementOf, nary_ce = None) -> OWLDataComplementOf:
