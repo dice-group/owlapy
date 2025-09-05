@@ -806,23 +806,39 @@ def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf
                 j_op = set(j.operands())
                 common = i_op.intersection(j_op)
                 if len(common):
-                    i_op.update(j_op)
-                    remaining = i_op - common
+                    remaining_i = i_op - common
+                    remaining_j = j_op - common
+                    if len(remaining_i) == 1:
+                        remaining_i = remaining_i.pop()
+                    elif len(remaining_i) > 1:
+                        remaining_i = type_b(remaining_i)
+                    else:
+                        remaining_i = None
+
+                    if len(remaining_j) == 1:
+                        remaining_j = remaining_j.pop()
+                    elif len(remaining_j) > 1:
+                        remaining_j = type_b(remaining_j)
+                    else:
+                        remaining_j = None
+
                     if len(common) > 1:
-                        if len(remaining) > 1:
+                        if remaining_i and remaining_j:
                             # if more than 1 remaining, put them in a type_a expression
-                            localized_factorization = type_b({*common, type_a(remaining)})
+                            localized_factorization = type_b({*common, type_a([remaining_i, remaining_j])})
                         else:
                             # if 1 remaining, rule it out. The way this function is structured make this line
                             # safe because it only omits redundant remains
                             localized_factorization = type_b(common)
                     else:
-                        localized_factorization = type_b({*common,type_a(remaining)})
-                    if len(type_b_nary_expressions) == 2:
+                        localized_factorization = type_b({*common,type_a([remaining_i, remaining_j])})
+                    if len(type_b_nary_expressions) == 2 and len(non_type_b_nary_expressions) == 0:
                         return combine_nary_expressions(localized_factorization)
+                    elif len(type_b_nary_expressions) == 2 and len(non_type_b_nary_expressions) > 0:
+                        return combine_nary_expressions(type_a([localized_factorization,*non_type_b_nary_expressions]))
                     else:
                         type_b_nary_expressions_without_i_j = copy(type_b_nary_expressions) - {i,j}
-                        return factor_nary_expression(type_a({*type_b_nary_expressions_without_i_j, localized_factorization}))
+                        return factor_nary_expression(type_a({*type_b_nary_expressions_without_i_j,*non_type_b_nary_expressions, localized_factorization}))
     if len(type_b_nary_expressions):
         # if reach this point we make a last check to see if there is any nary expression of type_b in ce and process
         # each of them before returning the type_a object.
@@ -919,8 +935,7 @@ class CESimplifier:
                                  property=restriction.get_property(),
                                  filler=self._simplify(restriction.get_filler(), None))
 
-
-    def _process_quantified_restriction(self, restriction, nary_ce = None):
+    def _process_quantified_restriction(self, restriction, nary_ce=None):
         if nary_ce is not None:
             operands = set(nary_ce.operands())
             same_root = []
@@ -929,15 +944,17 @@ class CESimplifier:
                     same_root.append(op)
             if not len(same_root) == 1:
                 fillers = _sort_by_ordered_owl_object([p.get_filler() for p in same_root])
-                if isinstance(nary_ce, OWLObjectUnionOf):
-                    if isinstance(list(fillers)[0],OWLDataRange):
+                if isinstance(nary_ce, OWLObjectUnionOf) and (isinstance(restriction, OWLObjectSomeValuesFrom) or
+                                                              isinstance(restriction, OWLDataSomeValuesFrom)):
+                    if isinstance(list(fillers)[0], OWLDataRange):
                         # Union of data ranges should be treated as OWLDataUnionOf
                         return type(restriction)(property=restriction.get_property(),
                                                  filler=self._simplify(OWLDataUnionOf(fillers)))
                     return type(restriction)(property=restriction.get_property(),
                                              filler=self._simplify(OWLObjectUnionOf(fillers)))
-                if isinstance(nary_ce, OWLObjectIntersectionOf):
-                    if isinstance(list(fillers)[0],OWLDataRange):
+                if isinstance(nary_ce, OWLObjectIntersectionOf) and (isinstance(restriction, OWLObjectAllValuesFrom)
+                                                                     or isinstance(restriction, OWLDataAllValuesFrom)):
+                    if isinstance(list(fillers)[0], OWLDataRange):
                         # Intersection of data ranges should be treated as OWLDataIntersectionOf
                         return type(restriction)(property=restriction.get_property(),
                                                  filler=self._simplify(OWLDataIntersectionOf(fillers)))
@@ -945,7 +962,7 @@ class CESimplifier:
                                              filler=self._simplify(OWLObjectIntersectionOf(fillers)))
         return type(restriction)(property=restriction.get_property(), filler=self._simplify(restriction.get_filler()))
 
-    def _simplify_quantified_restrictions_with_oneof_filler(self, e, nary_ce):
+    def _simplify_existential_restrictions_with_oneof_filler(self, e, nary_ce):
         s = set(e.get_filler().individuals())
         for op in nary_ce.operands():
             if isinstance(op, OWLObjectHasValue):
@@ -989,14 +1006,12 @@ class CESimplifier:
     def _(self, e: OWLObjectSomeValuesFrom, nary_ce = None) -> OWLObjectSomeValuesFrom:
         e = self._process_quantified_restriction(e, nary_ce)
         if isinstance(e.get_filler(), OWLObjectOneOf):
-            e = self._simplify_quantified_restrictions_with_oneof_filler(e, nary_ce)
+            e = self._simplify_existential_restrictions_with_oneof_filler(e, nary_ce)
         return e
 
     @_simplify.register
     def _(self, e: OWLObjectAllValuesFrom, nary_ce = None) -> OWLObjectAllValuesFrom:
         e = self._process_quantified_restriction(e, nary_ce)
-        if isinstance(e.get_filler(), OWLObjectOneOf):
-            e = self._simplify_quantified_restrictions_with_oneof_filler(e, nary_ce)
         return e
 
     @_simplify.register
@@ -1107,6 +1122,10 @@ class CESimplifier:
         nnnf = n.get_nnf()
         if not isinstance(nnnf, OWLObjectComplementOf):
             return self._simplify(nnnf)
+        if isinstance(nnnf.get_operand(), OWLObjectOneOf) and nary_ce is not None:
+            s = {a.get_operand() for a in nary_ce.operands() if
+                 isinstance(a, OWLObjectComplementOf) and isinstance(a.get_operand(), OWLObjectOneOf)}
+            return OWLObjectComplementOf(self._simplify(type(nary_ce)(s)))
         return nnnf
 
     @_simplify.register
@@ -1321,10 +1340,7 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, n: OWLDataComplementOf, nary_ce = None) -> OWLDataComplementOf:
-        nnnf = n.get_nnf()
-        if not isinstance(nnnf, OWLDataComplementOf):
-            return self._simplify(nnnf)
-        return nnnf
+        return n
 
     @_simplify.register
     def _(self, r: OWLDataMinCardinality, nary_ce = None) -> OWLDataMinCardinality:
