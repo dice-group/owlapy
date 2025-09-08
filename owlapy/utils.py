@@ -856,6 +856,7 @@ class CESimplifier:
         - Normalizing union and intersection of class expressions
         - Absorption of redundant class expressions
         - Converting to negation normal form (NNF)
+        - and more...
     """
 
     # TODO AB: This simplifier considers only syntactic simplifications (CWA). It can be extended to consider semantic
@@ -1125,7 +1126,9 @@ class CESimplifier:
         if isinstance(nnnf.get_operand(), OWLObjectOneOf) and nary_ce is not None:
             s = {a.get_operand() for a in nary_ce.operands() if
                  isinstance(a, OWLObjectComplementOf) and isinstance(a.get_operand(), OWLObjectOneOf)}
-            return OWLObjectComplementOf(self._simplify(type(nary_ce)(s)))
+            s.add(nnnf.get_operand())
+            if len(s) > 1:
+                return OWLObjectComplementOf(self._simplify(type(nary_ce)(s)))
         return nnnf
 
     @_simplify.register
