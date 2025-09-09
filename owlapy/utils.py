@@ -9,6 +9,7 @@ from functools import singledispatchmethod, total_ordering
 from typing import Iterable, List, Type, Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, \
     ClassVar, Set
 
+from . import owl_expression_to_dl
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
 from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
@@ -734,6 +735,16 @@ def _get_top_level_form(ce: OWLClassExpression,
     else:
         raise ValueError('Top-Level CNF/DNF only applicable on class expressions', ce)
 
+def get_remaining(original_set, common_part, type_b):
+    """Used in factorization function 'factor_nary_expression'."""
+    remaining = original_set - common_part
+    if len(remaining) == 1:
+        remaining = remaining.pop()
+    elif len(remaining) > 1:
+        remaining = type_b(remaining)
+    else:
+        remaining = None
+    return remaining
 
 def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf], transform_to_dnf_on_first_iteration = False):
     """Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This
@@ -806,22 +817,8 @@ def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf
                 j_op = set(j.operands())
                 common = i_op.intersection(j_op)
                 if len(common):
-                    remaining_i = i_op - common
-                    remaining_j = j_op - common
-                    if len(remaining_i) == 1:
-                        remaining_i = remaining_i.pop()
-                    elif len(remaining_i) > 1:
-                        remaining_i = type_b(remaining_i)
-                    else:
-                        remaining_i = None
-
-                    if len(remaining_j) == 1:
-                        remaining_j = remaining_j.pop()
-                    elif len(remaining_j) > 1:
-                        remaining_j = type_b(remaining_j)
-                    else:
-                        remaining_j = None
-
+                    remaining_i = get_remaining(i_op, common, type_b)
+                    remaining_j = get_remaining(j_op, common, type_b)
                     if len(common) > 1:
                         if remaining_i and remaining_j:
                             # if more than 1 remaining, put them in a type_a expression
@@ -840,12 +837,56 @@ def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf
                         type_b_nary_expressions_without_i_j = copy(type_b_nary_expressions) - {i,j}
                         return factor_nary_expression(type_a({*type_b_nary_expressions_without_i_j,*non_type_b_nary_expressions, localized_factorization}))
     if len(type_b_nary_expressions):
-        # if reach this point we make a last check to see if there is any nary expression of type_b in ce and process
+        # if we reach this point we make a last check to see if there is any nary expression of type_b in ce and process
         # each of them before returning the type_a object.
         return type_a({*non_type_b_nary_expressions, *[factor_nary_expression(exp) for exp in type_b_nary_expressions]})
 
     # no nary expression of type_b? -> just return ce, nothing to do here
     return ce
+
+def _factor_negation_outof_oneofs(ce: Union[OWLObjectIntersectionOf, OWLObjectUnionOf]):
+    """Factor negation for objectOneOf expression
+        E.g. #1: ¬{a} ⊓ ¬{b} ⊓ ¬{c}  => ¬({a} ⊔ {b} ⊔ {c}) => ¬{a ⊔ b ⊔ c}
+        E.g. #2:  ¬{a} ⊔ ¬{b} => ¬({a} ⊓ {b}) => ¬(⊥) => ⊤    // considering that a != b
+
+        Note: We consider Unique Name Assumption (UNA) for such simplifications but otherwise the simplification in
+        example 2 is not semantically valid unless proven that a != b.
+        P.S: Comparing individuals will require a reasoner. We will leave that when implementing the semantic
+        simplifier.
+    """
+    nary_exp = []
+    neg_one_of = []
+    others = []
+    for op in ce.operands():
+        if isinstance(op, OWLObjectUnionOf) or isinstance(op,OWLObjectIntersectionOf):
+            nary_exp.append(_factor_negation_outof_oneofs(op))
+        elif isinstance(op, OWLObjectComplementOf) and isinstance(op.get_operand(), OWLObjectOneOf):
+            neg_one_of.append(op)
+        else:
+            others.append(op)
+
+    if len(neg_one_of) > 1:
+        simplifier = CESimplifier()
+        if isinstance(ce, OWLObjectIntersectionOf):
+            simplified_oofs = simplifier.simplify(OWLObjectUnionOf([nof.get_operand() for nof in neg_one_of]))
+        else: # isinstance(ce, OWLObjectUnionOf)
+            simplified_oofs = simplifier.simplify(OWLObjectIntersectionOf([nof.get_operand() for nof in neg_one_of]))
+
+        if simplified_oofs == OWLNothing:
+            if len(others) + len(nary_exp) > 1:
+                return type(ce)([*others, *nary_exp])
+            elif len(others):
+                return others.pop()
+            elif len(nary_exp):
+                return nary_exp.pop()
+            else:
+                return OWLThing
+
+        if len(others) + len(nary_exp) > 1:
+            return type(ce)([OWLObjectComplementOf(simplified_oofs), *nary_exp, *others])
+        else:
+            return OWLObjectComplementOf(simplified_oofs)
+    return type(ce)([*neg_one_of, *others, *nary_exp])
 
 
 class CESimplifier:
@@ -857,6 +898,9 @@ class CESimplifier:
         - Absorption of redundant class expressions
         - Converting to negation normal form (NNF)
         - and more...
+
+        Note: This simplifier follows Unique Name Assumption (UNA) meaning that every class/individual/property is
+        unique as long as its name is unique.
     """
 
     # TODO AB: This simplifier considers only syntactic simplifications (CWA). It can be extended to consider semantic
@@ -873,6 +917,12 @@ class CESimplifier:
 
 
     def _merge_card_r_with_same_body(self, restriction, nary_ce = None):
+        # Check for card restrictions that have the same property and filler and remove redundant restrictions
+        # by merging their cardinality depending on the type of nary expression we are dealing.
+        # E.g.:
+        # (> 1 r.A) ⊔ (> 2 r.A) ≡ > 1 r.A
+        # (> 1 r.A) ⊓ (> 2 r.A) ≡ > 2 r.A
+
         operands = set(nary_ce.operands())
         same_prop_and_filler = []
         for op in operands:
@@ -906,7 +956,12 @@ class CESimplifier:
                                  filler=self._simplify(restriction.get_filler()))
 
     def _process_cardinality_restriction(self, restriction, nary_ce = None):
-        if nary_ce is not None:
+        # Check for card restrictions that have the share the same cardinality and property.
+        # They can be simplified into a single card restriction with a merged filler.
+        # E.g.:
+        # (> 1 r.A) ⊔ (> 1 r.B) ≡ > 1 r.(A ⊔ B)
+        # (< 2 r.xsd:boolean) ⊔ (< 2 r.xsd:integer) ≡ < 2 r.(xsd:boolean ⊔ xsd:integer)
+        if isinstance(nary_ce, OWLObjectUnionOf):
             operands = set(nary_ce.operands())
             same_root = []
             for op in operands:
@@ -916,27 +971,23 @@ class CESimplifier:
                     same_root.append(op)
             if not len(same_root) == 1:
                 fillers = _sort_by_ordered_owl_object([p.get_filler() for p in same_root])
-                if isinstance(nary_ce, OWLObjectUnionOf):
-                    if isinstance(list(fillers)[0],OWLDataRange):
-                        return type(restriction)(cardinality=restriction.get_cardinality(),
-                                                 property=restriction.get_property(),
-                                                 filler=self._simplify(OWLDataUnionOf(fillers)))
+                if isinstance(list(fillers)[0],OWLDataRange):
                     return type(restriction)(cardinality=restriction.get_cardinality(),
-                                               property=restriction.get_property(),
-                                               filler=self._simplify(OWLObjectUnionOf(fillers)))
-                if isinstance(nary_ce, OWLObjectIntersectionOf):
-                    if isinstance(list(fillers)[0],OWLDataRange):
-                        return type(restriction)(cardinality=restriction.get_cardinality(),
-                                                 property=restriction.get_property(),
-                                                 filler=self._simplify(OWLDataIntersectionOf(fillers)))
-                    return type(restriction)(cardinality=restriction.get_cardinality(),
-                                               property=restriction.get_property(),
-                                               filler=self._simplify(OWLObjectIntersectionOf(fillers)))
+                                             property=restriction.get_property(),
+                                             filler=self._simplify(OWLDataUnionOf(fillers)))
+                return type(restriction)(cardinality=restriction.get_cardinality(),
+                                           property=restriction.get_property(),
+                                           filler=self._simplify(OWLObjectUnionOf(fillers)))
         return type(restriction)(cardinality=restriction.get_cardinality(),
                                  property=restriction.get_property(),
                                  filler=self._simplify(restriction.get_filler(), None))
 
     def _process_quantified_restriction(self, restriction, nary_ce=None):
+        # We can factorize the quantified restriction that share the same property by merging their fillers,
+        # following the rules of description logics.
+        # E.g.:
+        # ∀r.A ⊓ ∀r.B ≡ ∀r.(A ⊓ B)
+        # ∃r.A ⊔ ∃r.B ≡ ∃r.(A ⊔ B)
         if nary_ce is not None:
             operands = set(nary_ce.operands())
             same_root = []
@@ -965,14 +1016,10 @@ class CESimplifier:
 
     def _simplify_existential_restrictions_with_oneof_filler(self, e, nary_ce):
         s = set(e.get_filler().individuals())
-        for op in nary_ce.operands():
-            if isinstance(op, OWLObjectHasValue):
-                if isinstance(nary_ce, OWLObjectIntersectionOf):
-                    s = s.intersection({op.get_filler()})
-                elif isinstance(nary_ce, OWLObjectUnionOf):
+        if isinstance(nary_ce, OWLObjectUnionOf):
+            for op in nary_ce.operands():
+                if isinstance(op, OWLObjectHasValue):
                     s.add(op.get_filler())
-        if len(s) == 0:
-            return OWLNothing
         return OWLObjectSomeValuesFrom(property=e.get_property(), filler=OWLObjectOneOf(s))
 
     @singledispatchmethod
@@ -1061,7 +1108,11 @@ class CESimplifier:
                     ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
                     break
         if nary_ce is None and isinstance(ce_to_return, OWLObjectUnionOf): # check if we are at the root nary expression and apply factorization
-            return self.sorter.sort(factor_nary_expression(ce_to_return, True))
+            ce_to_return = self.sorter.sort(factor_nary_expression(ce_to_return, True))
+            if isinstance(ce_to_return, OWLObjectUnionOf) or isinstance(ce_to_return, OWLObjectIntersectionOf):
+                for op in ce_to_return.operands():
+                    if isinstance(op, OWLObjectComplementOf) and isinstance(op.get_operand(), OWLObjectOneOf):
+                        return self.sorter.sort(_factor_negation_outof_oneofs(ce_to_return))
         return ce_to_return
 
     @_simplify.register
@@ -1115,20 +1166,24 @@ class CESimplifier:
                     ce_to_return = combine_nary_expressions(OWLObjectIntersectionOf(_sort_by_ordered_owl_object(s)))
                     break
         if nary_ce is None and isinstance(ce_to_return, OWLObjectIntersectionOf): # check if we are at the root nary expression and apply factorization
-            return self.sorter.sort(factor_nary_expression(ce_to_return, True))
+            ce_to_return = self.sorter.sort(factor_nary_expression(ce_to_return, True))
+            if isinstance(ce_to_return, OWLObjectUnionOf) or isinstance(ce_to_return, OWLObjectIntersectionOf):
+                for op in ce_to_return.operands():
+                    if isinstance(op, OWLObjectComplementOf) and isinstance(op.get_operand(), OWLObjectOneOf):
+                        return self.sorter.sort(_factor_negation_outof_oneofs(ce_to_return))
         return ce_to_return
 
     @_simplify.register
     def _(self, n: OWLObjectComplementOf, nary_ce = None) -> OWLClassExpression:
-        nnnf = n.get_nnf()
+        nnnf = n.get_nnf() # ¬{a ⊔ b} => ¬{a} ⊓ ¬{b} => ¬({a} ⊓ {b}) => ¬(⊥) => ⊤  | ¬{a} ⊓ ¬{b} = ¬({a} ⊔ {b})
         if not isinstance(nnnf, OWLObjectComplementOf):
             return self._simplify(nnnf)
-        if isinstance(nnnf.get_operand(), OWLObjectOneOf) and nary_ce is not None:
-            s = {a.get_operand() for a in nary_ce.operands() if
-                 isinstance(a, OWLObjectComplementOf) and isinstance(a.get_operand(), OWLObjectOneOf)}
-            s.add(nnnf.get_operand())
-            if len(s) > 1:
-                return OWLObjectComplementOf(self._simplify(type(nary_ce)(s)))
+        # if isinstance(nnnf.get_operand(), OWLObjectOneOf) and nary_ce is not None: # nary_ce = ((¬{a}) ⊔ (¬{b}) ⊔ (¬{c})) ⊓ (¬{a ⊔ b})
+        #     s = {a.get_operand() for a in nary_ce.operands() if
+        #          isinstance(a, OWLObjectComplementOf) and isinstance(a.get_operand(), OWLObjectOneOf)}
+        #     s.add(nnnf.get_operand())
+        #     if len(s) > 1:
+        #         return OWLObjectComplementOf(self._simplify(type(nary_ce)(s)))
         return nnnf
 
     @_simplify.register
@@ -1154,7 +1209,7 @@ class CESimplifier:
     @_simplify.register
     def _(self, r: OWLObjectHasValue, nary_ce = None) -> Union[OWLObjectHasValue, OWLObjectSomeValuesFrom]:
         r_prop = r.get_property()
-        if nary_ce is not None:
+        if isinstance(nary_ce, OWLObjectUnionOf):
             nary_ce_op_without_r = set(nary_ce.operands()) - {r}
             ohvs = []
             for op in nary_ce_op_without_r:
@@ -1164,30 +1219,14 @@ class CESimplifier:
                     ohvs.append(op)
             if len(ohvs) > 0:
                 s = {r.get_filler()}
-                if isinstance(nary_ce, OWLObjectUnionOf):
-                    # merge all fillers of hasValue and someValuesFrom (if the filler is a oneOf) into a single someValuesFrom with a oneOf filler
-                    for ohv in ohvs:
-                        if isinstance(ohv, OWLObjectHasValue):
-                            s.add(ohv.get_filler())
-                        if isinstance(ohv, OWLObjectSomeValuesFrom) and isinstance(ohv.get_filler(),OWLObjectOneOf):
-                            s.update(ohv.get_filler().individuals())
-                    return OWLObjectSomeValuesFrom(property=r_prop, filler=OWLObjectOneOf(s))
-
-                if isinstance(nary_ce, OWLObjectIntersectionOf):
-                    # intersect all fillers of hasValue and someValuesFrom (if the filler is a oneOf) into a single
-                    # hasValue or someValuesFrom with a oneOf filler in case that the intersection has more than 1 individual
-                    for ohv in ohvs:
-                        if isinstance(ohv, OWLObjectHasValue):
-                            s = s.intersection({ohv.get_filler()})
-                        if isinstance(ohv, OWLObjectSomeValuesFrom) and isinstance(ohv.get_filler(), OWLObjectOneOf):
-                            s = s.intersection(set(ohv.get_filler().individuals()))
-                    if len(s) == 0:
-                        return OWLNothing
-                    elif len(s) == 1:
-                        return OWLObjectHasValue(property=r_prop, individual=s.pop())
-                    else:
-                        return OWLObjectSomeValuesFrom(property=r_prop, filler=OWLObjectOneOf(s))
-            return r
+                # merge all fillers of hasValue and someValuesFrom (if the filler is a oneOf) into a single someValuesFrom with a oneOf filler
+                for ohv in ohvs:
+                    if isinstance(ohv, OWLObjectHasValue):
+                        s.add(ohv.get_filler())
+                    if isinstance(ohv, OWLObjectSomeValuesFrom) and isinstance(ohv.get_filler(),OWLObjectOneOf):
+                        s.update(ohv.get_filler().individuals())
+                return OWLObjectSomeValuesFrom(property=r_prop, filler=OWLObjectOneOf(s))
+        return r
 
     @_simplify.register
     def _(self, r: OWLObjectOneOf, nary_ce = None) -> OWLObjectOneOf:
@@ -1308,38 +1347,7 @@ class CESimplifier:
                                         return n
                             elif fr_fc == OWLFacet.LENGTH and i_v == j_v:
                                 return n
-
-
         return n
-
-    # @_simplify.register
-    # def _(self, n: OWLDatatypeRestriction, nary_ce = None) -> OWLDatatypeRestriction:
-    #     original_n = n
-    #     if len(n.get_facet_restrictions()) > 1:  # check whether we have to do with a collection of OWLFacetRestriction
-    #         n = self.datatype_restriction_inwards_simplification(n)
-    #
-    #     fr = n.get_facet_restrictions()
-    #
-    #     if nary_ce is not None:
-    #         same_datatype_as_n = []
-    #         for dr in set(nary_ce.operands()) - {n}:
-    #             if isinstance(dr, OWLDatatypeRestriction):
-    #                 if n.get_datatype() == dr.get_datatype():
-    #                     simp_dr = self.datatype_restriction_inwards_simplification(dr)
-    #                     same_datatype_as_n.append(simp_dr)
-    #         s = {*fr}
-    #         for dtr in same_datatype_as_n:
-    #             dtr_frs = dtr.get_facet_restrictions()
-    #             s.update(dtr_frs)
-    #         op_without_n = set(nary_ce.operands()) - {original_n}
-    #         if len(op_without_n) > 1:
-    #             if isinstance(nary_ce, OWLDataIntersectionOf):
-    #                 return self._simplify(OWLDatatypeRestriction(n.get_datatype(), s),
-    #                                       nary_ce=type(nary_ce)(op_without_n))
-    #         else:
-    #             if isinstance(nary_ce, OWLDataIntersectionOf):
-    #                 return self._simplify(OWLDatatypeRestriction(n.get_datatype(), s))
-    #     return n
 
     @_simplify.register
     def _(self, n: OWLDataComplementOf, nary_ce = None) -> OWLDataComplementOf:
