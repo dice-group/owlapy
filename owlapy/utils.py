@@ -9,7 +9,6 @@ from functools import singledispatchmethod, total_ordering
 from typing import Iterable, List, Type, Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, \
     ClassVar, Set
 
-from . import owl_expression_to_dl
 from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
 from .owl_literal import OWLLiteral
 from .owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
@@ -1175,15 +1174,9 @@ class CESimplifier:
 
     @_simplify.register
     def _(self, n: OWLObjectComplementOf, nary_ce = None) -> OWLClassExpression:
-        nnnf = n.get_nnf() # ¬{a ⊔ b} => ¬{a} ⊓ ¬{b} => ¬({a} ⊓ {b}) => ¬(⊥) => ⊤  | ¬{a} ⊓ ¬{b} = ¬({a} ⊔ {b})
+        nnnf = n.get_nnf()
         if not isinstance(nnnf, OWLObjectComplementOf):
             return self._simplify(nnnf)
-        # if isinstance(nnnf.get_operand(), OWLObjectOneOf) and nary_ce is not None: # nary_ce = ((¬{a}) ⊔ (¬{b}) ⊔ (¬{c})) ⊓ (¬{a ⊔ b})
-        #     s = {a.get_operand() for a in nary_ce.operands() if
-        #          isinstance(a, OWLObjectComplementOf) and isinstance(a.get_operand(), OWLObjectOneOf)}
-        #     s.add(nnnf.get_operand())
-        #     if len(s) > 1:
-        #         return OWLObjectComplementOf(self._simplify(type(nary_ce)(s)))
         return nnnf
 
     @_simplify.register
