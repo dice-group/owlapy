@@ -881,7 +881,7 @@ def _factor_negation_outof_oneofs(ce: Union[OWLObjectIntersectionOf, OWLObjectUn
             else:
                 return OWLThing
 
-        if len(others) + len(nary_exp) > 1:
+        if len(others) + len(nary_exp) >= 1:
             return type(ce)([OWLObjectComplementOf(simplified_oofs), *nary_exp, *others])
         else:
             return OWLObjectComplementOf(simplified_oofs)
@@ -1088,10 +1088,9 @@ class CESimplifier:
         for el in copy(s):
             if isinstance(el, OWLObjectComplementOf) and el.get_operand() in s:
                 s = s - {el, el.get_operand()}
-                s.add(OWLThing)
-                if len(s) == 1:
+                if len(s) == 0:
                     return OWLThing
-                return self._simplify(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
+                # return self._simplify(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
 
         ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
         if isinstance(ce_to_return, OWLObjectUnionOf):
@@ -1809,8 +1808,8 @@ class LRUCache(Generic[_K, _V]):
             self.full = False
 
 
-transformer = CESimplifier()
-
-def simplify_class_expression(ce: OWLClassExpression) -> OWLClassExpression:
-    """Simplify a class expression by removing redundant expressions and sorting operands."""
-    return transformer.simplify(ce)
+# transformer = CESimplifier()
+#
+# def simplify_class_expression(ce: OWLClassExpression) -> OWLClassExpression:
+#     """Simplify a class expression by removing redundant expressions and sorting operands."""
+#     return transformer.simplify(ce)
