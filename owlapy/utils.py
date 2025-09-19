@@ -1808,8 +1808,8 @@ class LRUCache(Generic[_K, _V]):
             self.full = False
 
 
-# transformer = CESimplifier()
-#
-# def simplify_class_expression(ce: OWLClassExpression) -> OWLClassExpression:
-#     """Simplify a class expression by removing redundant expressions and sorting operands."""
-#     return transformer.simplify(ce)
+transformer = CESimplifier()
+
+def simplify_class_expression(ce: OWLClassExpression) -> OWLClassExpression:
+    """Simplify a class expression by removing redundant expressions and sorting operands."""
+    return transformer.simplify(ce)
