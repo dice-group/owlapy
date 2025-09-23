@@ -57,9 +57,9 @@ In Owlapy, we provide two main reasoner classes:
     SyncReasoner is made available by [OWLAPI mapper](owlapi_synchronization.md) and requires the ontology path or an
     object of type [SyncOntology](owlapy.owl_ontology.SyncOntology),
     together with a reasoner name from the possible set of reasoners: `"Hermit"`, `"Pellet"`, `"ELK"`, `"JFact"`, 
-   `"Openllet"`, `"StructuralReasoner"` specified as a string value.
+   `"Openllet"`, `"Structural"` specified as a string value.
 
-   **Note that SyncReasoner with `reasoner` argument set to `"StructuralReasoner"` is referring to 
+   **Note that SyncReasoner with `reasoner` argument set to `"Structural"` is referring to 
    _StructuralReasoner_ implemented in OWLAPI. That is different from our StructuralReasoner.**
 
   **Also is worth mentioning that some java reasoners like ELK do not implement all methods that a reasoner 
@@ -78,13 +78,12 @@ In Owlapy, we provide two main reasoner classes:
 
     **Initialization:**
   
-      ```python
-      from owlapy.owl_reasoner import EBR
-      from owlapy.owl_ontology import NeuralOntology
-      
-      onto = NeuralOntology(path_neural_embedding="KGs/Family/trained_model")
-      sync_reasoner = EBR(ontology=onto)
-      ```
+     ```python
+  from owlapy.owl_reasoner import EBR
+  from owlapy.owl_ontology import NeuralOntology
+  onto = NeuralOntology(path_neural_embedding="KGs/Family/trained_model")
+  sync_reasoner = EBR(ontology=onto)
+     ```
     EBR requires only 1 argument to initialize and that is a `NeuralOntology`. 
   
 ## Usage of the Reasoner
