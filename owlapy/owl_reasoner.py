@@ -1103,8 +1103,8 @@ class SyncReasoner(AbstractOWLReasoner):
              f"'Structural']. "
              f"This field is case sensitive.")
 
-        #  TODO: ELK does not support all methods. That means that mapping methods in owlapy will
-        #   raise NotImplementedError. Check for new release of elk and if any of these method is
+        #  TODO: ELK does not support all reasoning methods. That means that mapping unsupported methods in owlapy will
+        #   also raise NotImplementedError. Check for new release of elk and if any of these method is
         #   implemented, remove the `raise NotImplementedError` statement for the respective mapping
         #   implemented in this class. Current version of elk is 0.6.0.
         #   Maven releases: https://mvnrepository.com/artifact/io.github.liveontologies/elk-owlapi

@@ -78,12 +78,13 @@ In Owlapy, we provide two main reasoner classes:
 
     **Initialization:**
   
-     ```python
+  ```python
   from owlapy.owl_reasoner import EBR
   from owlapy.owl_ontology import NeuralOntology
+  
   onto = NeuralOntology(path_neural_embedding="KGs/Family/trained_model")
   sync_reasoner = EBR(ontology=onto)
-     ```
+  ```
     EBR requires only 1 argument to initialize and that is a `NeuralOntology`. 
   
 ## Usage of the Reasoner
