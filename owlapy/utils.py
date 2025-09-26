@@ -818,16 +818,13 @@ def factor_nary_expression(expr: Union[OWLObjectIntersectionOf, OWLObjectUnionOf
                 if len(common):
                     remaining_i = get_remaining(i_op, common, type_b)
                     remaining_j = get_remaining(j_op, common, type_b)
-                    if len(common) > 1:
-                        if remaining_i and remaining_j:
-                            # if more than 1 remaining, put them in a type_a expression
-                            localized_factorization = type_b({*common, type_a([remaining_i, remaining_j])})
-                        else:
-                            # if 1 remaining, rule it out. The way this function is structured make this line
-                            # safe because it only omits redundant remains
-                            localized_factorization = type_b(common)
+                    if remaining_i and remaining_j:
+                        # if more than 1 remaining, put them in a type_a expression
+                        localized_factorization = type_b({*common, type_a([remaining_i, remaining_j])})
                     else:
-                        localized_factorization = type_b({*common,type_a([remaining_i, remaining_j])})
+                        # if 1 remaining, rule it out. The way this function is structured make this line
+                        # safe because it only omits redundant remains.
+                        localized_factorization = type_b(common)
                     if len(type_b_nary_expressions) == 2 and len(non_type_b_nary_expressions) == 0:
                         return combine_nary_expressions(localized_factorization)
                     elif len(type_b_nary_expressions) == 2 and len(non_type_b_nary_expressions) > 0:
