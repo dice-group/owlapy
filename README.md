@@ -2,9 +2,12 @@
 [![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
 [![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
 [![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.6.0-blue)](https://pypi.org/project/owlapy/1.6.0/)
-[![Docs](https://img.shields.io/badge/documentation-1.6.0-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Pypi](https://img.shields.io/badge/pypi-1.6.1-blue)](https://pypi.org/project/owlapy/1.6.1/)
+[![Docs](https://img.shields.io/badge/documentation-1.6.1-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dice-group/owlapy)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/dice-group/owlapy/test.yml)
+![GitHub License](https://img.shields.io/github/license/dice-group/owlapy)
+
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
 
@@ -21,10 +24,14 @@ Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
 git clone https://github.com/dice-group/owlapy
 conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip3 install -e .
 ```
-or
+
+### Installation from PyPI
 ```bash
 pip3 install owlapy
 ```
+
+### Extra files (optional)
+
 ```shell
 # To download RDF knowledge graphs
 wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
@@ -32,32 +39,6 @@ pytest -p no:warnings -x # Running  147 tests ~ 35 secs
 ```
 
 ## Examples
-
-### OWL Reasoning from Command line
-
-<details><summary> Click me! </summary>
-
-```shell
-owlapy --path_ontology "KGs/Family/family-benchmark_rich_background.owl" --inference_types "all" --out_ontology "enriched_family.owl"
-```
-
-```--inference_types``` can be specified by selecting one from 
-
-``` 
-["InferredClassAssertionAxiomGenerator",
-"InferredSubClassAxiomGenerator",
-"InferredDisjointClassesAxiomGenerator",
-"InferredEquivalentClassAxiomGenerator",
-"InferredEquivalentDataPropertiesAxiomGenerator",
-"InferredEquivalentObjectPropertyAxiomGenerator",
-"InferredInverseObjectPropertiesAxiomGenerator",
-"InferredSubDataPropertyAxiomGenerator",
-"InferredSubObjectPropertyAxiomGenerator",
-"InferredDataPropertyCharacteristicAxiomGenerator",
-"InferredObjectPropertyCharacteristicAxiomGenerator"]
-```
-
-</details>
 
 ### Exploring OWL Ontology
 
@@ -69,13 +50,13 @@ from owlapy.owl_ontology import SyncOntology
 ontology_path = "KGs/Family/father.owl"
 onto = SyncOntology(ontology_path)
 
-print({owl_class.reminder for owl_class in onto.classes_in_signature()}) 
+print({owl_class.remainder for owl_class in onto.classes_in_signature()}) 
 # {'Thing', 'female', 'male', 'person'}
 
-print({individual.reminder for individual in onto.individuals_in_signature()}) 
+print({individual.remainder for individual in onto.individuals_in_signature()}) 
 # {'michelle', 'stefan', 'martin', 'anna', 'heinz', 'markus'}
 
-print({object_property.reminder for object_property in onto.object_properties_in_signature()})
+print({object_property.remainder for object_property in onto.object_properties_in_signature()})
 # {'hasChild'}
 
 for owl_subclass_of_axiom in onto.get_tbox_axioms():
@@ -152,6 +133,66 @@ OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/i
 
 </details>
 
+
+### Ontology Generation
+
+<details><summary> Click me! </summary>
+
+Our latest feature employees a combination of state-of-the-art approaches to extract knowledge graphs from unstructured
+text using Large Language Models (LLMs).
+
+```python
+from owlapy.ontogen.data_extraction import GraphExtractor
+from owlapy.owl_ontology import SyncOntology
+
+text_example = """J.P. Morgan & Co. is an American financial institution specialized in investment banking, 
+asset management and private banking founded by financier J. P. Morgan in 1871. Through a series of mergers and 
+acquisitions, the company is now a subsidiary of JPMorgan Chase, the largest banking institution in the world. 
+The company has been historically referred to as the "House of Morgan" or simply Morgan."""
+
+# Extract a graph from text using an LLM
+ontogen = GraphExtractor(model="<ENTER_MODELS_NAME> (e.g. 'Qwen/Qwen3-32B-AWQ')",api_key="<ENTER_YOUR_KEY>", api_base="<ENTER_YOUR_API_BASE_URL>",
+                         temperature=0.1, seed=42, enable_logging=True)
+ontogen.forward(text=text_example, generate_types = True, extract_spl_triples=True)
+
+# Load the generated ontology and print axioms
+onto = SyncOntology(path="generated_ontology.owl")
+[print(ax) for ax in onto.get_abox_axioms()]
+[print(ax) for ax in onto.get_tbox_axioms()]
+```
+
+If you just want to give it a quick try, and you don't have access to a paid API token, you can use GitHub Models.
+Check out this example [here](https://github.com/dice-group/owlapy/blob/develop/examples/ontogen_example.py) where it shows how to configure `GraphExtractor` with GitHub PAT.
+
+
+</details>
+
+### OWL Reasoning from Command line
+
+<details><summary> Click me! </summary>
+
+```shell
+owlapy --path_ontology "KGs/Family/family-benchmark_rich_background.owl" --inference_types "all" --out_ontology "enriched_family.owl"
+```
+
+```--inference_types``` can be specified by selecting one from 
+
+``` 
+["InferredClassAssertionAxiomGenerator",
+"InferredSubClassAxiomGenerator",
+"InferredDisjointClassesAxiomGenerator",
+"InferredEquivalentClassAxiomGenerator",
+"InferredEquivalentDataPropertiesAxiomGenerator",
+"InferredEquivalentObjectPropertyAxiomGenerator",
+"InferredInverseObjectPropertiesAxiomGenerator",
+"InferredSubDataPropertyAxiomGenerator",
+"InferredSubObjectPropertyAxiomGenerator",
+"InferredDataPropertyCharacteristicAxiomGenerator",
+"InferredObjectPropertyCharacteristicAxiomGenerator"]
+```
+
+</details>
+
 ### Logical Inference
 
 <details><summary> Click me! </summary>
@@ -201,8 +242,6 @@ stopJVM()
 </details>
 
 
-Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) and [tests](https://github.com/dice-group/owlapy/tree/develop/tests) folders.
-
 ### Sklearn to OWL Ontology
 
 <details><summary> Click me! </summary>
@@ -247,32 +286,7 @@ justifications = reasoner.create_justifications({individual}, target_class, save
 ```
 </details>
 
-### Ontology Generation
 
-<details><summary> Click me! </summary>
-
-
-```python
-from owlapy.ontogen.data_extraction import GraphExtractor
-from owlapy.owl_ontology import SyncOntology
-
-text_example = """J.P. Morgan & Co. is an American financial institution specialized in investment banking, 
-asset management and private banking founded by financier J. P. Morgan in 1871. Through a series of mergers and 
-acquisitions, the company is now a subsidiary of JPMorgan Chase, the largest banking institution in the world. 
-The company has been historically referred to as the "House of Morgan" or simply Morgan."""
-
-# Extract a graph from text using an LLM
-ontogen = GraphExtractor(model="<ENTER_MODELS_NAME> (e.g. 'Qwen/Qwen3-32B-AWQ')",api_key="<ENTER_YOUR_KEY>", api_base="<ENTER_YOUR_API_BASE_URL>",
-                         temperature=0.1, seed=42, enable_logging=True)
-ontogen.forward(text=text_example, generate_types = True, extract_spl_triples=True)
-
-# Open the generated ontology and print axioms
-onto = SyncOntology(path="generated_ontology.owl")
-[print(ax) for ax in onto.get_abox_axioms()]
-[print(ax) for ax in onto.get_tbox_axioms()]
-```
-
-</details>
 
 
 ### Reasoners Runtime Benchmark
@@ -325,6 +339,7 @@ Instance retrieval runtime (in seconds) of each reasoner for different class exp
 
 </details>
 
+Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) and [tests](https://github.com/dice-group/owlapy/tree/develop/tests) directories for more examples.
 
 ## How to cite
 Currently, we are working on our manuscript describing our framework.
