@@ -1821,7 +1821,7 @@ class NeuralOntology(AbstractOWLOntology):
 
         # Set default parameters
         args.model = self.model
-        args.scoring_technique = "AllvsAll"
+        args.scoring_technique = "KvsAll"
         if os.path.isdir(path):
             args.dataset_dir = path
             args.path_single_kg = None
