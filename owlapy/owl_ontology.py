@@ -1771,7 +1771,7 @@ class NeuralOntology(AbstractOWLOntology):
     STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
 
     def __init__(self, path_neural_embedding: str, train_if_not_exists: bool = False,
-                 training_params: Optional[Dict[str, Any]] = None, batch_size: int = 1024, device: str = "gpu",
+                 training_params: Optional[Dict[str, Any]] = None, model: str = 'Keci', epochs: int = 500, batch_size: int = 1024, device: str = "gpu",
                  gamma: float = 0.5):
         """
         Initialize a Neural Ontology from a KGE model.
@@ -1784,6 +1784,8 @@ class NeuralOntology(AbstractOWLOntology):
 
         super().__init__()
         self.gamma = gamma
+        self.epochs = epochs
+        self.model = model
 
         path = Path(path_neural_embedding)
         if os.path.isdir(path) and os.path.exists(os.path.join(path, "configuration.json")):
@@ -1818,7 +1820,7 @@ class NeuralOntology(AbstractOWLOntology):
         args = Namespace()
 
         # Set default parameters
-        args.model = 'Keci'
+        args.model = self.model
         args.scoring_technique = "AllvsAll"
         if os.path.isdir(path):
             args.dataset_dir = path
@@ -1833,7 +1835,7 @@ class NeuralOntology(AbstractOWLOntology):
         # Always include the file name in the path
         file_name = os.path.basename(args.path_single_kg).replace(".owl", "")
         args.path_to_store_single_run = os.path.join(path, f"{file_name}_trained_model")
-        args.num_epochs = 500
+        args.num_epochs = self.epochs
         args.embedding_dim = 512
         args.batch_size = 64
 
