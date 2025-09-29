@@ -121,7 +121,80 @@ print(manchester_to_owl_expression("female and (hasChild max 2 person)", namespa
 # Result: OWLObjectIntersectionOf((OWLClass(IRI('http://example.com/family#','female')), OWLObjectMaxCardinality(property=OWLObjectProperty(IRI('http://example.com/family#','hasChild')),2,filler=OWLClass(IRI('http://example.com/family#','person')))))
 
 ```
+## More tools
 
-In these examples we showed a fraction of **owlapy**. You can explore the
+Owlapy also provides some useful tools to work with OWL expressions. For example,
+you can use [CESimplifier](owlapy.utils.CESimplifier) which is a syntactic class expression simplifier following the 
+Unique Name Assumption (UNA) under Close world Assumption (CWA) to simplify class expressions. 
+You can directly call the function `simplify_class_expression` which uses a predefined instance of `CESimplifier`.
+For interpretability, we will use concepts in description logic (DL) syntax to show the examples.
+
+```python
+from owlapy import dl_to_owl_expression, owl_expression_to_dl
+from owlapy.utils import simplify_class_expression
+
+ce_dl = "(A ⊓ B) ⊓ (C ⊓ (B ⊔ (C ⊔ E)))"
+ce_owl = dl_to_owl_expression(ce_dl, "http://example_namespace.org/")
+
+ce_owl_simplified = simplify_class_expression(ce_owl)
+ce_dl_simplified = owl_expression_to_dl(ce_owl_simplified)
+print(ce_dl_simplified) # "A ⊓ B ⊓ C"
+```
+
+You can get the top-level Disjunctive Normal Form (DNF) or top-level Conjunctive Normal Form (CNF) as shown below:
+
+```python
+from owlapy import dl_to_owl_expression, owl_expression_to_dl
+from owlapy.utils import get_top_level_dnf, get_top_level_cnf
+
+ce1_dl = "(A ⊔ B) ⊓ (A ⊔ C)"
+ce2_dl = "(A ⊓ B) ⊓ (C ⊓ (B ⊔ (C ⊔ E)))"
+ce1_owl = dl_to_owl_expression(ce1_dl, "http://example_namespace.org/")
+ce2_owl = dl_to_owl_expression(ce2_dl, "http://example_namespace.org/")
+
+ce1_owl_tl_dnf = get_top_level_dnf(ce1_owl)
+ce2_owl_tl_cnf = get_top_level_dnf(ce2_owl)
+
+ce1_dl_tl_dnf = owl_expression_to_dl(ce1_owl_tl_dnf)
+ce2_dl_tl_cnf = owl_expression_to_dl(ce2_owl_tl_cnf)
+
+print(ce1_dl_tl_dnf) # A ⊔ (A ⊓ B) ⊔ (A ⊓ C) ⊔ (B ⊓ C)
+print(ce2_dl_tl_cnf) # (A ⊓ B ⊓ C) ⊔ (A ⊓ B ⊓ C ⊓ E)
+```
+
+Get the negation normal form (NNF) simply by calling `get_nnf()` directly from the class expression:
+
+```python
+from owlapy import dl_to_owl_expression, owl_expression_to_dl
+
+ce_dl = "¬(A ⊓ (B ⊔ C))"
+ce_owl = dl_to_owl_expression(ce_dl, "http://example_namespace.org/")
+
+ce_owl_nnf = ce_owl.get_nnf()
+ce_dl_nnf = owl_expression_to_dl(ce_owl_nnf)
+
+print(ce_dl_nnf) # (¬A) ⊔ ((¬B) ⊓ (¬C))
+```
+
+You can also measure the length of a class expression using [OWLClassExpressionLengthMetric](owlapy.utils.OWLClassExpressionLengthMetric).
+You can set the weights for different types of constructors. We will continue with the default weights 
+so we are going to call directly the function `get_expression_length` which uses a predefined instance of 
+`OWLClassExpressionLengthMetric`:
+
+```python
+from owlapy import dl_to_owl_expression
+from owlapy.utils import get_expression_length
+
+ce_dl = "(∀r_1.⊤) ⊓ (∀r_2.(¬C)) ⊓ (∃r_3.{i1 ⊔ i2 ⊔ i5}) ⊓ A"
+ce_owl = dl_to_owl_expression(ce_dl, "http://example_namespace.org/")
+
+length = get_expression_length(ce_owl)
+
+print(length) # 14 
+```
+
+------------------------------------------------------------------------------------
+
+In these examples we showed a part of **owlapy**. You can explore the
 [api documentation](owlapy) to learn more about all classes in owlapy and check more 
-examples in the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) directory.
+examples in the [examples](https://github.com/dice-group/owlapy/tree/main/examples) or [tests](https://github.com/dice-group/owlapy/tree/main/tests) directory 
