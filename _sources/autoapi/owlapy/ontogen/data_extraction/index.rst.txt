@@ -1,7 +1,15 @@
-data_extraction
-===============
+owlapy.ontogen.data_extraction
+==============================
 
-.. py:module:: data_extraction
+.. py:module:: owlapy.ontogen.data_extraction
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.ontogen.data_extraction.american_to_british
 
 
 Classes
@@ -9,13 +17,13 @@ Classes
 
 .. autoapisummary::
 
-   data_extraction.Entity
-   data_extraction.Triple
-   data_extraction.TypeAssertion
-   data_extraction.TypeGeneration
-   data_extraction.Literal
-   data_extraction.SPLTriples
-   data_extraction.GraphExtractor
+   owlapy.ontogen.data_extraction.Entity
+   owlapy.ontogen.data_extraction.Triple
+   owlapy.ontogen.data_extraction.TypeAssertion
+   owlapy.ontogen.data_extraction.TypeGeneration
+   owlapy.ontogen.data_extraction.Literal
+   owlapy.ontogen.data_extraction.SPLTriples
+   owlapy.ontogen.data_extraction.GraphExtractor
 
 
 Functions
@@ -23,17 +31,21 @@ Functions
 
 .. autoapisummary::
 
-   data_extraction.configure_dspy
-   data_extraction.get_entities
-   data_extraction.get_triples
-   data_extraction.assign_types
-   data_extraction.generate_types
-   data_extraction.get_numeric_literals
-   data_extraction.get_spl_triples
+   owlapy.ontogen.data_extraction.configure_dspy
+   owlapy.ontogen.data_extraction.get_entities
+   owlapy.ontogen.data_extraction.get_triples
+   owlapy.ontogen.data_extraction.assign_types
+   owlapy.ontogen.data_extraction.generate_entity_types
+   owlapy.ontogen.data_extraction.get_numeric_literals
+   owlapy.ontogen.data_extraction.get_spl_triples
+   owlapy.ontogen.data_extraction.run_query
+   owlapy.ontogen.data_extraction.extract_hierarchy_from_dbpedia
 
 
 Module Contents
 ---------------
+
+.. py:data:: american_to_british
 
 .. py:class:: Entity
 
@@ -228,13 +240,33 @@ Module Contents
 
 .. py:function:: assign_types(text, entities, entity_types, few_shot_examples=EXAMPLES_FOR_TYPE_ASSERTION)
 
-.. py:function:: generate_types(text, entities, few_shot_examples=EXAMPLES_FOR_TYPE_GENERATION)
+.. py:function:: generate_entity_types(text, entities, few_shot_examples=EXAMPLES_FOR_TYPE_GENERATION)
 
 .. py:function:: get_numeric_literals(text, few_shot_examples=EXAMPLES_FOR_LITERAL_EXTRACTION)
 
 .. py:function:: get_spl_triples(text, entities, literals, few_shot_examples=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION)
 
-.. py:class:: GraphExtractor(model, api_key, api_base, temperature=0.1, seed=42, cache=False, cache_in_memory=False, enable_logging=False)
+.. py:function:: run_query(query)
+
+   Runs a SPARQL query against the DBpedia SPARQL endpoint.
+
+
+.. py:function:: extract_hierarchy_from_dbpedia(cls)
+
+   Extracts the hierarchy of an entity from DBpedia using the SPARQL endpoint.
+
+   :param cls: The DBpedia class remainder.
+   :type cls: str
+
+   :returns:
+
+             A tuple containing two lists:
+                 - superclasses: List of superclasses of the entity.
+                 - subclasses: List of subclasses of the entity.
+   :rtype: tuple
+
+
+.. py:class:: GraphExtractor(model='gpt-4o', api_key='<YOUR_GITHUB_PAT>', api_base='https://models.github.ai/inference', temperature=0.1, seed=42, cache=False, cache_in_memory=False, enable_logging=False)
 
    Bases: :py:obj:`dspy.Module`
 
@@ -267,7 +299,7 @@ Module Contents
 
 
 
-   .. py:method:: forward(text: str, ontology_namespace='http://example.com/ontogen#', entity_types: List[str] = None, generate_types=False, extract_spl_triples=False, examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION, examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION, examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION, examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION, examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION, examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION, save_path='generated_ontology.owl') -> owlapy.owl_ontology.Ontology
+   .. py:method:: forward(text: str, ontology_namespace='http://example.com/ontogen#', entity_types: List[str] = None, generate_types=False, extract_spl_triples=False, create_class_hierarchy=False, examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION, examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION, examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION, examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION, examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION, examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION, save_path='generated_ontology.owl') -> owlapy.owl_ontology.Ontology
 
       Extract an ontology from a given textual input.
 
@@ -284,6 +316,8 @@ Module Contents
                                   triples will be represented using data properties and a literal value of type string (although they
                                   are numeric values).
       :type extract_spl_triples: bool
+      :param create_class_hierarchy: Whether to create a class hierarchy for the extracted entities.
+      :type create_class_hierarchy: bool
       :param examples_for_entity_extraction: Few-shot examples for entity extraction.
       :type examples_for_entity_extraction: str
       :param examples_for_triples_extraction: Few-shot examples for triple extraction.

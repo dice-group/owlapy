@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.utils &mdash; OWLAPY 1.6.0 documentation</title>
+  <title>owlapy.utils &mdash; OWLAPY 1.6.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=72d88caf"></script>
+      <script src="../../_static/documentation_options.js?v=d6a008b6"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -83,10 +83,15 @@
   <h1>Source code for owlapy.utils</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Owlapy utils.&quot;&quot;&quot;</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">repeat</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sortedcontainers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SortedSet</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span><span class="p">,</span> <span class="n">total_ordering</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span><span class="n">Callable</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">ClassVar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> \
+    <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Set</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">.meta_classes</span><span class="w"> </span><span class="kn">import</span> <span class="n">HasIRI</span><span class="p">,</span> <span class="n">HasFiller</span><span class="p">,</span> <span class="n">HasCardinality</span><span class="p">,</span> <span class="n">HasOperands</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
@@ -97,13 +102,17 @@
     <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> \
     <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> \
     <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> \
-    <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span>
+    <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span> \
+    <span class="n">OWLCardinalityRestriction</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">,</span> \
     <span class="n">OWLPropertyRange</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObject</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLFacet</span>
+
 
 <div class="viewcode-block" id="jaccard_similarity">
 <a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.jaccard_similarity">[docs]</a>
@@ -579,7 +588,10 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_O</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_O</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">OrderedOWLObject</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">OrderedOWLObject</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ConceptOperandSorter">
@@ -784,153 +796,727 @@
             <span class="k">return</span> <span class="n">t</span></div>
 
 
-<div class="viewcode-block" id="OperandSetTransform">
-<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.OperandSetTransform">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">OperandSetTransform</span><span class="p">:</span>
-<div class="viewcode-block" id="OperandSetTransform.simplify">
-<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.OperandSetTransform.simplify">[docs]</a>
+
+
+<div class="viewcode-block" id="get_top_level_cnf">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.get_top_level_cnf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_top_level_cnf</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ce: Class Expression.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Class Expression in Top-Level Conjunctive Normal Form.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">(),</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_top_level_dnf">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.get_top_level_dnf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_top_level_dnf</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ce: Class Expression.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Class Expression in Top-Level Disjunctive Normal Form.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">(),</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                        <span class="n">type_a</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">],</span>
+                        <span class="n">type_b</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Transforms a class expression (that&#39;s already in NNF) into Top-Level Conjunctive/Disjunctive Normal Form.</span>
+<span class="sd">    Here type_a specifies the operand which should be distributed inwards over type_b.</span>
+
+<span class="sd">    Conjunctive Normal form:</span>
+<span class="sd">        type_a = OWLObjectUnionOf</span>
+<span class="sd">        type_b = OWLObjectIntersectionOf</span>
+<span class="sd">    Disjunctive Normal form:</span>
+<span class="sd">        type_a = OWLObjectIntersectionOf</span>
+<span class="sd">        type_b = OWLObjectUnionOf</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">distributive_law</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">type_b</span><span class="p">(</span><span class="n">type_a</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">op</span><span class="p">])</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">type_a</span><span class="p">):</span>
+        <span class="n">ce</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">type_a</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ce</span>
+        <span class="n">ce</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">ce</span><span class="p">)</span>
+        <span class="n">type_b_exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)]</span>
+        <span class="n">non_type_b_exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_exprs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ce</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">):</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">non_type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> \
+                <span class="k">else</span> <span class="n">type_a</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">)</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">distributive_law</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_exprs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">type_b_expr</span> <span class="ow">in</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">distributive_law</span><span class="p">(</span><span class="n">type_b_expr</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">type_b</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">type_b</span><span class="p">(</span><span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ce</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Top-Level CNF/DNF only applicable on class expressions&#39;</span><span class="p">,</span> <span class="n">ce</span><span class="p">)</span>
+
+<div class="viewcode-block" id="get_remaining">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.get_remaining">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_remaining</span><span class="p">(</span><span class="n">original_set</span><span class="p">,</span> <span class="n">common_part</span><span class="p">,</span> <span class="n">type_b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used in factorization function &#39;factor_nary_expression&#39;.&quot;&quot;&quot;</span>
+    <span class="n">remaining</span> <span class="o">=</span> <span class="n">original_set</span> <span class="o">-</span> <span class="n">common_part</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="n">remaining</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="n">type_b</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">remaining</span></div>
+
+
+<div class="viewcode-block" id="factor_nary_expression">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.factor_nary_expression">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">factor_nary_expression</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">],</span> <span class="n">transform_to_dnf_on_first_iteration</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This</span>
+<span class="sd">    factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)</span>
+<span class="sd">    for that.&quot;&quot;&quot;</span>
+
+    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">])),</span> <span class="s2">&quot;Expression must be an OWLObjectIntersectionOf or an OWLObjectUnionOf&quot;</span>
+
+    <span class="k">if</span> <span class="n">transform_to_dnf_on_first_iteration</span><span class="p">:</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">get_top_level_dnf</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+        <span class="n">type_a</span> <span class="o">=</span> <span class="n">OWLObjectUnionOf</span>
+        <span class="n">type_b</span> <span class="o">=</span> <span class="n">OWLObjectIntersectionOf</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">type_a</span> <span class="o">=</span> <span class="n">OWLObjectIntersectionOf</span>
+        <span class="n">type_b</span> <span class="o">=</span> <span class="n">OWLObjectUnionOf</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_a</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_b</span><span class="p">):</span>
+        <span class="c1"># sometime when the get_top_level_dnf will remove duplicates (due to its processing) and we are left</span>
+        <span class="c1"># with a single expression (no nary expression) so we just return it.</span>
+        <span class="k">return</span> <span class="n">expr</span>
+
+    <span class="n">ce</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">expr</span><span class="p">))</span>
+    <span class="n">type_b_nary_expressions</span> <span class="o">=</span> <span class="p">{</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)}</span>
+    <span class="n">non_type_b_nary_expressions</span> <span class="o">=</span> <span class="p">{</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)}</span>
+
+    <span class="n">ce_no_repetitions</span> <span class="o">=</span> <span class="n">type_a</span><span class="p">([</span><span class="o">*</span><span class="n">type_b_nary_expressions</span><span class="p">,</span> <span class="o">*</span><span class="n">non_type_b_nary_expressions</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">ce</span> <span class="o">!=</span> <span class="n">ce_no_repetitions</span><span class="p">:</span>
+        <span class="c1"># if repeated operands are found just continue factoring the expression without repeated operands</span>
+        <span class="k">return</span> <span class="n">factor_nary_expression</span><span class="p">(</span><span class="n">ce_no_repetitions</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_nary_expressions</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">):</span>
+        <span class="c1"># check if a non-nary expression occurs in any of the nary expression then omit the nary expression and continue</span>
+        <span class="c1"># or return the non-nary expression if these were the only 2 operands left</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">non_type_b_nary_expressions</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">type_b_nary_expressions</span><span class="p">:</span>
+                <span class="n">j_op</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">j_op</span><span class="p">:</span>
+                    <span class="n">ce_op</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ce_op</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">i</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">ce_op</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">factor_nary_expression</span><span class="p">(</span><span class="n">type_a</span><span class="p">(</span><span class="n">ce_op</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">simplifier</span> <span class="o">=</span> <span class="n">CESimplifier</span><span class="p">()</span>
+            <span class="c1"># if we are left with only 1 nary expression of type_b then run factor_expression for its operands</span>
+            <span class="c1"># where type_a and type_b switch places to factorize any nary expression of type_b left there.</span>
+            <span class="n">ce</span> <span class="o">=</span> <span class="n">type_a</span><span class="p">({</span><span class="o">*</span><span class="n">non_type_b_nary_expressions</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="n">factor_nary_expression</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span> <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">type_b_nary_expressions</span><span class="p">]})</span>
+            <span class="c1"># Sometimes we need another step of simplification before returning the result because the dnf can leave the</span>
+            <span class="c1"># expression in a state where simplification can cover what factorization could not.</span>
+            <span class="c1"># For example: {a ⊔ b} ⊔ ({b ⊔ c} ⊓ D) should return {a ⊔ b} ⊔ (D ⊓ {c}) but if not simplified it would</span>
+            <span class="c1"># return {a} ⊔ {b} ⊔ (D ⊓ {c})  which is not as compact.</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">simplifier</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()),</span> <span class="n">repeat</span><span class="p">(</span><span class="n">ce</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="n">type_a</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="c1"># if no nary expression is left just return ce</span>
+        <span class="k">return</span> <span class="n">ce</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">type_b_nary_expressions</span><span class="p">:</span>
+            <span class="c1"># we take each nary expression of type_b in the operands of ce and see if any other operand of the same</span>
+            <span class="c1"># type has any common expression. The moment we find a common expression we perform a factorization for</span>
+            <span class="c1"># those 2 nary expressions and depending on the length of the operands to process we decide whether to</span>
+            <span class="c1"># return the factorization or go through another cycle of factorization using the union of the</span>
+            <span class="c1"># localized factorization with what&#39;s left from other operands.</span>
+            <span class="n">i_op</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">copy</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="n">i</span><span class="p">}:</span>
+                <span class="n">j_op</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+                <span class="n">common</span> <span class="o">=</span> <span class="n">i_op</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">j_op</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">common</span><span class="p">):</span>
+                    <span class="n">remaining_i</span> <span class="o">=</span> <span class="n">get_remaining</span><span class="p">(</span><span class="n">i_op</span><span class="p">,</span> <span class="n">common</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span>
+                    <span class="n">remaining_j</span> <span class="o">=</span> <span class="n">get_remaining</span><span class="p">(</span><span class="n">j_op</span><span class="p">,</span> <span class="n">common</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">remaining_i</span> <span class="ow">and</span> <span class="n">remaining_j</span><span class="p">:</span>
+                        <span class="c1"># if more than 1 remaining, put them in a type_a expression</span>
+                        <span class="n">localized_factorization</span> <span class="o">=</span> <span class="n">type_b</span><span class="p">({</span><span class="o">*</span><span class="n">common</span><span class="p">,</span> <span class="n">type_a</span><span class="p">([</span><span class="n">remaining_i</span><span class="p">,</span> <span class="n">remaining_j</span><span class="p">])})</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># if 1 remaining, rule it out. The way this function is structured make this line</span>
+                        <span class="c1"># safe because it only omits redundant remains.</span>
+                        <span class="n">localized_factorization</span> <span class="o">=</span> <span class="n">type_b</span><span class="p">(</span><span class="n">common</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_nary_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">localized_factorization</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_nary_expressions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">type_a</span><span class="p">([</span><span class="n">localized_factorization</span><span class="p">,</span><span class="o">*</span><span class="n">non_type_b_nary_expressions</span><span class="p">]))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">type_b_nary_expressions_without_i_j</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">}</span>
+                        <span class="k">return</span> <span class="n">factor_nary_expression</span><span class="p">(</span><span class="n">type_a</span><span class="p">({</span><span class="o">*</span><span class="n">type_b_nary_expressions_without_i_j</span><span class="p">,</span><span class="o">*</span><span class="n">non_type_b_nary_expressions</span><span class="p">,</span> <span class="n">localized_factorization</span><span class="p">}))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_nary_expressions</span><span class="p">):</span>
+        <span class="c1"># if we reach this point we make a last check to see if there is any nary expression of type_b in ce and process</span>
+        <span class="c1"># each of them before returning the type_a object.</span>
+        <span class="k">return</span> <span class="n">type_a</span><span class="p">({</span><span class="o">*</span><span class="n">non_type_b_nary_expressions</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="n">factor_nary_expression</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span> <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">type_b_nary_expressions</span><span class="p">]})</span>
+
+    <span class="c1"># no nary expression of type_b? -&gt; just return ce, nothing to do here</span>
+    <span class="k">return</span> <span class="n">ce</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_factor_negation_outof_oneofs</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factor negation for objectOneOf expression</span>
+<span class="sd">        E.g. #1: ¬{a} ⊓ ¬{b} ⊓ ¬{c}  =&gt; ¬({a} ⊔ {b} ⊔ {c}) =&gt; ¬{a ⊔ b ⊔ c}</span>
+<span class="sd">        E.g. #2:  ¬{a} ⊔ ¬{b} =&gt; ¬({a} ⊓ {b}) =&gt; ¬(⊥) =&gt; ⊤    // considering that a != b</span>
+
+<span class="sd">        Note: We consider Unique Name Assumption (UNA) for such simplifications but otherwise the simplification in</span>
+<span class="sd">        example 2 is not semantically valid unless proven that a != b.</span>
+<span class="sd">        P.S: Comparing individuals will require a reasoner. We will leave that when implementing the semantic</span>
+<span class="sd">        simplifier.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nary_exp</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">neg_one_of</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">others</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span><span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+            <span class="n">nary_exp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_factor_negation_outof_oneofs</span><span class="p">(</span><span class="n">op</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">get_operand</span><span class="p">(),</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+            <span class="n">neg_one_of</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">others</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg_one_of</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">simplifier</span> <span class="o">=</span> <span class="n">CESimplifier</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+            <span class="n">simplified_oofs</span> <span class="o">=</span> <span class="n">simplifier</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">OWLObjectUnionOf</span><span class="p">([</span><span class="n">nof</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()</span> <span class="k">for</span> <span class="n">nof</span> <span class="ow">in</span> <span class="n">neg_one_of</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># isinstance(ce, OWLObjectUnionOf)</span>
+            <span class="n">simplified_oofs</span> <span class="o">=</span> <span class="n">simplifier</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">OWLObjectIntersectionOf</span><span class="p">([</span><span class="n">nof</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()</span> <span class="k">for</span> <span class="n">nof</span> <span class="ow">in</span> <span class="n">neg_one_of</span><span class="p">]))</span>
+
+        <span class="k">if</span> <span class="n">simplified_oofs</span> <span class="o">==</span> <span class="n">OWLNothing</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">others</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">nary_exp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">ce</span><span class="p">)([</span><span class="o">*</span><span class="n">others</span><span class="p">,</span> <span class="o">*</span><span class="n">nary_exp</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">others</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">others</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">nary_exp</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">nary_exp</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">OWLThing</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">others</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">nary_exp</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">ce</span><span class="p">)([</span><span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="n">simplified_oofs</span><span class="p">),</span> <span class="o">*</span><span class="n">nary_exp</span><span class="p">,</span> <span class="o">*</span><span class="n">others</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="n">simplified_oofs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">ce</span><span class="p">)([</span><span class="o">*</span><span class="n">neg_one_of</span><span class="p">,</span> <span class="o">*</span><span class="n">others</span><span class="p">,</span> <span class="o">*</span><span class="n">nary_exp</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="CESimplifier">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.CESimplifier">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CESimplifier</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.</span>
+<span class="sd">        Simplifications include:</span>
+<span class="sd">        - Merging redundant cardinality restrictions</span>
+<span class="sd">        - Merging redundant existential restrictions</span>
+<span class="sd">        - Normalizing union and intersection of class expressions</span>
+<span class="sd">        - Absorption of redundant class expressions</span>
+<span class="sd">        - Converting to negation normal form (NNF)</span>
+<span class="sd">        - and more...</span>
+
+<span class="sd">        Note: This simplifier follows Unique Name Assumption (UNA) meaning that every class/individual/property is</span>
+<span class="sd">        unique as long as its name is unique.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO AB: This simplifier considers only syntactic simplifications (CWA). It can be extended to consider semantic</span>
+    <span class="c1">#          simplifications. This will require passing a reasoner to access TBox information.</span>
+    <span class="c1">#          Implementation idea: you can either set it as an option here or create a new class that extends this one.</span>
+
+    <span class="c1"># TODO AB: Consider scenarios when cardinality restrictions contradict each other and return OWLNothing. Rare</span>
+    <span class="c1">#          scenario but possible.</span>
+
+    <span class="n">sorter</span> <span class="o">=</span> <span class="n">ConceptOperandSorter</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CESimplifier.simplify">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.CESimplifier.simplify">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">simplify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
-    <span class="c1"># single dispatch is still not implemented in mypy, see https://github.com/python/mypy/issues/2904</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_card_r_with_same_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restriction</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Check for card restrictions that have the same property and filler and remove redundant restrictions</span>
+        <span class="c1"># by merging their cardinality depending on the type of nary expression we are dealing.</span>
+        <span class="c1"># E.g.:</span>
+        <span class="c1"># (&gt; 1 r.A) ⊔ (&gt; 2 r.A) ≡ &gt; 1 r.A</span>
+        <span class="c1"># (&gt; 1 r.A) ⊓ (&gt; 2 r.A) ≡ &gt; 2 r.A</span>
+
+        <span class="n">operands</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+        <span class="n">same_prop_and_filler</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">operands</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">))</span>
+                    <span class="ow">and</span> <span class="n">op</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span> <span class="o">==</span> <span class="n">restriction</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+                    <span class="ow">and</span> <span class="n">op</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span> <span class="o">==</span> <span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">()):</span>
+                <span class="n">same_prop_and_filler</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+        <span class="n">same_prop_and_filler_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">same_prop_and_filler</span><span class="p">]</span>
+        <span class="n">max_card</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">same_prop_and_filler_vals</span><span class="p">)</span>
+        <span class="n">min_card</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">same_prop_and_filler_vals</span><span class="p">)</span>
+        <span class="n">cardinality</span> <span class="o">=</span> <span class="n">restriction</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">restriction</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span>  <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+                <span class="n">cardinality</span> <span class="o">=</span> <span class="n">max_card</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+                <span class="n">cardinality</span> <span class="o">=</span> <span class="n">min_card</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">restriction</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+                <span class="n">cardinality</span> <span class="o">=</span> <span class="n">min_card</span>
+            <span class="c1"># if nary_ce is an intersection then we leave cardinality as it is</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+                <span class="n">cardinality</span> <span class="o">=</span> <span class="n">max_card</span>
+        <span class="c1"># if isinstance(restriction, OWLObjectExactCardinality):</span>
+            <span class="c1"># TODO AB: implement solution when we have exact cardinality restrictions. Need to take in consideration</span>
+            <span class="c1">#          scenarios when the cardinality in this kind of restrictions is subsumed by min/max cardinality restriction.</span>
+            <span class="c1">#          Immediate idea includes a lot of &quot;ifs&quot; which does not feel right. Find a better way if possible.</span>
+
+
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">cardinality</span><span class="p">,</span>
+                                 <span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                 <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_cardinality_restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restriction</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Check for card restrictions that have the share the same cardinality and property.</span>
+        <span class="c1"># They can be simplified into a single card restriction with a merged filler.</span>
+        <span class="c1"># E.g.:</span>
+        <span class="c1"># (&gt; 1 r.A) ⊔ (&gt; 1 r.B) ≡ &gt; 1 r.(A ⊔ B)</span>
+        <span class="c1"># (&lt; 2 r.xsd:boolean) ⊔ (&lt; 2 r.xsd:integer) ≡ &lt; 2 r.(xsd:boolean ⊔ xsd:integer)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+            <span class="n">operands</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+            <span class="n">same_root</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">operands</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">))</span>
+                        <span class="ow">and</span> <span class="n">op</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span> <span class="o">==</span> <span class="n">restriction</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+                        <span class="ow">and</span> <span class="n">op</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span> <span class="o">==</span> <span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">()):</span>
+                    <span class="n">same_root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">same_root</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">fillers</span> <span class="o">=</span> <span class="n">_sort_by_ordered_owl_object</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">same_root</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">fillers</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span><span class="n">OWLDataRange</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span>
+                                             <span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                             <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">OWLDataUnionOf</span><span class="p">(</span><span class="n">fillers</span><span class="p">)))</span>
+                <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span>
+                                           <span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                           <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">fillers</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span>
+                                 <span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                 <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="kc">None</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_quantified_restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restriction</span><span class="p">,</span> <span class="n">nary_ce</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># We can factorize the quantified restriction that share the same property by merging their fillers,</span>
+        <span class="c1"># following the rules of description logics.</span>
+        <span class="c1"># E.g.:</span>
+        <span class="c1"># ∀r.A ⊓ ∀r.B ≡ ∀r.(A ⊓ B)</span>
+        <span class="c1"># ∃r.A ⊔ ∃r.B ≡ ∃r.(A ⊔ B)</span>
+        <span class="k">if</span> <span class="n">nary_ce</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">operands</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+            <span class="n">same_root</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">operands</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">))</span> <span class="ow">and</span> <span class="n">op</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span> <span class="o">==</span> <span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">():</span>
+                    <span class="n">same_root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">same_root</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">fillers</span> <span class="o">=</span> <span class="n">_sort_by_ordered_owl_object</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">same_root</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">restriction</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">)</span> <span class="ow">or</span>
+                                                              <span class="nb">isinstance</span><span class="p">(</span><span class="n">restriction</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">fillers</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">OWLDataRange</span><span class="p">):</span>
+                        <span class="c1"># Union of data ranges should be treated as OWLDataUnionOf</span>
+                        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                                 <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">OWLDataUnionOf</span><span class="p">(</span><span class="n">fillers</span><span class="p">)))</span>
+                    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                             <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">fillers</span><span class="p">)))</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">restriction</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">)</span>
+                                                                     <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">restriction</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">fillers</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">OWLDataRange</span><span class="p">):</span>
+                        <span class="c1"># Intersection of data ranges should be treated as OWLDataIntersectionOf</span>
+                        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                                 <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">fillers</span><span class="p">)))</span>
+                    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                             <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">fillers</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">restriction</span><span class="p">)(</span><span class="nb">property</span><span class="o">=</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">restriction</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_simplify_existential_restrictions_with_oneof_filler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span><span class="o">.</span><span class="n">individuals</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">):</span>
+                    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">get_filler</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="o">=</span><span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
     <span class="nd">@singledispatchmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_simplify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">_O</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_O</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_simplify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">_O</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_O</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClass</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClass</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">o</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectProperty</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">p</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataProperty</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataProperty</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">p</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLNamedIndividual</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLNamedIndividual</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">i</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLLiteral</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">i</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatype</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_quantified_restriction</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify_existential_restrictions_with_oneof_filler</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">())))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_quantified_restriction</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e</span>
+
+    <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="n">c_c</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">c_c</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">c_c</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nary_ce</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Absorption law (e.g. A ⊔ (A ⊓ B) = A )</span>
+            <span class="n">nary_ce_operands</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+            <span class="n">c_operands</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+            <span class="n">intersection</span> <span class="o">=</span> <span class="n">nary_ce_operands</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">c_operands</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intersection</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># We just pop the first element because this union (c) that we are currently processing will be absorbed</span>
+                <span class="c1"># or in simple terms, completely removed. The returned ce will not affect the nary_ce concept because</span>
+                <span class="c1"># it will be removed as a duplicate ce when the outer recursion cycle reaches the s = set(...) line.</span>
+                <span class="c1"># E.g A ⊔ (A ⊓ B) ==&gt; s = {A, {A,(A ⊓ B)}.intersect{A,B}.pop()} ==&gt; s = {A, A} = {A}</span>
+                <span class="k">return</span> <span class="n">intersection</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="c1"># simplify each operand, put results in a set to remove duplicates</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">()),</span> <span class="n">repeat</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
         <span class="k">if</span> <span class="n">OWLThing</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">OWLThing</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+        <span class="c1"># Check if C and ¬C (C can be non-atomic) are both part of operands and apply the law of the excluded middle</span>
+        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">copy</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="ow">and</span> <span class="n">el</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">-</span> <span class="p">{</span><span class="n">el</span><span class="p">,</span> <span class="n">el</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()}</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">OWLThing</span>
+                <span class="c1"># return self._simplify(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))</span>
+
+        <span class="n">ce_to_return</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce_to_return</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+                <span class="c1"># Simplify cardinality restrictions with same property and filler.</span>
+                <span class="c1"># This has to be done here because _process_cardinality_restriction simplifies only restrictions with the</span>
+                <span class="c1"># same prop and cardinality and it cannot do both at the same time.</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLCardinalityRestriction</span><span class="p">):</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_merge_card_r_with_same_body</span> <span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ce_to_return</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">OWLCardinalityRestriction</span><span class="p">)),</span> <span class="n">repeat</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">)))</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ce</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="n">ce_to_return</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLCardinalityRestriction</span><span class="p">)))</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                    <span class="n">ce_to_return</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
+                    <span class="k">break</span>
+        <span class="k">if</span> <span class="n">nary_ce</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span> <span class="c1"># check if we are at the root nary expression and apply factorization</span>
+            <span class="n">ce_to_return</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorter</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">factor_nary_expression</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce_to_return</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">get_operand</span><span class="p">(),</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorter</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">_factor_negation_outof_oneofs</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ce_to_return</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">())))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="n">c_c</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">c_c</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">c_c</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nary_ce</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Absorption law (e.g. A ⊓ (A ⊔ B) = A)</span>
+            <span class="n">nary_ce_operands</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+            <span class="n">c_operands</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+            <span class="n">intersection</span> <span class="o">=</span> <span class="n">nary_ce_operands</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">c_operands</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intersection</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># We just pop the first element because this intersection (c) that we are currently processing will be</span>
+                <span class="c1"># absorbed or in simple terms, completely removed. The returned ce will not affect the nary_ce concept</span>
+                <span class="c1"># because it will be removed as a duplicate ce when the outer recursion cycle reaches the s = set(...)</span>
+                <span class="c1"># line. E.g A ⊓ (A ⊔ B) ==&gt; s = {A, {A,(A ⊓ B)}.intersect{A,B}.pop()} ==&gt; s = {A, A} = {A}</span>
+                <span class="k">return</span> <span class="n">intersection</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="c1"># simplify each operand, put results in a set to remove duplicates</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">()),</span> <span class="n">repeat</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
         <span class="n">s</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">OWLThing</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">OWLThing</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+        <span class="c1"># Check if C and ¬C are both part of operands and apply the law of non-contradiction</span>
+        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">copy</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="ow">and</span> <span class="n">el</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">-</span> <span class="p">{</span><span class="n">el</span><span class="p">,</span> <span class="n">el</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()}</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">OWLNothing</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">OWLNothing</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
+
+        <span class="c1"># the following line can remove duplicates and return a type other than OWLObjectIntersectionOf, so we need to</span>
+        <span class="c1"># check below if we are still left with an OWLObjectIntersectionOf.</span>
+        <span class="n">ce_to_return</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce_to_return</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+                <span class="c1"># Simplify cardinality restrictions with same property and filler.</span>
+                <span class="c1"># This has to be done here because _process_cardinality_restriction simplifies only restrictions with the</span>
+                <span class="c1"># same prop and cardinality, and it cannot do both at the same time.</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLCardinalityRestriction</span><span class="p">):</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_merge_card_r_with_same_body</span> <span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ce_to_return</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">OWLCardinalityRestriction</span><span class="p">)),</span> <span class="n">repeat</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">)))</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ce</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="n">ce_to_return</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLCardinalityRestriction</span><span class="p">)))</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                    <span class="n">ce_to_return</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
+                    <span class="k">break</span>
+        <span class="k">if</span> <span class="n">nary_ce</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span> <span class="c1"># check if we are at the root nary expression and apply factorization</span>
+            <span class="n">ce_to_return</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorter</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">factor_nary_expression</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce_to_return</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">get_operand</span><span class="p">(),</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorter</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">_factor_negation_outof_oneofs</span><span class="p">(</span><span class="n">ce_to_return</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ce_to_return</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectComplementOf</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+        <span class="n">nnnf</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nnnf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">nnnf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nnnf</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectInverseOf</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectInverseOf</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">p</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectMinCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectMinCardinality</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLObjectMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="nb">property</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
-                                       <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectMinCardinality</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_cardinality_restriction</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectExactCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectExactCardinality</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLObjectExactCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="nb">property</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
-                                         <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectExactCardinality</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_cardinality_restriction</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="nb">property</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
-                                       <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_cardinality_restriction</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectHasSelf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectHasSelf</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectHasSelf</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectHasValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectHasValue</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">]:</span>
+        <span class="n">r_prop</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+            <span class="n">nary_ce_op_without_r</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span> <span class="o">-</span> <span class="p">{</span><span class="n">r</span><span class="p">}</span>
+            <span class="n">ohvs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">nary_ce_op_without_r</span><span class="p">:</span>
+                <span class="c1"># get all expressions that have the same property and the filler is either an individual or a set of individuals</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">)</span> <span class="ow">and</span> <span class="n">op</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span> <span class="o">==</span> <span class="n">r_prop</span><span class="p">)</span> <span class="ow">or</span> \
+                    <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">)</span> <span class="ow">and</span> <span class="n">op</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span> <span class="o">==</span> <span class="n">r_prop</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span><span class="n">OWLObjectOneOf</span><span class="p">)):</span>
+                    <span class="n">ohvs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ohvs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()}</span>
+                <span class="c1"># merge all fillers of hasValue and someValuesFrom (if the filler is a oneOf) into a single someValuesFrom with a oneOf filler</span>
+                <span class="k">for</span> <span class="n">ohv</span> <span class="ow">in</span> <span class="n">ohvs</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ohv</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">):</span>
+                        <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ohv</span><span class="o">.</span><span class="n">get_filler</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ohv</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ohv</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span><span class="n">OWLObjectOneOf</span><span class="p">):</span>
+                        <span class="n">s</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ohv</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span><span class="o">.</span><span class="n">individuals</span><span class="p">())</span>
+                <span class="k">return</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="n">r_prop</span><span class="p">,</span> <span class="n">filler</span><span class="o">=</span><span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectOneOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectOneOf</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">individuals</span><span class="p">())))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLObjectOneOf</span><span class="p">:</span>
+        <span class="n">r_inds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">individuals</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">nary_ce</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Absorb oneOfs from the nary expression.</span>
+            <span class="n">nary_ce_op_without_r</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span> <span class="o">-</span> <span class="p">{</span><span class="n">r</span><span class="p">}</span>
+            <span class="n">ooos</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">nary_ce_op_without_r</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+                    <span class="n">ooos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ooos</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">r_inds</span><span class="o">.</span><span class="n">union</span><span class="p">({</span><span class="n">inds</span> <span class="k">for</span> <span class="n">ooo</span> <span class="ow">in</span> <span class="n">ooos</span> <span class="k">for</span> <span class="n">inds</span> <span class="ow">in</span> <span class="n">ooo</span><span class="o">.</span><span class="n">individuals</span><span class="p">()})))</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="n">r_inds</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">ooo</span><span class="o">.</span><span class="n">individuals</span><span class="p">()</span> <span class="k">for</span> <span class="n">ooo</span> <span class="ow">in</span> <span class="n">ooos</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># if intersection of multiple oneOfs is empty the expression is not satisfiable</span>
+                        <span class="k">return</span> <span class="n">OWLNothing</span>
+                    <span class="k">return</span> <span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">OWLObjectOneOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">r_inds</span><span class="p">))</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_quantified_restriction</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_quantified_restriction</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLDataUnionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">())))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="n">c_c</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">c_c</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">c_c</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">()),</span> <span class="n">repeat</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">OWLDataUnionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">OWLDataUnionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLDataIntersectionOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">())))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataRange</span><span class="p">:</span>
+        <span class="n">c_c</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">c_c</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">c_c</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">operands</span><span class="p">()),</span> <span class="n">repeat</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">s</span><span class="p">)))</span>
+
+
+<div class="viewcode-block" id="CESimplifier.datatype_restriction_inwards_simplification">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.CESimplifier.datatype_restriction_inwards_simplification">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">datatype_restriction_inwards_simplification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="c1"># remove duplicated OWLFacetRestriction</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">(),</span> <span class="n">s</span><span class="p">)</span>
+
+        <span class="c1"># remove redundant OWLFacetRestriction (that are already covered by another facet restriction)</span>
+        <span class="c1"># multiple facet restrictions for a datatype restrictions are interpreted conjuctively</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">copy</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">copy</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="n">i</span><span class="p">}:</span>
+                <span class="n">i_fc</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span>
+                <span class="n">j_fc</span> <span class="o">=</span> <span class="n">j</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">i_fc</span> <span class="o">==</span> <span class="n">j_fc</span><span class="p">:</span>
+                    <span class="n">i_v</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">_v</span>
+                    <span class="n">j_v</span> <span class="o">=</span> <span class="n">j</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">_v</span>
+                    <span class="k">if</span> <span class="n">i_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span> <span class="ow">or</span> <span class="n">i_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span> <span class="ow">or</span> <span class="n">i_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_LENGTH</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">i_v</span> <span class="o">&lt;=</span> <span class="n">j_v</span><span class="p">:</span>
+                            <span class="n">s</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">s</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">i_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span> <span class="ow">or</span> <span class="n">i_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span> <span class="ow">or</span> <span class="n">i_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_LENGTH</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">i_v</span> <span class="o">&lt;=</span> <span class="n">j_v</span><span class="p">:</span>
+                            <span class="n">s</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">s</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">LENGTH</span> <span class="ow">and</span> <span class="n">i_v</span> <span class="o">==</span> <span class="n">j_v</span><span class="p">:</span>
+                        <span class="n">s</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDatatypeRestriction</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">(),</span> <span class="n">s</span><span class="p">)</span></div>
+
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLDatatypeRestriction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">nary_ce</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDatatypeRestriction</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># check if it is a collection of OWLFacetRestriction</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype_restriction_inwards_simplification</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">fr</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">nary_ce</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fr</span> <span class="o">=</span> <span class="n">fr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">nary_ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span> <span class="o">-</span> <span class="p">{</span><span class="n">n</span><span class="p">}:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">==</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">():</span>
+                        <span class="n">ce_fr</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()</span>
+                        <span class="c1"># todo: scenarios when len(ce_fr) &gt; 1 are not covered but rarely a simplification can be made</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ce_fr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">fr</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span> <span class="o">==</span> <span class="n">ce_fr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_facet</span><span class="p">():</span>
+                            <span class="n">ce_fr</span> <span class="o">=</span> <span class="n">ce_fr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">i_v</span> <span class="o">=</span> <span class="n">fr</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">_v</span>
+                            <span class="n">j_v</span> <span class="o">=</span> <span class="n">ce_fr</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span><span class="o">.</span><span class="n">_v</span>
+                            <span class="n">fr_fc</span> <span class="o">=</span> <span class="n">fr</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="n">fr_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_EXCLUSIVE</span> <span class="ow">or</span> <span class="n">fr_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_INCLUSIVE</span> <span class="ow">or</span> <span class="n">fr_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MAX_LENGTH</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">):</span>
+                                    <span class="k">if</span> <span class="n">i_v</span> <span class="o">&lt;=</span> <span class="n">j_v</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">ce</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">n</span>
+                                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">):</span>
+                                    <span class="k">if</span> <span class="n">i_v</span> <span class="o">&lt;=</span> <span class="n">j_v</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">n</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">ce</span>
+                            <span class="k">elif</span> <span class="n">fr_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_EXCLUSIVE</span> <span class="ow">or</span> <span class="n">fr_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_INCLUSIVE</span> <span class="ow">or</span> <span class="n">fr_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">MIN_LENGTH</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">):</span>
+                                    <span class="k">if</span> <span class="n">i_v</span> <span class="o">&lt;=</span> <span class="n">j_v</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">n</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">ce</span>
+                                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nary_ce</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">):</span>
+                                    <span class="k">if</span> <span class="n">i_v</span> <span class="o">&lt;=</span> <span class="n">j_v</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">ce</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="k">return</span> <span class="n">n</span>
+                            <span class="k">elif</span> <span class="n">fr_fc</span> <span class="o">==</span> <span class="n">OWLFacet</span><span class="o">.</span><span class="n">LENGTH</span> <span class="ow">and</span> <span class="n">i_v</span> <span class="o">==</span> <span class="n">j_v</span><span class="p">:</span>
+                                <span class="k">return</span> <span class="n">n</span>
         <span class="k">return</span> <span class="n">n</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLDataComplementOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataComplementOf</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataComplementOf</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">n</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataMinCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataMinCardinality</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLDataMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="nb">property</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
-                                     <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataMinCardinality</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_cardinality_restriction</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataExactCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataExactCardinality</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLDataExactCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="nb">property</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
-                                       <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataExactCardinality</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataExactCardinality</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_cardinality_restriction</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataMaxCardinality</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataMaxCardinality</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLDataMaxCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">(),</span> <span class="nb">property</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
-                                     <span class="n">filler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataMaxCardinality</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_cardinality_restriction</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">nary_ce</span><span class="p">)</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataHasValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataHasValue</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataHasValue</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="nd">@_simplify</span><span class="o">.</span><span class="n">register</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataOneOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataOneOf</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">nary_ce</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLDataOneOf</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">OWLDataOneOf</span><span class="p">(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span></div>
 
 
@@ -1033,10 +1619,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">o</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">o</span></div>
 </div>
 
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_O</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_O</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">OrderedOWLObject</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="NNF">
@@ -1231,96 +1813,6 @@
 
 
 
-<span class="c1"># OWL-APy custom util start</span>
-
-<div class="viewcode-block" id="TopLevelCNF">
-<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.TopLevelCNF">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TopLevelCNF</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class contains functions to transform a class expression into Top-Level Conjunctive Normal Form.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="TopLevelCNF.get_top_level_cnf">
-<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.TopLevelCNF.get_top_level_cnf">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_top_level_cnf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ce: Class Expression.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Class Expression in Top-Level Conjunctive Normal Form.</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">(),</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="TopLevelDNF">
-<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.TopLevelDNF">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TopLevelDNF</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class contains functions to transform a class expression into Top-Level Disjunctive Normal Form.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="TopLevelDNF.get_top_level_dnf">
-<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.TopLevelDNF.get_top_level_dnf">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_top_level_dnf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ce: Class Expression.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Class Expression in Top-Level Disjunctive Normal Form.</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">(),</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
-</div>
-
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
-                        <span class="n">type_a</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">],</span>
-                        <span class="n">type_b</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Transforms a class expression (that&#39;s already in NNF) into Top-Level Conjunctive/Disjunctive Normal Form.</span>
-<span class="sd">    Here type_a specifies the operand which should be distributed inwards over type_b.</span>
-
-<span class="sd">    Conjunctive Normal form:</span>
-<span class="sd">        type_a = OWLObjectUnionOf</span>
-<span class="sd">        type_b = OWLObjectIntersectionOf</span>
-<span class="sd">    Disjunctive Normal form:</span>
-<span class="sd">        type_a = OWLObjectIntersectionOf</span>
-<span class="sd">        type_b = OWLObjectUnionOf</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">distributive_law</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">type_b</span><span class="p">(</span><span class="n">type_a</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">op</span><span class="p">])</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">type_a</span><span class="p">):</span>
-        <span class="n">ce</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">ce</span><span class="p">))</span>
-        <span class="n">type_b_exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)]</span>
-        <span class="n">non_type_b_exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_exprs</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">ce</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">):</span>
-            <span class="n">expr</span> <span class="o">=</span> <span class="n">non_type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> \
-                <span class="k">else</span> <span class="n">type_a</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">)</span>
-            <span class="n">expr</span> <span class="o">=</span> <span class="n">distributive_law</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">expr</span> <span class="o">=</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_exprs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">type_b_expr</span> <span class="ow">in</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-            <span class="n">expr</span> <span class="o">=</span> <span class="n">distributive_law</span><span class="p">(</span><span class="n">type_b_expr</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">type_b</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">type_b</span><span class="p">(</span><span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">ce</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Top-Level CNF/DNF only applicable on class expressions&#39;</span><span class="p">,</span> <span class="n">ce</span><span class="p">)</span>
-
 
 <span class="nd">@overload</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">combine_nary_expressions</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
@@ -1340,15 +1832,18 @@
 
 <span class="sd">    E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -&gt; OWLObjectUnionOf(A, B, C).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">)):</span>
-        <span class="n">expressions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">OWLPropertyRange</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">expressions</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLPropertyRange</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
             <span class="n">expr</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="n">ce</span><span class="p">):</span>
                 <span class="n">expr</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Union</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span><span class="p">],</span> <span class="n">expr</span><span class="p">)</span>
-                <span class="n">expressions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+                <span class="n">expressions</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">expressions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+                <span class="n">expressions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">expressions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">expressions</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">ce</span><span class="p">)(</span><span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">expressions</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()))</span>
@@ -1513,6 +2008,16 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">hits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">misses</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">full</span> <span class="o">=</span> <span class="kc">False</span></div>
 </div>
+
+
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">CESimplifier</span><span class="p">()</span>
+
+<div class="viewcode-block" id="simplify_class_expression">
+<a class="viewcode-back" href="../../autoapi/owlapy/utils/index.html#owlapy.utils.simplify_class_expression">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">simplify_class_expression</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simplify a class expression by removing redundant expressions and sorting operands.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">transformer</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
 
 </pre></div>
 

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reasoners &mdash; OWLAPY 1.6.0 documentation</title>
+  <title>Reasoners &mdash; OWLAPY 1.6.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=72d88caf"></script>
+      <script src="../_static/documentation_options.js?v=d6a008b6"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -138,8 +138,8 @@ and you are familiarized with the java reasoners (HermiT, Pellet, ELK, JFact, â€
 <p>SyncReasoner is made available by <a class="reference internal" href="owlapi_synchronization.html"><span class="std std-doc">OWLAPI mapper</span></a> and requires the ontology path or an
 object of type <a class="reference internal" href="../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.SyncOntology" title="owlapy.owl_ontology.SyncOntology"><span class="xref myst py py-class">SyncOntology</span></a>,
 together with a reasoner name from the possible set of reasoners: <code class="docutils literal notranslate"><span class="pre">&quot;Hermit&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Pellet&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;ELK&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;JFact&quot;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">&quot;Openllet&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;StructuralReasoner&quot;</span></code> specified as a string value.</p>
-<p><strong>Note that SyncReasoner with <code class="docutils literal notranslate"><span class="pre">reasoner</span></code> argument set to <code class="docutils literal notranslate"><span class="pre">&quot;StructuralReasoner&quot;</span></code> is referring to
+<code class="docutils literal notranslate"><span class="pre">&quot;Openllet&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Structural&quot;</span></code> specified as a string value.</p>
+<p><strong>Note that SyncReasoner with <code class="docutils literal notranslate"><span class="pre">reasoner</span></code> argument set to <code class="docutils literal notranslate"><span class="pre">&quot;Structural&quot;</span></code> is referring to
 <em>StructuralReasoner</em> implemented in OWLAPI. That is different from our StructuralReasoner.</strong></p>
 <p><strong>Also is worth mentioning that some java reasoners like ELK do not implement all methods that a reasoner
 can perform. You will get a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> if you try to use them. Note that we use these reasoners via jar
@@ -154,13 +154,11 @@ individuals x for which the triple <code class="docutils literal notranslate"><s
 This approach extends compositionally to handle arbitaray complex expression in SROIQ by combining the instances
 retrieved for their constituent parts.</p>
 <p><strong>Initialization:</strong></p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>```python
-from owlapy.owl_reasoner import EBR
-from owlapy.owl_ontology import NeuralOntology
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">EBR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">NeuralOntology</span>
 
-onto = NeuralOntology(path_neural_embedding=&quot;KGs/Family/trained_model&quot;)
-sync_reasoner = EBR(ontology=onto)
-```
+<span class="n">onto</span> <span class="o">=</span> <span class="n">NeuralOntology</span><span class="p">(</span><span class="n">path_neural_embedding</span><span class="o">=</span><span class="s2">&quot;KGs/Family/trained_model&quot;</span><span class="p">)</span>
+<span class="n">sync_reasoner</span> <span class="o">=</span> <span class="n">EBR</span><span class="p">(</span><span class="n">ontology</span><span class="o">=</span><span class="n">onto</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>EBR requires only 1 argument to initialize and that is a <code class="docutils literal notranslate"><span class="pre">NeuralOntology</span></code>.</p>
