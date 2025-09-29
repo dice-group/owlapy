@@ -21,7 +21,7 @@ Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
 
 ### Installation from Source
 ``` bash
-git clone https://github.com/dice-group/owlapy
+git clone https://github.com/dice-group/owlapy && cd owlapy
 conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip3 install -e .
 ```
 
@@ -35,7 +35,7 @@ pip3 install owlapy
 ```shell
 # To download RDF knowledge graphs
 wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
-pytest -p no:warnings -x # Running  147 tests ~ 35 secs
+pytest -p no:warnings -x
 ```
 
 ## Examples
