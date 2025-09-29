@@ -70,7 +70,10 @@ In 1981, after additional surgery, she recovered her voice. Ms. Francis returned
 """
 
 start = time.time()
-ontogen = GraphExtractor(model="Qwen/Qwen3-32B-AWQ",api_key="<ENTER_YOUR_KEY>", api_base=None,
+
+# For quick try you can use GitHub Models. Simply create a GitHub PAT(Personal Access Token) and pass it to the api_key.
+# Important! Don't forget to add read permission to models for your PAT.
+ontogen = GraphExtractor(model="openai/gpt-4o",api_key="<YOUR_GITHUB_PAT>", api_base="https://models.github.ai/inference",
                          temperature=0.1, seed=42, enable_logging=True)
 ontogen.forward(text=text_example_3, generate_types = True, extract_spl_triples=True)
 print(f"Runtime: {time.time() - start}")
