@@ -25,9 +25,9 @@ def check_reasoner_instances_in_sparql_results(sparql_results: rdflib.query.Resu
         else:
             sparql_results_set.add(individual_iri_str.split('/')[-1])
     for result in reasoner_results:
-        if result.iri.reminder not in sparql_results_set:
+        if result.iri.remainder not in sparql_results_set:
             print()
-            print(result.iri.reminder, "Not found in SPARQL results set")
+            print(result.iri.remainder, "Not found in SPARQL results set")
             return False
     return True
 

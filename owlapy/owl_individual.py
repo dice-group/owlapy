@@ -42,5 +42,5 @@ class OWLNamedIndividual(OWLIndividual, OWLEntity):
     def str(self):
         return self._iri.as_str()
     @property
-    def reminder(self):
-        return self._iri.reminder
+    def remainder(self):
+        return self._iri.remainder

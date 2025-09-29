@@ -1095,18 +1095,18 @@ class SyncReasoner(AbstractOWLReasoner):
 
         Args:
             ontology(SyncOntology): Ontology that will be used by this reasoner.
-            reasoner: Name of the reasoner. Possible values (case-sensitive): ["HermiT", "Pellet", "ELK", "JFact",
-            "Openllet", "Structural"]. Default: "HermiT".
+               reasoner: Name of the reasoner. Possible values (case-sensitive): ["HermiT", "Pellet", "ELK", "JFact",
+               "Openllet", "Structural"]. Default: "HermiT".
         """
         assert reasoner in ["HermiT", "Pellet", "ELK", "JFact", "Openllet", "Structural"], \
             (f"'{reasoner}' is not implemented. Available reasoners: ['HermiT', 'Pellet', 'ELK', 'JFact', 'Openllet', "
              f"'Structural']. "
              f"This field is case sensitive.")
 
-        #  TODO: ELK does not support specific methods. That means that mapping methods in owlapy will
+        #  TODO: ELK does not support all reasoning methods. That means that mapping unsupported methods in owlapy will
         #   also raise NotImplementedError. Check for new release of elk and if any of these method is
         #   implemented, remove the `raise NotImplementedError` statement for the respective mapping
-        #   implemented in this class. Current version of elk is 6.0.0.
+        #   implemented in this class. Current version of elk is 0.6.0.
         #   Maven releases: https://mvnrepository.com/artifact/io.github.liveontologies/elk-owlapi
         #   ElkReasoner GitHub link: https://github.com/liveontologies/elk-reasoner/blob/main/elk-owlapi/src/main/java/org/semanticweb/elk/owlapi/ElkReasoner.java
 

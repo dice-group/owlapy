@@ -57,12 +57,12 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         if is_file_path and iri != "":
             return IRI(iri, "", is_file_path)
         elif remainder is not None:
-            assert isinstance(remainder,str), f"Reminder must be string. Currently, {type(remainder)}"
+            assert isinstance(remainder,str), f"Remainder must be string. Currently, {type(remainder)}"
             return IRI(iri, remainder)
         else:
             assert isinstance(iri, str) and remainder is None, \
                 f"iri must be string if remainder is None. Currently, {type(iri)} and {type(remainder)}"
-            # Extract reminder from input string
+            # Extract remainder from input string
             assert "/" in iri, (f"Input must contain /\tCurrently, {iri}. Are you saving a file? - then "
                                 f"set is_file_path=True to overcome this assertion.")
             # assert ":" in iri, "Input must contain :"
@@ -133,11 +133,11 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
         return self.as_str()
 
     @property
-    def reminder(self) -> str:
+    def remainder(self) -> str:
         """
 
         Returns:
-            The string corresponding to the reminder of the IRI.
+            The string corresponding to the remainder of the IRI.
         """
         return self._remainder
 

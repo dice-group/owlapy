@@ -1,18 +1,43 @@
 from typing import List
 import os
 import dspy
+import requests
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.ontogen.few_shot_examples import EXAMPLES_FOR_ENTITY_EXTRACTION, EXAMPLES_FOR_TRIPLES_EXTRACTION, \
     EXAMPLES_FOR_TYPE_ASSERTION, EXAMPLES_FOR_TYPE_GENERATION, EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION, \
     EXAMPLES_FOR_LITERAL_EXTRACTION
-from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom
+from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, \
+    OWLSubClassOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, StringOWLDatatype
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 
+# DBpedia often uses British English, so we define a mapping for common American to British English terms.
+american_to_british = {
+    "organization": "organisation",
+    "color": "colour",
+    "honor": "honour",
+    "analyze": "analyse",
+    "center": "centre",
+    "meter": "metre",
+    "theater": "theatre",
+    "catalog": "catalogue",
+    "defense": "defence",
+    "offense": "offence",
+    "license": "licence",  # noun in UK
+    "practice": "practise",  # verb in UK
+    "traveled": "travelled",
+    "canceled": "cancelled",
+    "labeled": "labelled",
+    "modeling": "modelling",
+    "program": "programme",  # when referring to TV/show
+    "check": "cheque",  # bank sense
+    "gray": "grey",
+    "plow": "plough"
+}
 
 class Entity(dspy.Signature):
     __doc__ = """Given a piece of text as input identify key entities extracted form the text."""
@@ -86,7 +111,7 @@ def assign_types(text, entities, entity_types, few_shot_examples=EXAMPLES_FOR_TY
     result = model(text=text, entities=entities, entity_types=entity_types, few_shot_examples=few_shot_examples)
     return result.pairs
 
-def generate_types(text, entities, few_shot_examples= EXAMPLES_FOR_TYPE_GENERATION):
+def generate_entity_types(text, entities, few_shot_examples= EXAMPLES_FOR_TYPE_GENERATION):
     model = configure_dspy(TypeGeneration)
     result = model(text=text, entities=entities, few_shot_examples=few_shot_examples)
     return result.pairs
@@ -101,8 +126,45 @@ def get_spl_triples(text, entities, literals, few_shot_examples=EXAMPLES_FOR_SPL
     result = model(text=text, entities=entities, numeric_literals=literals, few_shot_examples=few_shot_examples)
     return result.triples
 
+def run_query(query):
+    """Runs a SPARQL query against the DBpedia SPARQL endpoint."""
+    params = {
+        "query": query,
+        "format": "application/sparql-results+json"
+    }
+    response = requests.get("http://dbpedia.org/sparql", params=params)
+    response.raise_for_status()
+    data = response.json()
+    return [binding['superclass' if 'superclass' in binding else 'subclass']['value']
+            for binding in data['results']['bindings']]
+
+def extract_hierarchy_from_dbpedia(cls):
+    """
+    Extracts the hierarchy of an entity from DBpedia using the SPARQL endpoint.
+
+    Args:
+        cls (str): The DBpedia class remainder.
+
+    Returns:
+        tuple: A tuple containing two lists:
+            - superclasses: List of superclasses of the entity.
+            - subclasses: List of subclasses of the entity.
+    """
+
+    if cls.lower() in american_to_british:
+        cls = american_to_british[cls.lower()]
+    dbpedia_class_uri = f"http://dbpedia.org/ontology/{cls.capitalize()}"
+    superclass_query = f"""SELECT ?superclass WHERE {{<{dbpedia_class_uri}> rdfs:subClassOf ?superclass .}}"""
+    subclass_query = f"""SELECT ?subclass WHERE {{?subclass rdfs:subClassOf <{dbpedia_class_uri}> .}}"""
+    superclasses = run_query(superclass_query)
+    subclasses = run_query(subclass_query)
+
+    return superclasses, subclasses
+
 class GraphExtractor(dspy.Module):
-    def __init__(self,model, api_key, api_base, temperature=0.1, seed=42, cache=False, cache_in_memory=False,
+    def __init__(self,model="gpt-4o", api_key="<YOUR_GITHUB_PAT>",
+                 api_base="https://models.github.ai/inference",
+                 temperature=0.1, seed=42, cache=False, cache_in_memory=False,
                  enable_logging=False):
         """
         A module to extract an RDF graph from a given text input.
@@ -137,6 +199,7 @@ class GraphExtractor(dspy.Module):
                 entity_types: List[str]=None,
                 generate_types=False,
                 extract_spl_triples=False,
+                create_class_hierarchy=False,
                 examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,
                 examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,
                 examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,
@@ -158,6 +221,7 @@ class GraphExtractor(dspy.Module):
             extract_spl_triples (bool): Whether to extract triples of type s-p-l where l is a numeric literal. This
                 triples will be represented using data properties and a literal value of type string (although they
                 are numeric values).
+            create_class_hierarchy (bool): Whether to create a class hierarchy for the extracted entities.
             examples_for_entity_extraction (str): Few-shot examples for entity extraction.
             examples_for_triples_extraction (str): Few-shot examples for triple extraction.
             examples_for_type_assertion (str): Few-shot examples for type assertion.
@@ -232,6 +296,26 @@ class GraphExtractor(dspy.Module):
                 literal = OWLLiteral(str(self.snake_case(triple[2])), type_=StringOWLDatatype) # for now every literal will be represented as a string
                 if triple[2] in literals:
                     ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
+                    onto.add_axiom(ax)
+
+        if create_class_hierarchy:
+            for cls in onto.classes_in_signature():
+                try:
+                    superclasses, subclasses = extract_hierarchy_from_dbpedia(cls.remainder)
+                except Exception:
+                    continue
+                if self.logging:
+                    print(f"GraphExtractor: INFO  :: For class {cls.remainder} found superclasses: {[IRI.create(s).remainder for s in superclasses]} and subclasses: {[IRI.create(s).remainder for s in subclasses]}")
+
+                for superclass in superclasses:
+                    dbpedia_class_remainder = IRI.create(superclass).remainder
+                    sup_cls = OWLClass(ontology_namespace + dbpedia_class_remainder)
+                    ax = OWLSubClassOfAxiom(cls, sup_cls)
+                    onto.add_axiom(ax)
+                for subclass in subclasses:
+                    dbpedia_class_remainder = IRI.create(subclass).remainder
+                    sub_cls = OWLClass(ontology_namespace + dbpedia_class_remainder)
+                    ax = OWLSubClassOfAxiom(sub_cls, cls)
                     onto.add_axiom(ax)
 
         onto.save(path=save_path)

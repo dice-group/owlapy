@@ -49,7 +49,7 @@ class Variable(metaclass=ABCMeta):
             return self.iri == other.iri
 
     def __str__(self):
-        return "?" + self.iri.reminder
+        return "?" + self.iri.remainder
 
     def __hash__(self):
         return hash(self.iri)
@@ -175,7 +175,7 @@ def r(argument):
     """Returns the right string format of a given argument depending on its type"""
     if isinstance(argument, Variable):
         return str(argument)
-    return argument.iri.reminder
+    return argument.iri.remainder
 
 def t(argument):
     """Returns the representation for a given argument"""
@@ -408,7 +408,7 @@ class BuiltInAtom(Atom):
                 args_to_print += str(arg._v) + ", "
             else:
                 args_to_print += str(arg) + ", "
-        return f"{str(self.predicate.reminder)}({args_to_print[:-2]})"
+        return f"{str(self.predicate.remainder)}({args_to_print[:-2]})"
 
     def __repr__(self):
         args_list ='['
