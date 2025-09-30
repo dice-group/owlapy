@@ -19,6 +19,11 @@ Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
 
 ## Installation
 
+### Installation from PyPI
+```bash
+pip3 install owlapy
+```
+
 ### Installation from Source
 ``` bash
 git clone https://github.com/dice-group/owlapy && cd owlapy
@@ -26,12 +31,7 @@ git clone https://github.com/dice-group/owlapy && cd owlapy
 conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip3 install -e .
 ```
 
-### Installation from PyPI
-```bash
-pip3 install owlapy
-```
-
-### Extra files (optional)
+#### Extra files (optional)
 
 ```shell
 # Download RDF knowledge graphs
