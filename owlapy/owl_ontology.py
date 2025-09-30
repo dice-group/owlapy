@@ -12,32 +12,48 @@ import rdflib
 from pandas import Timedelta
 from owlapy import namespaces
 from owlapy.abstracts.abstract_owl_ontology import _OI, AbstractOWLOntology
-from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
+from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, \
+    OWLDataIntersectionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
-from owlapy.owl_literal import IntegerOWLDatatype, DoubleOWLDatatype, BooleanOWLDatatype, StringOWLDatatype, \
+from owlapy.owl_literal import IntegerOWLDatatype, DoubleOWLDatatype, BooleanOWLDatatype, \
+    StringOWLDatatype, \
     DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype, OWLLiteral
 from owlapy.owl_object import OWLObject
 from owlapy.iri import IRI
-from owlapy.class_expression import OWLClass, OWLThing, OWLClassExpression, OWLObjectComplementOf, OWLObjectUnionOf, \
-    OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectExactCardinality, \
-    OWLObjectMaxCardinality, OWLObjectMinCardinality, OWLObjectHasValue, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
-    OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, OWLDataOneOf, \
-    OWLDatatypeRestriction, OWLRestriction, OWLObjectRestriction, OWLDataRestriction, OWLFacetRestriction, \
-    OWLNaryBooleanClassExpression, OWLQuantifiedObjectRestriction, OWLQuantifiedDataRestriction, OWLObjectOneOf
-from owlapy.owl_property import OWLDataProperty, OWLObjectProperty, OWLPropertyExpression, OWLObjectInverseOf, \
+from owlapy.class_expression import OWLClass, OWLThing, OWLClassExpression, OWLObjectComplementOf, \
+    OWLObjectUnionOf, \
+    OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, \
+    OWLObjectExactCardinality, \
+    OWLObjectMaxCardinality, OWLObjectMinCardinality, OWLObjectHasValue, OWLDataSomeValuesFrom, \
+    OWLDataAllValuesFrom, \
+    OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, \
+    OWLDataOneOf, \
+    OWLDatatypeRestriction, OWLRestriction, OWLObjectRestriction, OWLDataRestriction, \
+    OWLFacetRestriction, \
+    OWLNaryBooleanClassExpression, OWLQuantifiedObjectRestriction, OWLQuantifiedDataRestriction, \
+    OWLObjectOneOf
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty, OWLPropertyExpression, \
+    OWLObjectInverseOf, \
     OWLObjectPropertyExpression, OWLDataPropertyExpression, OWLProperty
 from datetime import date, datetime
 from owlready2 import destroy_entity, AllDisjoint, AllDifferent, GeneralClassAxiom
-from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassOfAxiom, OWLEquivalentClassesAxiom, \
+from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassOfAxiom, \
+    OWLEquivalentClassesAxiom, \
     OWLDisjointUnionAxiom, OWLAnnotationAssertionAxiom, OWLAnnotationProperty, OWLSubPropertyAxiom, \
-    OWLPropertyRangeAxiom, OWLClassAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom, \
+    OWLPropertyRangeAxiom, OWLClassAssertionAxiom, OWLDeclarationAxiom, \
+    OWLObjectPropertyAssertionAxiom, \
     OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom, OWLPropertyDomainAxiom, \
-    OWLAsymmetricObjectPropertyAxiom, OWLDataPropertyCharacteristicAxiom, OWLFunctionalDataPropertyAxiom, \
-    OWLReflexiveObjectPropertyAxiom, OWLDataPropertyAssertionAxiom, OWLFunctionalObjectPropertyAxiom, \
-    OWLObjectPropertyCharacteristicAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, \
-    OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom, \
-    OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
+    OWLAsymmetricObjectPropertyAxiom, OWLDataPropertyCharacteristicAxiom, \
+    OWLFunctionalDataPropertyAxiom, \
+    OWLReflexiveObjectPropertyAxiom, OWLDataPropertyAssertionAxiom, \
+    OWLFunctionalObjectPropertyAxiom, \
+    OWLObjectPropertyCharacteristicAxiom, OWLIrreflexiveObjectPropertyAxiom, \
+    OWLInverseFunctionalObjectPropertyAxiom, \
+    OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, \
+    OWLEquivalentDataPropertiesAxiom, \
+    OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, \
+    OWLNaryIndividualAxiom, \
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom, OWLClassAxiom, \
     OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom
 from owlapy.static_funcs import startJVM
@@ -60,7 +76,6 @@ _Datatype_map: Final = MappingProxyType({
     datetime: DateTimeOWLDatatype,
     Timedelta: DurationOWLDatatype,
 })
-
 
 _VERSION_IRI: Final = IRI.create(namespaces.OWL, "versionIRI")
 
@@ -128,7 +143,8 @@ class OWLOntologyID:
         return NotImplemented
 
 
-def _check_expression(expr: OWLObject, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _check_expression(expr: OWLObject, ontology: AbstractOWLOntology,
+                      world: owlready2.namespace.World):
     """
     Creates all entities (individuals, classes, properties) that appear in the given (complex) class expression
     and do not exist in the given ontology yet
@@ -176,19 +192,24 @@ def _(axiom: OWLDeclarationAxiom, ontology: AbstractOWLOntology, world: owlready
         elif isinstance(entity, OWLIndividual):
             entity_x = thing_x(entity.iri.get_remainder())
         elif isinstance(entity, OWLObjectProperty):
-            entity_x = types.new_class(name=entity.iri.get_remainder(), bases=(owlready2.ObjectProperty,))
+            entity_x = types.new_class(name=entity.iri.get_remainder(),
+                                       bases=(owlready2.ObjectProperty,))
         elif isinstance(entity, OWLDataProperty):
-            entity_x = types.new_class(name=entity.iri.get_remainder(), bases=(owlready2.DatatypeProperty,))
+            entity_x = types.new_class(name=entity.iri.get_remainder(),
+                                       bases=(owlready2.DatatypeProperty,))
         elif isinstance(entity, OWLAnnotationProperty):
-            entity_x = types.new_class(name=entity.iri.get_remainder(), bases=(owlready2.AnnotationProperty,))
+            entity_x = types.new_class(name=entity.iri.get_remainder(),
+                                       bases=(owlready2.AnnotationProperty,))
         else:
-            raise ValueError(f'Cannot add ({entity}). Not an atomic class, property, or individual.')
+            raise ValueError(
+                f'Cannot add ({entity}). Not an atomic class, property, or individual.')
         entity_x.namespace = ont_x.get_namespace(entity.iri.get_namespace())
         entity_x.namespace.world._refactor(entity_x.storid, entity_x.iri)
 
 
 @_add_axiom.register
-def _(axiom: OWLClassAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLClassAssertionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -206,7 +227,8 @@ def _(axiom: OWLClassAssertionAxiom, ontology: AbstractOWLOntology, world: owlre
 
 
 @_add_axiom.register
-def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -224,7 +246,8 @@ def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: AbstractOWLOntology, wor
 
 
 @_add_axiom.register
-def _(axiom: OWLDataPropertyAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDataPropertyAssertionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -265,7 +288,8 @@ def _(axiom: OWLSubClassOfAxiom, ontology: AbstractOWLOntology, world: owlready2
 
 # TODO: Update as soon as owlready2 adds support for EquivalentClasses general class axioms
 @_add_axiom.register
-def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x = conv.map_object(ontology)
 
@@ -289,7 +313,7 @@ def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: ow
                 print(ce_2, ce_2_x)
                 print("Axiom:", axiom)
                 print("Temporary solution is reinitializing ce_1_x=ce_2_x\n\n")
-                ce_1_x=ce_2_x
+                ce_1_x = ce_2_x
 
             if isinstance(ce_1_x, owlready2.ThingClass):
                 ce_1_x.equivalent_to.append(ce_2_x)
@@ -298,7 +322,8 @@ def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: ow
 
 
 @_add_axiom.register
-def _(axiom: OWLDisjointClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDisjointClassesAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -311,11 +336,13 @@ def _(axiom: OWLDisjointClassesAxiom, ontology: AbstractOWLOntology, world: owlr
 
 
 @_add_axiom.register
-def _(axiom: OWLDisjointUnionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDisjointUnionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
-    assert isinstance(axiom.get_owl_class(), OWLClass), f'({axiom.get_owl_class()}) is not a named class.'
+    assert isinstance(axiom.get_owl_class(),
+                      OWLClass), f'({axiom.get_owl_class()}) is not a named class.'
     _add_axiom(OWLDeclarationAxiom(axiom.get_owl_class()), ontology, world)
     for cls_ in axiom.get_class_expressions():
         _check_expression(cls_, ontology, world)
@@ -325,7 +352,8 @@ def _(axiom: OWLDisjointUnionAxiom, ontology: AbstractOWLOntology, world: owlrea
 
 
 @_add_axiom.register
-def _(axiom: OWLAnnotationAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLAnnotationAssertionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -351,7 +379,8 @@ def _(axiom: OWLAnnotationAssertionAxiom, ontology: AbstractOWLOntology, world: 
 
 
 @_add_axiom.register
-def _(axiom: OWLNaryIndividualAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLNaryIndividualAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -386,7 +415,8 @@ def _(axiom: OWLSubPropertyAxiom, ontology: AbstractOWLOntology, world: owlready
 
 
 @_add_axiom.register
-def _(axiom: OWLPropertyDomainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLPropertyDomainAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -401,7 +431,8 @@ def _(axiom: OWLPropertyDomainAxiom, ontology: AbstractOWLOntology, world: owlre
 
 
 @_add_axiom.register
-def _(axiom: OWLPropertyRangeAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLPropertyRangeAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -425,7 +456,8 @@ def _(axiom: OWLNaryPropertyAxiom, ontology: AbstractOWLOntology, world: owlread
     for property_ in axiom.properties():
         _add_axiom(OWLDeclarationAxiom(property_), ontology, world)
     with ont_x:
-        if isinstance(axiom, (OWLEquivalentObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom,)):
+        if isinstance(axiom,
+                      (OWLEquivalentObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom,)):
             for idx, property_ in enumerate(axiom.properties()):
                 property_x = conv._to_owlready2_property(property_)
                 for property_2 in islice(axiom.properties(), idx + 1, None):
@@ -444,7 +476,8 @@ def _(axiom: OWLNaryPropertyAxiom, ontology: AbstractOWLOntology, world: owlread
 
 
 @_add_axiom.register
-def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -471,7 +504,8 @@ def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology
 
 
 @_add_axiom.register
-def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -502,7 +536,8 @@ def _(axiom: OWLDeclarationAxiom, ontology: AbstractOWLOntology, world: owlready
 
 
 @_remove_axiom.register
-def _(axiom: OWLClassAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLClassAssertionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -518,7 +553,8 @@ def _(axiom: OWLClassAssertionAxiom, ontology: AbstractOWLOntology, world: owlre
 
 
 @_remove_axiom.register
-def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -531,7 +567,8 @@ def _(axiom: OWLObjectPropertyAssertionAxiom, ontology: AbstractOWLOntology, wor
 
 
 @_remove_axiom.register
-def _(axiom: OWLDataPropertyAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDataPropertyAssertionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.namespace.Ontology = conv.map_object(ontology)
 
@@ -559,8 +596,10 @@ def _(axiom: OWLSubClassOfAxiom, ontology: AbstractOWLOntology, world: owlready2
         if isinstance(sub_class, OWLClass):
             if super_class_x in sub_class_x.is_a:
                 sub_class_x.is_a.remove(super_class_x)
-            elif isinstance(axiom.get_sub_class(), OWLClass) and isinstance(axiom.get_super_class(), OWLClass):
-                ont_x._del_obj_triple_spo(sub_class_x.storid, owlready2.rdfs_subclassof, super_class_x.storid)
+            elif isinstance(axiom.get_sub_class(), OWLClass) and isinstance(axiom.get_super_class(),
+                                                                            OWLClass):
+                ont_x._del_obj_triple_spo(sub_class_x.storid, owlready2.rdfs_subclassof,
+                                          super_class_x.storid)
         else:
             for ca in ont_x.general_class_axioms():
                 if ca.left_side == sub_class_x and super_class_x in ca.is_a:
@@ -569,7 +608,8 @@ def _(axiom: OWLSubClassOfAxiom, ontology: AbstractOWLOntology, world: owlready2
 
 # TODO: Update as soons as owlready2 adds support for EquivalentClasses general class axioms
 @_remove_axiom.register
-def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x = conv.map_object(ontology)
 
@@ -589,7 +629,8 @@ def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: ow
 
 
 @_remove_axiom.register
-def _(axiom: OWLDisjointClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDisjointClassesAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -604,10 +645,12 @@ def _(axiom: OWLDisjointClassesAxiom, ontology: AbstractOWLOntology, world: owlr
 
 
 @_remove_axiom.register
-def _(axiom: OWLDisjointUnionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDisjointUnionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
-    assert isinstance(axiom.get_owl_class(), OWLClass), f'({axiom.get_owl_class()}) is not a named class.'
+    assert isinstance(axiom.get_owl_class(),
+                      OWLClass), f'({axiom.get_owl_class()}) is not a named class.'
 
     with ont_x:
         cls_x = conv.map_concept(axiom.get_owl_class())
@@ -620,7 +663,8 @@ def _(axiom: OWLDisjointUnionAxiom, ontology: AbstractOWLOntology, world: owlrea
 
 
 @_remove_axiom.register
-def _(axiom: OWLAnnotationAssertionAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLAnnotationAssertionAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -640,7 +684,8 @@ def _(axiom: OWLAnnotationAssertionAxiom, ontology: AbstractOWLOntology, world: 
 
 
 @_remove_axiom.register
-def _(axiom: OWLNaryIndividualAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLNaryIndividualAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -678,11 +723,13 @@ def _(axiom: OWLSubPropertyAxiom, ontology: AbstractOWLOntology, world: owlready
         if super_property_x in sub_property_x.is_a:
             sub_property_x.is_a.remove(super_property_x)
         else:
-            ont_x._del_obj_triple_spo(sub_property_x.storid, owlready2.rdfs_subpropertyof, super_property_x.storid)
+            ont_x._del_obj_triple_spo(sub_property_x.storid, owlready2.rdfs_subpropertyof,
+                                      super_property_x.storid)
 
 
 @_remove_axiom.register
-def _(axiom: OWLPropertyDomainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLPropertyDomainAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -694,14 +741,16 @@ def _(axiom: OWLPropertyDomainAxiom, ontology: AbstractOWLOntology, world: owlre
 
 
 @_remove_axiom.register
-def _(axiom: OWLPropertyRangeAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLPropertyRangeAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
     with ont_x:
         property_x = conv._to_owlready2_property(axiom.get_property())
         range_x = conv.map_concept(axiom.get_range()) \
-            if isinstance(axiom, OWLObjectPropertyRangeAxiom) else conv.map_datarange(axiom.get_range())
+            if isinstance(axiom, OWLObjectPropertyRangeAxiom) else conv.map_datarange(
+            axiom.get_range())
         if range_x is not None and property_x is not None and range_x in property_x.range:
             property_x.range.remove(range_x)
 
@@ -715,7 +764,8 @@ def _(axiom: OWLNaryPropertyAxiom, ontology: AbstractOWLOntology, world: owlread
         properties_x = list(map(conv._to_owlready2_property, axiom.properties()))
         if len(properties_x) < 2 or not all(properties_x):
             return
-        if isinstance(axiom, (OWLEquivalentObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom,)):
+        if isinstance(axiom,
+                      (OWLEquivalentObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom,)):
             # Check if all equivalent properties are defined in the ontology
             if set(properties_x[1:-1]) <= set(properties_x[0].INDIRECT_equivalent_to):
                 for property_1_x, property_2_x in combinations(properties_x, 2):
@@ -741,7 +791,8 @@ def _(axiom: OWLNaryPropertyAxiom, ontology: AbstractOWLOntology, world: owlread
 
 
 @_remove_axiom.register
-def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -750,27 +801,34 @@ def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology
         if property_x is None:
             return
 
-        if isinstance(axiom, OWLFunctionalObjectPropertyAxiom) and owlready2.FunctionalProperty in property_x.is_a:
+        if isinstance(axiom,
+                      OWLFunctionalObjectPropertyAxiom) and owlready2.FunctionalProperty in property_x.is_a:
             property_x.is_a.remove(owlready2.FunctionalProperty)
-        elif isinstance(axiom, OWLAsymmetricObjectPropertyAxiom) and owlready2.AsymmetricProperty in property_x.is_a:
+        elif isinstance(axiom,
+                        OWLAsymmetricObjectPropertyAxiom) and owlready2.AsymmetricProperty in property_x.is_a:
             property_x.is_a.remove(owlready2.AsymmetricProperty)
         elif isinstance(axiom, OWLInverseFunctionalObjectPropertyAxiom) \
                 and owlready2.InverseFunctionalProperty in property_x.is_a:
             property_x.is_a.remove(owlready2.InverseFunctionalProperty)
-        elif isinstance(axiom, OWLIrreflexiveObjectPropertyAxiom) and owlready2.IrreflexiveProperty in property_x.is_a:
+        elif isinstance(axiom,
+                        OWLIrreflexiveObjectPropertyAxiom) and owlready2.IrreflexiveProperty in property_x.is_a:
             property_x.is_a.remove(owlready2.IrreflexiveProperty)
-        elif isinstance(axiom, OWLReflexiveObjectPropertyAxiom) and owlready2.ReflexiveProperty in property_x.is_a:
+        elif isinstance(axiom,
+                        OWLReflexiveObjectPropertyAxiom) and owlready2.ReflexiveProperty in property_x.is_a:
             property_x.is_a.remove(owlready2.ReflexiveProperty)
-        elif isinstance(axiom, OWLSymmetricObjectPropertyAxiom) and owlready2.SymmetricProperty in property_x.is_a:
+        elif isinstance(axiom,
+                        OWLSymmetricObjectPropertyAxiom) and owlready2.SymmetricProperty in property_x.is_a:
             property_x.is_a.remove(owlready2.SymmetricProperty)
-        elif isinstance(axiom, OWLTransitiveObjectPropertyAxiom) and owlready2.TransitiveProperty in property_x.is_a:
+        elif isinstance(axiom,
+                        OWLTransitiveObjectPropertyAxiom) and owlready2.TransitiveProperty in property_x.is_a:
             property_x.is_a.remove(owlready2.TransitiveProperty)
         else:
             raise ValueError(f'OWLObjectPropertyCharacteristicAxiom ({axiom}) is not defined.')
 
 
 @_remove_axiom.register
-def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology,
+      world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
 
@@ -859,8 +917,9 @@ class Ontology(AbstractOWLOntology):
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
         # TODO: At the moment owlready2 only supports SubClassOf general class axioms. (18.02.2023)
         for ca in self._onto.general_class_axioms():
-            yield from (OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
-                        for c in ca.is_a)
+            yield from (
+            OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
+            for c in ca.is_a)
 
     def get_ontology_id(self) -> OWLOntologyID:
         onto_iri = self._world._unabbreviate(self._onto.storid)
@@ -875,7 +934,8 @@ class Ontology(AbstractOWLOntology):
         return OWLOntologyID(IRI.create(onto_iri) if onto_iri is not None else None,
                              IRI.create(version_iri) if version_iri is not None else None)
 
-    def data_property_domain_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
+    def data_property_domain_axioms(self, pe: OWLDataProperty) -> Iterable[
+        OWLDataPropertyDomainAxiom]:
         p_x: owlready2.DataPropertyClass = self._world[pe.str]
         domains = set(p_x.domains_indirect())
         if len(domains) == 0:
@@ -888,7 +948,8 @@ class Ontology(AbstractOWLOntology):
                     logger.warning("Construct %s not implemented at %s", dom, pe)
                     pass  # XXX TODO
 
-    def data_property_range_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]:
+    def data_property_range_axioms(self, pe: OWLDataProperty) -> Iterable[
+        OWLDataPropertyRangeAxiom]:
         p_x: owlready2.DataPropertyClass = self._world[pe.str]
         ranges = set(chain.from_iterable(super_prop.range for super_prop in p_x.ancestors()))
         if len(ranges) == 0:
@@ -904,7 +965,8 @@ class Ontology(AbstractOWLOntology):
                     logger.warning("Datatype %s not implemented at %s", rng, pe)
                     pass  # XXX TODO
 
-    def object_property_domain_axioms(self, pe: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]:
+    def object_property_domain_axioms(self, pe: OWLObjectProperty) -> Iterable[
+        OWLObjectPropertyDomainAxiom]:
         p_x: owlready2.ObjectPropertyClass = self._world[pe.str]
         domains = set(p_x.domains_indirect())
         if len(domains) == 0:
@@ -917,7 +979,8 @@ class Ontology(AbstractOWLOntology):
                     logger.warning("Construct %s not implemented at %s", dom, pe)
                     pass  # XXX TODO
 
-    def object_property_range_axioms(self, pe: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
+    def object_property_range_axioms(self, pe: OWLObjectProperty) -> Iterable[
+        OWLObjectPropertyRangeAxiom]:
         p_x: owlready2.ObjectPropertyClass = self._world[pe.str]
         ranges = set(chain.from_iterable(super_prop.range for super_prop in p_x.ancestors()))
         if len(ranges) == 0:
@@ -952,7 +1015,8 @@ class Ontology(AbstractOWLOntology):
             path = path.as_str()
         # Sanity checking
         if inplace is False:
-            assert isinstance(path,str), f"path must be string if inplace is set to False. Current path is {type(path)}"
+            assert isinstance(path,
+                              str), f"path must be string if inplace is set to False. Current path is {type(path)}"
         # Get the current ontology defined in the world.
         ont_x: owlready2.namespace.Ontology
         ont_x = self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str())
@@ -963,7 +1027,8 @@ class Ontology(AbstractOWLOntology):
                 ont_x.save(file=self._iri.as_str(), format=rdf_format)
             else:
                 print(f"Saving {self} inplace with name of demo.owl...")
-                self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(file="demo.owl")
+                self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(
+                    file="demo.owl")
         else:
             print(f"Saving {path}..")
             ont_x.save(file=path, format=rdf_format)
@@ -1009,21 +1074,27 @@ class SyncOntology(AbstractOWLOntology):
             file_path = path
         if not load:  # create new ontology
             if isinstance(path, IRI):
-                self.owlapi_ontology = self.owlapi_manager.createOntology(Stream.empty(), owlapi_IRI.create(path.str))
+                self.owlapi_ontology = self.owlapi_manager.createOntology(Stream.empty(),
+                                                                          owlapi_IRI.create(
+                                                                              path.str))
             else:
                 try:
                     self.owlapi_ontology = self.owlapi_manager.createOntology(Stream.empty(),
-                                                                              owlapi_IRI.create(path))
+                                                                              owlapi_IRI.create(
+                                                                                  path))
                 except Exception as e:
                     print(f"Error: {e}")
-                    raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
+                    raise NotImplementedError(
+                        "Cant initialize a new ontology using path. Use IRI instead")
         else:  # means we are loading an existing ontology
-            self.owlapi_ontology = self.owlapi_manager.loadOntologyFromOntologyDocument(File(file_path))
+            self.owlapi_ontology = self.owlapi_manager.loadOntologyFromOntologyDocument(
+                File(file_path))
         self.mapper = OWLAPIMapper()
 
     def __eq__(self, other):
         if isinstance(other, SyncOntology):
-            return other.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
+            return other.owlapi_ontology.getOntologyID().equals(
+                other.owlapi_ontology.getOntologyID())
         return False
 
     def __hash__(self):
@@ -1055,22 +1126,31 @@ class SyncOntology(AbstractOWLOntology):
         return self.mapper.map_(self.owlapi_ontology.getIndividualsInSignature())
 
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
-        return self.mapper.map_(self.owlapi_ontology.getEquivalentClassesAxioms(self.mapper.map_(c)))
+        return self.mapper.map_(
+            self.owlapi_ontology.getEquivalentClassesAxioms(self.mapper.map_(c)))
 
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
         return self.mapper.map_(self.owlapi_ontology.getGeneralClassAxioms())
 
-    def data_property_domain_axioms(self, property: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
-        return self.mapper.map_(self.owlapi_ontology.getDataPropertyDomainAxioms(self.mapper.map_(property)))
+    def data_property_domain_axioms(self, property: OWLDataProperty) -> Iterable[
+        OWLDataPropertyDomainAxiom]:
+        return self.mapper.map_(
+            self.owlapi_ontology.getDataPropertyDomainAxioms(self.mapper.map_(property)))
 
-    def data_property_range_axioms(self, property: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]:
-        return self.mapper.map_(self.owlapi_ontology.getDataPropertyRangeAxioms(self.mapper.map_(property)))
+    def data_property_range_axioms(self, property: OWLDataProperty) -> Iterable[
+        OWLDataPropertyRangeAxiom]:
+        return self.mapper.map_(
+            self.owlapi_ontology.getDataPropertyRangeAxioms(self.mapper.map_(property)))
 
-    def object_property_domain_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]:
-        return self.mapper.map_(self.owlapi_ontology.getObjectPropertyDomainAxioms(self.mapper.map_(property)))
+    def object_property_domain_axioms(self, property: OWLObjectProperty) -> Iterable[
+        OWLObjectPropertyDomainAxiom]:
+        return self.mapper.map_(
+            self.owlapi_ontology.getObjectPropertyDomainAxioms(self.mapper.map_(property)))
 
-    def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
-        return self.mapper.map_(self.owlapi_ontology.getObjectPropertyRangeAxioms(self.mapper.map_(property)))
+    def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[
+        OWLObjectPropertyRangeAxiom]:
+        return self.mapper.map_(
+            self.owlapi_ontology.getObjectPropertyRangeAxioms(self.mapper.map_(property)))
 
     def _get_imports_enum(self, include_imports_closure: bool):
         # noinspection PyUnresolvedReferences
@@ -1090,7 +1170,8 @@ class SyncOntology(AbstractOWLOntology):
         Returns:
             Entities in signature.
         """
-        return self.mapper.map_(self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
+        return self.mapper.map_(
+            self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
 
     def get_abox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
         """Get all ABox axioms.
@@ -1101,7 +1182,8 @@ class SyncOntology(AbstractOWLOntology):
         Returns:
             ABox axioms.
         """
-        return self.mapper.map_(self.owlapi_ontology.getABoxAxioms(self._get_imports_enum(include_imports_closure)))
+        return self.mapper.map_(
+            self.owlapi_ontology.getABoxAxioms(self._get_imports_enum(include_imports_closure)))
 
     def get_tbox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
         """Get all TBox axioms.
@@ -1112,7 +1194,8 @@ class SyncOntology(AbstractOWLOntology):
         Returns:
             TBox axioms.
         """
-        return self.mapper.map_(self.owlapi_ontology.getTBoxAxioms(self._get_imports_enum(include_imports_closure)))
+        return self.mapper.map_(
+            self.owlapi_ontology.getTBoxAxioms(self._get_imports_enum(include_imports_closure)))
 
     def get_owlapi_ontology(self):
         return self.owlapi_ontology
@@ -1150,7 +1233,8 @@ class SyncOntology(AbstractOWLOntology):
         else:
             raise NotImplementedError("document_iri must be None for the time being")
         self.owlapi_manager.saveOntology(self.owlapi_ontology,
-                                         self.owlapi_manager.getOntologyFormat(self.owlapi_ontology), document_iri)
+                                         self.owlapi_manager.getOntologyFormat(
+                                             self.owlapi_ontology), document_iri)
 
 
 class RDFLibOntology(AbstractOWLOntology):
@@ -1161,8 +1245,13 @@ class RDFLibOntology(AbstractOWLOntology):
             import rdflib
 
             self.rdflib_graph = rdflib.Graph().parse(path)
-            self.str_owl_classes = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class) if not isinstance(x, rdflib.term.BNode)]
-            self.str_owl_individuals = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual) if not isinstance(x, rdflib.term.BNode)]
+            self.str_owl_classes = [x.n3()[1:-1] for x in
+                                    self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class) if
+                                    not isinstance(x, rdflib.term.BNode)]
+            self.str_owl_individuals = [x.n3()[1:-1] for x in
+                                        self.rdflib_graph.subjects(rdflib.RDF.type,
+                                                                   rdflib.OWL.NamedIndividual) if
+                                        not isinstance(x, rdflib.term.BNode)]
         else:  # create a blank rdf ontology
             raise NotImplementedError("Currently supports only loading an existing ontology")
 
@@ -1187,7 +1276,8 @@ class RDFLibOntology(AbstractOWLOntology):
                                                    super_class=OWLClass(str_iri_object))
 
                     elif str_iri_predicate == "<http://www.w3.org/2002/07/owl#equivalentClass>":
-                        axiom = OWLEquivalentClassesAxiom([OWLClass(str_owl_class), OWLClass(str_iri_object)])
+                        axiom = OWLEquivalentClassesAxiom(
+                            [OWLClass(str_owl_class), OWLClass(str_iri_object)])
                     else:
                         raise NotImplementedError(f"{str_iri_predicate} unsure")
                     if axiom:
@@ -1195,28 +1285,32 @@ class RDFLibOntology(AbstractOWLOntology):
         return results
 
     def get_abox_axioms(self) -> Iterable:
-        results=[]
-        for owl_individual in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
+        results = []
+        for owl_individual in self.rdflib_graph.subjects(rdflib.RDF.type,
+                                                         rdflib.OWL.NamedIndividual):
             if isinstance(owl_individual, rdflib.term.URIRef):
                 str_owl_individual = owl_individual.n3()[1:-1]
-                for (_, p, o) in self.rdflib_graph.triples(triple=(owl_individual,None, None)):
+                for (_, p, o) in self.rdflib_graph.triples(triple=(owl_individual, None, None)):
                     if isinstance(o, rdflib.term.BNode):
                         continue
                     str_iri_predicate = p.n3()[1:-1]
                     str_iri_object = o.n3()[1:-1]
-                    axiom=None
+                    axiom = None
                     if str_iri_predicate == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
                         if str_iri_object in self.str_owl_classes:
-                            axiom = OWLClassAssertionAxiom(OWLNamedIndividual(str_owl_individual), OWLClass(str_iri_object))
+                            axiom = OWLClassAssertionAxiom(OWLNamedIndividual(str_owl_individual),
+                                                           OWLClass(str_iri_object))
                         elif str_iri_object == "http://www.w3.org/2002/07/owl#NamedIndividual":
                             # axiom= OWLDeclarationAxiom(OWLNamedIndividual(str_owl_individual))
                             continue
                         else:
-                            raise RuntimeError(f"Incorrect Parsing:\t{str_owl_individual}\t{str_iri_predicate}\t{str_iri_object}")
+                            raise RuntimeError(
+                                f"Incorrect Parsing:\t{str_owl_individual}\t{str_iri_predicate}\t{str_iri_object}")
                     elif str_iri_object in self.str_owl_individuals:
-                        axiom = OWLObjectPropertyAssertionAxiom(OWLNamedIndividual(str_owl_individual),
-                                                                             OWLObjectProperty(str_iri_predicate),
-                                                                             OWLNamedIndividual(str_iri_object))
+                        axiom = OWLObjectPropertyAssertionAxiom(
+                            OWLNamedIndividual(str_owl_individual),
+                            OWLObjectProperty(str_iri_predicate),
+                            OWLNamedIndividual(str_iri_object))
                     else:
 
                         raise NotImplementedError("")
@@ -1250,18 +1344,19 @@ class RDFLibOntology(AbstractOWLOntology):
     def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
         raise NotImplementedError()
 
-        for (s,p,o) in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
-            print(s,p,o)
+        for (s, p, o) in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
+            print(s, p, o)
         # for i in self._onto.individuals():
         #    yield OWLNamedIndividual(IRI.create(i.iri))
 
-
-    def get_abox_axioms_between_individuals(self)->Iterable:
+    def get_abox_axioms_between_individuals(self) -> Iterable:
         # @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties
         raise NotImplementedError("will be implemented in future")
-    def get_abox_axioms_between_individuals_and_classes(self)->Iterable:
+
+    def get_abox_axioms_between_individuals_and_classes(self) -> Iterable:
         # @TODO: CD: Return all type information about individuals, i.e., individual type Class
         raise NotImplementedError("will be implemented in future")
+
     # @TODO:CD:Unsure it is working
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
         raise NotImplementedError("will be implemented in future")
@@ -1269,15 +1364,18 @@ class RDFLibOntology(AbstractOWLOntology):
         # TODO: Should this also return EquivalentClasses general class axioms? Compare to java owlapi
         for ec_x in c_x.equivalent_to:
             yield OWLEquivalentClassesAxiom([c, _parse_concept_to_owlapy(ec_x)])
+
     # @TODO:CD:Unsure it is working
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
         raise NotImplementedError("will be implemented in future")
         # TODO: At the moment owlready2 only supports SubClassOf general class axioms. (18.02.2023)
         for ca in self._onto.general_class_axioms():
-            yield from (OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
-                        for c in ca.is_a)
+            yield from (
+            OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
+            for c in ca.is_a)
 
-    def data_property_domain_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
+    def data_property_domain_axioms(self, pe: OWLDataProperty) -> Iterable[
+        OWLDataPropertyDomainAxiom]:
         raise NotImplementedError("will be implemented in future")
         p_x: owlready2.DataPropertyClass = self._world[pe.str]
         domains = set(p_x.domains_indirect())
@@ -1291,7 +1389,8 @@ class RDFLibOntology(AbstractOWLOntology):
                     logger.warning("Construct %s not implemented at %s", dom, pe)
                     pass  # XXX TODO
 
-    def data_property_range_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]:
+    def data_property_range_axioms(self, pe: OWLDataProperty) -> Iterable[
+        OWLDataPropertyRangeAxiom]:
         raise NotImplementedError("will be implemented in future")
         p_x: owlready2.DataPropertyClass = self._world[pe.str]
         ranges = set(chain.from_iterable(super_prop.range for super_prop in p_x.ancestors()))
@@ -1308,7 +1407,8 @@ class RDFLibOntology(AbstractOWLOntology):
                     logger.warning("Datatype %s not implemented at %s", rng, pe)
                     pass  # XXX TODO
 
-    def object_property_domain_axioms(self, pe: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]:
+    def object_property_domain_axioms(self, pe: OWLObjectProperty) -> Iterable[
+        OWLObjectPropertyDomainAxiom]:
         raise NotImplementedError("will be implemented in future")
         p_x: owlready2.ObjectPropertyClass = self._world[pe.str]
         domains = set(p_x.domains_indirect())
@@ -1322,7 +1422,8 @@ class RDFLibOntology(AbstractOWLOntology):
                     logger.warning("Construct %s not implemented at %s", dom, pe)
                     pass  # XXX TODO
 
-    def object_property_range_axioms(self, pe: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
+    def object_property_range_axioms(self, pe: OWLObjectProperty) -> Iterable[
+        OWLObjectPropertyRangeAxiom]:
         raise NotImplementedError("will be implemented in future")
         p_x: owlready2.ObjectPropertyClass = self._world[pe.str]
 
@@ -1355,16 +1456,17 @@ class RDFLibOntology(AbstractOWLOntology):
             for ax in axiom:
                 _remove_axiom(ax, self, self._world)
 
-    def save(self, path: Union[str,IRI] = None, inplace:bool=False, rdf_format = "rdfxml"):
+    def save(self, path: Union[str, IRI] = None, inplace: bool = False, rdf_format="rdfxml"):
         raise NotImplementedError("will be implemented in future")
         # convert it into str.
         if isinstance(path, IRI):
             path = path.as_str()
         # Sanity checking
         if inplace is False:
-            assert isinstance(path,str), f"path must be string if inplace is set to False. Current path is {type(path)}"
+            assert isinstance(path,
+                              str), f"path must be string if inplace is set to False. Current path is {type(path)}"
         # Get the current ontology defined in the world.
-        ont_x:owlready2.namespace.Ontology
+        ont_x: owlready2.namespace.Ontology
         ont_x = self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str())
 
         if inplace:
@@ -1373,10 +1475,11 @@ class RDFLibOntology(AbstractOWLOntology):
                 ont_x.save(file=self._iri.as_str(), format=rdf_format)
             else:
                 print(f"Saving {self} inplace with name of demo.owl...")
-                self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(file="demo.owl")
+                self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(
+                    file="demo.owl")
         else:
             print(f"Saving {path}..")
-            ont_x.save(file=path,format=rdf_format)
+            ont_x.save(file=path, format=rdf_format)
 
     def get_ontology_id(self):
         raise NotImplementedError("will be implemented in future")
@@ -1408,6 +1511,7 @@ OWLREADY2_FACET_KEYS = MappingProxyType({
     OWLFacet.TOTAL_DIGITS: "total_digits",
     OWLFacet.FRACTION_DIGITS: "fraction_digits"
 })
+
 
 ######################### Below classes must be outside of this script #########################
 class ToOwlready2:
@@ -1618,12 +1722,14 @@ class FromOwlready2:
     __slots__ = ()
 
     @singledispatchmethod
-    def map_concept(self, c: Union[owlready2.ClassConstruct, owlready2.ThingClass]) -> OWLClassExpression:
+    def map_concept(self,
+                    c: Union[owlready2.ClassConstruct, owlready2.ThingClass]) -> OWLClassExpression:
         """Map concept classes."""
         raise NotImplementedError(c)
 
     @singledispatchmethod
-    def _from_owlready2_property(self, c: Union[owlready2.PropertyClass, owlready2.Inverse]) -> OWLPropertyExpression:
+    def _from_owlready2_property(self, c: Union[
+        owlready2.PropertyClass, owlready2.Inverse]) -> OWLPropertyExpression:
         raise NotImplementedError(c)
 
     @_from_owlready2_property.register
@@ -1771,8 +1877,9 @@ class NeuralOntology(AbstractOWLOntology):
     STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
 
     def __init__(self, path_neural_embedding: str, train_if_not_exists: bool = False,
-                 training_params: Optional[Dict[str, Any]] = None, model: str = 'Keci', epochs: int = 500, batch_size: int = 1024, device: str = "gpu",
-                 gamma: float = 0.5):
+                 training_params: Optional[Dict[str, Any]] = None, scoring_technique: str = 'AllvsAll',
+                 model: str = 'Keci', epochs: int = 500, batch_size: int = 1024,
+                 device: str = "gpu", gamma: float = 0.5):
         """
         Initialize a Neural Ontology from a KGE model.
 
@@ -1786,6 +1893,7 @@ class NeuralOntology(AbstractOWLOntology):
         self.gamma = gamma
         self.epochs = epochs
         self.model = model
+        self.scoring_technique = scoring_technique
 
         path = Path(path_neural_embedding)
         if os.path.isdir(path) and os.path.exists(os.path.join(path, "configuration.json")):
@@ -1821,7 +1929,7 @@ class NeuralOntology(AbstractOWLOntology):
 
         # Set default parameters
         args.model = self.model
-        args.scoring_technique = "KvsAll"
+        args.scoring_technique = self.scoring_technique
         if os.path.isdir(path):
             args.dataset_dir = path
             args.path_single_kg = None
@@ -1850,14 +1958,16 @@ class NeuralOntology(AbstractOWLOntology):
         # Load the trained model
         self.model = KGE(path=args.path_to_store_single_run)
 
-    def predict(self, h: List[str] = None, r: List[str] = None, t: List[str] = None) -> List[Tuple[str, float]]:
+    def predict(self, h: List[str] = None, r: List[str] = None, t: List[str] = None) -> List[
+        Tuple[str, float]]:
         if r is None:
             topk = len(self.model.relation_to_idx)
         else:
             topk = len(self.model.entity_to_idx)
 
         return [(top_entity, score) for row in
-                self.model.predict_topk(h=h, r=r, t=t, topk=topk, batch_size=self.batch_size) for top_entity, score in
+                self.model.predict_topk(h=h, r=r, t=t, topk=topk, batch_size=self.batch_size) for
+                top_entity, score in
                 row if score >= self.gamma and is_valid_entity(top_entity)]
 
     def classes_in_signature(self) -> List[OWLClass]:
@@ -1869,7 +1979,8 @@ class NeuralOntology(AbstractOWLOntology):
         set_str_entities = set()
         for top_entity, score in self.predict(h=None,
                                               r=self.STR_IRI_TYPE,
-                                              t=[owl_class.iri.str for owl_class in self.classes_in_signature()]):
+                                              t=[owl_class.iri.str for owl_class in
+                                                 self.classes_in_signature()]):
             set_str_entities.add(top_entity)
         return [OWLNamedIndividual(entity) for entity in set_str_entities]
 
@@ -1889,13 +2000,16 @@ class NeuralOntology(AbstractOWLOntology):
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
         raise NotImplementedError("Not implemented")
 
-    def data_property_domain_axioms(self, property: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
+    def data_property_domain_axioms(self, property: OWLDataProperty) -> Iterable[
+        OWLDataPropertyDomainAxiom]:
         raise NotImplementedError("Not implemented")
 
-    def data_property_range_axioms(self, property: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]:
+    def data_property_range_axioms(self, property: OWLDataProperty) -> Iterable[
+        OWLDataPropertyRangeAxiom]:
         raise NotImplementedError("Not implemented")
 
-    def object_property_domain_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]:
+    def object_property_domain_axioms(self, property: OWLObjectProperty) -> Iterable[
+        OWLObjectPropertyDomainAxiom]:
         raise NotImplementedError("Not implemented")
 
     def get_ontology_id(self) -> _OI:
@@ -1920,7 +2034,8 @@ class NeuralOntology(AbstractOWLOntology):
     def __repr__(self):
         return f"NeuralOntology(model={self.model})"
 
-    def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
+    def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[
+        OWLObjectPropertyRangeAxiom]:
         raise NotImplementedError("Not implemented")
 
 
