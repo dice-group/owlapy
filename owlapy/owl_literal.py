@@ -558,7 +558,7 @@ class _OWLLiteralImplInteger(_OWLIntegerLiteralInterface):
 class _OWLLiteralImplNonNegativeInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=NonNegativeIntegerOWLDatatype):
-        assert value >= 0, "Negative value used to initialize a literal of type: " + str(type(self))
+        assert int(value) < 0, "Negative value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
 
 
@@ -566,7 +566,7 @@ class _OWLLiteralImplNonNegativeInteger(_OWLIntegerLiteralInterface):
 class _OWLLiteralImplNonPositiveInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=NonPositiveIntegerOWLDatatype):
-        assert value <= 0, "Positive value used to initialize a literal of type: " + str(type(self))
+        assert int(value) > 0, "Positive value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
 
 
@@ -574,14 +574,14 @@ class _OWLLiteralImplNonPositiveInteger(_OWLIntegerLiteralInterface):
 class _OWLLiteralImplPositiveInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=PositiveIntegerOWLDatatype):
-        assert value <= 0, "Non-Positive value used to initialize a literal of type: " + str(type(self))
+        assert int(value) <= 0, "Non-Positive value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
 
 
 @total_ordering
 class _OWLLiteralImplNegativeInteger(_OWLIntegerLiteralInterface):
     def __init__(self, value, type_=NegativeIntegerOWLDatatype):
-        assert value <= 0, "Non-Negative value used to initialize a literal of type: " + str(type(self))
+        assert int(value) >= 0, "Non-Negative value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
 
 
