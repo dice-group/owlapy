@@ -1081,7 +1081,7 @@ class CESimplifier:
             return OWLThing
         if len(s) == 1:
             return s.pop()
-sim        if OWLNothing in s:
+        if OWLNothing in s:
             s = s - {OWLNothing}
 
         # Check if C and ¬C (C can be non-atomic) are both part of operands and apply the law of the excluded middle
