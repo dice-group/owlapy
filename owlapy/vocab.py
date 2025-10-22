@@ -71,6 +71,7 @@ class XSDVocabulary(_Vocabulary, Enum, metaclass=_meta_Enum):
         super().__init__(namespaces.XSD, remainder)
     DECIMAL: Final = "decimal"  #:
     INTEGER: Final = "integer"  #:
+    INT: Final = "int"  #:
     NONNEGATIVEINTEGER: Final = "nonNegativeInteger"  #:
     NONPOSITIVEINTEGER: Final = "nonPositiveInteger"  #:
     POSITIVEINTEGER: Final = "positiveInteger"  #:

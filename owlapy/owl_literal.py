@@ -33,6 +33,9 @@ FloatOWLDatatype: Final = OWLDatatype(XSDVocabulary.FLOAT)
 #: An object representing a double datatype.
 DecimalOWLDatatype: Final = OWLDatatype(XSDVocabulary.DECIMAL)
 
+#: An object representing an int datatype.
+IntOWLDatatype: Final = OWLDatatype(XSDVocabulary.INT)
+
 #: An object representing an integer datatype.
 IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)
 
@@ -86,7 +89,7 @@ TopOWLDatatype: Final = OWLDatatype(OWLRDFVocabulary.RDFS_LITERAL)
 
 
 NUMERIC_DATATYPES: Final[Set[OWLDatatype]] = {FloatOWLDatatype, DoubleOWLDatatype, DecimalOWLDatatype,
-                                              IntegerOWLDatatype, PositiveIntegerOWLDatatype,
+                                              IntegerOWLDatatype, IntOWLDatatype, PositiveIntegerOWLDatatype,
                                               NegativeIntegerOWLDatatype, NonPositiveIntegerOWLDatatype,
                                               NonNegativeIntegerOWLDatatype}
 TIME_DATATYPES: Final[Set[OWLDatatype]] = {DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype}
@@ -127,6 +130,8 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
                 return super().__new__(_OWLLiteralImplBoolean)
             elif type_ == IntegerOWLDatatype:
                 return super().__new__(_OWLLiteralImplInteger)
+            elif type_ == IntOWLDatatype:
+                return super().__new__(_OWLLiteralImplInt)
             elif type_ == DoubleOWLDatatype:
                 return super().__new__(_OWLLiteralImplDouble)
             elif type_ == FloatOWLDatatype:
@@ -423,6 +428,7 @@ class _OWLNumericLiteralInterface(OWLLiteral):
 
     def __init__(self, value, type_=None):
         if isinstance(value, int) or type_ in [IntegerOWLDatatype,
+                                               IntOWLDatatype,
                                                NonNegativeIntegerOWLDatatype,
                                                NonPositiveIntegerOWLDatatype,
                                                NegativeIntegerOWLDatatype,
@@ -555,6 +561,13 @@ class _OWLLiteralImplInteger(_OWLIntegerLiteralInterface):
 
 
 @total_ordering
+class _OWLLiteralImplInt(_OWLIntegerLiteralInterface):
+
+    def __init__(self, value, type_=IntOWLDatatype):
+        super().__init__(value, type_)
+
+
+@total_ordering
 class _OWLLiteralImplNonNegativeInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=NonNegativeIntegerOWLDatatype):
@@ -640,7 +653,7 @@ class _OWLLiteralImplString(OWLLiteral):
     _v: str
     _type: OWLDatatype
 
-    def __init__(self, value, type_=None):
+    def __init__(self, value, type_=StringOWLDatatype):
         assert type_ is None or type_ == StringOWLDatatype
         if not isinstance(value, str):
             value = str(value)
