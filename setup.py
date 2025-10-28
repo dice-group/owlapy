@@ -24,7 +24,9 @@ setup(
         "fastapi>=0.115.5",
         "httpx>=0.27.2",
         "uvicorn>=0.32.1",
-        "dicee==0.2.0"],
+        "dicee==0.2.0",
+        "dspy==3.0.3" 
+        ],
     author='Caglar Demir',
     author_email='caglardemir8@gmail.com',
     url='https://github.com/dice-group/owlapy',
