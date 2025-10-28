@@ -91,7 +91,7 @@ class SPLTriples(dspy.Signature):
 def configure_dspy(signature):
     lm = dspy.LM(model="openai/gpt-4o", api_key="<ENTER_API_KEY>",
                  api_base=None,
-                 temperature=0.1, seed=42, cache=True, cache_in_memory=True)
+                 temperature=0.1, seed=42, cache=True)
     dspy.configure(lm=lm)
     model = dspy.Predict(signature)
     return model
@@ -164,8 +164,8 @@ def extract_hierarchy_from_dbpedia(cls):
 class GraphExtractor(dspy.Module):
     def __init__(self,model="gpt-4o", api_key="<YOUR_GITHUB_PAT>",
                  api_base="https://models.github.ai/inference",
-                 temperature=0.1, seed=42, cache=False, cache_in_memory=False,
-                 enable_logging=False):
+                 temperature=0.1, seed=42, cache=False,
+                 enable_logging=False, max_tokens=4000):
         """
         A module to extract an RDF graph from a given text input.
         Args:
@@ -175,12 +175,11 @@ class GraphExtractor(dspy.Module):
             temperature: The sampling temperature to use when generating responses.
             seed: Seed for the LLM.
             cache: Whether to cache the model responses for reuse to improve performance and reduce costs.
-            cache_in_memory: To enable additional caching with LRU in memory.
         """
         super().__init__()
         lm = dspy.LM(model=f"openai/{model}", api_key=api_key,
                      api_base=api_base,
-                     temperature=temperature, seed=seed, cache=cache, cache_in_memory=cache_in_memory)
+                     temperature=temperature, seed=seed, cache=cache, max_tokens=max_tokens)
         dspy.configure(lm=lm)
         self.logging = enable_logging
         self.entity_extractor = dspy.Predict(Entity)
