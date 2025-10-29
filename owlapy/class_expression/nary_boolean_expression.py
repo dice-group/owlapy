@@ -34,7 +34,7 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
         return False
 
     def __hash__(self):
-        return hash(self._operands)
+        return hash((type(self).__name__, self._operands))
 
 
 class OWLObjectUnionOf(OWLNaryBooleanClassExpression):

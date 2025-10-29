@@ -978,7 +978,7 @@ class Ontology(AbstractOWLOntology):
         return NotImplemented
 
     def __hash__(self):
-        return hash(self._onto.base_iri)
+        return hash(("Ontology", self._onto.base_iri))
 
     def __repr__(self):
         return f'Ontology({self._onto.base_iri}, loaded:{self._onto.loaded})'
@@ -1030,14 +1030,7 @@ class SyncOntology(AbstractOWLOntology):
         return int(self.owlapi_ontology.getOntologyID().hashCode())
 
     def __repr__(self):
-        return (f'SyncOntology:'
-                f'\t|Tbox|={len(self.get_tbox_axioms())}'
-                f'\t|Abox|={len(self.get_abox_axioms())}'
-                f'\t|Individuals|={len(self.individuals_in_signature())}'
-                f'\t|Classes|={len(self.classes_in_signature())}'
-                f'\t|Object Properties|={len(self.object_properties_in_signature())}'
-                f'\t|Data Properties|={len(self.data_properties_in_signature())}'
-                f'\n tPath:{self.path}\tLoad:{self.load}')
+        return f'SyncOntology({self.path}, loaded:{self.load})'
 
     def __len__(self):
         return len([i for i in self.get_abox_axioms()] + [i for i in self.get_abox_axioms()])

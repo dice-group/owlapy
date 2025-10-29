@@ -46,7 +46,7 @@ class OWLNaryDataRange(OWLDataRange, HasOperands[OWLDataRange]):
         return False
 
     def __hash__(self):
-        return hash(self._operands)
+        return hash((type(self).__name__, self._operands))
 
 
 class OWLDataIntersectionOf(OWLNaryDataRange):
@@ -104,7 +104,7 @@ class OWLDataComplementOf(OWLDataRange):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._data_range == other._data_range
-        return NotImplemented
+        return False
 
     def __hash__(self):
-        return hash(self._data_range)
+        return hash(("OWLDataComplementOf", self._data_range))

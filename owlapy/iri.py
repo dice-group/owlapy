@@ -76,11 +76,10 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._namespace is other._namespace and self._remainder == other._remainder
-        else:
-            raise RuntimeError(f"Invalid equality checking:{self} cannot be compared with {other}")
+        return False
 
     def __hash__(self):
-        return hash((self._namespace, self._remainder))
+        return hash(("IRI", self._namespace, self._remainder))
 
     def is_nothing(self):
         """Determines if this IRI is equal to the IRI that owl:Nothing is named with.

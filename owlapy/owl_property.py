@@ -132,9 +132,13 @@ class OWLObjectProperty(OWLObjectPropertyExpression, OWLProperty):
     def __eq__(self, other):
         if isinstance(other, OWLObjectProperty):
             return self.iri.str == other.iri.str
+        return False
 
     def __hash__(self):
-        return hash(self.iri)
+        return hash(("OWLObjectProperty", self.iri))
+
+    def __repr__(self):
+        return f"OWLObjectProperty({repr(self._iri)})"
 
 
 class OWLObjectInverseOf(OWLObjectPropertyExpression):
@@ -182,10 +186,10 @@ class OWLObjectInverseOf(OWLObjectPropertyExpression):
     def __eq__(self, other):
         if type(other) is type(self):
             return self._inverse_property == other._inverse_property
-        return NotImplemented
+        return False
 
     def __hash__(self):
-        return hash(self._inverse_property)
+        return hash(("OWLObjectInverseOf",self._inverse_property))
 
 
 class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
@@ -202,3 +206,14 @@ class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
     def is_owl_top_data_property(self) -> bool:
         # documented in parent
         return self.str == "http://www.w3.org/2002/07/owl#topDataProperty"
+
+    def __repr__(self):
+        return f"OWLDataProperty({repr(self._iri)})"
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._iri == other._iri
+        return False
+
+    def __hash__(self):
+        return hash(("OWLDataProperty",self._iri))

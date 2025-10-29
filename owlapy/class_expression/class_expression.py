@@ -78,7 +78,9 @@ class OWLBooleanClassExpression(OWLAnonymousClassExpression, metaclass=ABCMeta):
 
 
 class OWLObjectComplementOf(OWLBooleanClassExpression, HasOperands[OWLClassExpression]):
-    """Represents an ObjectComplementOf class expression in the OWL 2 Specification."""
+    """A complement class expression ObjectComplementOf( CE ) contains all individuals that are not instances of the
+    class expression CE.
+    (https://www.w3.org/TR/owl2-syntax/#Complement_of_Class_Expressions)"""
     __slots__ = '_operand'
     type_index: Final = 3003
 
@@ -120,4 +122,4 @@ class OWLObjectComplementOf(OWLBooleanClassExpression, HasOperands[OWLClassExpre
         return NotImplemented
 
     def __hash__(self):
-        return hash(self._operand)
+        return hash(("OWLObjectComplementOf", self._operand))

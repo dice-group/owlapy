@@ -113,7 +113,7 @@ class OWLDeclarationAxiom(OWLAxiom):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._entity, *self._annotations))
+        return hash(("OWLDeclarationAxiom", self._entity, *self._annotations))
 
     def __repr__(self):
         return f'OWLDeclarationAxiom(entity={self._entity},annotations={self._annotations})'
@@ -150,7 +150,7 @@ class OWLDatatypeDefinitionAxiom(OWLLogicalAxiom):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._datatype, self._datarange, *self._annotations))
+        return hash(("OWLDatatypeDefinitionAxiom", self._datatype, self._datarange, *self._annotations))
 
     def __repr__(self):
         return f'OWLDatatypeDefinitionAxiom(datatype={self._datatype},datarange={self._datarange},' \
@@ -201,7 +201,7 @@ class OWLHasKeyAxiom(OWLLogicalAxiom, HasOperands[OWLPropertyExpression]):
         return False
 
     def __hash__(self):
-        return hash((self._class_expression, *self._property_expressions, *self._annotations))
+        return hash(("OWLHasKeyAxiom", self._class_expression, *self._property_expressions, *self._annotations))
 
     def __repr__(self):
         return f'OWLHasKeyAxiom(class_expression={self._class_expression},' \
@@ -265,7 +265,7 @@ class OWLNaryClassAxiom(OWLClassAxiom, OWLNaryAxiom[OWLClassExpression], metacla
         return False
 
     def __hash__(self):
-        return hash((*self._class_expressions, *self._annotations))
+        return hash((type(self).__name__, *self._class_expressions, *self._annotations))
 
     def __repr__(self):
         return f'{type(self).__name__}({self._class_expressions},{self._annotations})'
@@ -349,7 +349,7 @@ class OWLNaryIndividualAxiom(OWLIndividualAxiom, OWLNaryAxiom[OWLIndividual], me
         return False
 
     def __hash__(self):
-        return hash((*self._individuals, *self._annotations))
+        return hash((type(self).__name__, *self._individuals, *self._annotations))
 
     def __repr__(self):
         return f'{type(self).__name__}({self._individuals},{self._annotations})'
@@ -417,7 +417,7 @@ class OWLNaryPropertyAxiom(Generic[_P], OWLPropertyAxiom, OWLNaryAxiom[_P], meta
         return False
 
     def __hash__(self):
-        return hash((*self._properties, *self._annotations))
+        return hash((type(self).__name__, *self._properties, *self._annotations))
 
     def __repr__(self):
         return f'{type(self).__name__}({self._properties},{self._annotations})'
@@ -474,6 +474,14 @@ class OWLInverseObjectPropertiesAxiom(OWLNaryPropertyAxiom[OWLObjectPropertyExpr
 
     def get_second_property(self) -> OWLObjectPropertyExpression:
         return self._second
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return other._first == self._first and other._second == self._second
+        return False
+
+    def __hash__(self):
+        return hash(("OWLInverseObjectPropertiesAxiom", self._first, self._second))
 
     def __repr__(self):
         return f'OWLInverseObjectPropertiesAxiom(first={self._first},second={self._second},' \
@@ -555,7 +563,7 @@ class OWLSubClassOfAxiom(OWLClassAxiom):
             return False
 
     def __hash__(self):
-        return hash((self._super_class, self._sub_class, *self._annotations))
+        return hash(("OWLSubClassOfAxiom", self._super_class, self._sub_class, *self._annotations))
 
     def __repr__(self):
         return f'OWLSubClassOfAxiom(sub_class={self._sub_class},super_class={self._super_class},' \
@@ -717,7 +725,7 @@ class OWLAnnotation(OWLObject):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._property, self._value))
+        return hash(("OWLAnnotation", self._property, self._value))
 
     def __repr__(self):
         return f'OWLAnnotation({self._property}, {self._value})'
@@ -787,7 +795,7 @@ class OWLAnnotationAssertionAxiom(OWLAnnotationAxiom):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._subject, self._annotation))
+        return hash(("OWLAnnotationAssertionAxiom", self._subject, self._annotation))
 
     def __repr__(self):
         return f'OWLAnnotationAssertionAxiom({self._subject}, {self._annotation}, {self.annotations()})'
@@ -821,7 +829,7 @@ class OWLSubAnnotationPropertyOfAxiom(OWLAnnotationAxiom):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._sub_property, self._super_property, *self._annotations))
+        return hash(("OWLSubAnnotationPropertyOfAxiom", self._sub_property, self._super_property, *self._annotations))
 
     def __repr__(self):
         return f'OWLSubAnnotationPropertyOfAxiom(sub_property={self._sub_property},' \
@@ -857,7 +865,7 @@ class OWLAnnotationPropertyDomainAxiom(OWLAnnotationAxiom):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._property, self._domain, *self._annotations))
+        return hash(("OWLAnnotationPropertyDomainAxiom", self._property, self._domain, *self._annotations))
 
     def __repr__(self):
         return f'OWLAnnotationPropertyDomainAxiom({repr(self._property)},{repr(self._domain)},' \
@@ -893,7 +901,7 @@ class OWLAnnotationPropertyRangeAxiom(OWLAnnotationAxiom):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._property, self._range, *self._annotations))
+        return hash(("OWLAnnotationPropertyRangeAxiom", self._property, self._range, *self._annotations))
 
     def __repr__(self):
         return f'OWLAnnotationPropertyRangeAxiom({repr(self._property)},{repr(self._range)},' \
@@ -929,7 +937,7 @@ class OWLSubPropertyAxiom(Generic[_P], OWLPropertyAxiom):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._sub_property, self._super_property, *self._annotations))
+        return hash((type(self).__name__, self._sub_property, self._super_property, *self._annotations))
 
     def __repr__(self):
         return f'{type(self).__name__}(sub_property={self._sub_property},super_property={self._super_property},' \
@@ -1006,7 +1014,7 @@ class OWLPropertyAssertionAxiom(Generic[_P, _C], OWLIndividualAxiom, metaclass=A
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._subject, self._property, self._object, *self._annotations))
+        return hash((type(self).__name__, self._subject, self._property, self._object, *self._annotations))
 
     def __repr__(self):
         return f'{type(self).__name__}(subject={self._subject},property_={self._property},' \
@@ -1097,7 +1105,7 @@ class OWLObjectPropertyCharacteristicAxiom(OWLUnaryPropertyAxiom[OWLObjectProper
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._property, *self._annotations))
+        return hash((type(self).__name__, self._property, *self._annotations))
 
     def __repr__(self):
         return f"{type(self).__name__}({repr(self._property)},{repr(self._annotations)})"
@@ -1211,7 +1219,7 @@ class OWLDataPropertyCharacteristicAxiom(OWLUnaryPropertyAxiom[OWLDataPropertyEx
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._property, *self._annotations))
+        return hash((type(self).__name__, self._property, *self._annotations))
 
     def __repr__(self):
         return f"{type(self).__name__}({repr(self._property)},{repr(self._annotations)})"
@@ -1254,7 +1262,7 @@ class OWLPropertyDomainAxiom(Generic[_P], OWLUnaryPropertyAxiom[_P], metaclass=A
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._property, self._domain, *self._annotations))
+        return hash((type(self).__name__, self._property, self._domain, *self._annotations))
 
     def __repr__(self):
         return f"{type(self).__name__}({repr(self._property)},{repr(self._domain)},{repr(self._annotations)})"
@@ -1289,7 +1297,7 @@ class OWLPropertyRangeAxiom(Generic[_P, _R], OWLUnaryPropertyAxiom[_P], metaclas
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._property, self._range, *self._annotations))
+        return hash((type(self).__name__, self._property, self._range, *self._annotations))
 
     def __repr__(self):
         return f"{type(self).__name__}({repr(self._property)},{repr(self._range)},{repr(self._annotations)})"

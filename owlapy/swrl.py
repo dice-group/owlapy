@@ -44,15 +44,19 @@ class Variable(metaclass=ABCMeta):
             return True
         return False
 
+    def __repr__(self):
+        return f"{type(self).__name__}({self.iri})"
+
     def __eq__(self, other):
         if type(other) is type(self):
             return self.iri == other.iri
+        return False
 
     def __str__(self):
         return "?" + self.iri.remainder
 
     def __hash__(self):
-        return hash(self.iri)
+        return hash((type(self).__name__, self.iri))
 
 
 class DVariable(Variable):
@@ -74,6 +78,7 @@ class Atom(metaclass=ABCMeta):
     def __eq__(self, other):
         if type(other) is type(self):
             return self.__repr__() == other.__repr__()
+        return False
 
     @staticmethod
     def from_string(atom_str: str, namespace: str, dp_predicates: List[str] = None):
@@ -212,8 +217,12 @@ class ClassAtom(Atom):
         return f"ClassAtom({t(self.cls)}, {t(self.argument1)})"
 
     def __hash__(self):
-        return hash(f"ClassAtom({str(self.cls)}, {str(self.argument1)})")
+        return hash(("ClassAtom",self.cls, self.argument1))
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.cls == other.cls and self.argument1 == other.argument1
+        return False
 
 class DataRangeAtom(Atom):
     """Represents a data range atom in SWRL syntax"""
@@ -246,7 +255,12 @@ class DataRangeAtom(Atom):
         return f"DataRangeAtom({t(self.datatype)} {t(self.argument1)})"
 
     def __hash__(self):
-        return hash(f"DataRangeAtom({str(self.datatype)}, {str(self.argument1)})")
+        return hash(("DataRangeAtom",self.datatype, self.argument1))
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.datatype == other.datatype and self.argument1 == other.argument1
+        return False
 
 
 class PropertyAtom(Atom, metaclass=ABCMeta):
@@ -289,7 +303,12 @@ class ObjectPropertyAtom(PropertyAtom):
         return f"ObjectPropertyAtom({t(self.prop)}, {t(self.argument1)}, {t(self.argument2)})"
 
     def __hash__(self):
-        return hash(f"ObjectPropertyAtom({str(self.prop)}, {str(self.argument1)}, {str(self.argument2)})")
+        return hash(("ObjectPropertyAtom",self.prop, self.argument1, self.argument2))
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.prop == other.prop and self.argument1 == other.argument1 and self.argument2 == other.argument2
+        return False
 
 
 class DataPropertyAtom(PropertyAtom):
@@ -306,7 +325,12 @@ class DataPropertyAtom(PropertyAtom):
         return f"DataPropertyAtom({t(self.prop)}, {t(self.argument1)}, {t(self.argument2)})"
 
     def __hash__(self):
-        return hash(f"DataPropertyAtom({str(self.prop)}, {str(self.argument1)}, {str(self.argument2)})")
+        return hash(("DataPropertyAtom",self.prop, self.argument1, self.argument2))
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.prop == other.prop and self.argument1 == other.argument1 and self.argument2 == other.argument2
+        return False
 
 class SameAsAtom(Atom):
     """Represents a 'same-as' atom in SWRL syntax"""
@@ -339,7 +363,12 @@ class SameAsAtom(Atom):
         return f"SameAs({t(self.argument1)}, {t(self.argument2)})"
 
     def __hash__(self):
-        return hash(f"SameAs({str(self.argument1)}, {str(self.argument2)})")
+        return hash(("SameAsAtom",self.argument1, self.argument2))
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.argument1 == other.argument1 and self.argument2 == other.argument2
+        return False
 
 
 class DifferentFromAtom(Atom):
@@ -373,7 +402,12 @@ class DifferentFromAtom(Atom):
         return f"DifferentFrom({t(self.argument1)}, {t(self.argument2)})"
 
     def __hash__(self):
-        return hash(f"DifferentFrom({str(self.argument1)}, {str(self.argument2)})")
+        return hash(("DifferentFromAtom",self.argument1, self.argument2))
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.argument1 == other.argument1 and self.argument2 == other.argument2
+        return False
 
 
 class BuiltInAtom(Atom):
@@ -416,6 +450,14 @@ class BuiltInAtom(Atom):
             args_list = arg.__repr__()
         args_list += ']'
         return f'BuiltInAtom(IRI.create({self.predicate.str}), {args_list})'
+
+    def __hash__(self):
+        return hash(("BuiltInAtom", self.predicate, tuple(self.arguments)))
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.predicate == other.predicate and self.arguments == other.arguments
+        return False
 
 
 class Rule:
@@ -465,3 +507,12 @@ class Rule:
 
     def __repr__(self):
         return f"Rule({[a.__repr__() for a in self.body]}, {[a.__repr__() for a in self.head]})"
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.body == other.body and self.head == other.head
+        return False
+
+    def __hash__(self):
+        return hash(("Rule", tuple(self.body) if isinstance(self.body, List) else self.body,
+                     tuple(self.head) if isinstance(self.head, List) else self.head))
