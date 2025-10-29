@@ -1089,6 +1089,161 @@ class SyncReasoner(AbstractOWLReasoner):
 
         return justifications
 
+
+    def get_contrastive_explanation(
+        self,
+        class_expression: "OWLClassExpression",
+        fact: "OWLNamedIndividual",
+        foil: "OWLNamedIndividual",
+        conflict_minimal: bool = True,
+    ) -> Dict[str, object]:
+        """
+        Compute a contrastive (fact–foil) explanation for why 'fact' satisfies
+        class_expression differently than 'foil'.
+
+        This version calls our refactored Java classes:
+          - anonymized.contrastive.ContrastiveExplanationGenerator
+          - anonymized.contrastive.ContrastiveExplanationProblem
+          - anonymized.contrastive.config.ExplanationConfig
+          - anonymized.contrastive.config.ReasonerChoice
+
+        Assumptions:
+        - self.ontology is a SyncOntology that exposes:
+            - owlapi_manager      (java OWLOntologyManager)
+            - owlapi_ontology     (java OWLOntology)
+            - mapper              (python<->java OWL API bridge)
+        - self.owlapi_reasoner may exist (java OWLReasoner), but the generator
+          will spawn its own internal reasoners as needed, so we don't have to pass it in.
+        - We MAY already have cached:
+            - self._ce_generator  (java ContrastiveExplanationGenerator)
+            - self._mapper        (same as ontology.mapper)
+          If not, we create them on demand.
+        """
+        from jpype import JClass
+
+        # ---------------------------------------------------------
+        # 1. Load Java classes we need
+        # ---------------------------------------------------------
+        CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
+        CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
+        ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
+        ReasonerChoice = JClass("anonymized.contrastive.config.ReasonerChoice")
+        InferenceType = JClass("org.semanticweb.owlapi.reasoner.InferenceType")
+
+        # ---------------------------------------------------------
+        # 2. Pull Java-side ontology and manager from this SyncReasoner
+        # ---------------------------------------------------------
+        j_manager = self.ontology.owlapi_manager    # OWLOntologyManager (java)
+        j_ontology = self.ontology.owlapi_ontology  # OWLOntology (java)
+        mapper = self.ontology.mapper               # bridge mapper
+        j_reasoner = getattr(self, "owlapi_reasoner", None)
+
+        # ---------------------------------------------------------
+        # 3. (Optional) warm up the shared reasoner we already have
+        # ---------------------------------------------------------
+        if j_reasoner is not None:
+            try:
+                j_reasoner.flush()
+            except Exception:
+                pass
+            try:
+                j_reasoner.precomputeInferences(InferenceType.CLASS_ASSERTIONS)
+            except Exception:
+                pass
+
+        # ---------------------------------------------------------
+        # 4. Ensure we have a cached ContrastiveExplanationGenerator
+        # ---------------------------------------------------------
+        if not hasattr(self, "_ce_generator"):
+            # decide which reasoner choice to tell the generator to use
+            reasoner_name = getattr(self, "_reasoner_name", "HermiT")
+
+            if str(reasoner_name).lower() == "hermit":
+                j_choice = ReasonerChoice.HERMIT
+            else:
+                j_choice = ReasonerChoice.ELK
+
+            # build ExplanationConfig(reasonerChoice, conflictMinimal)
+            j_config = ExplanationConfig(j_choice, bool(conflict_minimal))
+
+            # build Java generator once
+            self._ce_generator = CEGenerator(j_manager, j_config)
+
+            # keep the mapper cached too for convenience
+            self._mapper = mapper
+
+        # ---------------------------------------------------------
+        # 5. Convert Python owlapy objects -> Java OWLAPI objects
+        # ---------------------------------------------------------
+        j_cls_expr = mapper.map_(class_expression)   # Java OWLClassExpression
+        j_fact = mapper.map_(fact)                   # Java OWLNamedIndividual
+        j_foil = mapper.map_(foil)                   # Java OWLNamedIndividual
+
+        # ---------------------------------------------------------
+        # 6. Build the contrastive explanation problem
+        # ---------------------------------------------------------
+        cep = CEProblem(j_ontology, j_cls_expr, j_fact, j_foil)
+
+        # ---------------------------------------------------------
+        # 7. Call into Java to compute the explanation
+        # ---------------------------------------------------------
+        j_res = self._ce_generator.computeExplanation(cep)
+
+        if j_res is None:
+            return {
+                "common": set(),
+                "different": set(),
+                "conflict": set(),
+                "foil_mapping": {},
+            }
+
+        # ---------------------------------------------------------
+        # 8. Convert Java results -> Pythonic results (strings only)
+        # ---------------------------------------------------------
+        def _axiom_str_set(java_set) -> Set[str]:
+            if java_set is None:
+                return set()
+            out: Set[str] = set()
+            for ax in java_set:
+                try:
+                    out.add(str(ax))
+                except Exception:
+                    out.add(repr(ax))
+            return out
+
+        py_common = _axiom_str_set(j_res.getCommon())
+        py_diff = _axiom_str_set(j_res.getDifferent())
+        py_conflict = _axiom_str_set(j_res.getConflict())
+
+        # foil_mapping is java.util.Map<OWLNamedIndividual, OWLNamedIndividual>
+        py_mapping: Dict[str, str] = {}
+        j_map = j_res.getFoilMapping()
+
+        if j_map is not None:
+            # normal path: iterate entrySet()
+            try:
+                for e in j_map.entrySet():
+                    k_java = e.getKey()
+                    v_java = e.getValue()
+                    py_mapping[str(k_java)] = str(v_java)
+            except Exception:
+                # fallback for weird JPype map views
+                for k in j_map.keySet():
+                    v = j_map.get(k)
+                    py_mapping[str(k)] = str(v)
+
+        # ---------------------------------------------------------
+        # 9. Return plain-Python structure
+        # ---------------------------------------------------------
+        return {
+            "common": py_common,
+            "different": py_diff,
+            "conflict": py_conflict,
+            "foil_mapping": py_mapping,
+        }
+
+
+
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
         OWL reasoner that syncs to other reasoners like HermiT,Pellet,etc.
