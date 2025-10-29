@@ -601,7 +601,7 @@ class _OWLLiteralImplBoolean(OWLLiteral):
     _v: bool
     _type: OWLDatatype
 
-    def __init__(self, value, type_=None):
+    def __init__(self, value, type_=BooleanOWLDatatype):
         assert type_ is None or type_ == BooleanOWLDatatype
         if not isinstance(value, bool):
             from distutils.util import strtobool
