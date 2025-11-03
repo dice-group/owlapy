@@ -1090,6 +1090,8 @@ class CESimplifier:
                 s = s - {el, el.get_operand()}
                 if len(s) == 0:
                     return OWLThing
+                if len(s) == 1:
+                    return s.pop()
                 # return self._simplify(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
 
         ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
