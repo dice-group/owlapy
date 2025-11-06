@@ -18,7 +18,7 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
         # TODO: CD: Replace tuple with set
         self._operands = tuple(operands)
 
-        assert len(self._operands)>1, "OWLNaryBooleanClassExpression requires at least one operand."
+        assert len(self._operands)>1, "OWLNaryBooleanClassExpression requires at least two operands."
 
     def operands(self) -> Iterable[OWLClassExpression]:
         # documented in parent
