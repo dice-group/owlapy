@@ -1139,6 +1139,8 @@ class CESimplifier:
         # if top concept is found in the operands, remove it because of the identity law (𝐶 ⊓ ⊤ ≡ 𝐶)
         if OWLThing in s:
             s = s - {OWLThing}
+            if len(s) == 1:
+                return s.pop()
         # if bottom concept is found in the operands, return bottom concept because of the domination law (𝐶 ⊓ ⊥ ≡ ⊥)
         if OWLNothing in s:
             return OWLNothing
