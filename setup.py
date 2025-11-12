@@ -16,6 +16,7 @@ _deps = [
     "uvicorn>=0.32.1",
     "dicee==0.2.0",
     "litserve>=0.2.0",
+    "dspy==3.0.3",
     "ruff>=0.7.2",
     "pytest>=8.1.1",
 ]
@@ -41,6 +42,7 @@ extras["min"] = deps_list(
     "uvicorn",
     "dicee",
     "litserve",
+    "dspy",
 )
 
 extras["dev"] = (extras["min"] + deps_list("pytest", "ruff"))
