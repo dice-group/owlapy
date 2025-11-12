@@ -366,6 +366,10 @@ Instance retrieval runtime (in seconds) of each reasoner for different class exp
 
 Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) and [tests](https://github.com/dice-group/owlapy/tree/develop/tests) directories for more examples.
 
+## Try OWLAPY in the Browser
+You can explore OWLAPY's features through [OntoSource](https://github.com/dice-group/OntoSource), a web interface for working with ontologies. 
+
+
 ## How to cite
 If you find our work useful in your research, please consider citing the respective paper:
 
