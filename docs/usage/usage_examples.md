@@ -123,6 +123,7 @@ print(manchester_to_owl_expression("female and (hasChild max 2 person)", namespa
 ```
 ## More tools
 
+### Class expression simplification
 Owlapy also provides some useful tools to work with OWL expressions. For example,
 you can use [CESimplifier](owlapy.utils.CESimplifier) which is a syntactic class expression simplifier following the 
 Unique Name Assumption (UNA) under Close world Assumption (CWA) to simplify class expressions. 
@@ -141,6 +142,7 @@ ce_dl_simplified = owl_expression_to_dl(ce_owl_simplified)
 print(ce_dl_simplified) # "A ⊓ B ⊓ C"
 ```
 
+### DNF and CNF conversion
 You can get the top-level Disjunctive Normal Form (DNF) or top-level Conjunctive Normal Form (CNF) as shown below:
 
 ```python
@@ -162,6 +164,8 @@ print(ce1_dl_tl_dnf) # A ⊔ (A ⊓ B) ⊔ (A ⊓ C) ⊔ (B ⊓ C)
 print(ce2_dl_tl_cnf) # (A ⊓ B ⊓ C) ⊔ (A ⊓ B ⊓ C ⊓ E)
 ```
 
+### NNF conversion
+
 Get the negation normal form (NNF) simply by calling `get_nnf()` directly from the class expression:
 
 ```python
@@ -175,6 +179,8 @@ ce_dl_nnf = owl_expression_to_dl(ce_owl_nnf)
 
 print(ce_dl_nnf) # (¬A) ⊔ ((¬B) ⊓ (¬C))
 ```
+
+### Class expression length measurement
 
 You can also measure the length of a class expression using [OWLClassExpressionLengthMetric](owlapy.utils.OWLClassExpressionLengthMetric).
 You can set the weights for different types of constructors. We will continue with the default weights 
