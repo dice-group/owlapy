@@ -1,9 +1,9 @@
 # OWLAPY
 [![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
 [![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
-[![Coverage](https://img.shields.io/badge/coverage-78%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.6.1-blue)](https://pypi.org/project/owlapy/1.6.1/)
-[![Docs](https://img.shields.io/badge/documentation-1.6.1-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Coverage](https://img.shields.io/badge/coverage-64%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
+[![Pypi](https://img.shields.io/badge/pypi-1.6.2-blue)](https://pypi.org/project/owlapy/1.6.2/)
+[![Docs](https://img.shields.io/badge/documentation-1.6.2-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dice-group/owlapy)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/dice-group/owlapy/test.yml)
 ![GitHub License](https://img.shields.io/github/license/dice-group/owlapy)
@@ -28,7 +28,7 @@ pip3 install owlapy
 ``` bash
 git clone https://github.com/dice-group/owlapy && cd owlapy
 
-conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip3 install -e .
+conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip install -e '.[dev]'
 ```
 
 #### Extra files (optional)
@@ -290,7 +290,29 @@ justifications = reasoner.create_justifications({individual}, target_class, save
 </details>
 
 
+### Class expression simplification
 
+<details><summary> Click me!</summary>
+
+Syntactic simplification of class expressions using `owlapy.utils.CESimplifier` class or directly by using
+`owlapy.utils.simplify_class_expression` function.
+
+```python
+from owlapy import dl_to_owl_expression, owl_expression_to_dl
+from owlapy.utils import simplify_class_expression, get_expression_length
+
+ce_dl = "((((((((((¬Father) ⊓ (¬(∃ hasChild.Grandfather))) ⊓ (¬(∃ hasParent.{F1F2}))) ⊓ (¬(∃ hasSibling.Granddaughter))) \
+⊓ Grandson) ⊓ (¬(∃ hasParent.{F8M136}))) ⊔ ((((((¬Father) ⊓ (¬(∃ hasChild.Grandfather))) ⊓ (¬(∃ hasParent.{F1F2}))) ⊓ \
+(¬(∃ hasSibling.Granddaughter))) ⊓ (¬Grandson)) ⊓ (∃ married.{F10F179}))) ⊔ (((((¬Father) ⊓ (¬(∃ hasChild.Grandfather))) \
+⊓ (¬(∃ hasParent.{F1F2}))) ⊓ (∃ hasSibling.Granddaughter)) ⊓ (¬Grandson))) ⊔ ((¬Father) ⊓ (∃ hasChild.Grandfather))) ⊔ \
+(((¬Father) ⊓ (¬(∃ hasChild.Grandfather))) ⊓ (∃ hasParent.{F1F2}))) ⊔ (((Father ⊓ (¬(∃ hasSibling.Grandson))) ⊓ \
+(¬(∃ hasChild.{F5M64}))) ⊓ (¬(∃ married.{F2F15})))"
+ce_owl = dl_to_owl_expression(ce_dl, "http://www.benchmark.org/family#")
+simplified_ce = simplify_class_expression(ce_owl)
+print(owl_expression_to_dl(simplified_ce))
+print(f"Original CE length: {get_expression_length(ce_owl)} \nSimplified CE length: {get_expression_length(simplified_ce)}")
+```
+</details>
 
 ### Reasoners Runtime Benchmark
 
@@ -349,4 +371,29 @@ You can explore OWLAPY's features through [OntoSource](https://github.com/dice-g
 
 
 ## How to cite
-Currently, we are working on our manuscript describing our framework.
+If you find our work useful in your research, please consider citing the respective paper:
+
+```
+# OWLAPY
+@misc{baci2025owlapypythonicframeworkowl,
+      title={OWLAPY: A Pythonic Framework for OWL Ontology Engineering}, 
+      author={Alkid Baci and Luke Friedrichs and Caglar Demir and Axel-Cyrille Ngonga Ngomo},
+      year={2025},
+      eprint={2511.08232},
+      archivePrefix={arXiv},
+      primaryClass={cs.SE},
+      url={https://arxiv.org/abs/2511.08232}, 
+}
+
+
+# EBR
+@misc{teyou2025neuralreasoningrobustinstance,
+      title={Neural Reasoning for Robust Instance Retrieval in $\mathcal{SHOIQ}$}, 
+      author={Louis Mozart Kamdem Teyou and Luke Friedrichs and N'Dah Jean Kouagou and Caglar Demir and Yasir Mahmood and Stefan Heindorf and Axel-Cyrille Ngonga Ngomo},
+      year={2025},
+      eprint={2510.20457},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2510.20457}, 
+}
+```

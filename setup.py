@@ -1,32 +1,64 @@
+import re
 from setuptools import setup, find_packages
+
+_deps = [
+    "scikit-learn>=1.5.2",
+    "pandas>=1.5.0",
+    "requests>=2.32.3",
+    "rdflib>=6.0.2",
+    "parsimonious>=0.8.1",
+    "sortedcontainers>=2.4.0",
+    "owlready2>=0.40",
+    "JPype1>=1.5.0",
+    "tqdm>=4.66.5",
+    "fastapi>=0.115.5",
+    "httpx>=0.27.2",
+    "uvicorn>=0.32.1",
+    "dicee==0.2.0",
+    "litserve>=0.2.0",
+    "dspy==3.0.3",
+    "ruff>=0.7.2",
+    "pytest>=8.1.1",
+]
+
+deps = {b: a for a, b in (re.findall(r"^(([^!=<>~ ]+)(?:[!=<>~ ].*)?$)", x)[0] for x in _deps)}
+
+def deps_list(*pkgs):
+    return [deps[pkg] for pkg in pkgs]
+
+extras = dict()
+extras["min"] = deps_list(
+    "scikit-learn",
+    "pandas",
+    "requests",
+    "rdflib",
+    "parsimonious",
+    "sortedcontainers",
+    "owlready2",
+    "JPype1",
+    "tqdm",
+    "fastapi",
+    "httpx",
+    "uvicorn",
+    "dicee",
+    "litserve",
+    "dspy",
+)
+
+extras["dev"] = (extras["min"] + deps_list("pytest", "ruff"))
+install_requires = [extras["min"]]
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 setup(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
-    version="1.6.1",
+    version="1.6.2",
     packages=find_packages(),
     include_package_data=True,
     package_data={'owlapy': ['jar_dependencies/*.jar'],},
-    install_requires=[
-        "scikit-learn>=1.5.2",
-        "pandas>=1.5.0",
-        "requests>=2.32.3",
-        "rdflib>=6.0.2",
-        "ruff>=0.7.2",
-        "parsimonious>=0.8.1",
-        "pytest>=8.1.1",
-        "sortedcontainers>=2.4.0",
-        "owlready2>=0.40",
-        "JPype1>=1.5.0",
-        "tqdm>=4.66.5",
-        "fastapi>=0.115.5",
-        "httpx>=0.27.2",
-        "uvicorn>=0.32.1",
-        "dicee==0.2.0",
-        "dspy==3.0.3" 
-        ],
+    extras_require=extras,
+    install_requires=list(install_requires),
     author='Caglar Demir',
     author_email='caglardemir8@gmail.com',
     url='https://github.com/dice-group/owlapy',

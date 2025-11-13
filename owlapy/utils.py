@@ -1081,12 +1081,17 @@ class CESimplifier:
             return OWLThing
         if len(s) == 1:
             return s.pop()
+        if OWLNothing in s:
+            s = s - {OWLNothing}
+
         # Check if C and ¬C (C can be non-atomic) are both part of operands and apply the law of the excluded middle
         for el in copy(s):
             if isinstance(el, OWLObjectComplementOf) and el.get_operand() in s:
                 s = s - {el, el.get_operand()}
                 if len(s) == 0:
                     return OWLThing
+                if len(s) == 1:
+                    return s.pop()
                 # return self._simplify(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
 
         ce_to_return = combine_nary_expressions(OWLObjectUnionOf(_sort_by_ordered_owl_object(s)))
@@ -1129,11 +1134,16 @@ class CESimplifier:
 
         # simplify each operand, put results in a set to remove duplicates
         s = set(map(self._simplify, set(c.operands()), repeat(c)))
-        s.discard(OWLThing)
-        if not s:
-            return OWLThing
         if len(s) == 1:
             return s.pop()
+        # if top concept is found in the operands, remove it because of the identity law (𝐶 ⊓ ⊤ ≡ 𝐶)
+        if OWLThing in s:
+            s = s - {OWLThing}
+            if len(s) == 1:
+                return s.pop()
+        # if bottom concept is found in the operands, return bottom concept because of the domination law (𝐶 ⊓ ⊥ ≡ ⊥)
+        if OWLNothing in s:
+            return OWLNothing
 
         # Check if C and ¬C are both part of operands and apply the law of non-contradiction
         for el in copy(s):

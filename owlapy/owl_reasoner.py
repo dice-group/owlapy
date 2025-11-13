@@ -1727,7 +1727,7 @@ def import_and_include_axioms_generators():
             "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator()}
 
 
-class EBR(AbstractOWLReasoner):
+class EBR(AbstractOWLReasoner): # pragma: no cover
     """The Embedding-Based Reasoner uses neural embeddings to retrieve concept instances from knowledge bases. """
 
     STR_IRI_SUBCLASSOF = "http://www.w3.org/2000/01/rdf-schema#subClassOf"
