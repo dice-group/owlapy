@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Basic Usage &mdash; OWLAPY 1.6.1 documentation</title>
+  <title>Basic Usage &mdash; OWLAPY 1.6.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=d6a008b6"></script>
+      <script src="../_static/documentation_options.js?v=e15882dc"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -56,7 +56,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#object-property">Object Property</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#complex-class-expressions">Complex class expressions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#convert-to-sparql-dl-or-manchester-syntax">Convert to SPARQL, DL or Manchester syntax</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#more-tools">More tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#more-tools">More tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#class-expression-simplification">Class expression simplification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dnf-and-cnf-conversion">DNF and CNF conversion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nnf-conversion">NNF conversion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#class-expression-length-measurement">Class expression length measurement</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ontologies.html">Ontologies</a></li>
@@ -204,6 +210,8 @@ following convenient methods:</p>
 </section>
 <section id="more-tools">
 <h2>More tools<a class="headerlink" href="#more-tools" title="Link to this heading"></a></h2>
+<section id="class-expression-simplification">
+<h3>Class expression simplification<a class="headerlink" href="#class-expression-simplification" title="Link to this heading"></a></h3>
 <p>Owlapy also provides some useful tools to work with OWL expressions. For example,
 you can use <a class="reference internal" href="../autoapi/owlapy/utils/index.html#owlapy.utils.CESimplifier" title="owlapy.utils.CESimplifier"><span class="xref myst py py-class">CESimplifier</span></a> which is a syntactic class expression simplifier following the
 Unique Name Assumption (UNA) under Close world Assumption (CWA) to simplify class expressions.
@@ -220,6 +228,9 @@ For interpretability, we will use concepts in description logic (DL) syntax to s
 <span class="nb">print</span><span class="p">(</span><span class="n">ce_dl_simplified</span><span class="p">)</span> <span class="c1"># &quot;A ⊓ B ⊓ C&quot;</span>
 </pre></div>
 </div>
+</section>
+<section id="dnf-and-cnf-conversion">
+<h3>DNF and CNF conversion<a class="headerlink" href="#dnf-and-cnf-conversion" title="Link to this heading"></a></h3>
 <p>You can get the top-level Disjunctive Normal Form (DNF) or top-level Conjunctive Normal Form (CNF) as shown below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dl_to_owl_expression</span><span class="p">,</span> <span class="n">owl_expression_to_dl</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_top_level_dnf</span><span class="p">,</span> <span class="n">get_top_level_cnf</span>
@@ -239,6 +250,9 @@ For interpretability, we will use concepts in description logic (DL) syntax to s
 <span class="nb">print</span><span class="p">(</span><span class="n">ce2_dl_tl_cnf</span><span class="p">)</span> <span class="c1"># (A ⊓ B ⊓ C) ⊔ (A ⊓ B ⊓ C ⊓ E)</span>
 </pre></div>
 </div>
+</section>
+<section id="nnf-conversion">
+<h3>NNF conversion<a class="headerlink" href="#nnf-conversion" title="Link to this heading"></a></h3>
 <p>Get the negation normal form (NNF) simply by calling <code class="docutils literal notranslate"><span class="pre">get_nnf()</span></code> directly from the class expression:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dl_to_owl_expression</span><span class="p">,</span> <span class="n">owl_expression_to_dl</span>
 
@@ -251,6 +265,9 @@ For interpretability, we will use concepts in description logic (DL) syntax to s
 <span class="nb">print</span><span class="p">(</span><span class="n">ce_dl_nnf</span><span class="p">)</span> <span class="c1"># (¬A) ⊔ ((¬B) ⊓ (¬C))</span>
 </pre></div>
 </div>
+</section>
+<section id="class-expression-length-measurement">
+<h3>Class expression length measurement<a class="headerlink" href="#class-expression-length-measurement" title="Link to this heading"></a></h3>
 <p>You can also measure the length of a class expression using <a class="reference internal" href="../autoapi/owlapy/utils/index.html#owlapy.utils.OWLClassExpressionLengthMetric" title="owlapy.utils.OWLClassExpressionLengthMetric"><span class="xref myst py py-class">OWLClassExpressionLengthMetric</span></a>.
 You can set the weights for different types of constructors. We will continue with the default weights
 so we are going to call directly the function <code class="docutils literal notranslate"><span class="pre">get_expression_length</span></code> which uses a predefined instance of
@@ -270,6 +287,7 @@ so we are going to call directly the function <code class="docutils literal notr
 <p>In these examples we showed a part of <strong>owlapy</strong>. You can explore the
 <a class="reference internal" href="../autoapi/owlapy/index.html#module-owlapy" title="owlapy"><span class="xref myst py py-mod">api documentation</span></a> to learn more about all classes in owlapy and check more
 examples in the <a class="reference external" href="https://github.com/dice-group/owlapy/tree/main/examples">examples</a> or <a class="reference external" href="https://github.com/dice-group/owlapy/tree/main/tests">tests</a> directory</p>
+</section>
 </section>
 </section>
 

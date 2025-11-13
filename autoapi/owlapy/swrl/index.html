@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.swrl &mdash; OWLAPY 1.6.1 documentation</title>
+  <title>owlapy.swrl &mdash; OWLAPY 1.6.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d6a008b6"></script>
+      <script src="../../../_static/documentation_options.js?v=e15882dc"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -95,6 +95,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.iri"><code class="docutils literal notranslate"><span class="pre">Variable.iri</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.is_i_variable"><code class="docutils literal notranslate"><span class="pre">Variable.is_i_variable()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.is_d_variable"><code class="docutils literal notranslate"><span class="pre">Variable.is_d_variable()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.__repr__"><code class="docutils literal notranslate"><span class="pre">Variable.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.__eq__"><code class="docutils literal notranslate"><span class="pre">Variable.__eq__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.__str__"><code class="docutils literal notranslate"><span class="pre">Variable.__str__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Variable.__hash__"><code class="docutils literal notranslate"><span class="pre">Variable.__hash__()</span></code></a></li>
@@ -131,6 +132,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.__str__"><code class="docutils literal notranslate"><span class="pre">ClassAtom.__str__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">ClassAtom.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">ClassAtom.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ClassAtom.__eq__"><code class="docutils literal notranslate"><span class="pre">ClassAtom.__eq__()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom</span></code></a><ul>
@@ -144,6 +146,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.__str__"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.__str__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataRangeAtom.__eq__"><code class="docutils literal notranslate"><span class="pre">DataRangeAtom.__eq__()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.PropertyAtom"><code class="docutils literal notranslate"><span class="pre">PropertyAtom</span></code></a><ul>
@@ -164,6 +167,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.prop"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.prop</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.ObjectPropertyAtom.__eq__"><code class="docutils literal notranslate"><span class="pre">ObjectPropertyAtom.__eq__()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom</span></code></a><ul>
@@ -172,6 +176,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.prop"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.prop</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DataPropertyAtom.__eq__"><code class="docutils literal notranslate"><span class="pre">DataPropertyAtom.__eq__()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.SameAsAtom"><code class="docutils literal notranslate"><span class="pre">SameAsAtom</span></code></a><ul>
@@ -185,6 +190,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.__str__"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.__str__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.SameAsAtom.__eq__"><code class="docutils literal notranslate"><span class="pre">SameAsAtom.__eq__()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom</span></code></a><ul>
@@ -198,6 +204,7 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.__str__"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.__str__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.__repr__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.DifferentFromAtom.__eq__"><code class="docutils literal notranslate"><span class="pre">DifferentFromAtom.__eq__()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom</span></code></a><ul>
@@ -210,6 +217,8 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.is_builtin"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.is_builtin()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.__str__"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.__str__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.__repr__"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.__hash__"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.BuiltInAtom.__eq__"><code class="docutils literal notranslate"><span class="pre">BuiltInAtom.__eq__()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.swrl.Rule"><code class="docutils literal notranslate"><span class="pre">Rule</span></code></a><ul>
@@ -220,6 +229,8 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.from_string"><code class="docutils literal notranslate"><span class="pre">Rule.from_string()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.__str__"><code class="docutils literal notranslate"><span class="pre">Rule.__str__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.__repr__"><code class="docutils literal notranslate"><span class="pre">Rule.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.__eq__"><code class="docutils literal notranslate"><span class="pre">Rule.__eq__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.swrl.Rule.__hash__"><code class="docutils literal notranslate"><span class="pre">Rule.__hash__()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -384,6 +395,11 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Variable.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Variable.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Variable.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="owlapy.swrl.Variable.__eq__">
 <span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Variable.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Variable.__eq__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -538,6 +554,11 @@
 <span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.__hash__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ClassAtom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ClassAtom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ClassAtom.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -593,6 +614,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.__hash__">
 <span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataRangeAtom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataRangeAtom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataRangeAtom.__eq__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -679,6 +705,11 @@
 <span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ObjectPropertyAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ObjectPropertyAtom.__hash__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.ObjectPropertyAtom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#ObjectPropertyAtom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.ObjectPropertyAtom.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -709,6 +740,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.swrl.DataPropertyAtom.__hash__">
 <span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataPropertyAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataPropertyAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DataPropertyAtom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DataPropertyAtom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DataPropertyAtom.__eq__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -768,6 +804,11 @@
 <span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.__hash__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.SameAsAtom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#SameAsAtom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.SameAsAtom.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -825,6 +866,11 @@
 <span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.__hash__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.DifferentFromAtom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#DifferentFromAtom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.DifferentFromAtom.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -875,6 +921,16 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.BuiltInAtom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#BuiltInAtom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.BuiltInAtom.__eq__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -933,6 +989,16 @@ specifying data property predicates in this argument)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.swrl.Rule.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Rule.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Rule.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Rule.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Rule.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.swrl.Rule.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/swrl.html#Rule.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.swrl.Rule.__hash__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

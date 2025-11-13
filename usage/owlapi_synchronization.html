@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Owlapi Synchronization &mdash; OWLAPY 1.6.1 documentation</title>
+  <title>Owlapi Synchronization &mdash; OWLAPY 1.6.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=d6a008b6"></script>
+      <script src="../_static/documentation_options.js?v=e15882dc"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -100,7 +100,7 @@ a python module that provides access to Java in Python. To start executing
 Java code via JPype, one needs to start the java virtual machine (JVM).
 You don’t have to worry about it, because if a class is going to use
 <code class="docutils literal notranslate"><span class="pre">OWLAPIMapper</span></code> the JVM will start automatically. However, there is the
-function <code class="docutils literal notranslate"><span class="pre">startJVM</span></code> of the <code class="docutils literal notranslate"><span class="pre">static_functions.py</span></code> module if you ever need
+function <code class="docutils literal notranslate"><span class="pre">startJVM()</span></code> of the <code class="docutils literal notranslate"><span class="pre">static_functions.py</span></code> module if you ever need
 to start it manually.</p>
 <section id="sync-classes">
 <h2>“Sync” Classes<a class="headerlink" href="#sync-classes" title="Link to this heading"></a></h2>
@@ -113,9 +113,9 @@ to start it manually.</p>
 mapper. They inherit from abstract classes already present in owlapy
 (<code class="docutils literal notranslate"><span class="pre">AbstractOWLOntology</span></code> and <code class="docutils literal notranslate"><span class="pre">AbstractOWLReasoner</span></code> respectively) so
 the usage is the same as other implementors of these abstract classes.
-Additionally, SyncReasoner provides some supplementary methods, such as <code class="docutils literal notranslate"><span class="pre">infer_axioms</span></code> in,
-which infers and returns missing axioms from a given ontology.
-For a comprehensive overview of all available methods, refer to the <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">API</span></a> documentation.</p>
+Additionally, SyncReasoner provides some supplementary methods, such as <code class="docutils literal notranslate"><span class="pre">infer_axioms</span></code>,
+<code class="docutils literal notranslate"><span class="pre">create_justifications</span></code>, <code class="docutils literal notranslate"><span class="pre">has_consistent_ontology</span></code>, <code class="docutils literal notranslate"><span class="pre">is_satisfiable</span></code>, etc.
+For a comprehensive overview of all available methods and their description, refer to the <a class="reference internal" href="../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner" title="owlapy.owl_reasoner.SyncReasoner"><span class="xref myst py py-class">API</span></a> documentation.</p>
 <p>To make this guide self-contained, we will go through a simple example
 showing how to use the aforementioned classes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
@@ -148,11 +148,9 @@ showing how to use the aforementioned classes:</p>
 
 </pre></div>
 </div>
-<p>This was a simple example using the ‘<em>father</em>’ ontology to show
-just a small part of what you can do with “Sync” classes.</p>
 <p>Notice that after we are done using them we can stop
-the JVM by either using <code class="docutils literal notranslate"><span class="pre">jpype.shutdownJVM()</span></code> or the static function from the
-<code class="docutils literal notranslate"><span class="pre">static_functions.py</span></code> module <code class="docutils literal notranslate"><span class="pre">stopJVM()</span></code>. This will free the resources used by JPype and the java
+the JVM by either using <code class="docutils literal notranslate"><span class="pre">jpype.shutdownJVM()</span></code> or the static function <code class="docutils literal notranslate"><span class="pre">stopJVM()</span></code> from the
+<code class="docutils literal notranslate"><span class="pre">static_functions.py</span></code> module. This will free the resources used by JPype and the java
 packages. Once you stop the JVM it cannot be restarted so make sure you do that
 when you are done with the OWLAPI related classes. Stopping the JVM is not
 strictly necessary. The resources will be freed once the execution is over, but
@@ -166,9 +164,8 @@ you are able to import and use java classes as you would do in python (thanks to
 That means that you can play around with OWLAPI code in python as long
 as your JVM is started. Isn’t that awesome!</p>
 <p><code class="docutils literal notranslate"><span class="pre">SyncReasoner</span></code> uses HermiT reasoner by default. You can choose between:
-“HermiT”, “Pellet”, “ELK”, “JFact” and “Openllet” and “Structural”. Although no significant
-difference has been noticed between these reasoners, they surely differentiate
-in specific scenarios. You can check OWLAPI’s <a class="reference external" href="https://github.com/owlcs/owlapi/wiki">Wiki</a> for more details.</p>
+“HermiT”, “Pellet”, “ELK”, “JFact”, “Openllet” and “Structural”.
+You can check OWLAPI’s <a class="reference external" href="https://github.com/owlcs/owlapi/wiki">Wiki</a> for more details.</p>
 <p><em><strong>owlapi version</strong>: 5.1.9</em></p>
 <p>For java installation, check the minimum version required by owlapi distribution mentioned above.</p>
 </section>

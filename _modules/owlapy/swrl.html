@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>owlapy.swrl &mdash; OWLAPY 1.6.1 documentation</title>
+  <title>owlapy.swrl &mdash; OWLAPY 1.6.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d6a008b6"></script>
+      <script src="../../_static/documentation_options.js?v=e15882dc"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -135,11 +135,18 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
+<div class="viewcode-block" id="Variable.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.Variable.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iri</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
 <div class="viewcode-block" id="Variable.__eq__">
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.Variable.__eq__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iri</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">iri</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iri</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">iri</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="Variable.__str__">
@@ -151,7 +158,7 @@
 <div class="viewcode-block" id="Variable.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.Variable.__hash__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iri</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span></div>
 </div>
 
 
@@ -190,7 +197,8 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.Atom.__eq__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="Atom.from_string">
@@ -380,9 +388,16 @@
 <div class="viewcode-block" id="ClassAtom.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.ClassAtom.__hash__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ClassAtom(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cls</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
-</div>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;ClassAtom&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">))</span></div>
 
+
+<div class="viewcode-block" id="ClassAtom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.ClassAtom.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">cls</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument1</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
 
 
 <div class="viewcode-block" id="DataRangeAtom">
@@ -441,7 +456,15 @@
 <div class="viewcode-block" id="DataRangeAtom.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.DataRangeAtom.__hash__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DataRangeAtom(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;DataRangeAtom&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DataRangeAtom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.DataRangeAtom.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">datatype</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument1</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </div>
 
 
@@ -514,7 +537,15 @@
 <div class="viewcode-block" id="ObjectPropertyAtom.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.ObjectPropertyAtom.__hash__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ObjectPropertyAtom(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument2</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;ObjectPropertyAtom&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ObjectPropertyAtom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.ObjectPropertyAtom.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">prop</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument2</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument2</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </div>
 
 
@@ -540,7 +571,15 @@
 <div class="viewcode-block" id="DataPropertyAtom.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.DataPropertyAtom.__hash__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DataPropertyAtom(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument2</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;DataPropertyAtom&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DataPropertyAtom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.DataPropertyAtom.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">prop</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument2</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument2</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </div>
 
 
@@ -600,7 +639,15 @@
 <div class="viewcode-block" id="SameAsAtom.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.SameAsAtom.__hash__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SameAs(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument2</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;SameAsAtom&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SameAsAtom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.SameAsAtom.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument2</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument2</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </div>
 
 
@@ -661,7 +708,15 @@
 <div class="viewcode-block" id="DifferentFromAtom.__hash__">
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.DifferentFromAtom.__hash__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DifferentFrom(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">argument2</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;DifferentFromAtom&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">argument1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DifferentFromAtom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.DifferentFromAtom.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument2</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">argument2</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </div>
 
 
@@ -728,6 +783,20 @@
             <span class="n">args_list</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
         <span class="n">args_list</span> <span class="o">+=</span> <span class="s1">&#39;]&#39;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;BuiltInAtom(IRI.create(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">predicate</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s1">), </span><span class="si">{</span><span class="n">args_list</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+
+
+<div class="viewcode-block" id="BuiltInAtom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.BuiltInAtom.__hash__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;BuiltInAtom&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicate</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arguments</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="BuiltInAtom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.BuiltInAtom.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicate</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">predicate</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">arguments</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">arguments</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </div>
 
 
@@ -789,6 +858,21 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.Rule.__repr__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Rule(</span><span class="si">{</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+<div class="viewcode-block" id="Rule.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.Rule.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">body</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">head</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Rule.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/swrl/index.html#owlapy.swrl.Rule.__hash__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;Rule&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="n">List</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">,</span>
+                     <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">,</span> <span class="n">List</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">))</span></div>
 </div>
 
 </pre></div>

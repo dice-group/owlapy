@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About owlapy &mdash; OWLAPY 1.6.1 documentation</title>
+  <title>About owlapy &mdash; OWLAPY 1.6.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,14 +18,14 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=d6a008b6"></script>
+      <script src="../_static/documentation_options.js?v=e15882dc"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Basic Usage" href="usage_examples.html" />
-    <link rel="prev" title="Welcome to OWLAPY!" href="../index.html" /> 
+    <link rel="prev" title="Welcome to OWLAPY’s Documentation!" href="../index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -90,9 +90,9 @@
              
   <section id="about-owlapy">
 <h1>About owlapy<a class="headerlink" href="#about-owlapy" title="Link to this heading"></a></h1>
-<p><strong>Version:</strong> owlapy 1.6.1</p>
+<p><strong>Version:</strong> owlapy 1.6.2</p>
 <p><strong>GitHub repository:</strong> <a class="reference external" href="https://github.com/dice-group/owlapy">https://github.com/dice-group/owlapy</a></p>
-<p><strong>Publisher and maintainer:</strong> <a class="reference external" href="https://dice-research.org/">DICE</a> - Data Science Research Group of <a class="reference external" href="https://www.uni-paderborn.de/en/university">Paderborn University</a>.</p>
+<p><strong>Publisher and maintainer:</strong> <a class="reference internal" href="#(https://dice-research.org/)"><span class="xref myst">Data Science Research Group</span></a> of <a class="reference external" href="https://www.uni-paderborn.de/en/university">Paderborn University</a>.</p>
 <p><strong>Contact</strong>: <a class="reference external" href="mailto:alkid&#46;baci&#37;&#52;&#48;upb&#46;de">alkid<span>&#46;</span>baci<span>&#64;</span>upb<span>&#46;</span>de</a>, <a class="reference external" href="mailto:caglar&#46;demir&#37;&#52;&#48;upb&#46;de">caglar<span>&#46;</span>demir<span>&#64;</span>upb<span>&#46;</span>de</a></p>
 <p><strong>License:</strong> MIT License</p>
 <hr class="docutils" />
@@ -102,9 +102,9 @@
 foundation for knowledge graph and class expression learning projects in machine learning. Inspired by <a class="reference external" href="https://github.com/owlcs/owlapi">OWLAPI</a>
 (which is also available to use in this library via synchronisation), Owlapy enables ontology creation,
 modification, and reasoning while supporting OWL 2 Structural Specification, Functional-Style Syntax, and advanced
-features such as parsing and rendering to Description Logics and Manchester syntax. With capabilities to convert OWL
-expressions into SPARQL queries and interfaces for ontology and reasoning, Owlapy is a powerful tool used in powerful
-libraries like <a class="reference external" href="https://github.com/dice-group/Ontolearn">Ontolearn</a> and <a class="reference external" href="https://github.com/alkidbaci/OntoSample">OntoSample</a>.</p>
+features such as parsing and rendering to Description Logics and Manchester syntax, and even syntactic simplification of
+complex expressions. With capabilities to convert OWL class expressions into SPARQL queries and interfaces for ontology
+and reasoning, Owlapy is a powerful tool used in powerful libraries like <a class="reference external" href="https://github.com/dice-group/Ontolearn">Ontolearn</a> and <a class="reference external" href="https://github.com/alkidbaci/OntoSample">OntoSample</a>.</p>
 </section>
 <hr class="docutils" />
 <section id="what-does-owlapy-have-to-offer">
@@ -126,6 +126,13 @@ highlighting:</p>
 </ul>
 </li>
 <li><p>Construct complex class expressions.</p></li>
+<li><p>Provide tools for operating on class expressions, such as:</p>
+<ul>
+<li><p>Syntactic simplification</p></li>
+<li><p>NNF, DNF or CNF conversion</p></li>
+<li><p>Factorization, length computation, flattening, sorting, etc.</p></li>
+</ul>
+</li>
 <li><p>Provide interfaces for OWL Ontology and Reasoner.</p></li>
 <li><p>Convert owl expression to SPARQL queries.</p></li>
 <li><p>Render owl expression to Description Logics or Manchester syntax.</p></li>
@@ -140,8 +147,8 @@ highlighting:</p>
 <section id="how-to-install">
 <h2>How to install?<a class="headerlink" href="#how-to-install" title="Link to this heading"></a></h2>
 <p>Installation from source:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/dice-group/owlapy
-conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>temp_owlapy<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10.13<span class="w"> </span>--no-default-packages<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>temp_owlapy<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/dice-group/owlapy<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>owlapy
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>temp_owlapy<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10.13<span class="w"> </span>--no-default-packages<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>temp_owlapy<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
 </pre></div>
 </div>
 <p>or using PyPI:</p>
@@ -155,7 +162,7 @@ conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to OWLAPY!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to OWLAPY’s Documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="usage_examples.html" class="btn btn-neutral float-right" title="Basic Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

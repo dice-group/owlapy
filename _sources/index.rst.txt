@@ -1,9 +1,9 @@
 
 
-Welcome to OWLAPY!
+Welcome to OWLAPY's Documentation!
 ===========================================
 
-`OWLAPY <https://github.com/dice-group/owlapy>`_: Representation of OWL objects in python.
+`OWLAPY <https://github.com/dice-group/owlapy>`_: A Pythonic Framework for OWL Ontology Engineering.
 
 
 .. toctree::

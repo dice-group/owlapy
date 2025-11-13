@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ontologies &mdash; OWLAPY 1.6.1 documentation</title>
+  <title>Ontologies &mdash; OWLAPY 1.6.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=677a9ea0" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -18,7 +18,7 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=d6a008b6"></script>
+      <script src="../_static/documentation_options.js?v=e15882dc"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -62,7 +62,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#save-an-ontology">Save an Ontology</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#generate-an-ontology-from-text">Generate an ontology from text</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generate-an-ontology-from-text">Generate an ontology from text</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#worlds">Worlds</a></li>
 </ul>
 </li>
@@ -264,10 +267,9 @@ created in the same directory as the file you are running this code.</p>
 </section>
 <section id="generate-an-ontology-from-text">
 <h2>Generate an ontology from text<a class="headerlink" href="#generate-an-ontology-from-text" title="Link to this heading"></a></h2>
-<p>In owlapy you will find a module named ontogen, a fancy name we chose for an ontology generating module using LLMs.
-We use <a class="reference external" href="https://dspy.ai/">DSPy</a> for this function and to make use of it you have to create a object of <code class="docutils literal notranslate"><span class="pre">GraphExtractor</span></code>
-where we specify some general settings for the LLM and then use it as a callable object given the necessary parameters
-like following:</p>
+<p>In OWLAPY, you’ll find a module named ontogen — a concise name we chose for our ontology generation module powered by LLMs.
+This functionality is built on top of <a class="reference external" href="https://dspy.ai/">DSPy</a>. To use it, you need to create an instance of the <code class="docutils literal notranslate"><span class="pre">GraphExtractor</span></code> class,
+where you can configure general LLM settings. Once initialized, the instance can be used as a callable object to generate an ontology, as shown below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.ontogen.data_extraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphExtractor</span>
 
 <span class="n">ontogen</span> <span class="o">=</span> <span class="n">GraphExtractor</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;openai/gpt-4o&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;ENTER_API_KEY&gt;&quot;</span><span class="p">,</span> <span class="n">api_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -275,26 +277,35 @@ like following:</p>
 <span class="n">ontogen</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Text to be used for ontology generation&quot;</span><span class="p">,</span> <span class="n">generate_types</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>A few things to mention here:</p>
+<section id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>model name should be a string of the form <code class="docutils literal notranslate"><span class="pre">llm_provider/llm_name</span></code> supported by LiteLLM,</p></li>
-<li><p>enter your API key and API endpoint in the respective fields (you can use GitHub Models for free by creating a GitHub PAT with permission to “models”),</p></li>
-<li><p>if you want to see what is being generated/extracted during the process set <code class="docutils literal notranslate"><span class="pre">enable-logging=True</span></code>,</p></li>
-<li><p>using the <code class="docutils literal notranslate"><span class="pre">ontogen</span></code> object as a callable one will forward the call to the method <code class="docutils literal notranslate"><span class="pre">forward</span></code>, therefore you can
-also write <code class="docutils literal notranslate"><span class="pre">ontogen.forward</span></code> to view the docstring and the list of possible arguments,</p></li>
-<li><p>in the example above we use <code class="docutils literal notranslate"><span class="pre">generate_types=True</span></code> which will initiate a process of generating classes for the
-extracted entities and leave the other arguments to their default values,</p></li>
-<li><p>you can pass a list of entity types to the argument <code class="docutils literal notranslate"><span class="pre">entity_types</span></code> if you want to restrict the types of entities
-to be extracted. By default, it is set to <code class="docutils literal notranslate"><span class="pre">None</span></code> which means that the entity types will be generated by the LLM,</p></li>
-<li><p>by setting <code class="docutils literal notranslate"><span class="pre">extract_spl_triples</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> you will enable the extraction of s-p-l triples where l is a numeric
-literal,</p></li>
-<li><p>if you want to have more control over the prompts, you can pass your own few-shot examples to the
-arguments: <code class="docutils literal notranslate"><span class="pre">examples_for_entity_extraction</span></code>, <code class="docutils literal notranslate"><span class="pre">examples_for_triples_extraction</span></code>, <code class="docutils literal notranslate"><span class="pre">examples_for_type_assertion</span></code>,
-<code class="docutils literal notranslate"><span class="pre">examples_for_type_generation</span></code>, <code class="docutils literal notranslate"><span class="pre">examples_for_literal_extraction</span></code>, <code class="docutils literal notranslate"><span class="pre">examples_for_spl_triples_extraction</span></code>,
-otherwise a default set of examples will be used. You can find the list of examples we use <a class="reference external" href="https://github.com/dice-group/owlapy/blob/main/owlapy/ontogen/few_shot_examples.py">here</a>.</p></li>
+<li><p>The model argument should be a string of the form <code class="docutils literal notranslate"><span class="pre">llm_provider/llm_name</span></code>, supported by LiteLLM.</p></li>
+<li><p>Provide your API key and (optionally) an API endpoint in the respective fields.
+You can use GitHub Models for free by creating a GitHub PAT with permission to “models”.</p></li>
+<li><p>To view detailed logs during extraction or generation, set <code class="docutils literal notranslate"><span class="pre">enable_logging=True</span></code>.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ontogen</span></code> object is callable — internally, it forwards the call to the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method.
+You can also inspect available parameters by checking its docstring <code class="docutils literal notranslate"><span class="pre">help(ontogen.forward)</span></code></p></li>
+<li><p>In the example above, setting <code class="docutils literal notranslate"><span class="pre">generate_types=True</span></code> triggers automatic generation of classes for the extracted entities,
+while all other parameters use their default values.</p></li>
+<li><p>To restrict the types of entities to be extracted, you can pass a list to <code class="docutils literal notranslate"><span class="pre">entity_types</span></code>.
+By default, it is set to <code class="docutils literal notranslate"><span class="pre">None</span></code>, allowing the LLM to infer entity types automatically.</p></li>
+<li><p>Setting <code class="docutils literal notranslate"><span class="pre">extract_spl_triples=True</span></code> enables extraction of subject–predicate–literal (s-p-l) triples, where l represents a numeric literal.</p></li>
+<li><p>To customize prompt behavior, you can provide your own few-shot examples using any of the following arguments:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_entity_extraction</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_triples_extraction</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_type_assertion</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_type_generation</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_literal_extraction</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_spl_triples_extraction</span></code>
+If none are provided, a default set of examples is used. You can review the defaults <a class="reference external" href="https://github.com/dice-group/owlapy/blob/main/owlapy/ontogen/few_shot_examples.py">here</a>.</p></li>
 </ul>
-<p>After executing it over some text of your desire, the successful execution of the example code will generate a file
-named <code class="docutils literal notranslate"><span class="pre">generated_ontology.owl</span></code> in your local directory, which you can change by using the <code class="docutils literal notranslate"><span class="pre">save_path</span></code> argument.</p>
+</li>
+</ul>
+<p>After running the example, a file named <code class="docutils literal notranslate"><span class="pre">generated_ontology.owl</span></code> will be created in your working directory.
+You can change the output path by setting the <code class="docutils literal notranslate"><span class="pre">save_path</span></code> argument.</p>
+</section>
 </section>
 <section id="worlds">
 <h2>Worlds<a class="headerlink" href="#worlds" title="Link to this heading"></a></h2>

@@ -1,0 +1,491 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.ontogen.data_extraction &mdash; OWLAPY 1.6.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e15882dc"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.ontogen.data_extraction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.ontogen.data_extraction</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.ontogen.few_shot_examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">EXAMPLES_FOR_ENTITY_EXTRACTION</span><span class="p">,</span> <span class="n">EXAMPLES_FOR_TRIPLES_EXTRACTION</span><span class="p">,</span> \
+    <span class="n">EXAMPLES_FOR_TYPE_ASSERTION</span><span class="p">,</span> <span class="n">EXAMPLES_FOR_TYPE_GENERATION</span><span class="p">,</span> <span class="n">EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION</span><span class="p">,</span> \
+    <span class="n">EXAMPLES_FOR_LITERAL_EXTRACTION</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">,</span> \
+    <span class="n">OWLSubClassOfAxiom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">StringOWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
+
+<span class="c1"># DBpedia often uses British English, so we define a mapping for common American to British English terms.</span>
+<span class="n">american_to_british</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;organization&quot;</span><span class="p">:</span> <span class="s2">&quot;organisation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;colour&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;honor&quot;</span><span class="p">:</span> <span class="s2">&quot;honour&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;analyze&quot;</span><span class="p">:</span> <span class="s2">&quot;analyse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="s2">&quot;centre&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;meter&quot;</span><span class="p">:</span> <span class="s2">&quot;metre&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;theater&quot;</span><span class="p">:</span> <span class="s2">&quot;theatre&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;catalog&quot;</span><span class="p">:</span> <span class="s2">&quot;catalogue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;defense&quot;</span><span class="p">:</span> <span class="s2">&quot;defence&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offense&quot;</span><span class="p">:</span> <span class="s2">&quot;offence&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;license&quot;</span><span class="p">:</span> <span class="s2">&quot;licence&quot;</span><span class="p">,</span>  <span class="c1"># noun in UK</span>
+    <span class="s2">&quot;practice&quot;</span><span class="p">:</span> <span class="s2">&quot;practise&quot;</span><span class="p">,</span>  <span class="c1"># verb in UK</span>
+    <span class="s2">&quot;traveled&quot;</span><span class="p">:</span> <span class="s2">&quot;travelled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;canceled&quot;</span><span class="p">:</span> <span class="s2">&quot;cancelled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;labeled&quot;</span><span class="p">:</span> <span class="s2">&quot;labelled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;modeling&quot;</span><span class="p">:</span> <span class="s2">&quot;modelling&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;programme&quot;</span><span class="p">,</span>  <span class="c1"># when referring to TV/show</span>
+    <span class="s2">&quot;check&quot;</span><span class="p">:</span> <span class="s2">&quot;cheque&quot;</span><span class="p">,</span>  <span class="c1"># bank sense</span>
+    <span class="s2">&quot;gray&quot;</span><span class="p">:</span> <span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plow&quot;</span><span class="p">:</span> <span class="s2">&quot;plough&quot;</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="Entity">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.Entity">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Entity</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text as input identify key entities extracted form the text.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of key entities, capitalized.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Triple">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.Triple">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Triple</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text and entities, identify triples of type source_entity-relation-target_entity</span>
+<span class="s2">    where source_entity and target_entity are strictly part of the given entities.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to consider.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">triples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of source_entity-relation-target_entity, capitalized.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TypeAssertion">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.TypeAssertion">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeAssertion</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of entities, a list of types and textual contex, assign types to the entities.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to assign a type to.&quot;</span><span class="p">)</span>
+    <span class="n">entity_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of types to be assigned to entities.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entity-entity_type pairs.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="TypeGeneration">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.TypeGeneration">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeGeneration</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of entities and textual contex, assign meaningful general types to the entities.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to assign a type to.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entity-entity_type pairs.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Literal">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.Literal">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Literal</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text as input identify key numerical values extracted form the text.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">l_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of key numerical values.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SPLTriples">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.SPLTriples">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SPLTriples</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text, entities and numeric literals, identify triples of type </span>
+<span class="s2">    source_entity-relation-target_value where source_entity is strictly part of the given entities and the target_value </span>
+<span class="s2">    is strictly part of the given numeric literals.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to consider.&quot;</span><span class="p">)</span>
+    <span class="n">numeric_literals</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of literals to consider.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">triples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span>
+        <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of source_entity-relation-target_value triples.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="configure_dspy">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.configure_dspy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">configure_dspy</span><span class="p">(</span><span class="n">signature</span><span class="p">):</span>
+    <span class="n">lm</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">LM</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;openai/gpt-4o&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;ENTER_API_KEY&gt;&quot;</span><span class="p">,</span>
+                 <span class="n">api_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">dspy</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">lm</span><span class="o">=</span><span class="n">lm</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">signature</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="get_entities">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.get_entities">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_entities</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">EXAMPLES_FOR_ENTITY_EXTRACTION</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">configure_dspy</span><span class="p">(</span><span class="n">Entity</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">few_shot_examples</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span></div>
+
+
+<div class="viewcode-block" id="get_triples">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.get_triples">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_triples</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">EXAMPLES_FOR_TRIPLES_EXTRACTION</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">configure_dspy</span><span class="p">(</span><span class="n">Triple</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">few_shot_examples</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span></div>
+
+
+<div class="viewcode-block" id="assign_types">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.assign_types">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">assign_types</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="p">,</span> <span class="n">entity_types</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">EXAMPLES_FOR_TYPE_ASSERTION</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">configure_dspy</span><span class="p">(</span><span class="n">TypeAssertion</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">entity_types</span><span class="o">=</span><span class="n">entity_types</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">few_shot_examples</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span></div>
+
+
+<div class="viewcode-block" id="generate_entity_types">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.generate_entity_types">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_entity_types</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span> <span class="n">EXAMPLES_FOR_TYPE_GENERATION</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">configure_dspy</span><span class="p">(</span><span class="n">TypeGeneration</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">few_shot_examples</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span></div>
+
+
+<div class="viewcode-block" id="get_numeric_literals">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.get_numeric_literals">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_numeric_literals</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">EXAMPLES_FOR_LITERAL_EXTRACTION</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">configure_dspy</span><span class="p">(</span><span class="n">Literal</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">few_shot_examples</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">l_values</span></div>
+
+
+<div class="viewcode-block" id="get_spl_triples">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.get_spl_triples">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_spl_triples</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="p">,</span> <span class="n">literals</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">configure_dspy</span><span class="p">(</span><span class="n">SPLTriples</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">numeric_literals</span><span class="o">=</span><span class="n">literals</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">few_shot_examples</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span></div>
+
+
+<div class="viewcode-block" id="run_query">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.run_query">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs a SPARQL query against the DBpedia SPARQL endpoint.&quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;application/sparql-results+json&quot;</span>
+    <span class="p">}</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://dbpedia.org/sparql&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">binding</span><span class="p">[</span><span class="s1">&#39;superclass&#39;</span> <span class="k">if</span> <span class="s1">&#39;superclass&#39;</span> <span class="ow">in</span> <span class="n">binding</span> <span class="k">else</span> <span class="s1">&#39;subclass&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;bindings&#39;</span><span class="p">]]</span></div>
+
+
+<div class="viewcode-block" id="extract_hierarchy_from_dbpedia">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.extract_hierarchy_from_dbpedia">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_hierarchy_from_dbpedia</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extracts the hierarchy of an entity from DBpedia using the SPARQL endpoint.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls (str): The DBpedia class remainder.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing two lists:</span>
+<span class="sd">            - superclasses: List of superclasses of the entity.</span>
+<span class="sd">            - subclasses: List of subclasses of the entity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">american_to_british</span><span class="p">:</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">american_to_british</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+    <span class="n">dbpedia_class_uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://dbpedia.org/ontology/</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">superclass_query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT ?superclass WHERE </span><span class="se">{{</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">dbpedia_class_uri</span><span class="si">}</span><span class="s2">&gt; rdfs:subClassOf ?superclass .</span><span class="se">}}</span><span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">subclass_query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT ?subclass WHERE </span><span class="se">{{</span><span class="s2">?subclass rdfs:subClassOf &lt;</span><span class="si">{</span><span class="n">dbpedia_class_uri</span><span class="si">}</span><span class="s2">&gt; .</span><span class="se">}}</span><span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">superclasses</span> <span class="o">=</span> <span class="n">run_query</span><span class="p">(</span><span class="n">superclass_query</span><span class="p">)</span>
+    <span class="n">subclasses</span> <span class="o">=</span> <span class="n">run_query</span><span class="p">(</span><span class="n">subclass_query</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">superclasses</span><span class="p">,</span> <span class="n">subclasses</span></div>
+
+
+<div class="viewcode-block" id="GraphExtractor">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.GraphExtractor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GraphExtractor</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;YOUR_GITHUB_PAT&gt;&quot;</span><span class="p">,</span>
+                 <span class="n">api_base</span><span class="o">=</span><span class="s2">&quot;https://models.github.ai/inference&quot;</span><span class="p">,</span>
+                 <span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">enable_logging</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4000</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A module to extract an RDF graph from a given text input.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            model: Model name for the LLM.</span>
+<span class="sd">            api_key: API key.</span>
+<span class="sd">            api_base: API base URL.</span>
+<span class="sd">            temperature: The sampling temperature to use when generating responses.</span>
+<span class="sd">            seed: Seed for the LLM.</span>
+<span class="sd">            cache: Whether to cache the model responses for reuse to improve performance and reduce costs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">lm</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">LM</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;openai/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+                     <span class="n">api_base</span><span class="o">=</span><span class="n">api_base</span><span class="p">,</span>
+                     <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="n">max_tokens</span><span class="p">)</span>
+        <span class="n">dspy</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">lm</span><span class="o">=</span><span class="n">lm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="o">=</span> <span class="n">enable_logging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity_extractor</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">Entity</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triples_extractor</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">Triple</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_asserter</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">TypeAssertion</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_generator</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">TypeGeneration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">literal_extractor</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">Literal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spl_triples_extractor</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">SPLTriples</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GraphExtractor.snake_case">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.GraphExtractor.snake_case">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">snake_case</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;_&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GraphExtractor.forward">
+<a class="viewcode-back" href="../../../autoapi/owlapy/ontogen/data_extraction/index.html#owlapy.ontogen.data_extraction.GraphExtractor.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                <span class="n">ontology_namespace</span> <span class="o">=</span> <span class="s2">&quot;http://example.com/ontogen#&quot;</span><span class="p">,</span>
+                <span class="n">entity_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">generate_types</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">extract_spl_triples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">create_class_hierarchy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">examples_for_entity_extraction</span><span class="o">=</span><span class="n">EXAMPLES_FOR_ENTITY_EXTRACTION</span><span class="p">,</span>
+                <span class="n">examples_for_triples_extraction</span><span class="o">=</span><span class="n">EXAMPLES_FOR_TRIPLES_EXTRACTION</span><span class="p">,</span>
+                <span class="n">examples_for_type_assertion</span><span class="o">=</span><span class="n">EXAMPLES_FOR_TYPE_ASSERTION</span><span class="p">,</span>
+                <span class="n">examples_for_type_generation</span><span class="o">=</span><span class="n">EXAMPLES_FOR_TYPE_GENERATION</span><span class="p">,</span>
+                <span class="n">examples_for_literal_extraction</span><span class="o">=</span><span class="n">EXAMPLES_FOR_LITERAL_EXTRACTION</span><span class="p">,</span>
+                <span class="n">examples_for_spl_triples_extraction</span><span class="o">=</span><span class="n">EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION</span><span class="p">,</span>
+                <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;generated_ontology.owl&quot;</span>
+                <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Ontology</span><span class="p">:</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract an ontology from a given textual input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (str): Text input from which the ontology will be extracted.</span>
+<span class="sd">            ontology_namespace (str): Namespace to use for the ontology.</span>
+<span class="sd">            entity_types (List[str]): List of entity types to assign to extracted entities.</span>
+<span class="sd">                Leave empty if generate_types is True.</span>
+<span class="sd">            generate_types (bool): Whether to generate types for extracted entities.</span>
+<span class="sd">            extract_spl_triples (bool): Whether to extract triples of type s-p-l where l is a numeric literal. This</span>
+<span class="sd">                triples will be represented using data properties and a literal value of type string (although they</span>
+<span class="sd">                are numeric values).</span>
+<span class="sd">            create_class_hierarchy (bool): Whether to create a class hierarchy for the extracted entities.</span>
+<span class="sd">            examples_for_entity_extraction (str): Few-shot examples for entity extraction.</span>
+<span class="sd">            examples_for_triples_extraction (str): Few-shot examples for triple extraction.</span>
+<span class="sd">            examples_for_type_assertion (str): Few-shot examples for type assertion.</span>
+<span class="sd">            examples_for_type_generation (str): Few-shot examples for type generation and assertion.</span>
+<span class="sd">            examples_for_literal_extraction (str): Few-shot examples for literal extraction.</span>
+<span class="sd">            examples_for_spl_triples_extraction (str): Few-shot examples for s-p-l triples extraction.</span>
+<span class="sd">            save_path (str): Path to save the generated ontology.</span>
+
+<span class="sd">        Returns (Ontology): An ontology object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">generate_types</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">entity_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;entity_types argument should be None &quot;</span>
+                                          <span class="s2">&quot;when you want to generate types (i.e. when generate_types = True)&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GraphExtractor: INFO  :: In the generated triples, you may see entities or literals that were not&quot;</span>
+                  <span class="s2">&quot;part of the extracted entities or literals. They are filtered before added to the ontology.&quot;</span><span class="p">)</span>
+        <span class="n">entities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span> <span class="n">examples_for_entity_extraction</span><span class="p">)</span><span class="o">.</span><span class="n">entities</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GraphExtractor: INFO  :: Generated the following entities: </span><span class="si">{</span><span class="n">entities</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">triples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">triples_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span> <span class="n">examples_for_triples_extraction</span><span class="p">)</span><span class="o">.</span><span class="n">triples</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GraphExtractor: INFO  :: Generated the following triples: </span><span class="si">{</span><span class="n">triples</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Create an ontology and load it with extracted triples</span>
+        <span class="n">onto</span> <span class="o">=</span> <span class="n">Ontology</span><span class="p">(</span><span class="n">ontology_iri</span><span class="o">=</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.com/ontogen&quot;</span><span class="p">)</span> <span class="p">,</span><span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">triples</span><span class="p">:</span>
+            <span class="n">subject</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="nb">object</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">triple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">entities</span> <span class="ow">and</span> <span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">in</span> <span class="n">entities</span><span class="p">:</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="nb">object</span><span class="p">)</span>
+                <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+        <span class="c1"># If user wants to set types, do so depending on the arguments</span>
+        <span class="k">if</span> <span class="n">entity_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">generate_types</span><span class="p">:</span>
+            <span class="n">type_assertions</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># The user has specified a preset list of types</span>
+            <span class="k">if</span> <span class="n">entity_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">generate_types</span><span class="p">:</span>
+                <span class="n">type_assertions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_asserter</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">entity_types</span><span class="o">=</span><span class="n">entity_types</span><span class="p">,</span>
+                                                     <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_type_assertion</span><span class="p">)</span><span class="o">.</span><span class="n">pairs</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GraphExtractor: INFO  :: Assigned types for entities as following: </span><span class="si">{</span><span class="n">type_assertions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># The user wishes to leave it to the LLM to generate and assign types</span>
+            <span class="k">elif</span> <span class="n">generate_types</span><span class="p">:</span>
+                <span class="n">type_assertions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_generator</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span>
+                                                      <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_type_generation</span><span class="p">)</span><span class="o">.</span><span class="n">pairs</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: </span><span class="si">{</span><span class="n">type_assertions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Add class assertion axioms</span>
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">type_assertions</span><span class="p">:</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="n">entity_type</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">entity_type</span><span class="p">)</span>
+                <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+        <span class="c1"># Extract triples of type s-p-l where l is a numeric literal, including dates.</span>
+        <span class="k">if</span> <span class="n">extract_spl_triples</span><span class="p">:</span>
+            <span class="n">literals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">literal_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_literal_extraction</span><span class="p">)</span><span class="o">.</span><span class="n">l_values</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GraphExtractor: INFO  :: Generated the following numeric literals: </span><span class="si">{</span><span class="n">literals</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">spl_triples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spl_triples_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">numeric_literals</span><span class="o">=</span><span class="n">literals</span><span class="p">,</span>
+                                                     <span class="n">few_shot_examples</span><span class="o">=</span> <span class="n">examples_for_spl_triples_extraction</span><span class="p">)</span><span class="o">.</span><span class="n">triples</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GraphExtractor: INFO  :: Generated the following s-p-l triples: </span><span class="si">{</span><span class="n">spl_triples</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">spl_triples</span><span class="p">:</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="n">prop</span> <span class="o">=</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="n">literal</span> <span class="o">=</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">])),</span> <span class="n">type_</span><span class="o">=</span><span class="n">StringOWLDatatype</span><span class="p">)</span> <span class="c1"># for now every literal will be represented as a string</span>
+                <span class="k">if</span> <span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">in</span> <span class="n">literals</span><span class="p">:</span>
+                    <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">literal</span><span class="p">)</span>
+                    <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">create_class_hierarchy</span><span class="p">:</span>
+            <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">superclasses</span><span class="p">,</span> <span class="n">subclasses</span> <span class="o">=</span> <span class="n">extract_hierarchy_from_dbpedia</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">remainder</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GraphExtractor: INFO  :: For class </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">remainder</span><span class="si">}</span><span class="s2"> found superclasses: </span><span class="si">{</span><span class="p">[</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">remainder</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">superclasses</span><span class="p">]</span><span class="si">}</span><span class="s2"> and subclasses: </span><span class="si">{</span><span class="p">[</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">remainder</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">subclasses</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">superclass</span> <span class="ow">in</span> <span class="n">superclasses</span><span class="p">:</span>
+                    <span class="n">dbpedia_class_remainder</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">superclass</span><span class="p">)</span><span class="o">.</span><span class="n">remainder</span>
+                    <span class="n">sup_cls</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="n">dbpedia_class_remainder</span><span class="p">)</span>
+                    <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">sup_cls</span><span class="p">)</span>
+                    <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">subclass</span> <span class="ow">in</span> <span class="n">subclasses</span><span class="p">:</span>
+                    <span class="n">dbpedia_class_remainder</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">subclass</span><span class="p">)</span><span class="o">.</span><span class="n">remainder</span>
+                    <span class="n">sub_cls</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="n">dbpedia_class_remainder</span><span class="p">)</span>
+                    <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">(</span><span class="n">sub_cls</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
+                    <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+        <span class="n">onto</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">save_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GraphExtractor: INFO  :: Successfully saved the ontology at </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">onto</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

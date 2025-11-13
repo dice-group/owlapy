@@ -1,0 +1,99 @@
+litserve_neural_reasoner
+========================
+
+.. py:module:: litserve_neural_reasoner
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   litserve_neural_reasoner.parser
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   litserve_neural_reasoner.NeuralReasonerAPI
+
+
+Module Contents
+---------------
+
+.. py:class:: NeuralReasonerAPI(path_neural_embedding, gamma=0.9)
+
+   Bases: :py:obj:`litserve.LitAPI`
+
+
+   NeuralReasonerAPI is a LitAPI implementation that handles requests to a neural reasoner
+   using OWL expressions. It utilizes a neural embedding model for reasoning
+   over ontology data.
+
+   .. attribute:: path_neural_embedding
+
+      Path to the neural embedding.
+
+      :type: str
+
+   .. attribute:: gamma
+
+      Minimum confidence threshold for the reasoning model, defaults to 0.9.
+
+      :type: float
+
+
+   .. py:attribute:: path_neural_embedding
+
+
+   .. py:attribute:: gamma
+      :value: 0.9
+
+
+
+   .. py:method:: setup(device)
+
+      Sets up the neural reasoner instance.
+
+
+
+   .. py:method:: decode_request(request)
+
+      Decodes an incoming request to extract the DL expression and namespace.
+
+      :param request: A dictionary containing the request data, with 'expression' and 'namespace' keys.
+      :type request: dict
+
+      :returns: A tuple with the DL expression (str) and namespace (str).
+      :rtype: tuple
+
+
+
+   .. py:method:: predict(data)
+
+      Predicts individuals of the given OWL expression using the neural reasoner.
+
+      :param data: A tuple containing the DL expression (str) and namespace (str).
+      :type data: tuple
+
+      :returns: A set of individuals satisfying the given OWL expression.
+      :rtype: set
+
+
+
+   .. py:method:: encode_response(output)
+
+      Encodes the output from the reasoner back into a DL expression format for response.
+
+      :param output: A set of OWL expressions representing the individuals.
+      :type output: set
+
+      :returns: A dictionary with 'retrieval_result' key containing a list of DL expressions as strings.
+      :rtype: dict
+
+
+
+.. py:data:: parser
+
