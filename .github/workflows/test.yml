@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
+          pip install -e '.[dev]'
       - name: Lint with ruff
         run: |
           ruff check owlapy --line-length=200
@@ -30,7 +30,7 @@ jobs:
 # Removed because of an error is generated when trying to create the report.
 # It happens because of some pytorch conflict. One of our tests namely test_z_do_last_ebr_retrieval.py uses pytorch
 # (also via dicee but the exact root is unknown) and it deletes the tmp files before the coverage can access it.
-# In case of update of coverage report (on new releases) just do it manually (run it locally).
+# In case of update of coverage report (on new releases) just do it manually (run it locally). Ignore the troublesome test.
 #
 #      - name: Coverage report
 #        run: |

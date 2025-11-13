@@ -5,7 +5,7 @@ import platform
 import shutil
 import jpype
 import jpype.imports
-import pkg_resources
+import importlib.resources as resources
 
 # NOTE: Static functions closely related with owl classes should be placed in utils.py
 # or util_owl_static_funcs.py not here
@@ -44,12 +44,19 @@ def download_external_files(ftp_link: str):
 
 
 def startJVM():
-    """Start the JVM with jar dependencies. This method is called automatically on object initialization, if the
-    JVM is not started yet."""
-    # Start a java virtual machine using the dependencies in the respective folder:
-    jar_folder = pkg_resources.resource_filename('owlapy', 'jar_dependencies')
-    jar_files = [os.path.join(jar_folder, f) for f in os.listdir(jar_folder) if f.endswith('.jar')]
-    # Starting JVM
+    """Start the JVM with jar dependencies. This method is called automatically on object initialization,
+    if the JVM is not started yet."""
+
+    # Access the jar_dependencies folder inside the 'owlapy' package
+    with resources.path('owlapy', 'jar_dependencies') as jar_folder_path:
+        jar_folder = str(jar_folder_path)
+        jar_files = [
+            os.path.join(jar_folder, f)
+            for f in os.listdir(jar_folder)
+            if f.endswith('.jar')
+        ]
+
+    # Start JVM with the found jar files
     jpype.startJVM(classpath=jar_files)
 
 

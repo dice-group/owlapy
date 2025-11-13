@@ -13,7 +13,7 @@ a python module that provides access to Java in Python. To start executing
 Java code via JPype, one needs to start the java virtual machine (JVM).
 You don't have to worry about it, because if a class is going to use
 `OWLAPIMapper` the JVM will start automatically. However, there is the 
-function `startJVM` of the `static_functions.py` module if you ever need
+function `startJVM()` of the `static_functions.py` module if you ever need
 to start it manually.
 
 ## "Sync" Classes
@@ -26,9 +26,9 @@ The logic of both these classes is handled by _OWLAPI_ through the
 mapper. They inherit from abstract classes already present in owlapy 
 (`AbstractOWLOntology` and `AbstractOWLReasoner` respectively) so
 the usage is the same as other implementors of these abstract classes.
-Additionally, SyncReasoner provides some supplementary methods, such as `infer_axioms` in, 
-which infers and returns missing axioms from a given ontology.
-For a comprehensive overview of all available methods, refer to the [API](owlapy.owl_reasoner.SyncReasoner) documentation.
+Additionally, SyncReasoner provides some supplementary methods, such as `infer_axioms`, 
+`create_justifications`, `has_consistent_ontology`, `is_satisfiable`, etc.
+For a comprehensive overview of all available methods and their description, refer to the [API](owlapy.owl_reasoner.SyncReasoner) documentation.
 
 To make this guide self-contained, we will go through a simple example
 showing how to use the aforementioned classes:
@@ -63,12 +63,10 @@ stopJVM()
 
 
 ```
-This was a simple example using the '_father_' ontology to show
-just a small part of what you can do with "Sync" classes. 
 
 Notice that after we are done using them we can stop 
-the JVM by either using `jpype.shutdownJVM()` or the static function from the 
-`static_functions.py` module `stopJVM()`. This will free the resources used by JPype and the java 
+the JVM by either using `jpype.shutdownJVM()` or the static function `stopJVM()` from the 
+`static_functions.py` module. This will free the resources used by JPype and the java 
 packages. Once you stop the JVM it cannot be restarted so make sure you do that
 when you are done with the OWLAPI related classes. Stopping the JVM is not
 strictly necessary. The resources will be freed once the execution is over, but
@@ -84,9 +82,8 @@ That means that you can play around with OWLAPI code in python as long
 as your JVM is started. Isn't that awesome! 
 
 `SyncReasoner` uses HermiT reasoner by default. You can choose between:
-"HermiT", "Pellet", "ELK", "JFact" and "Openllet" and "Structural". Although no significant 
-difference has been noticed between these reasoners, they surely differentiate 
-in specific scenarios. You can check OWLAPI's [Wiki](https://github.com/owlcs/owlapi/wiki) for more details.
+"HermiT", "Pellet", "ELK", "JFact", "Openllet" and "Structural". 
+You can check OWLAPI's [Wiki](https://github.com/owlcs/owlapi/wiki) for more details.
 
 _**owlapi version**: 5.1.9_
 

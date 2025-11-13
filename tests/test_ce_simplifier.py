@@ -189,7 +189,7 @@ class TestSimplifier(unittest.TestCase):
         ce7 = "(A ⊓ B) ⊔ (A ⊓ B ⊓ E)"  # ==> "A ⊓ B"
         ce8 = "(A ⊓ B) ⊓ (A ⊓ (B ⊓ (C ⊔ E)))"  # ==> "A ⊓ B ⊓ (C ⊔ E)"
         ce9 = "(A ⊓ B) ⊓ (C ⊓ (B ⊔ (C ⊔ E)))"  # ==> "A ⊓ B ⊓ C"
-        ce10 = "(∀r_2.⊥) ⊓ (∀r_2.¬C)" # ==> ∀ r_2.(⊥ ⊓ (¬C))
+        ce10 = "(∀r_2.⊥) ⊓ (∀r_2.¬C)" # ==> ∀ r_2.(⊥ ⊓ (¬C)) ==> "∀ r_2.⊥"
         ce11 = "(∀r_1.∀r_2.∀r_3.⊥) ⊓ (∀r_1.∀r_2.¬C)" # ==> "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊥)))"
         ce12 = "(∀r_1.∀r_2.∀r_3.(¬⊥ ⊔ B ⊔ E)) ⊓ (∀r_1.∀r_2.¬(C ⊔ (C ⊓ B)))" # ==> "∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊤)))"
 
@@ -212,7 +212,7 @@ class TestSimplifier(unittest.TestCase):
         self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce9, self.ns)),
                          dl_to_owl_expression("A ⊓ B ⊓ C", self.ns))
         self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce10, self.ns)),
-                         dl_to_owl_expression("∀ r_2.(⊥ ⊓ (¬C))", self.ns))
+                         dl_to_owl_expression("∀ r_2.⊥", self.ns))
         self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce11, self.ns)),
                          dl_to_owl_expression("∀ r_1.(∀ r_2.((¬C) ⊓ (∀ r_3.⊥)))", self.ns))
         self.assertEqual(simplify_class_expression(dl_to_owl_expression(ce12, self.ns)),

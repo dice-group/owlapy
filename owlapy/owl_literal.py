@@ -33,6 +33,9 @@ FloatOWLDatatype: Final = OWLDatatype(XSDVocabulary.FLOAT)
 #: An object representing a double datatype.
 DecimalOWLDatatype: Final = OWLDatatype(XSDVocabulary.DECIMAL)
 
+#: An object representing an int datatype.
+IntOWLDatatype: Final = OWLDatatype(XSDVocabulary.INT)
+
 #: An object representing an integer datatype.
 IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)
 
@@ -86,7 +89,7 @@ TopOWLDatatype: Final = OWLDatatype(OWLRDFVocabulary.RDFS_LITERAL)
 
 
 NUMERIC_DATATYPES: Final[Set[OWLDatatype]] = {FloatOWLDatatype, DoubleOWLDatatype, DecimalOWLDatatype,
-                                              IntegerOWLDatatype, PositiveIntegerOWLDatatype,
+                                              IntegerOWLDatatype, IntOWLDatatype, PositiveIntegerOWLDatatype,
                                               NegativeIntegerOWLDatatype, NonPositiveIntegerOWLDatatype,
                                               NonNegativeIntegerOWLDatatype}
 TIME_DATATYPES: Final[Set[OWLDatatype]] = {DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype}
@@ -127,6 +130,8 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
                 return super().__new__(_OWLLiteralImplBoolean)
             elif type_ == IntegerOWLDatatype:
                 return super().__new__(_OWLLiteralImplInteger)
+            elif type_ == IntOWLDatatype:
+                return super().__new__(_OWLLiteralImplInt)
             elif type_ == DoubleOWLDatatype:
                 return super().__new__(_OWLLiteralImplDouble)
             elif type_ == FloatOWLDatatype:
@@ -423,6 +428,7 @@ class _OWLNumericLiteralInterface(OWLLiteral):
 
     def __init__(self, value, type_=None):
         if isinstance(value, int) or type_ in [IntegerOWLDatatype,
+                                               IntOWLDatatype,
                                                NonNegativeIntegerOWLDatatype,
                                                NonPositiveIntegerOWLDatatype,
                                                NegativeIntegerOWLDatatype,
@@ -446,36 +452,31 @@ class _OWLNumericLiteralInterface(OWLLiteral):
 
     def __eq__(self, other):
         if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
-            return self._v == other._v
-        return NotImplemented
+            return self._v == other._v and self._type == other._type
+        return False
 
     def __lt__(self, other):
         if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
             return self._v < other._v
-        return NotImplemented
+        return False
 
     def __gt__(self, other):
         if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
             return self._v > other._v
-        return NotImplemented
+        return False
 
     def __le__(self, other):
         if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
             return self._v <= other._v
-        return NotImplemented
+        return False
 
     def __ge__(self, other):
         if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
             return self._v >= other._v
-        return NotImplemented
-
-    def __ne__(self, other):
-        if type(other) is type(self) and not isinstance(self._v, FloatSpecialValue):
-            return self._v != other._v
-        return NotImplemented
+        return False
 
     def __hash__(self):
-        return hash((self._v, self._type))
+        return hash((type(self).__name__, self._v, self._type))
 
     def __repr__(self):
         return f'OWLLiteral({self._v}, {self._type})'
@@ -555,10 +556,17 @@ class _OWLLiteralImplInteger(_OWLIntegerLiteralInterface):
 
 
 @total_ordering
+class _OWLLiteralImplInt(_OWLIntegerLiteralInterface):
+
+    def __init__(self, value, type_=IntOWLDatatype):
+        super().__init__(value, type_)
+
+
+@total_ordering
 class _OWLLiteralImplNonNegativeInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=NonNegativeIntegerOWLDatatype):
-        assert value >= 0, "Negative value used to initialize a literal of type: " + str(type(self))
+        assert int(value) >= 0, "Negative value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
 
 
@@ -566,7 +574,7 @@ class _OWLLiteralImplNonNegativeInteger(_OWLIntegerLiteralInterface):
 class _OWLLiteralImplNonPositiveInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=NonPositiveIntegerOWLDatatype):
-        assert value <= 0, "Positive value used to initialize a literal of type: " + str(type(self))
+        assert int(value) <= 0, "Positive value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
 
 
@@ -574,14 +582,14 @@ class _OWLLiteralImplNonPositiveInteger(_OWLIntegerLiteralInterface):
 class _OWLLiteralImplPositiveInteger(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=PositiveIntegerOWLDatatype):
-        assert value <= 0, "Non-Positive value used to initialize a literal of type: " + str(type(self))
+        assert int(value) > 0, "Non-Positive value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
 
 
 @total_ordering
 class _OWLLiteralImplNegativeInteger(_OWLIntegerLiteralInterface):
     def __init__(self, value, type_=NegativeIntegerOWLDatatype):
-        assert value <= 0, "Non-Negative value used to initialize a literal of type: " + str(type(self))
+        assert int(value) < 0, "Non-Negative value used to initialize a literal of type: " + str(type(self))
         super().__init__(value, type_)
 
 
@@ -593,7 +601,7 @@ class _OWLLiteralImplBoolean(OWLLiteral):
     _v: bool
     _type: OWLDatatype
 
-    def __init__(self, value, type_=None):
+    def __init__(self, value, type_=BooleanOWLDatatype):
         assert type_ is None or type_ == BooleanOWLDatatype
         if not isinstance(value, bool):
             from distutils.util import strtobool
@@ -610,12 +618,12 @@ class _OWLLiteralImplBoolean(OWLLiteral):
         return str(self._v).lower()
 
     def __eq__(self, other):
-        if type(other) is type(self):
+        if type(other) is type(self) and self._type == other._type:
             return self._v == other._v
-        return NotImplemented
+        return False
 
     def __hash__(self):
-        return hash((self._v, self._type))
+        return hash(("_OWLLiteralImplBoolean", self._v, self._type))
 
     def __repr__(self):
         return f'OWLLiteral({self._v, self._type})'
@@ -640,7 +648,7 @@ class _OWLLiteralImplString(OWLLiteral):
     _v: str
     _type: OWLDatatype
 
-    def __init__(self, value, type_=None):
+    def __init__(self, value, type_=StringOWLDatatype):
         assert type_ is None or type_ == StringOWLDatatype
         if not isinstance(value, str):
             value = str(value)
@@ -649,19 +657,19 @@ class _OWLLiteralImplString(OWLLiteral):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._v == other._v
-        return NotImplemented
+            return self._v == other._v and self._type == other._type
+        return False
 
     def __lt__(self, other):
         if type(other) is type(self):
             return self._v < other._v
-        return NotImplemented
+        return False
 
     def __len__(self):
         return len(self._v)
 
     def __hash__(self):
-        return hash((self._v, self._type))
+        return hash(("_OWLLiteralImplString", self._v, self._type))
 
     def __repr__(self):
         return f'OWLLiteral({self._v}, {self._type})'
@@ -688,36 +696,32 @@ class _OWLLiteralBasicsInterface(OWLLiteral):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self._v == other._v
-        return NotImplemented
+            return self._v == other._v and self._type == other._type
+        return False
 
     def __lt__(self, other):
         if type(other) is type(self):
             return self._v < other._v
-        return NotImplemented
+        return False
 
     def __gt__(self, other):
         if type(other) is type(self):
             return self._v > other._v
-        return NotImplemented
+        return False
 
     def __le__(self, other):
         if type(other) is type(self):
             return self._v <= other._v
-        return NotImplemented
+        return False
 
     def __ge__(self, other):
         if type(other) is type(self):
             return self._v >= other._v
-        return NotImplemented
+        return False
 
-    def __ne__(self, other):
-        if type(other) is type(self):
-            return self._v != other._v
-        return NotImplemented
 
     def __hash__(self):
-        return hash((self._v, self._type))
+        return hash((type(self).__name__, self._v, self._type))
 
     def __repr__(self):
         return f'OWLLiteral({self._v}, {self._type})'
@@ -725,6 +729,7 @@ class _OWLLiteralBasicsInterface(OWLLiteral):
     def get_datatype(self) -> OWLDatatype:
         return self._type
 
+# ============================================== Date and Time Types ==============================================
 
 @total_ordering
 class _OWLDateAndTimeLiteralInterface(_OWLLiteralBasicsInterface):
@@ -753,6 +758,17 @@ class _OWLDateAndTimeLiteralInterface(_OWLLiteralBasicsInterface):
         assert type(value) in [datetime, date, time, Timedelta]
         self._v = value
         self._type = type_
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._v == other._v and self._type == other._type
+        return False
+
+    def __repr__(self):
+        return f'OWLLiteral({self._v}, {self._type})'
+
+    def __hash__(self):
+        return hash((type(self).__name__, self._v, self._type))
 
 
 @total_ordering
@@ -808,6 +824,7 @@ class _OWLLiteralImplTime(_OWLDateAndTimeLiteralInterface):
     def parse_time(self) -> datetime:
         return self._v
 
+# ================================================== GDate Types ==================================================
 
 @total_ordering
 class _OWLGDatesInterface(_OWLLiteralBasicsInterface):
@@ -835,6 +852,17 @@ class _OWLGDatesInterface(_OWLLiteralBasicsInterface):
         assert type(value) in [tuple, int]
         self._v = value
         self._type = type_
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._v == other._v and self._type == other._type
+        return False
+
+    def __repr__(self):
+        return f'OWLLiteral({self._v}, {self._type})'
+
+    def __hash__(self):
+        return hash((type(self).__name__, self._v, self._type))
 
 
 @total_ordering
@@ -914,10 +942,7 @@ class _OWLLiteralImpl(OWLLiteral):
         return NotImplemented
 
     def __hash__(self):
-        return hash((self._v, self._datatype))
+        return hash(("_OWLLiteralImpl", self._v, self._datatype))
 
     def __repr__(self):
-        return f'OWLLiteral({repr(self._v)}, {self._datatype})'
-
-
-
+        return f'OWLLiteral({self._v}, {self._datatype})'

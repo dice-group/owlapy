@@ -173,7 +173,7 @@ class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpressi
             return False
 
     def __hash__(self):
-        return hash((self._property, self._cardinality, self._filler))
+        return hash((type(self).__name__,self._property, self._cardinality, self._filler))
 
 
 class OWLObjectMinCardinality(OWLObjectCardinalityRestriction):
@@ -388,8 +388,17 @@ class OWLObjectHasValue(OWLHasValueRestriction[OWLIndividual], OWLObjectRestrict
         """
         return OWLObjectSomeValuesFrom(self.get_property(), OWLObjectOneOf(self.get_filler()))
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._v == other._v and self._property == other._property
+        else:
+            return False
+
     def __repr__(self):
         return f'OWLObjectHasValue(property={self.get_property()}, individual={self._v})'
+
+    def __hash__(self):
+        return hash(("OWLObjectHasValue", self._v, self._property))
 
 
 class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
@@ -495,7 +504,7 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
         self._property = property
 
     def __hash__(self):
-        return hash(("OWLDataCardinalityRestriction",self._property, self._cardinality, self._filler))
+        return hash((type(self).__name__, self._property, self._cardinality, self._filler))
 
     def __repr__(self):
         return f"{type(self).__name__}(" \

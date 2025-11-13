@@ -40,7 +40,7 @@ class Namespaces:
             return self._ns == other._ns
         elif type(other) is str:
             return self._ns == other
-        return NotImplemented
+        return False
 
 
 OWL: Final = Namespaces("owl", "http://www.w3.org/2002/07/owl#")  #:

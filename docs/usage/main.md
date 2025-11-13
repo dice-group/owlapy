@@ -1,10 +1,10 @@
 # About owlapy
 
-**Version:** owlapy 1.6.1
+**Version:** owlapy 1.6.2
 
 **GitHub repository:** [https://github.com/dice-group/owlapy](https://github.com/dice-group/owlapy)
 
-**Publisher and maintainer:** [DICE](https://dice-research.org/) - Data Science Research Group of [Paderborn University](https://www.uni-paderborn.de/en/university).
+**Publisher and maintainer:** [Data Science Research Group]((https://dice-research.org/)) of [Paderborn University](https://www.uni-paderborn.de/en/university).
 
 **Contact**: [alkid.baci@upb.de](mailto:alkid.baci@upb.de), [caglar.demir@upb.de](mailto:caglar.demir@upb.de)
 
@@ -17,9 +17,9 @@
 foundation for knowledge graph and class expression learning projects in machine learning. Inspired by [OWLAPI](https://github.com/owlcs/owlapi)
 (which is also available to use in this library via synchronisation), Owlapy enables ontology creation,
 modification, and reasoning while supporting OWL 2 Structural Specification, Functional-Style Syntax, and advanced 
-features such as parsing and rendering to Description Logics and Manchester syntax. With capabilities to convert OWL 
-expressions into SPARQL queries and interfaces for ontology and reasoning, Owlapy is a powerful tool used in powerful 
-libraries like [Ontolearn](https://github.com/dice-group/Ontolearn) and [OntoSample](https://github.com/alkidbaci/OntoSample).
+features such as parsing and rendering to Description Logics and Manchester syntax, and even syntactic simplification of 
+complex expressions. With capabilities to convert OWL class expressions into SPARQL queries and interfaces for ontology
+and reasoning, Owlapy is a powerful tool used in powerful libraries like [Ontolearn](https://github.com/dice-group/Ontolearn) and [OntoSample](https://github.com/alkidbaci/OntoSample).
 
 ---------------------------------------
 
@@ -37,6 +37,10 @@ highlighting:
   - Axioms
   - Annotations
 - Construct complex class expressions.
+- Provide tools for operating on class expressions, such as:
+  - Syntactic simplification
+  - NNF, DNF or CNF conversion
+  - Factorization, length computation, flattening, sorting, etc.
 - Provide interfaces for OWL Ontology and Reasoner.
 - Convert owl expression to SPARQL queries.
 - Render owl expression to Description Logics or Manchester syntax.
@@ -49,8 +53,8 @@ highlighting:
 
 Installation from source:
 ``` bash
-git clone https://github.com/dice-group/owlapy
-conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip3 install -e .
+git clone https://github.com/dice-group/owlapy && cd owlapy
+conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip3 install -e '.[dev]'
 ```
 
 or using PyPI:

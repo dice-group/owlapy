@@ -85,14 +85,15 @@ class OWLNamedObject(OWLObject, HasIRI, metaclass=ABCMeta):
         return NotImplemented
 
     def __hash__(self):
-        return hash(self._iri)
+        return hash((type(self).__name__, self._iri))
 
     def __repr__(self):
         return f"{type(self).__name__}({repr(self._iri)})"
 
 
 class OWLEntity(OWLNamedObject, metaclass=ABCMeta):
-    """Represents Entities in the OWL 2 Specification."""
+    """Represents Entities in the OWL 2 Specification.
+    (https://www.w3.org/TR/owl2-syntax/#Entities.2C_Literals.2C_and_Anonymous_Individuals)"""
     __slots__ = ()
 
     def to_string_id(self) -> str:
