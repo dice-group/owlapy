@@ -156,9 +156,17 @@ The company has been historically referred to as the "House of Morgan" or simply
 # Extract a graph from text using an LLM
 ontogen = GraphExtractor(model="<ENTER_MODELS_NAME> (e.g. 'Qwen/Qwen3-32B-AWQ')",api_key="<ENTER_YOUR_KEY>", api_base="<ENTER_YOUR_API_BASE_URL>",
                          temperature=0.1, seed=42, enable_logging=True)
-ontogen.forward(text=text_example, generate_types = True, extract_spl_triples=True)
+ontogen(text=text_example, generate_types = True, extract_spl_triples=True)
 
-# Load the generated ontology and print axioms
+########### Logs ############
+# GraphExtractor: INFO  :: Generated the following entities: ['J.P. MORGAN & CO.', 'JPMORGAN CHASE', 'J. P. MORGAN', 'HOUSE OF MORGAN', 'MORGAN']
+# GraphExtractor: INFO  :: Generated the following triples: [('J. P. MORGAN', 'FOUNDED', 'J.P. MORGAN & CO.'), ('J.P. MORGAN & CO.', 'SUBSIDIARY OF', 'JPMORGAN CHASE'), ('J.P. MORGAN & CO.', 'ALTERNATIVELY KNOWN AS', 'HOUSE OF MORGAN'), ('J.P. MORGAN & CO.', 'ALTERNATIVELY KNOWN AS', 'MORGAN')]
+# GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: [('J.P. MORGAN & CO.', 'ORGANIZATION'), ('JPMORGAN CHASE', 'ORGANIZATION'), ('J. P. MORGAN', 'PERSON'), ('HOUSE OF MORGAN', 'ORGANIZATION'), ('MORGAN', 'ORGANIZATION')]
+# GraphExtractor: INFO  :: Generated the following numeric literals: ['1871']
+# GraphExtractor: INFO  :: Generated the following s-p-l triples: [('J.P. MORGAN & CO.', 'FOUNDED IN', '1871')]
+
+
+# You can load the generated ontology and work with it as normally
 onto = SyncOntology(path="generated_ontology.owl")
 [print(ax) for ax in onto.get_abox_axioms()]
 [print(ax) for ax in onto.get_tbox_axioms()]
