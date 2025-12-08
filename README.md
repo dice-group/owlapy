@@ -1,7 +1,7 @@
 # OWLAPY
 [![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
 [![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
-[![Coverage](https://img.shields.io/badge/coverage-64%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
 [![Pypi](https://img.shields.io/badge/pypi-1.6.2-blue)](https://pypi.org/project/owlapy/1.6.2/)
 [![Docs](https://img.shields.io/badge/documentation-1.6.2-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dice-group/owlapy)
