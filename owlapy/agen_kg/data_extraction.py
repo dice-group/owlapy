@@ -1,6 +1,7 @@
 from typing import List
 import os
 import dspy
+from abc import ABC, abstractmethod
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
@@ -13,15 +14,139 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, StringOWLDatatype
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
-from owlapy.agen_kg.signatures import Entity, Triple, TypeAssertion, TypeGeneration, Literal, SPLTriples, Domain, DomainSpecificFewShotGenerator
+from owlapy.agen_kg.signatures import Entity, Triple, TypeAssertion, TypeGeneration, Literal, SPLTriples, Domain, DomainSpecificFewShotGenerator, EntityClustering, CoherenceChecker
 from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
 
 
-# Todo: Add different workflows for different ontology type: 1. Domain-specific, 2. Cross-domain, 3. Enterprise, 4. Open-world
-# Todo: Entity clustering
-# Todo: Maybe fact-checking of extracted triples for coherence
-# Todo: Construct more sophisticated TBoxes
+# A compatible metaclass that combines dspy.Module's metaclass with ABCMeta
+class GraphExtractorMeta(type(dspy.Module), type(ABC)):
+    """Metaclass that resolves conflicts between dspy.Module and ABC."""
+    pass
 
+
+class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
+    """
+    Base class for all graph extractors.
+    Provides common functionality for entity clustering, coherence checking,
+    and utility methods shared across all extractor types.
+    """
+
+    def __init__(self, enable_logging=False):
+        """
+        Initialize the graph extractor.
+
+        Args:
+            enable_logging: Whether to enable logging.
+        """
+        super().__init__()
+        self.logging = enable_logging
+        self.entity_clusterer = dspy.Predict(EntityClustering)
+        self.coherence_checker = dspy.Predict(CoherenceChecker)
+
+    @staticmethod
+    def snake_case(text):
+        """Convert text to snake_case format."""
+        return text.strip().lower().replace(" ", "_")
+
+    def cluster_entities(self, entities: List[str], text: str) -> dict:
+        """
+        Cluster entities to identify and merge duplicates.
+
+        Args:
+            entities: List of extracted entities.
+            text: Original text context.
+
+        Returns:
+            Dictionary mapping original entity names to their canonical names.
+        """
+        if not entities:
+            return {}
+
+        result = self.entity_clusterer(entities=entities, text=text)
+        entity_mapping = {}
+
+        for cluster, canonical_name in result.clusters:
+            for entity in cluster:
+                entity_mapping[entity] = canonical_name
+
+        # Add entities that weren't clustered
+        for entity in entities:
+            if entity not in entity_mapping:
+                entity_mapping[entity] = entity
+
+        if self.logging:
+            merged_count = len(entities) - len(set(entity_mapping.values()))
+            if merged_count > 0:
+                print(f"{self.__class__.__name__}: INFO :: Merged {merged_count} duplicate entities")
+
+        return entity_mapping
+
+    def check_coherence(self, triples: List[tuple], text: str, batch_size: int = 50,
+                       threshold: int = 3) -> List[tuple]:
+        """
+        Check coherence of extracted triples and filter out low-quality ones.
+
+        Args:
+            triples: List of extracted triples.
+            text: Original text context.
+            batch_size: Number of triples to check per batch.
+            threshold: Minimum coherence score (1-5) to keep a triple.
+
+        Returns:
+            List of coherent triples that passed the threshold.
+        """
+        if not triples:
+            return []
+
+        coherent_triples = []
+
+        # Process triples in batches
+        for i in range(0, len(triples), batch_size):
+            batch = triples[i:i+batch_size]
+            result = self.coherence_checker(triples=batch, text=text)
+
+            for triple, score, explanation in result.coherence_scores:
+                if score >= threshold:
+                    coherent_triples.append(triple)
+                elif self.logging:
+                    print(f"{self.__class__.__name__}: INFO :: Filtered out triple {triple} (score: {score}/5): {explanation}")
+
+        if self.logging:
+            filtered_count = len(triples) - len(coherent_triples)
+            if filtered_count > 0:
+                print(f"{self.__class__.__name__}: INFO :: Filtered out {filtered_count} low-coherence triples")
+
+        return coherent_triples
+
+    @abstractmethod
+    def generate_ontology(self, text: str, **kwargs) -> Ontology:
+        """
+        Generate an ontology from the given text.
+        Must be implemented by subclasses.
+
+        Args:
+            text: Input text to extract ontology from.
+            **kwargs: Additional arguments specific to the extractor type.
+
+        Returns:
+            Generated Ontology object.
+        """
+        pass
+
+    @abstractmethod
+    def forward(self, text: str, **kwargs) -> Ontology:
+        """
+        Forward pass for the extractor module.
+        Must be implemented by subclasses.
+
+        Args:
+            text: Input text to extract ontology from.
+            **kwargs: Additional arguments specific to the extractor type.
+
+        Returns:
+            Generated Ontology object.
+        """
+        pass
 
 
 class AGenKG:
@@ -70,15 +195,14 @@ class AGenKG:
         return None
 
 
-class OpenGraphExtractor(dspy.Module):
+class OpenGraphExtractor(GraphExtractor):
     def __init__(self, enable_logging=False):
         """
         A module to extract an RDF graph from a given text input.
         Args:
             enable_logging: Whether to enable logging.
         """
-        super().__init__()
-        self.logging = enable_logging
+        super().__init__(enable_logging)
         self.entity_extractor = dspy.Predict(Entity)
         self.triples_extractor = dspy.Predict(Triple)
         self.type_asserter = dspy.Predict(TypeAssertion)
@@ -86,15 +210,12 @@ class OpenGraphExtractor(dspy.Module):
         self.literal_extractor = dspy.Predict(Literal)
         self.spl_triples_extractor = dspy.Predict(SPLTriples)
 
-    @staticmethod
-    def snake_case(text):
-        return text.strip().lower().replace(" ","_")
-
     def generate_ontology(self, text: str, ontology_namespace = "http://example.com/ontogen#",
                 entity_types: List[str]=None,
                 generate_types=False,
                 extract_spl_triples=False,
                 create_class_hierarchy=False,
+                entity_clustering=True,
                 examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,
                 examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,
                 examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,
@@ -105,20 +226,38 @@ class OpenGraphExtractor(dspy.Module):
         if self.logging:
             print("GraphExtractor: INFO  :: In the generated triples, you may see entities or literals that were not"
                   "part of the extracted entities or literals. They are filtered before added to the ontology.")
+
+        # Step 1: Extract entities
         entities = self.entity_extractor(text=text, few_shot_examples= examples_for_entity_extraction).entities
         if self.logging:
             print(f"GraphExtractor: INFO  :: Generated the following entities: {entities}")
-        triples = self.triples_extractor(text=text, entities=entities, few_shot_examples= examples_for_triples_extraction).triples
+
+        # Step 2: Cluster entities to identify and merge duplicates
+        if entity_clustering:
+            entity_mapping = self.cluster_entities(entities, text)
+            canonical_entities = list(set(entity_mapping.values()))
+        else:
+            canonical_entities = entities
+        if self.logging and len(entities) != len(canonical_entities):
+            print(f"GraphExtractor: INFO  :: After clustering: {canonical_entities}")
+
+        # Step 3: Extract triples using canonical entities
+        triples = self.triples_extractor(text=text, entities=canonical_entities, few_shot_examples= examples_for_triples_extraction).triples
         if self.logging:
             print(f"GraphExtractor: INFO  :: Generated the following triples: {triples}")
 
-        # Create an ontology and load it with extracted triples
+        # Step 4: Check coherence of triples
+        coherent_triples = self.check_coherence(triples, text)
+        if self.logging:
+            print(f"GraphExtractor: INFO  :: After coherence check, kept {len(coherent_triples)} triples")
+
+        # Step 5: Create an ontology and load it with extracted triples
         onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen") ,load=False)
-        for triple in triples:
+        for triple in coherent_triples:
             subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
             prop = OWLObjectProperty(ontology_namespace + self.snake_case(triple[1]))
             object = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[2]))
-            if triple[0] in entities and triple[2] in entities:
+            if triple[0] in canonical_entities and triple[2] in canonical_entities:
                 ax = OWLObjectPropertyAssertionAxiom(subject, prop, object)
                 onto.add_axiom(ax)
 
@@ -127,13 +266,13 @@ class OpenGraphExtractor(dspy.Module):
             type_assertions = None
             # The user has specified a preset list of types
             if entity_types is not None and not generate_types:
-                type_assertions = self.type_asserter(text=text, entities=entities, entity_types=entity_types,
+                type_assertions = self.type_asserter(text=text, entities=canonical_entities, entity_types=entity_types,
                                                      few_shot_examples=examples_for_type_assertion).pairs
                 if self.logging:
                     print(f"GraphExtractor: INFO  :: Assigned types for entities as following: {type_assertions}")
             # The user wishes to leave it to the LLM to generate and assign types
             elif generate_types:
-                type_assertions = self.type_generator(text=text, entities=entities,
+                type_assertions = self.type_generator(text=text, entities=canonical_entities,
                                                       few_shot_examples=examples_for_type_generation).pairs
                 if self.logging:
                     print(f"GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: {type_assertions}")
@@ -150,7 +289,7 @@ class OpenGraphExtractor(dspy.Module):
             literals = self.literal_extractor(text=text, few_shot_examples=examples_for_literal_extraction).l_values
             if self.logging:
                 print(f"GraphExtractor: INFO  :: Generated the following numeric literals: {literals}")
-            spl_triples = self.spl_triples_extractor(text=text, entities=entities, numeric_literals=literals,
+            spl_triples = self.spl_triples_extractor(text=text, entities=canonical_entities, numeric_literals=literals,
                                                      few_shot_examples= examples_for_spl_triples_extraction).triples
             if self.logging:
                 print(f"GraphExtractor: INFO  :: Generated the following s-p-l triples: {spl_triples}")
@@ -190,12 +329,12 @@ class OpenGraphExtractor(dspy.Module):
         return onto
 
     def forward(self, text: str,
-                ontology_type: str = "open",
                 ontology_namespace = "http://example.com/ontogen#",
                 entity_types: List[str]=None,
                 generate_types=False,
                 extract_spl_triples=False,
                 create_class_hierarchy=False,
+                entity_clustering=True,
                 examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,
                 examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,
                 examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,
@@ -223,6 +362,7 @@ class OpenGraphExtractor(dspy.Module):
                 triples will be represented using data properties and a literal value of type string (although they
                 are numeric values).
             create_class_hierarchy (bool): Whether to create a class hierarchy for the extracted entities.
+            entity_clustering (bool): Whether to perform entity clustering to merge duplicate entities.
             examples_for_entity_extraction (str): Few-shot examples for entity extraction.
             examples_for_triples_extraction (str): Few-shot examples for triple extraction.
             examples_for_type_assertion (str): Few-shot examples for type assertion.
@@ -245,6 +385,7 @@ class OpenGraphExtractor(dspy.Module):
                 generate_types=generate_types,
                 extract_spl_triples=extract_spl_triples,
                 create_class_hierarchy=create_class_hierarchy,
+                entity_clustering=entity_clustering,
                 examples_for_entity_extraction=examples_for_entity_extraction,
                 examples_for_triples_extraction=examples_for_triples_extraction,
                 examples_for_type_assertion=examples_for_type_assertion,
@@ -253,26 +394,16 @@ class OpenGraphExtractor(dspy.Module):
                 examples_for_spl_triples_extraction=examples_for_spl_triples_extraction,
                 save_path=save_path
             )
-        elif ontology_type == "domain":
-            # Placeholder for domain-specific ontology generation
-            raise NotImplementedError("Domain-specific ontology generation is not yet implemented.")
-        elif ontology_type == "cross-domain":
-            # Placeholder for cross-domain ontology generation
-            raise NotImplementedError("Cross-domain ontology generation is not yet implemented.")
-        elif ontology_type == "enterprise":
-            # Placeholder for enterprise ontology generation
-            raise NotImplementedError("Enterprise ontology generation is not yet implemented.")
 
 
-class DomainGraphExtractor(dspy.Module):
+class DomainGraphExtractor(GraphExtractor):
     def __init__(self, enable_logging=False):
         """
         A module to extract an RDF graph from domain-specific text input.
         Args:
             enable_logging: Whether to enable logging.
         """
-        super().__init__()
-        self.logging = enable_logging
+        super().__init__(enable_logging)
         self.domain_detector = dspy.Predict(Domain)
         self.few_shot_generator = dspy.Predict(DomainSpecificFewShotGenerator)
         self.entity_extractor = dspy.Predict(Entity)
@@ -282,9 +413,6 @@ class DomainGraphExtractor(dspy.Module):
         self.literal_extractor = dspy.Predict(Literal)
         self.spl_triples_extractor = dspy.Predict(SPLTriples)
 
-    @staticmethod
-    def snake_case(text):
-        return text.strip().lower().replace(" ","_")
 
     def generate_domain_specific_examples(self, domain: str):
         """
@@ -392,31 +520,42 @@ class DomainGraphExtractor(dspy.Module):
         if self.logging:
             print(f"DomainGraphExtractor: INFO :: Generated the following entities: {entities}")
 
-        # Step 4: Extract triples
-        triples = self.triples_extractor(text=text, entities=entities, few_shot_examples=examples_for_triples_extraction).triples
+        # Step 4: Cluster entities to identify and merge duplicates
+        entity_mapping = self.cluster_entities(entities, text)
+        canonical_entities = list(set(entity_mapping.values()))
+        if self.logging and len(entities) != len(canonical_entities):
+            print(f"DomainGraphExtractor: INFO :: After clustering: {canonical_entities}")
+
+        # Step 5: Extract triples using canonical entities
+        triples = self.triples_extractor(text=text, entities=canonical_entities, few_shot_examples=examples_for_triples_extraction).triples
         if self.logging:
             print(f"DomainGraphExtractor: INFO :: Generated the following triples: {triples}")
 
-        # Step 5: Create ontology and add triples
+        # Step 6: Check coherence of triples
+        coherent_triples = self.check_coherence(triples, text)
+        if self.logging:
+            print(f"DomainGraphExtractor: INFO :: After coherence check, kept {len(coherent_triples)} triples")
+
+        # Step 7: Create ontology and add triples
         onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen"), load=False)
-        for triple in triples:
+        for triple in coherent_triples:
             subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
             prop = OWLObjectProperty(ontology_namespace + self.snake_case(triple[1]))
             object = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[2]))
-            if triple[0] in entities and triple[2] in entities:
+            if triple[0] in canonical_entities and triple[2] in canonical_entities:
                 ax = OWLObjectPropertyAssertionAxiom(subject, prop, object)
                 onto.add_axiom(ax)
 
-        # Step 6: Handle type assertions
+        # Step 8: Handle type assertions
         if entity_types is not None or generate_types:
             type_assertions = None
             if entity_types is not None and not generate_types:
-                type_assertions = self.type_asserter(text=text, entities=entities, entity_types=entity_types,
+                type_assertions = self.type_asserter(text=text, entities=canonical_entities, entity_types=entity_types,
                                                      few_shot_examples=examples_for_type_assertion).pairs
                 if self.logging:
                     print(f"DomainGraphExtractor: INFO :: Assigned types for entities as following: {type_assertions}")
             elif generate_types:
-                type_assertions = self.type_generator(text=text, entities=entities,
+                type_assertions = self.type_generator(text=text, entities=canonical_entities,
                                                       few_shot_examples=examples_for_type_generation).pairs
                 if self.logging:
                     print(f"DomainGraphExtractor: INFO :: Finished generating types and assigned them to entities as following: {type_assertions}")
@@ -427,12 +566,12 @@ class DomainGraphExtractor(dspy.Module):
                 ax = OWLClassAssertionAxiom(subject, entity_type)
                 onto.add_axiom(ax)
 
-        # Step 7: Extract SPL triples if requested
+        # Step 9: Extract SPL triples if requested
         if extract_spl_triples:
             literals = self.literal_extractor(text=text, few_shot_examples=examples_for_literal_extraction).l_values
             if self.logging:
                 print(f"DomainGraphExtractor: INFO :: Generated the following numeric literals: {literals}")
-            spl_triples = self.spl_triples_extractor(text=text, entities=entities, numeric_literals=literals,
+            spl_triples = self.spl_triples_extractor(text=text, entities=canonical_entities, numeric_literals=literals,
                                                      few_shot_examples=examples_for_spl_triples_extraction).triples
             if self.logging:
                 print(f"DomainGraphExtractor: INFO :: Generated the following s-p-l triples: {spl_triples}")
@@ -445,7 +584,7 @@ class DomainGraphExtractor(dspy.Module):
                     ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
                     onto.add_axiom(ax)
 
-        # Step 8: Create class hierarchy if requested
+        # Step 10: Create class hierarchy if requested
         if create_class_hierarchy:
             for cls in onto.classes_in_signature():
                 try:
@@ -466,7 +605,7 @@ class DomainGraphExtractor(dspy.Module):
                     ax = OWLSubClassOfAxiom(sub_cls, cls)
                     onto.add_axiom(ax)
 
-        # Step 9: Save ontology
+        # Step 11: Save ontology
         onto.save(path=save_path)
         if self.logging:
             print(f"DomainGraphExtractor: INFO :: Successfully saved the ontology at {os.path.join(os.getcwd(),save_path)}")
@@ -531,9 +670,42 @@ class DomainGraphExtractor(dspy.Module):
         )
 
 
-class CrossDomainGraphExtractor(dspy.Module):
-    pass
+class CrossDomainGraphExtractor(GraphExtractor):
+    """
+    A module to extract cross-domain RDF graphs from text input.
+    Handles content that spans multiple related domains.
+    """
+    def __init__(self, enable_logging=False):
+        super().__init__(enable_logging)
+        # Add specific predictors for cross-domain extraction
+        # TODO: Implement cross-domain specific extractors
 
-class EnterpriseGraphExtractor(dspy.Module):
-    pass
+    def generate_ontology(self, text: str, **kwargs) -> Ontology:
+        """Generate a cross-domain ontology from text."""
+        raise NotImplementedError("Cross-domain ontology generation is not yet implemented.")
+
+    def forward(self, text: str, **kwargs) -> Ontology:
+        """Forward pass for cross-domain extraction."""
+        raise NotImplementedError("Cross-domain ontology generation is not yet implemented.")
+
+
+class EnterpriseGraphExtractor(GraphExtractor):
+    """
+    A module to extract enterprise RDF graphs from text input.
+    Tailored for organizational knowledge representation.
+    """
+    def __init__(self, enable_logging=False):
+        super().__init__(enable_logging)
+        # Add specific predictors for enterprise extraction
+        # TODO: Implement enterprise specific extractors
+
+    def generate_ontology(self, text: str, **kwargs) -> Ontology:
+        """Generate an enterprise ontology from text."""
+        raise NotImplementedError("Enterprise ontology generation is not yet implemented.")
+
+    def forward(self, text: str, **kwargs) -> Ontology:
+        """Forward pass for enterprise extraction."""
+        raise NotImplementedError("Enterprise ontology generation is not yet implemented.")
+
+
 
