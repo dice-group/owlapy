@@ -18,6 +18,7 @@ from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.agen_kg.signatures import Entity, Triple, TypeAssertion, TypeGeneration, Literal, SPLTriples, Domain, DomainSpecificFewShotGenerator, EntityClustering, CoherenceChecker, TypeClustering, RelationClustering
 from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
 from owlapy.agen_kg.text_loader import UniversalTextLoader, TextChunker
+from owlapy.agen_kg.domain_examples_cache import DomainExamplesCache, EXAMPLE_TYPE_MAPPING
 
 
 # A compatible metaclass that combines dspy.Module's metaclass with ABCMeta
@@ -1157,11 +1158,12 @@ class OpenGraphExtractor(GraphExtractor):
 
 
 class DomainGraphExtractor(GraphExtractor):
-    def __init__(self, enable_logging=False):
+    def __init__(self, enable_logging=False, examples_cache_dir: Optional[str] = None):
         """
         A module to extract an RDF graph from domain-specific text input.
         Args:
             enable_logging: Whether to enable logging.
+            examples_cache_dir: Directory to cache domain-specific examples. If None, uses current working directory.
         """
         super().__init__(enable_logging)
         self.domain_detector = dspy.Predict(Domain)
@@ -1172,18 +1174,34 @@ class DomainGraphExtractor(GraphExtractor):
         self.type_generator = dspy.Predict(TypeGeneration)
         self.literal_extractor = dspy.Predict(Literal)
         self.spl_triples_extractor = dspy.Predict(SPLTriples)
+        # Initialize examples cache manager
+        self.examples_cache = DomainExamplesCache(cache_dir=examples_cache_dir)
 
 
     def generate_domain_specific_examples(self, domain: str):
         """
         Generate domain-specific few-shot examples for all task types.
 
+        Automatically caches examples to disk for future reuse. If examples have been
+        previously generated for the domain, they will be loaded from cache.
+
         Args:
             domain: The domain for which to generate examples.
 
         Returns:
-            Dictionary containing few-shot examples for each task type.
+            Dictionary containing few-shot examples for each task type, keyed by:
+            'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation',
+            'literal_extraction', 'triples_with_numeric_literals_extraction'
         """
+        # Check if examples are already cached
+        cached_examples = self.examples_cache.load_examples(domain)
+        if cached_examples is not None:
+            if self.logging:
+                cache_file = self.examples_cache.get_cache_file_path(domain)
+                print(f"DomainGraphExtractor: INFO :: Loaded cached examples for domain '{domain}' from {cache_file}")
+            return cached_examples
+
+        # Generate new examples if not cached
         examples = {}
         task_types = [
             'entity_extraction',
@@ -1191,7 +1209,7 @@ class DomainGraphExtractor(GraphExtractor):
             'type_assertion',
             'type_generation',
             'literal_extraction',
-            'spl_triples_extraction'
+            'triples_with_numeric_literals_extraction'
         ]
 
         if self.logging:
@@ -1207,7 +1225,79 @@ class DomainGraphExtractor(GraphExtractor):
             if self.logging:
                 print(f"DomainGraphExtractor: INFO :: Generated examples for {task_type}")
 
+        # Save examples to cache
+        if self.examples_cache.save_examples(domain, examples):
+            if self.logging:
+                cache_file = self.examples_cache.get_cache_file_path(domain)
+                print(f"DomainGraphExtractor: INFO :: Cached examples for domain '{domain}' to {cache_file}")
+        else:
+            if self.logging:
+                print(f"DomainGraphExtractor: WARNING :: Failed to cache examples for domain '{domain}'")
+
         return examples
+
+    def clear_domain_cache(self, domain: str) -> bool:
+        """
+        Clear the cached examples for a specific domain.
+
+        Args:
+            domain: The domain for which to clear cached examples.
+
+        Returns:
+            True if the cache was cleared successfully, False otherwise.
+        """
+        success = self.examples_cache.clear_domain_cache(domain)
+        if success and self.logging:
+            print(f"DomainGraphExtractor: INFO :: Cleared cache for domain '{domain}'")
+        return success
+
+    def clear_all_domain_caches(self) -> bool:
+        """
+        Clear all cached domain examples.
+
+        Returns:
+            True if all caches were cleared successfully, False otherwise.
+        """
+        success = self.examples_cache.clear_all_caches()
+        if success and self.logging:
+            print(f"DomainGraphExtractor: INFO :: Cleared all domain example caches")
+        return success
+
+    def list_cached_domains(self) -> list:
+        """
+        List all domains that have cached examples.
+
+        Returns:
+            List of domain names with cached examples.
+        """
+        domains = self.examples_cache.list_cached_domains()
+        if self.logging and domains:
+            print(f"DomainGraphExtractor: INFO :: Cached domains: {', '.join(domains)}")
+        return domains
+
+    def is_domain_cached(self, domain: str) -> bool:
+        """
+        Check if examples exist for a domain in the cache.
+
+        Args:
+            domain: The domain to check.
+
+        Returns:
+            True if examples are cached for the domain, False otherwise.
+        """
+        return self.examples_cache.examples_exist(domain)
+
+    def get_cache_file_path(self, domain: str) -> str:
+        """
+        Get the full path to the cache file for a domain.
+
+        Args:
+            domain: The domain name.
+
+        Returns:
+            String path to the cache file.
+        """
+        return self.examples_cache.get_cache_file_path(domain)
 
     def generate_ontology(self, text: Union[str, Path],
                           domain: str = None,
@@ -1302,7 +1392,7 @@ class DomainGraphExtractor(GraphExtractor):
             examples_for_type_assertion = examples_for_type_assertion or generated_examples['type_assertion']
             examples_for_type_generation = examples_for_type_generation or generated_examples['type_generation']
             examples_for_literal_extraction = examples_for_literal_extraction or generated_examples['literal_extraction']
-            examples_for_spl_triples_extraction = examples_for_spl_triples_extraction or generated_examples['spl_triples_extraction']
+            examples_for_spl_triples_extraction = examples_for_spl_triples_extraction or generated_examples['triples_with_numeric_literals_extraction']
 
         # Step 3: Extract entities (from chunks if needed)
         if self.logging:
@@ -1462,8 +1552,12 @@ class DomainGraphExtractor(GraphExtractor):
                 prop = OWLDataProperty(ontology_namespace + self.snake_case(triple[1]))
                 literal = OWLLiteral(str(self.snake_case(triple[2])), type_=StringOWLDatatype)
                 if triple[2] in literals:
-                    ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
-                    onto.add_axiom(ax)
+                    try:
+                        ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
+                        onto.add_axiom(ax)
+                    except Exception as e:
+                        print(e)
+                        print(f"Subject: {subject}, Property: {prop}, Literal: {literal}")
 
         # Step 10: Create class hierarchy if requested
         if create_class_hierarchy:

@@ -91,7 +91,7 @@ class DomainSpecificFewShotGenerator(dspy.Signature):
     for a specific task (entity extraction, triple extraction, type assertion, etc.). The examples should follow the same 
     format as the general few-shot examples but with domain-specific content."""
     domain: str = dspy.InputField(desc="The domain for which to generate few-shot examples (e.g., 'biology', 'finance').")
-    task_type: str = dspy.InputField(desc="The task type: 'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation', 'literal_extraction', or 'spl_triples_extraction'.")
+    task_type: str = dspy.InputField(desc="The task type: 'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation', 'literal_extraction', or 'triples_with_numeric_literals_extraction'.")
     num_examples: int = dspy.InputField(desc="Number of examples to generate.", default=2)
     few_shot_examples: str = dspy.OutputField(desc="Generated few-shot examples formatted as a string, following the standard format with Example 1, Example 2, etc.")
 
