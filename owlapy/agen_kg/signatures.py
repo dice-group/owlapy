@@ -111,3 +111,19 @@ class CoherenceChecker(dspy.Signature):
     text: str = dspy.InputField(desc="The original text context to verify triples against.")
     coherence_scores: list[tuple[tuple[str, str, str], int, str]] = dspy.OutputField(desc="List of tuples: (triple, coherence_score_1_to_5, explanation).")
 
+class TypeClustering(dspy.Signature):
+    __doc__ = """Given a list of entity types, identify duplicates and near-duplicates that refer to the same conceptual type.
+    Consider variations in spelling, singular/plural forms, synonyms, and different naming conventions. Return clusters of types 
+    that should be merged together, along with the canonical type name to use for each cluster."""
+    types: list[str] = dspy.InputField(desc="List of entity types to cluster and identify duplicates.")
+    text: str = dspy.InputField(desc="The original text context to help understand type relationships.")
+    clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_types, canonical_type_name).")
+
+class RelationClustering(dspy.Signature):
+    __doc__ = """Given a list of relations, identify duplicates and near-duplicates that refer to the same relationship.
+    Consider variations in spelling, synonyms, different phrasings, and naming conventions. Return clusters of relations 
+    that should be merged together, along with the canonical relation name to use for each cluster."""
+    relations: list[str] = dspy.InputField(desc="List of relations to cluster and identify duplicates.")
+    text: str = dspy.InputField(desc="The original text context to help understand relation meanings.")
+    clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_relations, canonical_relation_name).")
+
