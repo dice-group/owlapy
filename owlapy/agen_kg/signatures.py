@@ -127,3 +127,83 @@ class RelationClustering(dspy.Signature):
     text: str = dspy.InputField(desc="The original text context to help understand relation meanings.")
     clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_relations, canonical_relation_name).")
 
+
+class TextSummarizer(dspy.Signature):
+    __doc__ = """Given a piece of text, generate a concise summary that preserves all key entities, relationships,
+    types, and factual information mentioned. The summary should capture the essential semantic content without 
+    losing important details needed for knowledge graph extraction."""
+    text: str = dspy.InputField(desc="A textual input to summarize.")
+    summary: str = dspy.OutputField(desc="A concise summary preserving entities, relationships, types, and key facts.")
+
+
+class ChunkSummarizer(dspy.Signature):
+    __doc__ = """Given multiple text chunk summaries, combine them into a unified comprehensive summary.
+    The combined summary should deduplicate information, preserve all unique entities and relationships,
+    and maintain coherence across the merged content."""
+    chunk_summaries: list[str] = dspy.InputField(desc="List of summaries from different text chunks.")
+    combined_summary: str = dspy.OutputField(desc="A unified summary that combines and deduplicates information from all chunks.")
+
+
+class EntityClusteringWithSummary(dspy.Signature):
+    __doc__ = """Given a list of entities and a summary of the source text, identify duplicates and near-duplicates 
+    that refer to the same real-world entity. Consider variations in spelling, abbreviations, synonyms, 
+    and different naming conventions. Return clusters of entities that should be merged together, 
+    along with the canonical name to use for each cluster."""
+    entities: list[str] = dspy.InputField(desc="List of entities to cluster and identify duplicates.")
+    summary: str = dspy.InputField(desc="A summary of the original text context to help understand entity relationships.")
+    clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_entities, canonical_entity_name).")
+
+
+class TypeClusteringWithSummary(dspy.Signature):
+    __doc__ = """Given a list of entity types and a summary of the source text, identify duplicates and near-duplicates 
+    that refer to the same conceptual type. Consider variations in spelling, singular/plural forms, synonyms, 
+    and different naming conventions. Return clusters of types that should be merged together, 
+    along with the canonical type name to use for each cluster."""
+    types: list[str] = dspy.InputField(desc="List of entity types to cluster and identify duplicates.")
+    summary: str = dspy.InputField(desc="A summary of the original text context to help understand type relationships.")
+    clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_types, canonical_type_name).")
+
+
+class RelationClusteringWithSummary(dspy.Signature):
+    __doc__ = """Given a list of relations and a summary of the source text, identify duplicates and near-duplicates 
+    that refer to the same relationship. Consider variations in spelling, synonyms, different phrasings, 
+    and naming conventions. Return clusters of relations that should be merged together, 
+    along with the canonical relation name to use for each cluster."""
+    relations: list[str] = dspy.InputField(desc="List of relations to cluster and identify duplicates.")
+    summary: str = dspy.InputField(desc="A summary of the original text context to help understand relation meanings.")
+    clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_relations, canonical_relation_name).")
+
+
+class IncrementalEntityMerger(dspy.Signature):
+    __doc__ = """Given two sets of entities from different text chunks along with context, merge them into a unified 
+    list. Identify entities that refer to the same real-world entity across chunks and produce a canonical list.
+    Consider different mentions, abbreviations, and naming conventions that may appear across chunks."""
+    entities_a: list[str] = dspy.InputField(desc="First list of entities from chunk A.")
+    entities_b: list[str] = dspy.InputField(desc="Second list of entities from chunk B.")
+    context_a: str = dspy.InputField(desc="Summary/context from chunk A to understand entity meanings.")
+    context_b: str = dspy.InputField(desc="Summary/context from chunk B to understand entity meanings.")
+    merged_entities: list[str] = dspy.OutputField(desc="Unified list of entities with duplicates merged to canonical forms.")
+    entity_mapping: list[tuple[str, str]] = dspy.OutputField(desc="List of (original_entity, canonical_entity) mappings for entities that were merged.")
+
+
+class IncrementalTripleMerger(dspy.Signature):
+    __doc__ = """Given two sets of triples from different text chunks along with context, merge them into a unified 
+    list. Identify triples that represent the same relationship (possibly with different wording) and produce
+    a canonical list. Handle variations in entity names and relation phrasings across chunks."""
+    triples_a: list[tuple[str, str, str]] = dspy.InputField(desc="First list of triples from chunk A.")
+    triples_b: list[tuple[str, str, str]] = dspy.InputField(desc="Second list of triples from chunk B.")
+    context_a: str = dspy.InputField(desc="Summary/context from chunk A.")
+    context_b: str = dspy.InputField(desc="Summary/context from chunk B.")
+    merged_triples: list[tuple[str, str, str]] = dspy.OutputField(desc="Unified list of triples with semantic duplicates merged.")
+
+
+class IncrementalTypeMerger(dspy.Signature):
+    __doc__ = """Given two sets of entity-type pairs from different text chunks, merge them into a unified list.
+    Resolve any conflicting type assignments for the same entity, preferring more specific types.
+    Handle variations in type naming across chunks."""
+    types_a: list[tuple[str, str]] = dspy.InputField(desc="First list of (entity, type) pairs from chunk A.")
+    types_b: list[tuple[str, str]] = dspy.InputField(desc="Second list of (entity, type) pairs from chunk B.")
+    context_a: str = dspy.InputField(desc="Summary/context from chunk A.")
+    context_b: str = dspy.InputField(desc="Summary/context from chunk B.")
+    merged_types: list[tuple[str, str]] = dspy.OutputField(desc="Unified list of entity-type pairs with conflicts resolved.")
+
