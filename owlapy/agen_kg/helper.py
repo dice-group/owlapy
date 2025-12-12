@@ -1,8 +1,29 @@
 import dspy
 import requests
 
-from owlapy.agen_kg.signatures import american_to_british
-
+# DBpedia often uses British English, so we define a mapping for common American to British English terms.
+american_to_british = {
+    "organization": "organisation",
+    "color": "colour",
+    "honor": "honour",
+    "analyze": "analyse",
+    "center": "centre",
+    "meter": "metre",
+    "theater": "theatre",
+    "catalog": "catalogue",
+    "defense": "defence",
+    "offense": "offence",
+    "license": "licence",  # noun in UK
+    "practice": "practise",  # verb in UK
+    "traveled": "travelled",
+    "canceled": "cancelled",
+    "labeled": "labelled",
+    "modeling": "modelling",
+    "program": "programme",  # when referring to TV/show
+    "check": "cheque",  # bank sense
+    "gray": "grey",
+    "plow": "plough"
+}
 
 def configure_dspy(signature):
     lm = dspy.LM(model="openai/gpt-4o", api_key="<ENTER_API_KEY>",
