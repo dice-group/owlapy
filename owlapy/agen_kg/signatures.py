@@ -185,18 +185,17 @@ class IncrementalTypeMerger(dspy.Signature):
 
 
 class Enterprise(dspy.Signature):
-    __doc__ = """Given a piece of text, identify the enterprise/organization context of the text.
-    This could be the name of a company, organization, institution, or the type of enterprise (e.g., 'healthcare', 'finance', 'manufacturing').
-    Focus on identifying what enterprise or business domain the text is describing."""
+    __doc__ = """Given a piece of text, identify the enterprise/organization context.
+    This could be a small description of the company, organization or institution profile.
+    Focus on identifying the target of the enterprise and key aspects."""
     text: str = dspy.InputField(desc="A textual input whose enterprise context should be identified.")
-    enterprise: str = dspy.OutputField(desc="Detected enterprise context/name (e.g., 'Acme Corp', 'healthcare', 'banking'), normalized (lowercase).")
+    context: str = dspy.OutputField(desc="Detected enterprise context.")
 
 
 class EnterpriseSpecificFewShotGenerator(dspy.Signature):
-    __doc__ = """Given an enterprise context (e.g., 'Acme Corp', 'healthcare', 'finance'), generate few-shot examples tailored to that enterprise 
-    for a specific task (entity extraction, triple extraction, type assertion, etc.). The examples should follow the same 
-    format as the general few-shot examples but with enterprise-specific content relevant to the given organization or industry."""
-    enterprise: str = dspy.InputField(desc="The enterprise context for which to generate few-shot examples (e.g., 'Acme Corp', 'healthcare').")
+    __doc__ = """Given an enterprise context-target goal and key aspects, generate few-shot examples tailored to that enterprise
+    for a specific task (entity extraction, triple extraction, type assertion, etc.)."""
+    enterprise: str = dspy.InputField(desc="The enterprise context for which to generate few-shot examples")
     task_type: str = dspy.InputField(desc="The task type: 'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation', 'literal_extraction', or 'triples_with_numeric_literals_extraction'.")
-    num_examples: int = dspy.InputField(desc="Number of examples to generate.", default=2)
+    num_examples: int = dspy.InputField(desc="Number of examples to generate.", default=3)
     few_shot_examples: str = dspy.OutputField(desc="Generated few-shot examples formatted as a string, following the standard format with Example 1, Example 2, etc.")
