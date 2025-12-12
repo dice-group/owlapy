@@ -1,29 +1,5 @@
 import dspy
 
-# DBpedia often uses British English, so we define a mapping for common American to British English terms.
-american_to_british = {
-    "organization": "organisation",
-    "color": "colour",
-    "honor": "honour",
-    "analyze": "analyse",
-    "center": "centre",
-    "meter": "metre",
-    "theater": "theatre",
-    "catalog": "catalogue",
-    "defense": "defence",
-    "offense": "offence",
-    "license": "licence",  # noun in UK
-    "practice": "practise",  # verb in UK
-    "traveled": "travelled",
-    "canceled": "cancelled",
-    "labeled": "labelled",
-    "modeling": "modelling",
-    "program": "programme",  # when referring to TV/show
-    "check": "cheque",  # bank sense
-    "gray": "grey",
-    "plow": "plough"
-}
-
 class Entity(dspy.Signature):
     __doc__ = """Given a piece of text as input identify key entities extracted form the text."""
     text: str = dspy.InputField(desc="A textual input about some topic.")
@@ -207,3 +183,20 @@ class IncrementalTypeMerger(dspy.Signature):
     context_b: str = dspy.InputField(desc="Summary/context from chunk B.")
     merged_types: list[tuple[str, str]] = dspy.OutputField(desc="Unified list of entity-type pairs with conflicts resolved.")
 
+
+class Enterprise(dspy.Signature):
+    __doc__ = """Given a piece of text, identify the enterprise/organization context of the text.
+    This could be the name of a company, organization, institution, or the type of enterprise (e.g., 'healthcare', 'finance', 'manufacturing').
+    Focus on identifying what enterprise or business domain the text is describing."""
+    text: str = dspy.InputField(desc="A textual input whose enterprise context should be identified.")
+    enterprise: str = dspy.OutputField(desc="Detected enterprise context/name (e.g., 'Acme Corp', 'healthcare', 'banking'), normalized (lowercase).")
+
+
+class EnterpriseSpecificFewShotGenerator(dspy.Signature):
+    __doc__ = """Given an enterprise context (e.g., 'Acme Corp', 'healthcare', 'finance'), generate few-shot examples tailored to that enterprise 
+    for a specific task (entity extraction, triple extraction, type assertion, etc.). The examples should follow the same 
+    format as the general few-shot examples but with enterprise-specific content relevant to the given organization or industry."""
+    enterprise: str = dspy.InputField(desc="The enterprise context for which to generate few-shot examples (e.g., 'Acme Corp', 'healthcare').")
+    task_type: str = dspy.InputField(desc="The task type: 'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation', 'literal_extraction', or 'triples_with_numeric_literals_extraction'.")
+    num_examples: int = dspy.InputField(desc="Number of examples to generate.", default=2)
+    few_shot_examples: str = dspy.OutputField(desc="Generated few-shot examples formatted as a string, following the standard format with Example 1, Example 2, etc.")
