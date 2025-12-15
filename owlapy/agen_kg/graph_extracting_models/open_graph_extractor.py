@@ -50,6 +50,7 @@ class OpenGraphExtractor(GraphExtractor):
                           examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION,
                           examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION,
                           examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION,
+                          fact_reassurance=True,
                           save_path="generated_ontology.owl") -> Ontology:
         """
         Generate an ontology from the given text or file.
@@ -68,7 +69,13 @@ class OpenGraphExtractor(GraphExtractor):
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
-            examples_for_*: Few-shot examples for various extraction tasks.
+            examples_for_entity_extraction: Few-shot examples for entity extraction.
+            examples_for_triples_extraction: Few-shot examples for triple extraction.
+            examples_for_type_assertion: Few-shot examples for type assertion.
+            examples_for_type_generation: Few-shot examples for type generation and assertion.
+            examples_for_literal_extraction: Few-shot examples for literal extraction.
+            examples_for_spl_triples_extraction: Few-shot examples for s-p-l triples extraction.
+            fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
             save_path: Path to save the ontology.
 
         Returns:
@@ -146,9 +153,15 @@ class OpenGraphExtractor(GraphExtractor):
 
         # Step 4: Check coherence of the relation-normalized triples
         # For chunked text, use a summary for coherence checking
-        coherent_triples = self.check_coherence(updated_triples, clustering_context)
-        if self.logging:
-            print(f"GraphExtractor: INFO  :: After coherence check, kept {len(coherent_triples)} triples")
+        if fact_reassurance:
+            coherent_triples = self.check_coherence(updated_triples, clustering_context)
+            if self.logging:
+                print(f"OpenGraphExtractor: INFO :: After coherence check, kept {len(coherent_triples)} triples")
+        else:
+            coherent_triples = updated_triples
+            if self.logging:
+                print(f"OpenGraphExtractor: INFO :: Skipped coherence check, using all {len(coherent_triples)} triples")
+
 
         # Step 5: Create an ontology and load it with extracted triples
         onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen"), load=False)
@@ -290,6 +303,7 @@ class OpenGraphExtractor(GraphExtractor):
                 examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION,
                 examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION,
                 examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION,
+                fact_reassurance=True,
                 save_path="generated_ontology.owl") -> Ontology:
 
         """
@@ -319,6 +333,7 @@ class OpenGraphExtractor(GraphExtractor):
             examples_for_type_generation (str): Few-shot examples for type generation and assertion.
             examples_for_literal_extraction (str): Few-shot examples for literal extraction.
             examples_for_spl_triples_extraction (str): Few-shot examples for s-p-l triples extraction.
+            fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
             save_path (str): Path to save the generated ontology.
 
         Returns (Ontology): An ontology object.

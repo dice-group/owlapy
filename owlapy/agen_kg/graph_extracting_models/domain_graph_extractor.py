@@ -177,6 +177,7 @@ class DomainGraphExtractor(GraphExtractor):
                           examples_for_type_generation=None,
                           examples_for_literal_extraction=None,
                           examples_for_spl_triples_extraction=None,
+                          fact_reassurance: bool = True,
                           save_path="generated_ontology.owl") -> Ontology:
         """
         Generate a domain-specific ontology from text.
@@ -197,7 +198,9 @@ class DomainGraphExtractor(GraphExtractor):
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
             examples_for_*: Custom few-shot examples. If None, domain-specific examples will be generated.
+            fact_reassurance: Whether to perform the coherence check on triples (default: True).
             save_path: Path to save the ontology.
+
 
         Returns:
             Generated Ontology object.
@@ -312,9 +315,15 @@ class DomainGraphExtractor(GraphExtractor):
             print(f"DomainGraphExtractor: INFO :: After relation clustering: {list(set(relation_mapping.values()))}")
 
         # Step 6: Check coherence of the relation-normalized triples
-        coherent_triples = self.check_coherence(updated_triples, clustering_context)
-        if self.logging:
-            print(f"DomainGraphExtractor: INFO :: After coherence check, kept {len(coherent_triples)} triples")
+        if fact_reassurance:
+            coherent_triples = self.check_coherence(updated_triples, clustering_context)
+            if self.logging:
+                print(f"DomainGraphExtractor: INFO :: After coherence check, kept {len(coherent_triples)} triples")
+        else:
+            coherent_triples = updated_triples
+            if self.logging:
+                print(f"DomainGraphExtractor: INFO :: Skipped coherence check, using all {len(coherent_triples)} triples")
+
 
         # Step 7: Create ontology and add triples
         onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen"), load=False)
@@ -463,6 +472,7 @@ class DomainGraphExtractor(GraphExtractor):
                 examples_for_type_generation=None,
                 examples_for_literal_extraction=None,
                 examples_for_spl_triples_extraction=None,
+                fact_reassurance=True,
                 save_path="generated_ontology.owl") -> Ontology:
         """
         Extract a domain-specific ontology from a given textual input or file.
@@ -489,6 +499,7 @@ class DomainGraphExtractor(GraphExtractor):
             examples_for_type_generation (str): Few-shot examples for type generation. If None, domain-specific examples will be generated.
             examples_for_literal_extraction (str): Few-shot examples for literal extraction. If None, domain-specific examples will be generated.
             examples_for_spl_triples_extraction (str): Few-shot examples for s-p-l triples extraction. If None, domain-specific examples will be generated.
+            fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
             save_path (str): Path to save the generated ontology.
 
         Returns (Ontology): An ontology object.

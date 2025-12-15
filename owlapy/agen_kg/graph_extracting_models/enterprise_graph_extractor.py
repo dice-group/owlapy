@@ -17,6 +17,10 @@ from owlapy.agen_kg.signatures import (
 from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
 from owlapy.agen_kg.graph_extractor import GraphExtractor
 
+# TODO: Problems to fix
+#      - Entity extraction is bad, most things that are considered entities (individuals) are not fit to be called an
+#        entity but rather just string values for data properties.
+#      - In enterprise graphs we should therefore focus more on data properties than object properties.
 
 class EnterpriseGraphExtractor(GraphExtractor):
     """
@@ -66,7 +70,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
         ]
 
         if self.logging:
-            print(f"EnterpriseGraphExtractor: INFO :: Generating enterprise-specific few-shot examples for: {enterprise}")
+            print(f"EnterpriseGraphExtractor: INFO :: Generating enterprise-specific few-shot examples")
 
         for task_type in task_types:
             result = self.few_shot_generator(
@@ -90,6 +94,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
                           create_class_hierarchy=False,
                           entity_clustering=True,
                           use_chunking: bool = None,
+                          fact_reassurance: bool = True,
                           save_path="generated_ontology.owl") -> Ontology:
         """
         Generate an enterprise ontology from text.
@@ -107,11 +112,12 @@ class EnterpriseGraphExtractor(GraphExtractor):
             create_class_hierarchy: Whether to create class hierarchy from DBpedia.
             entity_clustering: Whether to perform entity clustering.
             use_chunking: Whether to use text chunking for large documents.
+            fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
-            examples_for_*: Custom few-shot examples. If None, enterprise-specific examples will be generated.
             save_path: Path to save the ontology.
+
 
         Returns:
             Generated Ontology object.
@@ -211,10 +217,15 @@ class EnterpriseGraphExtractor(GraphExtractor):
         if self.logging and len(relations) != len(set(relation_mapping.values())):
             print(f"EnterpriseGraphExtractor: INFO :: After relation clustering: {list(set(relation_mapping.values()))}")
 
-        # Step 7: Check coherence
-        coherent_triples = self.check_coherence(updated_triples, clustering_context)
-        if self.logging:
-            print(f"EnterpriseGraphExtractor: INFO :: After coherence check, kept {len(coherent_triples)} triples")
+        # Step 7: Check coherence (fact reassurance)
+        if fact_reassurance:
+            coherent_triples = self.check_coherence(updated_triples, clustering_context)
+            if self.logging:
+                print(f"EnterpriseGraphExtractor: INFO :: After coherence check, kept {len(coherent_triples)} triples")
+        else:
+            coherent_triples = updated_triples
+            if self.logging:
+                print(f"EnterpriseGraphExtractor: INFO :: Skipped coherence check, using all {len(coherent_triples)} triples")
 
         # Step 8: Create ontology
         onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen"), load=False)
@@ -222,7 +233,8 @@ class EnterpriseGraphExtractor(GraphExtractor):
             subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
             prop = OWLObjectProperty(ontology_namespace + self.snake_case(triple[1]))
             object = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[2]))
-            if triple[0] in canonical_entities and triple[2] in canonical_entities:
+            # Add triple if subject is a canonical entity (object may be a value/attribute)
+            if triple[0] in canonical_entities:
                 ax = OWLObjectPropertyAssertionAxiom(subject, prop, object)
                 onto.add_axiom(ax)
 
@@ -299,7 +311,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
                 subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
                 prop = OWLDataProperty(ontology_namespace + self.snake_case(triple[1]))
                 literal = OWLLiteral(str(self.snake_case(triple[2])), type_=StringOWLDatatype)
-                if triple[2] in literals:
+                if triple[0] in canonical_entities and triple[2] in literals:
                     ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
                     onto.add_axiom(ax)
 
@@ -342,6 +354,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
                 create_class_hierarchy=False,
                 entity_clustering=True,
                 use_chunking: bool = None,
+                fact_reassurance: bool = True,
                 save_path="generated_enterprise_ontology.owl") -> Ontology:
         """
         Extract an enterprise ontology from a given textual input or file.
@@ -365,7 +378,9 @@ class EnterpriseGraphExtractor(GraphExtractor):
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
+            fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
             save_path (str): Path to save the generated ontology.
+
 
         Returns (Ontology): An ontology object.
         """
@@ -383,5 +398,6 @@ class EnterpriseGraphExtractor(GraphExtractor):
             create_class_hierarchy=create_class_hierarchy,
             entity_clustering=entity_clustering,
             use_chunking=use_chunking,
-            save_path=save_path
+            save_path=save_path,
+            fact_reassurance=fact_reassurance
         )
