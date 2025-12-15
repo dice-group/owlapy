@@ -9,7 +9,6 @@ from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, \
     OWLSubClassOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral, StringOWLDatatype
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.agen_kg.signatures import (
@@ -424,9 +423,8 @@ class DomainGraphExtractor(GraphExtractor):
                     try:
                         ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
                         onto.add_axiom(ax)
-                    except Exception as e:
-                        print(e)
-                        print(f"Subject: {subject}, Property: {prop}, Literal: {literal}")
+                    except Exception:
+                        pass
 
         # Step 10: Create class hierarchy if requested
         if create_class_hierarchy:

@@ -12,7 +12,6 @@ from owlapy.ontogen.few_shot_examples import EXAMPLES_FOR_ENTITY_EXTRACTION, EXA
 from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, \
     OWLSubClassOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral, StringOWLDatatype
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.agen_kg.signatures import Entity, Triple, TypeAssertion, TypeGeneration, Literal, SPLTriples
@@ -261,7 +260,7 @@ class OpenGraphExtractor(GraphExtractor):
                     try:
                         ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
                         onto.add_axiom(ax)
-                    except Exception as e:
+                    except Exception:
                         pass
 
         if create_class_hierarchy:

@@ -1,22 +1,11 @@
 from typing import List, Union
-import os
 import dspy
 import uuid
 from pathlib import Path
-
-
-from owlapy.class_expression import OWLClass
-from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, \
-    OWLSubClassOfAxiom
-from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral, StringOWLDatatype
 from owlapy.owl_ontology import Ontology
-from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.agen_kg.signatures import (
     Entity, Triple, TypeAssertion, TypeGeneration, Literal, SPLTriples, Domain,
 )
-from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
 from owlapy.agen_kg.graph_extractor import GraphExtractor
 
 

@@ -8,7 +8,6 @@ from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, \
     OWLSubClassOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.agen_kg.signatures import (
@@ -246,7 +245,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
                 ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
                 try:
                     onto.add_axiom(ax)
-                except Exception as e:
+                except Exception:
                     # if the property already exists as object property, skip adding as data property
                     pass
 
