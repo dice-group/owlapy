@@ -419,7 +419,7 @@ class DomainGraphExtractor(GraphExtractor):
             for triple in spl_triples:
                 subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
                 prop = OWLDataProperty(ontology_namespace + self.snake_case(triple[1]))
-                literal = OWLLiteral(str(self.snake_case(triple[2])), type_=StringOWLDatatype)
+                literal = self.get_corresponding_literal(triple[2])
                 if triple[2] in literals:
                     try:
                         ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)

@@ -3,7 +3,9 @@ from typing import List, Union, Optional
 import dspy
 from abc import ABC, abstractmethod
 from pathlib import Path
+from datetime import datetime
 
+from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import Ontology
 from owlapy.agen_kg.signatures import (EntityClustering, CoherenceChecker, TypeClustering,
     RelationClustering, TextSummarizer, ChunkSummarizer, EntityClusteringWithSummary,
@@ -1298,6 +1300,59 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             print(f"{extractor_name}: INFO :: Total merged SPL triples: {len(merged_triples)}")
 
         return merged_triples
+
+    def get_corresponding_literal(self, literal_value: str) -> OWLLiteral:
+        """
+        Convert a string literal value to an OWLLiteral with the appropriate datatype."""
+
+        value = literal_value
+        literal = None
+
+        # Try DateTime first (most specific date type)
+        try:
+            parsed_datetime = datetime.fromisoformat(str(value))
+            literal = OWLLiteral(parsed_datetime)  # OWLLiteral will auto-detect datetime type
+        except (ValueError, TypeError, AttributeError):
+            pass
+
+        # Try Date (without time)
+        if literal is None:
+            try:
+                # Check if it looks like a date format (YYYY-MM-DD)
+                parsed_date = datetime.strptime(str(value), "%Y-%m-%d").date()
+                literal = OWLLiteral(parsed_date)  # OWLLiteral will auto-detect date type
+            except (ValueError, TypeError, AttributeError):
+                pass
+
+        # Try Boolean
+        if literal is None:
+            try:
+                str_value = str(value).lower().strip()
+                if str_value in ('true', 'false'):
+                    bool_value = str_value == 'true'
+                    literal = OWLLiteral(bool_value)  # OWLLiteral will auto-detect bool type
+            except (ValueError, TypeError, AttributeError):
+                pass
+
+        # Try Integer
+        if literal is None:
+            try:
+                # Check if it's an integer (no decimal point or is x.0)
+                float_value = float(value)
+                if float_value.is_integer():
+                    int_value = int(float_value)
+                    literal = OWLLiteral(int_value)  # OWLLiteral will auto-detect int type
+                else:
+                    # It's a float with decimal places
+                    literal = OWLLiteral(float_value)  # OWLLiteral will auto-detect float type
+            except (ValueError, TypeError, AttributeError):
+                pass
+
+        # Default to String
+        if literal is None:
+            literal = OWLLiteral(str(value))  # OWLLiteral will auto-detect string type
+
+        return literal
 
     @abstractmethod
     def generate_ontology(self, text: Union[str, Path], ontology_type: str = "open", **kwargs) -> Ontology:

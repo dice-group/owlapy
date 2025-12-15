@@ -256,11 +256,13 @@ class OpenGraphExtractor(GraphExtractor):
             for triple in spl_triples:
                 subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
                 prop = OWLDataProperty(ontology_namespace + self.snake_case(triple[1]))
-                literal = OWLLiteral(str(self.snake_case(triple[2])),
-                                     type_=StringOWLDatatype)  # for now every literal will be represented as a string
+                literal = self.get_corresponding_literal(triple[2])
                 if triple[2] in literals:
-                    ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
-                    onto.add_axiom(ax)
+                    try:
+                        ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
+                        onto.add_axiom(ax)
+                    except Exception as e:
+                        pass
 
         if create_class_hierarchy:
             for cls in onto.classes_in_signature():

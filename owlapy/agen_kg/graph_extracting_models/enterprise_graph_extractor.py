@@ -8,7 +8,7 @@ from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, \
     OWLSubClassOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral, StringOWLDatatype
+from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.agen_kg.signatures import (
@@ -70,7 +70,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
         ]
 
         if self.logging:
-            print(f"EnterpriseGraphExtractor: INFO :: Generating enterprise-specific few-shot examples")
+            print("EnterpriseGraphExtractor: INFO :: Generating enterprise-specific few-shot examples")
 
         for task_type in task_types:
             result = self.few_shot_generator(
@@ -233,10 +233,22 @@ class EnterpriseGraphExtractor(GraphExtractor):
             subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
             prop = OWLObjectProperty(ontology_namespace + self.snake_case(triple[1]))
             object = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[2]))
-            # Add triple if subject is a canonical entity (object may be a value/attribute)
-            if triple[0] in canonical_entities:
+            # Add triple if subject and object are canonical entities
+            if triple[0] in canonical_entities and triple[2] in canonical_entities:
                 ax = OWLObjectPropertyAssertionAxiom(subject, prop, object)
                 onto.add_axiom(ax)
+
+        for triple in coherent_triples:
+            subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
+            prop = OWLDataProperty(ontology_namespace + self.snake_case(triple[1]))
+            literal = self.get_corresponding_literal(triple[2])
+            if triple[0] in canonical_entities:
+                ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
+                try:
+                    onto.add_axiom(ax)
+                except Exception as e:
+                    # if the property already exists as object property, skip adding as data property
+                    pass
 
         # Step 9: Handle type assertions
         if entity_types is not None or generate_types:
@@ -310,10 +322,13 @@ class EnterpriseGraphExtractor(GraphExtractor):
             for triple in spl_triples:
                 subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
                 prop = OWLDataProperty(ontology_namespace + self.snake_case(triple[1]))
-                literal = OWLLiteral(str(self.snake_case(triple[2])), type_=StringOWLDatatype)
+                literal = self.get_corresponding_literal(triple[2])
                 if triple[0] in canonical_entities and triple[2] in literals:
-                    ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
-                    onto.add_axiom(ax)
+                    try:
+                        ax = OWLDataPropertyAssertionAxiom(subject, prop, literal)
+                        onto.add_axiom(ax)
+                    except Exception:
+                        pass
 
         # Step 11: Create class hierarchy if requested
         if create_class_hierarchy:
