@@ -16,11 +16,6 @@ from owlapy.agen_kg.signatures import (
 from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
 from owlapy.agen_kg.graph_extractor import GraphExtractor
 
-# TODO: Problems to fix
-#      - Entity extraction is bad, most things that are considered entities (individuals) are not fit to be called an
-#        entity but rather just string values for data properties.
-#      - In enterprise graphs we should therefore focus more on data properties than object properties.
-
 class EnterpriseGraphExtractor(GraphExtractor):
     """
     A module to extract enterprise RDF graphs from text input.
@@ -280,7 +275,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
 
             for pair in type_assertions:
                 subject = OWLNamedIndividual(ontology_namespace + self.snake_case(pair[0]))
-                entity_type = OWLClass(ontology_namespace + self.snake_case(pair[1]))
+                entity_type = OWLClass(ontology_namespace + self.format_type_name(pair[1]))
                 ax = OWLClassAssertionAxiom(subject, entity_type)
                 onto.add_axiom(ax)
 
@@ -345,12 +340,18 @@ class EnterpriseGraphExtractor(GraphExtractor):
                     dbpedia_class_remainder = IRI.create(superclass).remainder
                     sup_cls = OWLClass(ontology_namespace + dbpedia_class_remainder)
                     ax = OWLSubClassOfAxiom(cls, sup_cls)
-                    onto.add_axiom(ax)
+                    try:
+                        onto.add_axiom(ax)
+                    except Exception:
+                        pass
                 for subclass in subclasses:
                     dbpedia_class_remainder = IRI.create(subclass).remainder
                     sub_cls = OWLClass(ontology_namespace + dbpedia_class_remainder)
                     ax = OWLSubClassOfAxiom(sub_cls, cls)
-                    onto.add_axiom(ax)
+                    try:
+                        onto.add_axiom(ax)
+                    except Exception:
+                        pass
 
         # Step 12: Save ontology
         onto.save(path=save_path)

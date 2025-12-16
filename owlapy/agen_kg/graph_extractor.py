@@ -79,6 +79,27 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         text = re.sub(r'\s+', '_', text.strip())  # Multiple spaces -> single underscore
         return text.lower()
 
+    @staticmethod
+    def format_type_name(text):
+        """
+        Format a type name to start with capital letter and rest lowercase.
+        E.g., 'PERSON' -> 'Person', 'person' -> 'Person', 'PERSON_TYPE' -> 'Person_type'
+
+        Args:
+            text: The type name to format.
+
+        Returns:
+            Formatted type name with capital first letter and lowercase rest.
+        """
+        # Normalize whitespace and special chars
+        text = re.sub(r'[^\w\s]', '', text)  # Remove special chars
+        text = re.sub(r'\s+', '_', text.strip())  # Multiple spaces -> single underscore
+        # Convert to lowercase first, then capitalize first letter
+        text = text.lower()
+        if text:
+            text = text[0].upper() + text[1:]
+        return text
+
     def load_text(self, source: Union[str, Path], file_type: Optional[str] = None) -> str:
         """
         Load text from various sources (files or raw text).

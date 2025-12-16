@@ -210,7 +210,7 @@ class OpenGraphExtractor(GraphExtractor):
             # Add class assertion axioms
             for pair in type_assertions:
                 subject = OWLNamedIndividual(ontology_namespace + self.snake_case(pair[0]))
-                entity_type = OWLClass(ontology_namespace + self.snake_case(pair[1]))
+                entity_type = OWLClass(ontology_namespace + self.format_type_name(pair[1]))
                 ax = OWLClassAssertionAxiom(subject, entity_type)
                 try:
                     onto.add_axiom(ax)
@@ -277,12 +277,18 @@ class OpenGraphExtractor(GraphExtractor):
                     dbpedia_class_remainder = IRI.create(superclass).remainder
                     sup_cls = OWLClass(ontology_namespace + dbpedia_class_remainder)
                     ax = OWLSubClassOfAxiom(cls, sup_cls)
-                    onto.add_axiom(ax)
+                    try:
+                        onto.add_axiom(ax)
+                    except Exception:
+                        pass
                 for subclass in subclasses:
                     dbpedia_class_remainder = IRI.create(subclass).remainder
                     sub_cls = OWLClass(ontology_namespace + dbpedia_class_remainder)
                     ax = OWLSubClassOfAxiom(sub_cls, cls)
-                    onto.add_axiom(ax)
+                    try:
+                        onto.add_axiom(ax)
+                    except Exception:
+                        pass
 
         onto.save(path=save_path)
         if self.logging:
