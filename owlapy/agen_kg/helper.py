@@ -1,5 +1,8 @@
 import dspy
 import requests
+from owlapy.agen_kg.few_shot_examples import (EXAMPLES_FOR_ENTITY_EXTRACTION, EXAMPLES_FOR_TRIPLES_EXTRACTION,
+                                              EXAMPLES_FOR_TYPE_ASSERTION, EXAMPLES_FOR_TYPE_GENERATION,
+                                              EXAMPLES_FOR_LITERAL_EXTRACTION, EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION)
 
 # DBpedia often uses British English, so we define a mapping for common American to British English terms.
 american_to_british = {
@@ -23,6 +26,15 @@ american_to_british = {
     "check": "cheque",  # bank sense
     "gray": "grey",
     "plow": "plough"
+}
+
+task_example_mapping = {
+    'entity_extraction': EXAMPLES_FOR_ENTITY_EXTRACTION,
+    'triples_extraction': EXAMPLES_FOR_TRIPLES_EXTRACTION,
+    'type_assertion': EXAMPLES_FOR_TYPE_ASSERTION,
+    'type_generation': EXAMPLES_FOR_TYPE_GENERATION,
+    'literal_extraction': EXAMPLES_FOR_LITERAL_EXTRACTION,
+    'triples_with_numeric_literals_extraction': EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION
 }
 
 def configure_dspy(signature):

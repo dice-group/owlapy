@@ -69,6 +69,8 @@ class DomainSpecificFewShotGenerator(dspy.Signature):
     domain: str = dspy.InputField(desc="The domain for which to generate few-shot examples (e.g., 'biology', 'finance').")
     task_type: str = dspy.InputField(desc="The task type: 'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation', 'literal_extraction', or 'triples_with_numeric_literals_extraction'.")
     num_examples: int = dspy.InputField(desc="Number of examples to generate.", default=2)
+    examples_example_structure: str = dspy.InputField(
+        desc="The example structure to use as a guiding template for generating few-shot examples.")
     few_shot_examples: str = dspy.OutputField(desc="Generated few-shot examples formatted as a string, following the standard format with Example 1, Example 2, etc.")
 
 class EntityClustering(dspy.Signature):
@@ -198,4 +200,6 @@ class EnterpriseSpecificFewShotGenerator(dspy.Signature):
     enterprise: str = dspy.InputField(desc="The enterprise context for which to generate few-shot examples")
     task_type: str = dspy.InputField(desc="The task type: 'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation', 'literal_extraction', or 'triples_with_numeric_literals_extraction'.")
     num_examples: int = dspy.InputField(desc="Number of examples to generate.", default=3)
+    examples_example_structure: str = dspy.InputField(
+        desc="The example structure to use as a guiding template for generating few-shot examples.")
     few_shot_examples: str = dspy.OutputField(desc="Generated few-shot examples formatted as a string, following the standard format with Example 1, Example 2, etc.")

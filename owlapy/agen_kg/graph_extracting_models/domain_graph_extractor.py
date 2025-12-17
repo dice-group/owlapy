@@ -15,7 +15,7 @@ from owlapy.agen_kg.signatures import (
 Entity, Triple, TypeAssertion, TypeGeneration, Literal, SPLTriples, Domain,
     DomainSpecificFewShotGenerator
 )
-from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
+from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia, task_example_mapping
 from owlapy.agen_kg.domain_examples_cache import DomainExamplesCache
 from owlapy.agen_kg.graph_extractor import GraphExtractor
 
@@ -82,7 +82,8 @@ class DomainGraphExtractor(GraphExtractor):
             result = self.few_shot_generator(
                 domain=domain,
                 task_type=task_type,
-                num_examples=2
+                num_examples=2,
+                examples_example_structure=task_example_mapping[task_type]
             )
             examples[task_type] = result.few_shot_examples
             if self.logging:
