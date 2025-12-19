@@ -1,7 +1,8 @@
 import dspy
 
 class Entity(dspy.Signature):
-    __doc__ = """Given a piece of text as input identify key entities extracted form the text."""
+    __doc__ = """Given a piece of text as input identify key entities extracted form the text. The result 
+    should be a list of capitalized entities. E.g., ["ENTITY1", "ENTITY2", ...]"""
     text: str = dspy.InputField(desc="A textual input about some topic.")
     few_shot_examples: str = dspy.InputField(desc="Few shot examples for this task.")
     entities: list[str] = dspy.OutputField(desc="List of key entities, capitalized.")
@@ -32,7 +33,8 @@ class TypeGeneration(dspy.Signature):
 
 
 class Literal(dspy.Signature):
-    __doc__ = """Given a piece of text as input identify key numerical values extracted form the text."""
+    __doc__ = """Given a piece of text as input identify key numerical values extracted form the text. The result
+    should be a list of numerical literals. E.g., ["123", "45.67", "50%", ...]"""
     text: str = dspy.InputField(desc="A textual input about some topic.")
     few_shot_examples: str = dspy.InputField(desc="Few shot examples for this task.")
     l_values: list[str] = dspy.OutputField(desc="List of key numerical values.")
@@ -73,13 +75,15 @@ class DomainSpecificFewShotGenerator(dspy.Signature):
         desc="The example structure to use as a guiding template for generating few-shot examples.")
     few_shot_examples: str = dspy.OutputField(desc="Generated few-shot examples formatted as a string, following the standard format with Example 1, Example 2, etc.")
 
-class EntityClustering(dspy.Signature):
-    __doc__ = """Given a list of entities, identify duplicates and near-duplicates that refer to the same real-world entity.
-    Consider variations in spelling, abbreviations, synonyms, and different naming conventions. Return clusters of entities 
-    that should be merged together, along with the canonical name to use for each cluster."""
-    entities: list[str] = dspy.InputField(desc="List of entities to cluster and identify duplicates.")
+
+class EntityDeduplication(dspy.Signature):
+    __doc__ = """Given a list of entities, identify and remove redundant near-duplicates that refer to the same real-world entity.
+    Consider variations in spelling, abbreviations, and naming conventions. For example, given ['Ben Smith', 'B. Smith'], 
+    remove 'B. Smith' and keep 'Ben Smith'. Preserve most entities - only filter out those that are very closely resembled or 
+    abbreviated versions of more complete entities. Return a filtered list with redundant entities removed."""
+    entities: list[str] = dspy.InputField(desc="List of entities to deduplicate.")
     text: str = dspy.InputField(desc="The original text context to help understand entity relationships.")
-    clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_entities, canonical_entity_name).")
+    filtered_entities: list[str] = dspy.OutputField(desc="Filtered list of entities with redundant near-duplicates removed.")
 
 class CoherenceChecker(dspy.Signature):
     __doc__ = """Given a batch of triples and optional textual context, evaluate the logical coherence and factual consistency 
@@ -122,14 +126,15 @@ class ChunkSummarizer(dspy.Signature):
     combined_summary: str = dspy.OutputField(desc="A unified summary that combines and deduplicates information from all chunks.")
 
 
-class EntityClusteringWithSummary(dspy.Signature):
-    __doc__ = """Given a list of entities and a summary of the source text, identify duplicates and near-duplicates 
-    that refer to the same real-world entity. Consider variations in spelling, abbreviations, synonyms, 
-    and different naming conventions. Return clusters of entities that should be merged together, 
-    along with the canonical name to use for each cluster."""
-    entities: list[str] = dspy.InputField(desc="List of entities to cluster and identify duplicates.")
+class EntityDeduplicationWithSummary(dspy.Signature):
+    __doc__ = """Given a list of entities and a summary of the source text, identify and remove redundant near-duplicates 
+    that refer to the same real-world entity. Consider variations in spelling, abbreviations, and naming conventions. 
+    For example, given ['Ben Smith', 'B. Smith'], remove 'B. Smith' and keep 'Ben Smith'. Preserve most entities - only 
+    filter out those that are very closely resembled or abbreviated versions of more complete entities. 
+    Return a filtered list with redundant entities removed."""
+    entities: list[str] = dspy.InputField(desc="List of entities to deduplicate.")
     summary: str = dspy.InputField(desc="A summary of the original text context to help understand entity relationships.")
-    clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_entities, canonical_entity_name).")
+    filtered_entities: list[str] = dspy.OutputField(desc="Filtered list of entities with redundant near-duplicates removed.")
 
 
 class TypeClusteringWithSummary(dspy.Signature):

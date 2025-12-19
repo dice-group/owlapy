@@ -89,6 +89,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
                           create_class_hierarchy=False,
                           entity_clustering=True,
                           use_chunking: bool = None,
+                          use_incremental_merging=False,
                           fact_reassurance: bool = True,
                           save_path="generated_ontology.owl") -> Ontology:
         """
@@ -107,10 +108,11 @@ class EnterpriseGraphExtractor(GraphExtractor):
             create_class_hierarchy: Whether to create class hierarchy from DBpedia.
             entity_clustering: Whether to perform entity clustering.
             use_chunking: Whether to use text chunking for large documents.
-            fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
+            use_incremental_merging: Whether to use incremental merging when chunking is enabled (default: False).
+            fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
             save_path: Path to save the ontology.
 
 
@@ -183,8 +185,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
             clustering_context = self.get_clustering_context(text)
 
         if entity_clustering:
-            entity_mapping = self.cluster_entities(entities, clustering_context)
-            canonical_entities = list(set(entity_mapping.values()))
+            canonical_entities = self.filter_entities(entities, clustering_context)
         else:
             canonical_entities = entities
 
@@ -370,6 +371,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
                 create_class_hierarchy=False,
                 entity_clustering=True,
                 use_chunking: bool = None,
+                use_incremental_merging=False,
                 fact_reassurance: bool = True,
                 save_path="generated_enterprise_ontology.owl") -> Ontology:
         """
@@ -394,6 +396,7 @@ class EnterpriseGraphExtractor(GraphExtractor):
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
+            use_incremental_merging: Whether to use incremental merging when chunking is enabled (default: False).
             fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
             save_path (str): Path to save the generated ontology.
 

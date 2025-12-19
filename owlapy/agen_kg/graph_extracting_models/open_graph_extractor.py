@@ -43,6 +43,7 @@ class OpenGraphExtractor(GraphExtractor):
                           create_class_hierarchy=False,
                           entity_clustering=True,
                           use_chunking: bool = None,
+                          use_incremental_merging: bool = False,
                           examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,
                           examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,
                           examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,
@@ -68,6 +69,7 @@ class OpenGraphExtractor(GraphExtractor):
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
+            use_incremental_merging: Whether to use incremental merging when chunking is enabled (default: False).
             examples_for_entity_extraction: Few-shot examples for entity extraction.
             examples_for_triples_extraction: Few-shot examples for triple extraction.
             examples_for_type_assertion: Few-shot examples for type assertion.
@@ -124,8 +126,7 @@ class OpenGraphExtractor(GraphExtractor):
             clustering_context = self.get_clustering_context(text)
 
         if entity_clustering:
-            entity_mapping = self.cluster_entities(entities, clustering_context)
-            canonical_entities = list(set(entity_mapping.values()))
+            canonical_entities = self.filter_entities(entities, clustering_context)
         else:
             canonical_entities = entities
         if self.logging and len(entities) != len(canonical_entities):
@@ -304,6 +305,7 @@ class OpenGraphExtractor(GraphExtractor):
                 create_class_hierarchy=False,
                 entity_clustering=True,
                 use_chunking: bool = None,
+                use_incremental_merging: bool = False,
                 examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,
                 examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,
                 examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,
@@ -334,6 +336,7 @@ class OpenGraphExtractor(GraphExtractor):
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
+            use_incremental_merging: Whether to use incremental merging when chunking is enabled (default: False).
             examples_for_entity_extraction (str): Few-shot examples for entity extraction.
             examples_for_triples_extraction (str): Few-shot examples for triple extraction.
             examples_for_type_assertion (str): Few-shot examples for type assertion.
@@ -359,11 +362,13 @@ class OpenGraphExtractor(GraphExtractor):
             create_class_hierarchy=create_class_hierarchy,
             entity_clustering=entity_clustering,
             use_chunking=use_chunking,
+            use_incremental_merging= use_incremental_merging,
             examples_for_entity_extraction=examples_for_entity_extraction,
             examples_for_triples_extraction=examples_for_triples_extraction,
             examples_for_type_assertion=examples_for_type_assertion,
             examples_for_type_generation=examples_for_type_generation,
             examples_for_literal_extraction=examples_for_literal_extraction,
             examples_for_spl_triples_extraction=examples_for_spl_triples_extraction,
+            fact_reassurance=fact_reassurance,
             save_path=save_path
         )

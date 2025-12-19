@@ -7,8 +7,8 @@ from datetime import datetime
 
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import Ontology
-from owlapy.agen_kg.signatures import (EntityClustering, CoherenceChecker, TypeClustering,
-    RelationClustering, TextSummarizer, ChunkSummarizer, EntityClusteringWithSummary,
+from owlapy.agen_kg.signatures import (EntityDeduplication, CoherenceChecker, TypeClustering,
+    RelationClustering, TextSummarizer, ChunkSummarizer, EntityDeduplicationWithSummary,
     TypeClusteringWithSummary, RelationClusteringWithSummary, IncrementalEntityMerger,
     IncrementalTripleMerger, IncrementalTypeMerger
 )
@@ -27,21 +27,24 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
     text chunking for large documents, and utility methods shared across all extractor types.
     """
 
-    def __init__(self, enable_logging=False):
+    def __init__(self, enable_logging=False, use_incremental_merging=True):
         """
         Initialize the graph extractor.
 
         Args:
             enable_logging: Whether to enable logging.
+            use_incremental_merging: Whether to use incremental LLM-based merging for entities, triples,
+                and type assertions. If False, uses simple direct merging without LLM calls (default: True).
         """
         super().__init__()
         self.logging = enable_logging
-        self.entity_clusterer = dspy.Predict(EntityClustering)
+        self.use_incremental_merging = use_incremental_merging
+        self.entity_deduplicator = dspy.Predict(EntityDeduplication)
         self.coherence_checker = dspy.Predict(CoherenceChecker)
         self.type_clusterer = dspy.Predict(TypeClustering)
         self.relation_clusterer = dspy.Predict(RelationClustering)
         # Summarization-based clustering (for large texts)
-        self.entity_clusterer_with_summary = dspy.Predict(EntityClusteringWithSummary)
+        self.entity_deduplicator_with_summary = dspy.Predict(EntityDeduplicationWithSummary)
         self.type_clusterer_with_summary = dspy.Predict(TypeClusteringWithSummary)
         self.relation_clusterer_with_summary = dspy.Predict(RelationClusteringWithSummary)
         # Summarization modules
@@ -55,9 +58,9 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         self.text_loader = UniversalTextLoader(enable_logging=enable_logging)
         # Default text chunker - can be configured via configure_chunking()
         self.text_chunker = TextChunker(
-            chunk_size=3000,  # ~750 tokens
-            overlap=200,
-            strategy="sentence",
+            chunk_size=6000,  # ~1500 tokens
+            overlap=300,
+            strategy="paragraph",
             enable_logging=enable_logging
         )
         # Threshold for automatic chunking (in characters)
@@ -447,7 +450,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 self.clear_summary_cache()
 
     def _merge_entity_lists(self, entity_lists: List[List[str]], chunk_summaries: List[str] = None,
-                            use_llm_merge: bool = True) -> List[str]:
+                            use_llm_merge: bool = None) -> List[str]:
         """
         Merge entity lists from multiple chunks, removing duplicates.
 
@@ -456,7 +459,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Args:
             entity_lists: List of entity lists from each chunk.
             chunk_summaries: Optional list of chunk summaries for context-aware merging.
-            use_llm_merge: Whether to use LLM for semantic entity merging (default: True).
+            use_llm_merge: Whether to use LLM for semantic entity merging. If None, uses
+                self.use_incremental_merging (default: None).
 
         Returns:
             Merged and deduplicated list of entities.
@@ -467,6 +471,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         # Simple case: only one chunk
         if len(entity_lists) == 1:
             return entity_lists[0]
+
+        # Use class-level setting if not explicitly specified
+        if use_llm_merge is None:
+            use_llm_merge = self.use_incremental_merging
 
         # If no summaries provided or LLM merge disabled, use simple deduplication
         if not use_llm_merge or chunk_summaries is None or len(chunk_summaries) != len(entity_lists):
@@ -564,7 +572,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         return merged_entities
 
     def _merge_triple_lists(self, triple_lists: List[List[tuple]], chunk_summaries: List[str] = None,
-                            use_llm_merge: bool = True) -> List[tuple]:
+                            use_llm_merge: bool = None) -> List[tuple]:
         """
         Merge triple lists from multiple chunks, removing duplicates.
 
@@ -573,7 +581,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Args:
             triple_lists: List of triple lists from each chunk.
             chunk_summaries: Optional list of chunk summaries for context-aware merging.
-            use_llm_merge: Whether to use LLM for semantic triple merging (default: True).
+            use_llm_merge: Whether to use LLM for semantic triple merging. If None, uses
+                self.use_incremental_merging (default: None).
 
         Returns:
             Merged and deduplicated list of triples.
@@ -583,6 +592,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         if len(triple_lists) == 1:
             return triple_lists[0]
+
+        # Use class-level setting if not explicitly specified
+        if use_llm_merge is None:
+            use_llm_merge = self.use_incremental_merging
 
         # If no summaries provided or LLM merge disabled, use simple deduplication
         if not use_llm_merge or chunk_summaries is None or len(chunk_summaries) != len(triple_lists):
@@ -666,7 +679,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         return merged_triples
 
     def _merge_type_assertions(self, assertion_lists: List[List[tuple]], chunk_summaries: List[str] = None,
-                               use_llm_merge: bool = True) -> List[tuple]:
+                               use_llm_merge: bool = None) -> List[tuple]:
         """
         Merge type assertion lists from multiple chunks.
 
@@ -675,7 +688,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Args:
             assertion_lists: List of type assertion lists from each chunk.
             chunk_summaries: Optional list of chunk summaries for context-aware merging.
-            use_llm_merge: Whether to use LLM for semantic type merging (default: True).
+            use_llm_merge: Whether to use LLM for semantic type merging. If None, uses
+                self.use_incremental_merging (default: None).
 
         Returns:
             Merged type assertions.
@@ -685,6 +699,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         if len(assertion_lists) == 1:
             return assertion_lists[0]
+
+        # Use class-level setting if not explicitly specified
+        if use_llm_merge is None:
+            use_llm_merge = self.use_incremental_merging
 
         # If no summaries provided or LLM merge disabled, use simple merging
         if not use_llm_merge or chunk_summaries is None or len(chunk_summaries) != len(assertion_lists):
@@ -783,9 +801,9 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                     all_literals.append(literal)
         return all_literals
 
-    def cluster_entities(self, entities: List[str], text: str, use_summary: bool = None) -> dict:
+    def filter_entities(self, entities: List[str], text: str, use_summary: bool = None) -> list:
         """
-        Cluster entities to identify and merge duplicates.
+        Deduplicate entities by removing redundant near-duplicates.
 
         For large texts, automatically uses summarization to provide context
         that fits within token limits.
@@ -793,50 +811,42 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Args:
             entities: List of extracted entities.
             text: Original text context (or pre-computed summary).
-            use_summary: Whether to use summary-based clustering.
+            use_summary: Whether to use summary-based deduplication.
                 - None (default): Auto-detect based on text size.
-                - True: Force summary-based clustering.
+                - True: Force summary-based deduplication.
                 - False: Use direct text (may fail for large texts).
 
         Returns:
             Dictionary mapping original entity names to their canonical names.
         """
         if not entities:
-            return {}
+            return []
 
         # Determine whether to use summarization
         if use_summary is None:
             use_summary = self.should_use_summarization(text)
 
         if use_summary:
-            # Get or create summary for clustering context
+            # Get or create summary for deduplication context
             clustering_context = self.get_clustering_context(text)
             if self.logging:
                 print(
-                    f"{self.__class__.__name__}: INFO :: Using summary ({len(clustering_context)} chars) for entity clustering")
-            result = self.entity_clusterer_with_summary(entities=entities, summary=clustering_context)
+                    f"{self.__class__.__name__}: INFO :: Using summary ({len(clustering_context)} chars) for entity deduplication")
+            result = self.entity_deduplicator_with_summary(entities=entities, summary=clustering_context)
         else:
             # Use direct text (truncated if necessary)
             context = text[:self.max_summary_length] if len(text) > self.max_summary_length else text
-            result = self.entity_clusterer(entities=entities, text=context)
+            result = self.entity_deduplicator(entities=entities, text=context)
 
-        entity_mapping = {}
-
-        for cluster, canonical_name in result.clusters:
-            for entity in cluster:
-                entity_mapping[entity] = canonical_name
-
-        # Add entities that weren't clustered
-        for entity in entities:
-            if entity not in entity_mapping:
-                entity_mapping[entity] = entity
+        # Get the filtered entities list
+        filtered_entities = result.filtered_entities
 
         if self.logging:
-            merged_count = len(entities) - len(set(entity_mapping.values()))
+            merged_count = len(entities) - len(filtered_entities)
             if merged_count > 0:
-                print(f"{self.__class__.__name__}: INFO :: Merged {merged_count} duplicate entities")
+                print(f"{self.__class__.__name__}: INFO :: Filtered out {merged_count} redundant entities")
 
-        return entity_mapping
+        return filtered_entities
 
     def cluster_types(self, types: List[str], text: str, use_summary: bool = None) -> dict:
         """
@@ -1005,7 +1015,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             chunks: List[str],
             examples_for_entity_extraction: str,
             extractor_name: str = None,
-            use_llm_merge: bool = True
+            use_llm_merge: bool = None
     ) -> tuple:
         """
         Extract entities from multiple text chunks and merge results.
@@ -1015,7 +1025,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             chunks: List of text chunks.
             examples_for_entity_extraction: Few-shot examples.
             extractor_name: Name of the extractor (for logging). If None, uses class name.
-            use_llm_merge: Whether to use LLM-based merging for better quality (default: True).
+            use_llm_merge: Whether to use LLM-based merging for better quality. If None, uses
+                self.use_incremental_merging (default: None).
 
         Returns:
             Tuple of (merged_entities, chunk_summaries) where chunk_summaries can be used
@@ -1027,6 +1038,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         extractor_name = extractor_name or self.__class__.__name__
         all_entity_lists = []
         chunk_summaries = []
+
+        # Use class-level setting if not explicitly specified
+        if use_llm_merge is None:
+            use_llm_merge = self.use_incremental_merging
 
         for i, chunk in enumerate(chunks):
             if self.logging:
@@ -1053,11 +1068,9 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             if self.logging:
                 print(f"{extractor_name}: INFO :: Found {len(chunk_entities)} entities in chunk {i + 1}")
 
-        # Merge entities from all chunks using LLM-based merging if enabled
-        if use_llm_merge and chunk_summaries:
-            merged_entities = self._merge_entity_lists(all_entity_lists, chunk_summaries, use_llm_merge=True)
-        else:
-            merged_entities = self._merge_entity_lists(all_entity_lists)
+        # Merge entities from all chunks
+        merged_entities = self._merge_entity_lists(all_entity_lists, chunk_summaries, use_llm_merge=use_llm_merge)
+        if not use_llm_merge:
             chunk_summaries = []  # Return empty if not generated
 
         if self.logging:
@@ -1072,7 +1085,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             examples_for_triples_extraction: str,
             extractor_name: str = None,
             chunk_summaries: List[str] = None,
-            use_llm_merge: bool = True
+            use_llm_merge: bool = None
     ) -> List[tuple]:
         """
         Extract triples from multiple text chunks and merge results.
@@ -1084,7 +1097,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             examples_for_triples_extraction: Few-shot examples.
             extractor_name: Name of the extractor (for logging). If None, uses class name.
             chunk_summaries: Optional pre-computed chunk summaries for merging context.
-            use_llm_merge: Whether to use LLM-based merging for better quality (default: True).
+            use_llm_merge: Whether to use LLM-based merging for better quality. If None, uses
+                self.use_incremental_merging (default: None).
 
         Returns:
             Merged list of triples from all chunks.
@@ -1094,6 +1108,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         extractor_name = extractor_name or self.__class__.__name__
         all_triple_lists = []
+
+        # Use class-level setting if not explicitly specified
+        if use_llm_merge is None:
+            use_llm_merge = self.use_incremental_merging
 
         # Generate summaries if not provided and LLM merge is enabled
         if use_llm_merge and chunk_summaries is None:
@@ -1120,11 +1138,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             if self.logging:
                 print(f"{extractor_name}: INFO :: Found {len(chunk_triples)} triples in chunk {i + 1}")
 
-        # Merge triples from all chunks using LLM-based merging if enabled
-        if use_llm_merge and chunk_summaries:
-            merged_triples = self._merge_triple_lists(all_triple_lists, chunk_summaries, use_llm_merge=True)
-        else:
-            merged_triples = self._merge_triple_lists(all_triple_lists)
+        # Merge triples from all chunks
+        merged_triples = self._merge_triple_lists(all_triple_lists, chunk_summaries, use_llm_merge=use_llm_merge)
 
         if self.logging:
             print(f"{extractor_name}: INFO :: Total merged triples: {len(merged_triples)}")
@@ -1141,7 +1156,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             examples_for_type_generation: str,
             extractor_name: str = None,
             chunk_summaries: List[str] = None,
-            use_llm_merge: bool = True
+            use_llm_merge: bool = None
     ) -> List[tuple]:
         """
         Extract type assertions from multiple text chunks and merge results.
@@ -1156,7 +1171,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             examples_for_type_generation: Few-shot examples for generation.
             extractor_name: Name of the extractor (for logging). If None, uses class name.
             chunk_summaries: Optional pre-computed chunk summaries for merging context.
-            use_llm_merge: Whether to use LLM-based merging for better quality (default: True).
+            use_llm_merge: Whether to use LLM-based merging for better quality. If None, uses
+                self.use_incremental_merging (default: None).
 
         Returns:
             Merged list of type assertions from all chunks.
@@ -1166,6 +1182,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         extractor_name = extractor_name or self.__class__.__name__
         all_assertion_lists = []
+
+        # Use class-level setting if not explicitly specified
+        if use_llm_merge is None:
+            use_llm_merge = self.use_incremental_merging
 
         # Generate summaries if not provided and LLM merge is enabled
         if use_llm_merge and chunk_summaries is None:
@@ -1201,11 +1221,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             if self.logging:
                 print(f"{extractor_name}: INFO :: Found {len(chunk_assertions)} type assertions in chunk {i + 1}")
 
-        # Merge type assertions from all chunks using LLM-based merging if enabled
-        if use_llm_merge and chunk_summaries:
-            merged_assertions = self._merge_type_assertions(all_assertion_lists, chunk_summaries, use_llm_merge=True)
-        else:
-            merged_assertions = self._merge_type_assertions(all_assertion_lists)
+        # Merge type assertions from all chunks
+        merged_assertions = self._merge_type_assertions(all_assertion_lists, chunk_summaries, use_llm_merge=use_llm_merge)
 
         if self.logging:
             print(f"{extractor_name}: INFO :: Total merged type assertions: {len(merged_assertions)}")

@@ -171,6 +171,7 @@ class DomainGraphExtractor(GraphExtractor):
                           extract_spl_triples=False,
                           create_class_hierarchy=False,
                           use_chunking: bool = None,
+                          use_incremental_merging = False,
                           examples_for_entity_extraction=None,
                           examples_for_triples_extraction=None,
                           examples_for_type_assertion=None,
@@ -197,6 +198,7 @@ class DomainGraphExtractor(GraphExtractor):
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
+            use_incremental_merging: Whether to use incremental merging when chunking is enabled (default: False).
             examples_for_*: Custom few-shot examples. If None, domain-specific examples will be generated.
             fact_reassurance: Whether to perform the coherence check on triples (default: True).
             save_path: Path to save the ontology.
@@ -216,6 +218,8 @@ class DomainGraphExtractor(GraphExtractor):
         # Determine whether to use chunking
         if use_chunking is None:
             use_chunking = self.should_chunk_text(text)
+
+        self.use_incremental_merging = use_incremental_merging
 
         if use_chunking:
             chunks = self.chunk_text(text)
@@ -288,10 +292,9 @@ class DomainGraphExtractor(GraphExtractor):
         else:
             clustering_context = self.get_clustering_context(text)
 
-        entity_mapping = self.cluster_entities(entities, clustering_context)
-        canonical_entities = list(set(entity_mapping.values()))
+        canonical_entities = self.filter_entities(entities, clustering_context)
         if self.logging and len(entities) != len(canonical_entities):
-            print(f"DomainGraphExtractor: INFO :: After clustering: {canonical_entities}")
+            print(f"DomainGraphExtractor: INFO :: After filtering: {canonical_entities}")
 
         # Step 5: Extract triples using canonical entities (from chunks if needed)
         if use_chunking and len(chunks) > 1:
@@ -471,6 +474,7 @@ class DomainGraphExtractor(GraphExtractor):
                 extract_spl_triples=False,
                 create_class_hierarchy=False,
                 use_chunking: bool = None,
+                use_incremental_merging=False,
                 examples_for_entity_extraction=None,
                 examples_for_triples_extraction=None,
                 examples_for_type_assertion=None,
@@ -498,6 +502,7 @@ class DomainGraphExtractor(GraphExtractor):
                 - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
                 - True: Force chunking even for smaller texts.
                 - False: Disable chunking (may fail for very large texts).
+            use_incremental_merging (bool): Whether to use incremental merging when chunking is enabled.
             examples_for_entity_extraction (str): Few-shot examples for entity extraction. If None, domain-specific examples will be generated.
             examples_for_triples_extraction (str): Few-shot examples for triple extraction. If None, domain-specific examples will be generated.
             examples_for_type_assertion (str): Few-shot examples for type assertion. If None, domain-specific examples will be generated.
@@ -522,11 +527,13 @@ class DomainGraphExtractor(GraphExtractor):
             extract_spl_triples=extract_spl_triples,
             create_class_hierarchy=create_class_hierarchy,
             use_chunking=use_chunking,
+            use_incremental_merging=use_incremental_merging,
             examples_for_entity_extraction=examples_for_entity_extraction,
             examples_for_triples_extraction=examples_for_triples_extraction,
             examples_for_type_assertion=examples_for_type_assertion,
             examples_for_type_generation=examples_for_type_generation,
             examples_for_literal_extraction=examples_for_literal_extraction,
             examples_for_spl_triples_extraction=examples_for_spl_triples_extraction,
+            fact_reassurance = fact_reassurance,
             save_path=save_path
         )
