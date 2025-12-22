@@ -41,7 +41,7 @@ class DomainGraphExtractor(GraphExtractor):
         # Initialize examples cache manager
         self.examples_cache = DomainExamplesCache(cache_dir=examples_cache_dir)
 
-    def generate_domain_specific_examples(self, domain: str):
+    def generate_domain_specific_examples(self, domain: str, prompt: str = None) -> dict:
         """
         Generate domain-specific few-shot examples for all task types.
 
@@ -50,6 +50,7 @@ class DomainGraphExtractor(GraphExtractor):
 
         Args:
             domain: The domain for which to generate examples.
+            prompt: Optional custom prompt to guide example generation towards a certain request.
 
         Returns:
             Dictionary containing few-shot examples for each task type, keyed by:
@@ -77,10 +78,12 @@ class DomainGraphExtractor(GraphExtractor):
 
         if self.logging:
             print(f"DomainGraphExtractor: INFO :: Generating domain-specific few-shot examples for domain: {domain}")
-
+        if prompt is None:
+            prompt = f"Generate few-shot examples for the domain of {domain}."
         for task_type in task_types:
             result = self.few_shot_generator(
                 domain=domain,
+                user_request=prompt,
                 task_type=task_type,
                 num_examples=2,
                 examples_example_structure=task_example_mapping[task_type]
@@ -165,6 +168,7 @@ class DomainGraphExtractor(GraphExtractor):
 
     def generate_ontology(self, text: Union[str, Path],
                           domain: str = None,
+                          prompt: str = None,
                           ontology_namespace=f"http://ontology.local/{uuid.uuid4()}#",
                           entity_types: List[str] = None,
                           generate_types=False,
@@ -189,6 +193,7 @@ class DomainGraphExtractor(GraphExtractor):
             text: Input text or file path to extract ontology from.
                 Supports files: .txt, .pdf, .docx, .doc, .rtf, .html, .htm
             domain: The domain of the text. If None, will be detected automatically.
+            prompt: A custom prompt to give directions to the agent.
             ontology_namespace: Namespace for the ontology.
             entity_types: List of entity types to assign.
             generate_types: Whether to generate types automatically.
@@ -255,7 +260,7 @@ class DomainGraphExtractor(GraphExtractor):
         )
 
         if use_generated_examples:
-            generated_examples = self.generate_domain_specific_examples(domain)
+            generated_examples = self.generate_domain_specific_examples(domain, prompt)
 
             # Use generated examples only if user hasn't provided their own
             examples_for_entity_extraction = examples_for_entity_extraction or generated_examples['entity_extraction']
@@ -277,10 +282,10 @@ class DomainGraphExtractor(GraphExtractor):
         chunk_summaries = None
         if use_chunking and len(chunks) > 1:
             entities, chunk_summaries = self._extract_entities_from_chunks(
-                chunks, examples_for_entity_extraction, "DomainGraphExtractor"
+                chunks, examples_for_entity_extraction, "DomainGraphExtractor", user_request=prompt
             )
         else:
-            entities = self.entity_extractor(text=text, few_shot_examples=examples_for_entity_extraction).entities
+            entities = self.entity_extractor(text=text, few_shot_examples=examples_for_entity_extraction, user_request=prompt).entities
 
         if self.logging:
             print(f"DomainGraphExtractor: INFO :: Generated the following entities: {entities}")
@@ -292,7 +297,7 @@ class DomainGraphExtractor(GraphExtractor):
         else:
             clustering_context = self.get_clustering_context(text)
 
-        canonical_entities = self.filter_entities(entities, clustering_context)
+        canonical_entities = self.filter_entities(entities, clustering_context, user_request=prompt)
         if self.logging and len(entities) != len(canonical_entities):
             print(f"DomainGraphExtractor: INFO :: After filtering: {canonical_entities}")
 
@@ -300,18 +305,19 @@ class DomainGraphExtractor(GraphExtractor):
         if use_chunking and len(chunks) > 1:
             triples = self._extract_triples_from_chunks(
                 chunks, canonical_entities, examples_for_triples_extraction,
-                "DomainGraphExtractor", chunk_summaries
+                "DomainGraphExtractor", chunk_summaries, user_request=prompt
             )
         else:
             triples = self.triples_extractor(text=text, entities=canonical_entities,
-                                             few_shot_examples=examples_for_triples_extraction).triples
+                                             few_shot_examples=examples_for_triples_extraction,
+                                             user_request=prompt).triples
 
         if self.logging:
             print(f"DomainGraphExtractor: INFO :: Generated the following triples: {triples}")
 
         # Step 5.5: Cluster relations (object properties) and update triples programmatically BEFORE coherence check
         relations = list(set([triple[1] for triple in triples]))
-        relation_mapping = self.cluster_relations(relations, clustering_context)
+        relation_mapping = self.cluster_relations(relations, clustering_context, prompt)
         # Update triples with canonical relations
         updated_triples = [(triple[0], relation_mapping.get(triple[1], triple[1]), triple[2]) for triple in triples]
         if self.logging and len(relations) != len(set(relation_mapping.values())):
@@ -319,7 +325,7 @@ class DomainGraphExtractor(GraphExtractor):
 
         # Step 6: Check coherence of the relation-normalized triples
         if fact_reassurance:
-            coherent_triples = self.check_coherence(updated_triples, clustering_context)
+            coherent_triples = self.check_coherence(updated_triples, clustering_context, prompt)
             if self.logging:
                 print(f"DomainGraphExtractor: INFO :: After coherence check, kept {len(coherent_triples)} triples")
         else:
@@ -346,18 +352,20 @@ class DomainGraphExtractor(GraphExtractor):
                 type_assertions = self._extract_types_from_chunks(
                     chunks, canonical_entities, entity_types, generate_types,
                     examples_for_type_assertion, examples_for_type_generation,
-                    "DomainGraphExtractor", chunk_summaries
+                    "DomainGraphExtractor", chunk_summaries, user_request=prompt
                 )
             else:
                 if entity_types is not None and not generate_types:
                     type_assertions = self.type_asserter(text=text, entities=canonical_entities,
                                                          entity_types=entity_types,
+                                                         user_request=prompt,
                                                          few_shot_examples=examples_for_type_assertion).pairs
                     if self.logging:
                         print(
                             f"DomainGraphExtractor: INFO :: Assigned types for entities as following: {type_assertions}")
                 elif generate_types:
                     type_assertions = self.type_generator(text=text, entities=canonical_entities,
+                                                          user_request=prompt,
                                                           few_shot_examples=examples_for_type_generation).pairs
                     if self.logging:
                         print(
@@ -365,7 +373,7 @@ class DomainGraphExtractor(GraphExtractor):
 
             # Cluster types and update type assertions programmatically
             types = list(set([pair[1] for pair in type_assertions]))
-            type_mapping = self.cluster_types(types, clustering_context)
+            type_mapping = self.cluster_types(types, clustering_context, user_request=prompt)
             # Update type assertions with canonical types
             type_assertions = [(pair[0], type_mapping.get(pair[1], pair[1])) for pair in type_assertions]
             if self.logging and len(types) != len(set(type_mapping.values())):
@@ -387,10 +395,10 @@ class DomainGraphExtractor(GraphExtractor):
             # Extract literals (from chunks if needed)
             if use_chunking and len(chunks) > 1:
                 literals = self._extract_literals_from_chunks(
-                    chunks, examples_for_literal_extraction, "DomainGraphExtractor"
+                    chunks, prompt, examples_for_literal_extraction, "DomainGraphExtractor"
                 )
             else:
-                literals = self.literal_extractor(text=text, few_shot_examples=examples_for_literal_extraction).l_values
+                literals = self.literal_extractor(text=text, user_request=prompt, few_shot_examples=examples_for_literal_extraction).l_values
 
             if self.logging:
                 print(f"DomainGraphExtractor: INFO :: Generated the following numeric literals: {literals}")
@@ -398,12 +406,14 @@ class DomainGraphExtractor(GraphExtractor):
             # Extract SPL triples (from chunks if needed)
             if use_chunking and len(chunks) > 1:
                 spl_triples = self._extract_spl_triples_from_chunks(
-                    chunks, canonical_entities, literals, examples_for_spl_triples_extraction,
+                    chunks, canonical_entities, literals, prompt,
+                    examples_for_spl_triples_extraction,
                     "DomainGraphExtractor"
                 )
             else:
                 spl_triples = self.spl_triples_extractor(text=text, entities=canonical_entities,
                                                          numeric_literals=literals,
+                                                         user_request=prompt,
                                                          few_shot_examples=examples_for_spl_triples_extraction).triples
 
             if self.logging:
@@ -411,7 +421,7 @@ class DomainGraphExtractor(GraphExtractor):
 
             # Cluster relations (data properties) in SPL triples and update programmatically
             spl_relations = list(set([triple[1] for triple in spl_triples]))
-            spl_relation_mapping = self.cluster_relations(spl_relations, clustering_context)
+            spl_relation_mapping = self.cluster_relations(spl_relations, clustering_context, user_request=prompt)
             # Update SPL triples with canonical relations
             spl_triples = [(triple[0], spl_relation_mapping.get(triple[1], triple[1]), triple[2])
                            for triple in spl_triples]
@@ -468,6 +478,7 @@ class DomainGraphExtractor(GraphExtractor):
 
     def forward(self, text: Union[str, Path],
                 domain: str = None,
+                prompt: str = None,
                 ontology_namespace=f"http://ontology.local/{uuid.uuid4()}#",
                 entity_types: List[str] = None,
                 generate_types=False,
@@ -521,6 +532,7 @@ class DomainGraphExtractor(GraphExtractor):
         return self.generate_ontology(
             text=text,
             domain=domain,
+            prompt=prompt,
             ontology_namespace=ontology_namespace,
             entity_types=entity_types,
             generate_types=generate_types,

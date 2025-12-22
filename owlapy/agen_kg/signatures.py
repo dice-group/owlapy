@@ -5,6 +5,7 @@ class Entity(dspy.Signature):
     should be a list of capitalized entities. E.g., ["ENTITY1", "ENTITY2", ...]"""
     text: str = dspy.InputField(desc="A textual input about some topic.")
     few_shot_examples: str = dspy.InputField(desc="Few shot examples for this task.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for entity extraction.")
     entities: list[str] = dspy.OutputField(desc="List of key entities, capitalized.")
 
 class Triple(dspy.Signature):
@@ -12,6 +13,7 @@ class Triple(dspy.Signature):
     where source_entity and target_entity are strictly part of the given entities."""
     text: str = dspy.InputField(desc="A textual input about some topic.")
     entities: list[str] = dspy.InputField(desc="List of entities to consider.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for triple extraction.")
     few_shot_examples: str = dspy.InputField(desc="Few shot examples for this task.")
     triples: list[tuple[str,str,str]] = dspy.OutputField(desc="List of source_entity-relation-target_entity, capitalized.")
 
@@ -21,6 +23,7 @@ class TypeAssertion(dspy.Signature):
     entities: list[str] = dspy.InputField(desc="List of entities to assign a type to.")
     entity_types: list[str] = dspy.InputField(desc="List of types to be assigned to entities.")
     few_shot_examples: str = dspy.InputField(desc="Few shot examples for this task.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for type assertion.")
     pairs: list[tuple[str, str]] = dspy.OutputField(desc="List of entity-entity_type pairs.")
 
 
@@ -29,6 +32,7 @@ class TypeGeneration(dspy.Signature):
     text: str = dspy.InputField(desc="A textual input about some topic.")
     entities: list[str] = dspy.InputField(desc="List of entities to assign a type to.")
     few_shot_examples: str = dspy.InputField(desc="Few shot examples for this task.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for type generation.")
     pairs: list[tuple[str, str]] = dspy.OutputField(desc="List of entity-entity_type pairs.")
 
 
@@ -36,6 +40,7 @@ class Literal(dspy.Signature):
     __doc__ = """Given a piece of text as input identify key numerical values extracted form the text. The result
     should be a list of numerical literals. E.g., ["123", "45.67", "50%", ...]"""
     text: str = dspy.InputField(desc="A textual input about some topic.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for literal extraction.")
     few_shot_examples: str = dspy.InputField(desc="Few shot examples for this task.")
     l_values: list[str] = dspy.OutputField(desc="List of key numerical values.")
 
@@ -46,6 +51,7 @@ class SPLTriples(dspy.Signature):
     text: str = dspy.InputField(desc="A textual input about some topic.")
     entities: list[str] = dspy.InputField(desc="List of entities to consider.")
     numeric_literals: list[str] = dspy.InputField(desc="List of literals to consider.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for triple extraction.")
     few_shot_examples: str = dspy.InputField(desc="Few shot examples for this task.")
     triples: list[tuple[str, str, str]] = dspy.OutputField(
         desc="List of source_entity-relation-target_value triples.")
@@ -69,6 +75,7 @@ class DomainSpecificFewShotGenerator(dspy.Signature):
     for a specific task (entity extraction, triple extraction, type assertion, etc.). The examples should follow the same 
     format as the general few-shot examples but with domain-specific content."""
     domain: str = dspy.InputField(desc="The domain for which to generate few-shot examples (e.g., 'biology', 'finance').")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for few-shot examples generation.")
     task_type: str = dspy.InputField(desc="The task type: 'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation', 'literal_extraction', or 'triples_with_numeric_literals_extraction'.")
     num_examples: int = dspy.InputField(desc="Number of examples to generate.", default=2)
     examples_example_structure: str = dspy.InputField(
@@ -91,6 +98,7 @@ class CoherenceChecker(dspy.Signature):
     coherent and consistent. Identify any contradictions or logical inconsistencies between triples."""
     triples: list[tuple[str, str, str]] = dspy.InputField(desc="List of triples to evaluate for coherence (source-relation-target).")
     text: str = dspy.InputField(desc="The original text context to verify triples against.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for coherence checking.")
     coherence_scores: list[tuple[tuple[str, str, str], int, str]] = dspy.OutputField(desc="List of tuples: (triple, coherence_score_1_to_5, explanation).")
 
 class TypeClustering(dspy.Signature):
@@ -99,6 +107,7 @@ class TypeClustering(dspy.Signature):
     that should be merged together, along with the canonical type name to use for each cluster."""
     types: list[str] = dspy.InputField(desc="List of entity types to cluster and identify duplicates.")
     text: str = dspy.InputField(desc="The original text context to help understand type relationships.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for type clustering.")
     clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_types, canonical_type_name).")
 
 class RelationClustering(dspy.Signature):
@@ -107,6 +116,7 @@ class RelationClustering(dspy.Signature):
     that should be merged together, along with the canonical relation name to use for each cluster."""
     relations: list[str] = dspy.InputField(desc="List of relations to cluster and identify duplicates.")
     text: str = dspy.InputField(desc="The original text context to help understand relation meanings.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for relation clustering.")
     clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_relations, canonical_relation_name).")
 
 
@@ -134,6 +144,7 @@ class EntityDeduplicationWithSummary(dspy.Signature):
     Return a filtered list with redundant entities removed."""
     entities: list[str] = dspy.InputField(desc="List of entities to deduplicate.")
     summary: str = dspy.InputField(desc="A summary of the original text context to help understand entity relationships.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for entity deduplication.")
     filtered_entities: list[str] = dspy.OutputField(desc="Filtered list of entities with redundant near-duplicates removed.")
 
 
@@ -154,6 +165,7 @@ class RelationClusteringWithSummary(dspy.Signature):
     along with the canonical relation name to use for each cluster."""
     relations: list[str] = dspy.InputField(desc="List of relations to cluster and identify duplicates.")
     summary: str = dspy.InputField(desc="A summary of the original text context to help understand relation meanings.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for relation clustering.")
     clusters: list[tuple[list[str], str]] = dspy.OutputField(desc="List of tuples where each tuple contains (list_of_duplicate_relations, canonical_relation_name).")
 
 
@@ -165,6 +177,7 @@ class IncrementalEntityMerger(dspy.Signature):
     entities_b: list[str] = dspy.InputField(desc="Second list of entities from chunk B.")
     context_a: str = dspy.InputField(desc="Summary/context from chunk A to understand entity meanings.")
     context_b: str = dspy.InputField(desc="Summary/context from chunk B to understand entity meanings.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for entity merging.")
     merged_entities: list[str] = dspy.OutputField(desc="Unified list of entities with duplicates merged to canonical forms.")
     entity_mapping: list[tuple[str, str]] = dspy.OutputField(desc="List of (original_entity, canonical_entity) mappings for entities that were merged.")
 
@@ -177,6 +190,7 @@ class IncrementalTripleMerger(dspy.Signature):
     triples_b: list[tuple[str, str, str]] = dspy.InputField(desc="Second list of triples from chunk B.")
     context_a: str = dspy.InputField(desc="Summary/context from chunk A.")
     context_b: str = dspy.InputField(desc="Summary/context from chunk B.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for triple merging.")
     merged_triples: list[tuple[str, str, str]] = dspy.OutputField(desc="Unified list of triples with semantic duplicates merged.")
 
 
@@ -188,6 +202,7 @@ class IncrementalTypeMerger(dspy.Signature):
     types_b: list[tuple[str, str]] = dspy.InputField(desc="Second list of (entity, type) pairs from chunk B.")
     context_a: str = dspy.InputField(desc="Summary/context from chunk A.")
     context_b: str = dspy.InputField(desc="Summary/context from chunk B.")
+    user_request: str = dspy.InputField(desc="Specific user request that must be consider if relevant for type merging.")
     merged_types: list[tuple[str, str]] = dspy.OutputField(desc="Unified list of entity-type pairs with conflicts resolved.")
 
 
