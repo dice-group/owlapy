@@ -1,6 +1,5 @@
 import dspy
-from owlapy.agen_kg.graph_extracting_models import (OpenGraphExtractor, DomainGraphExtractor,
-                                                    CrossDomainGraphExtractor, EnterpriseGraphExtractor)
+from owlapy.agen_kg.graph_extracting_models import (OpenGraphExtractor, DomainGraphExtractor)
 
 class AGenKG:
     def __init__(self, model="gpt-4o", api_key="<YOUR_GITHUB_PAT>",
@@ -38,8 +37,6 @@ class AGenKG:
 
         self.open_graph_extractor = OpenGraphExtractor(self.logging)
         self.domain_graph_extractor = DomainGraphExtractor(self.logging)
-        self.cross_domain_graph_extractor = CrossDomainGraphExtractor(self.logging)
-        self.enterprise_graph_extractor = EnterpriseGraphExtractor(self.logging)
 
     def configure_chunking(
         self,
@@ -74,8 +71,7 @@ class AGenKG:
             # Configure summarization thresholds for large documents
             agenkg.configure_chunking(summarization_threshold=10000, max_summary_length=4000)
         """
-        for extractor in [self.open_graph_extractor, self.domain_graph_extractor,
-                         self.cross_domain_graph_extractor, self.enterprise_graph_extractor]:
+        for extractor in [self.open_graph_extractor, self.domain_graph_extractor]:
             extractor.configure_chunking(
                 chunk_size=chunk_size,
                 overlap=overlap,
@@ -104,8 +100,7 @@ class AGenKG:
             # For GPT-4 (8K context)
             agenkg.configure_chunking_for_model(8192, 1500)
         """
-        for extractor in [self.open_graph_extractor, self.domain_graph_extractor,
-                         self.cross_domain_graph_extractor, self.enterprise_graph_extractor]:
+        for extractor in [self.open_graph_extractor, self.domain_graph_extractor]:
             extractor.configure_chunking_for_model(
                 max_context_tokens=max_context_tokens,
                 prompt_overhead_tokens=prompt_overhead_tokens
@@ -113,15 +108,10 @@ class AGenKG:
 
     def generate_ontology(self, text, ontology_type, **kwargs):
 
-        assert ontology_type in ["domain", "cross-domain", "enterprise", "open"], \
+        assert ontology_type in ["domain", "open"], \
             "ontology_type must be one of 'domain', 'cross-domain', 'enterprise', or 'open'"
-
         if ontology_type == "open":
             return self.open_graph_extractor(text=text, ontology_type=ontology_type, **kwargs)
         elif ontology_type == "domain":
             return self.domain_graph_extractor(text=text, **kwargs)
-        elif ontology_type == "cross-domain":
-            return self.cross_domain_graph_extractor(text=text, **kwargs)
-        elif ontology_type == "enterprise":
-            return self.enterprise_graph_extractor(text=text, **kwargs)
         return None

@@ -61,13 +61,6 @@ class Domain(dspy.Signature):
     text: str = dspy.InputField(desc="A textual input whose domain should be identified.")
     domain: str = dspy.OutputField(desc="Detected domain/category of the text, normalized (lowercase).")
 
-class CrossDomain(dspy.Signature):
-    __doc__ = """Given a piece of text, identify all the domains or topics of the text.
-    Example domains: 'biology', 'chemistry', 'finance', 'sports', 'politics', 'medicine', 'computer science'.
-    """
-    text: str = dspy.InputField(desc="A textual input whose domains should be identified.")
-    domains: list[str] = dspy.OutputField(desc="Detected domains/categories of the text, normalized (lowercase).")
-
 class DomainSpecificFewShotGenerator(dspy.Signature):
     __doc__ = """Given a domain (e.g., 'biology', 'finance', 'sports'), generate few-shot examples tailored to that domain 
     for a specific task (entity extraction, triple extraction, type assertion, etc.). The examples should follow the same 
@@ -186,23 +179,6 @@ class IncrementalTypeMerger(dspy.Signature):
     context_a: str = dspy.InputField(desc="Summary/context from chunk A.")
     context_b: str = dspy.InputField(desc="Summary/context from chunk B.")
     merged_types: list[tuple[str, str]] = dspy.OutputField(desc="Unified list of entity-type pairs with conflicts resolved.")
-
-class Enterprise(dspy.Signature):
-    __doc__ = """Given a piece of text, identify the enterprise/organization context.
-    This could be a small description of the company, organization or institution profile.
-    Focus on identifying the target of the enterprise and key aspects."""
-    text: str = dspy.InputField(desc="A textual input whose enterprise context should be identified.")
-    context: str = dspy.OutputField(desc="Detected enterprise context.")
-
-class EnterpriseSpecificFewShotGenerator(dspy.Signature):
-    __doc__ = """Given an enterprise context-target goal and key aspects, generate few-shot examples tailored to that enterprise
-    for a specific task (entity extraction, triple extraction, type assertion, etc.)."""
-    enterprise: str = dspy.InputField(desc="The enterprise context for which to generate few-shot examples")
-    task_type: str = dspy.InputField(desc="The task type: 'entity_extraction', 'triples_extraction', 'type_assertion', 'type_generation', 'literal_extraction', or 'triples_with_numeric_literals_extraction'.")
-    num_examples: int = dspy.InputField(desc="Number of examples to generate.", default=3)
-    examples_example_structure: str = dspy.InputField(
-        desc="The example structure to use as a guiding template for generating few-shot examples.")
-    few_shot_examples: str = dspy.OutputField(desc="Generated few-shot examples formatted as a string, following the standard format with Example 1, Example 2, etc.")
 
 class PlanDecomposer(dspy.Signature):
     __doc__ = """We want to extract knowledge from text in triples format. The pipeline follows these steps:
