@@ -2,7 +2,6 @@
 import operator
 import logging
 import owlready2
-import os
 
 from collections import defaultdict, Counter
 from functools import singledispatchmethod, reduce, cached_property
@@ -31,6 +30,7 @@ from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObject
     OWLTopDataProperty
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from jpype import JClass
 
 
 logger = logging.getLogger(__name__)
@@ -1693,19 +1693,15 @@ class SyncReasoner(AbstractOWLReasoner):
             foil: "OWLNamedIndividual",
             conflict_minimal: bool = True,
     ) -> Dict[str, object]:
-        from jpype import JClass  # load Java classes from the running JVM
-
         # Java types
         CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
         CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
         ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
         RC = JClass("anonymized.contrastive.config.ReasonerChoice")
 
-        # Pick enum by name (same as passed to SyncReasoner); fallback to HermiT if unknown
         try:
             j_choice = getattr(RC, self.reasoner_name)
         except AttributeError:
-            # NOTE: your enum uses "HermiT" (not "HERMIT")
             j_choice = RC.HermiT
 
         # Rebuild the Java generator only if reasoner or conflict flag changed

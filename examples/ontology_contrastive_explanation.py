@@ -24,26 +24,18 @@ def main():
 
     # --- Load ontology ---
     ontology = SyncOntology(ontology_path)
-
-    
-
     # --- Initialize reasoner ---
     reasoner = SyncReasoner(ontology, reasoner=reasoner_name)
 
     # --- Define class expression and individuals ---
     class_expr = manchester_to_owl_expression(
         "Sister and (hasSibling some (married some (hasChild some Grandchild)))",
-        #"hasChild some Male",
         base_iri,
     )
 
     fact = make_individual("F9F143", base_iri)
     foil = make_individual("F9M161", base_iri)
 
-    #fact = make_individual("F10M171", base_iri)
-    #foil = make_individual("F4F56", base_iri)
-
-    
 
     # --- Call get_contrastive_explanation ---
     result = reasoner.get_contrastive_explanation(class_expr, fact, foil)
