@@ -8,9 +8,8 @@ from owlapy.owl_ontology import SyncOntology
 from owlapy.owl_reasoner import SyncReasoner
 
 
-# optionally override ontology path:
-#   export FAMILY_ONTOLOGY=/abs/path/to/family.owl
-ONTOLOGY_PATH = os.getenv("FAMILY_ONTOLOGY", "/home/tiwari/workspace_dice/datasource/family.owl")
+DEFAULT_FAMILY = os.path.join("KGs", "Family", "family-benchmark_rich_background.owl")
+ONTOLOGY_PATH = os.getenv("FAMILY_ONTOLOGY", DEFAULT_FAMILY)
 BASE_IRI = "http://www.benchmark.org/family#"
 
 
