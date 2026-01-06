@@ -14,7 +14,9 @@ from owlapy.agen_kg.signatures import (EntityDeduplication, CoherenceChecker, Ty
                                        IncrementalEntityMerger,
                                        IncrementalTripleMerger, IncrementalTypeMerger, PlanDecomposer
                                        )
-from owlapy.agen_kg.text_loader import UniversalTextLoader, TextChunker
+from owlapy.agen_kg.text_loader import UniversalTextLoader
+from owlapy.agen_kg.chunking_models.simple_chunker import TextChunker
+
 
 # A compatible metaclass that combines dspy.Module's metaclass with ABCMeta
 class GraphExtractorMeta(type(dspy.Module), type(ABC)):
