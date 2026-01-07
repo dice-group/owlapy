@@ -106,12 +106,11 @@ class AGenKG:
                 prompt_overhead_tokens=prompt_overhead_tokens
             )
 
-    def generate_ontology(self, text, ontology_type, **kwargs):
+    def generate_ontology(self, text, ontology_type, query, **kwargs):
 
-        assert ontology_type in ["domain", "open"], \
-            "ontology_type must be one of 'domain', 'cross-domain', 'enterprise', or 'open'"
+        assert ontology_type in ["domain", "open"], "ontology_type must be one of 'domain' or 'open'"
         if ontology_type == "open":
-            return self.open_graph_extractor(text=text, ontology_type=ontology_type, **kwargs)
+            return self.open_graph_extractor.generate_ontology(text=text, query=query, **kwargs)
         elif ontology_type == "domain":
-            return self.domain_graph_extractor(text=text, **kwargs)
+            return self.domain_graph_extractor.generate_ontology(text=text,query=query, **kwargs)
         return None

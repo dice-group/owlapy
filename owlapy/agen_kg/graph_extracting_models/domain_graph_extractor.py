@@ -48,7 +48,6 @@ class DomainGraphExtractor(GraphExtractor):
 
         Args:
             domain: The domain for which to generate examples.
-            prompt: Optional custom prompt to guide example generation towards a certain request.
 
         Returns:
             Dictionary containing few-shot examples for each task type, keyed by:
