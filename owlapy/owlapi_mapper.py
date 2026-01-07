@@ -462,7 +462,7 @@ class OWLAPIMapper:
 
     @map_.register(OWLDisjointUnionAxiom)
     def _(self, e):
-        return OWLDisjointUnionAxiomImpl(self.map_(e.get_owl_class()), self.map_(e.get_class_expressions()),
+        return OWLDisjointUnionAxiomImpl(self.map_(e.get_owl_class()), self.map_(e.get_class_expressions()).stream(),
                                          self.map_(e.annotations()))
 
     @map_.register(OWLDisjointUnionAxiomImpl)
