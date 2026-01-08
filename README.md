@@ -11,27 +11,68 @@
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
 
-OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.
+**The Python Framework for Modern Ontology Engineering and Knowledge Graph Development**
 
-Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
+OWLAPY brings the power of OWL ontologies to Python's rich data science and AI ecosystem. Built for researchers, data scientists, and knowledge engineers who want to leverage semantic web technologies without leaving Python.
 
-[DeepWiki](https://deepwiki.com/dice-group/owlapy) can also help you get started with owlapy.
+## 🚀 Why OWLAPY?
+
+### Native Python Integration
+
+- **Pythonic API**: Work with ontologies using intuitive Python syntax, not verbose Java-style code
+- **Perfect for Machine Learning**: Atomic structure makes it easy to integrate with ML pipelines and data science workflows
+- **LLM-Powered Knowledge Extraction**: Fully automatic, agentic ontology (KG) generation from unstructured text using
+LLMs.
+
+### Production-Ready Reasoning
+
+- **Python-native Reasoners**: Structural Reasoner and Embedding-based Reasoner
+- **Optimized Performance**: Benchmarked across complex ontologies (see our [performance data](#reasoners-runtime-benchmark))
+- **Synchronization with Java Reasoners**: HermiT, Pellet, JFact, Openllet, ELK, and Structural
+
+### Cutting-Edge Features
+
+- 🆕 **Automated Ontology Generation**: Extract knowledge graphs from text using LLMs with zero manual annotation through our 
+    agentic pipeline AGen-KG.
+- **Class Expression Simplification**: Automatically simplify complex logical expressions
+- **Syntax Conversion**: Convert between Manchester, DL, and SPARQL syntaxes effortlessly
+
+
+### Other Functionalities
+
+- **Synchronization with [OWLAPI](https://github.com/owlcs/owlapi)**: Access to OWLAPI's features via a Pythonic interface
+- **Support for SWRL Rules**: Create and manipulate SWRL rules in Python
+
+### Research-Backed
+
+OWLAPY is actively developed by the DICE research group of Paderborn University. 
+Our framework powers cutting-edge research in knowledge graph engineering, concept learning, and semantic reasoning.
+
+[Documentation](https://dice-group.github.io/owlapy/usage/main.html) | [DeepWiki Assistant](https://deepwiki.com/dice-group/owlapy)
+
+### 🎯 What Can You Build?
+
+- **Knowledge Graph Pipelines**: Transform raw data into rich, queryable knowledge graphs
+- **AI-Enhanced Ontologies**: Leverage LLMs to extract structured knowledge from documents
+- **Semantic Search Systems**: Build intelligent search with logical reasoning
+- **Data Integration**: Unify heterogeneous data sources with formal semantics
+- **Explainable AI**: Add logical reasoning and justifications to ML pipelines
 
 ## Installation
 
-### Installation from PyPI
+### ⚡ Quick Start using PyPI
 ```bash
 pip3 install owlapy
 ```
 
-### Installation from Source
+### 🌱 Installation from Source
 ``` bash
 git clone https://github.com/dice-group/owlapy && cd owlapy
 
 conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip install -e '.[dev]'
 ```
 
-#### Extra files (optional)
+#### Extra Files (optional)
 
 ```shell
 # Download RDF knowledge graphs
@@ -41,7 +82,7 @@ wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && 
 PYTHONPATH=. pytest
 ```
 
-## Examples
+## 📋 Examples
 
 ### Exploring OWL Ontology
 
@@ -374,12 +415,12 @@ Instance retrieval runtime (in seconds) of each reasoner for different class exp
 
 Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) and [tests](https://github.com/dice-group/owlapy/tree/develop/tests) directories for more examples.
 
-## Try OWLAPY in the Browser
-You can explore OWLAPY's features through [OntoSource](https://github.com/dice-group/OntoSource), a web interface for working with ontologies. 
+## 🌐 Try It Online
+Explore OWLAPY through [OntoSource](https://github.com/dice-group/OntoSource) - a web-based interface for ontology engineering, no installation required.
 
 
-## How to cite
-If you find our work useful in your research, please consider citing the respective paper:
+## 📄 How to Cite
+If you use OWLAPY in your research, please cite our work:
 
 ```
 # OWLAPY
@@ -405,3 +446,5 @@ If you find our work useful in your research, please consider citing the respect
       url={https://arxiv.org/abs/2510.20457}, 
 }
 ```
+
+Built by the DICE Research Group | [dice-research.org](dice-research.org) | [UPB homepage](https://en.cs.uni-paderborn.de/ds)
