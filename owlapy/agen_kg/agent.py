@@ -106,7 +106,18 @@ class AGenKG:
                 prompt_overhead_tokens=prompt_overhead_tokens
             )
 
-    def generate_ontology(self, text, ontology_type, query, **kwargs):
+    def generate_ontology(self, text, ontology_type="domain", query=None, **kwargs):
+        """
+        Generate an ontology from the provided text using the specified extractor type.
+        Args:
+            text: The input text from which to extract the ontology or path to a text file.
+                Supported file formats: .txt, .docx, .pdf, .rtf, .html.
+            ontology_type: Type of ontology extraction - "domain" or "open".
+                "domain" stands for domain-specific ontology extraction.
+                "open" stands for open-world ontology extraction (more general).
+            query: Specific instructions to the agent.
+            **kwargs: Additional parameters for customization.
+        """
 
         assert ontology_type in ["domain", "open"], "ontology_type must be one of 'domain' or 'open'"
         if ontology_type == "open":
