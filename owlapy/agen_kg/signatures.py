@@ -186,7 +186,7 @@ class PlanDecomposer(dspy.Signature):
     Given the user's query about the knowledge graph to be extracted, decompose it into sub-tasks that can be used
     as instructions for each step of the pipeline."""
     user_request: str = dspy.InputField(desc="The user request to be decomposed into sub-tasks.")
-    entity_extraction_task: str = dspy.OutputField(desc="Sub-task description for entity extraction.")
+    entity_extraction_task: str = dspy.OutputField(desc="Sub-task description for entity extraction.The entities should include everything needed to fulfill the user's request.")
     triple_extraction_task: str = dspy.OutputField(desc="Sub-task description for triple extraction.")
     type_generation_task: str = dspy.OutputField(desc="Sub-task description for generating types for entities.")
     type_assertion_task: str = dspy.OutputField(desc="Sub-task description for asserting types to entities.")
