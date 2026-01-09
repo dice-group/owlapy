@@ -206,10 +206,13 @@ class DomainGraphExtractor(GraphExtractor):
         # Load text from file if necessary
         if isinstance(text, (str, Path)):
             # Check if it's a file path
-            source_path = Path(text) if not isinstance(text, Path) else text
-            if source_path.is_file():
-                text = self.load_text(text)
-            # else: treat as raw text string
+            try:
+                source_path = Path(text) if not isinstance(text, Path) else text
+                if source_path.is_file():
+                    text = self.load_text(text)
+                # else: treat as raw text string
+            except OSError:
+                pass
 
         # Determine whether to use chunking
         if use_chunking is None:
@@ -253,10 +256,10 @@ class DomainGraphExtractor(GraphExtractor):
         examples_for_spl_triples_extraction = generated_examples['triples_with_numeric_literals_extraction']
 
         # Step 3: Extract entities (from chunks if needed)
-        if self.logging:
-            print(
-                "DomainGraphExtractor: INFO :: In the generated triples, you may see entities or literals that were not "
-                "part of the extracted entities or literals. They are filtered before added to the ontology.")
+        # if self.logging:
+        #     print(
+        #         "DomainGraphExtractor: INFO :: In the generated triples, you may see entities or literals that were not "
+        #         "part of the extracted entities or literals. They are filtered before added to the ontology.")
 
         chunk_summaries = None
         if use_chunking and len(chunks) > 1:
@@ -325,8 +328,8 @@ class DomainGraphExtractor(GraphExtractor):
             subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
             prop = OWLObjectProperty(ontology_namespace + self.snake_case(triple[1]))
             object = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[2]))
-            # TODO: `and triple[2] in canonical_entities` is removed because its was to strict.
-            #  May need to reconsider that decision.
+            # TODO: `and triple[2] in canonical_entities` is removed from the condition below
+            #  because its was too strict. May need to reconsider that decision.
             if triple[0] in canonical_entities:
                 ax = OWLObjectPropertyAssertionAxiom(subject, prop, object)
                 onto.add_axiom(ax)

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
-from owlapy.ontogen.few_shot_examples import EXAMPLES_FOR_ENTITY_EXTRACTION, EXAMPLES_FOR_TRIPLES_EXTRACTION, \
+from owlapy.agen_kg.few_shot_examples import EXAMPLES_FOR_ENTITY_EXTRACTION, EXAMPLES_FOR_TRIPLES_EXTRACTION, \
     EXAMPLES_FOR_TYPE_ASSERTION, EXAMPLES_FOR_TYPE_GENERATION, EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION, \
     EXAMPLES_FOR_LITERAL_EXTRACTION
 from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, \
@@ -89,10 +89,13 @@ class OpenGraphExtractor(GraphExtractor):
         # Load text from file if necessary
         if isinstance(text, (str, Path)):
             # Check if it's a file path
-            source_path = Path(text) if not isinstance(text, Path) else text
-            if source_path.is_file():
-                text = self.load_text(text)
-            # else: treat as raw text string
+            try:
+                source_path = Path(text) if not isinstance(text, Path) else text
+                if source_path.is_file():
+                    text = self.load_text(text)
+                # else: treat as raw text string
+            except OSError:
+                pass
 
         # Determine whether to use chunking
         if use_chunking is None:
@@ -108,9 +111,9 @@ class OpenGraphExtractor(GraphExtractor):
         else:
             chunks = [text]
 
-        if self.logging:
-            print("GraphExtractor: INFO  :: In the generated triples, you may see entities or literals that were not"
-                  "part of the extracted entities or literals. They are filtered before added to the ontology.")
+        # if self.logging:
+        #     print("GraphExtractor: INFO  :: In the generated triples, you may see entities or literals that were not"
+        #           "part of the extracted entities or literals. They are filtered before added to the ontology.")
 
         # Step 1: Extract entities (from chunks if needed)
         chunk_summaries = None  # Will be populated during chunked extraction
@@ -180,8 +183,8 @@ class OpenGraphExtractor(GraphExtractor):
             subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
             prop = OWLObjectProperty(ontology_namespace + self.snake_case(triple[1]))
             object = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[2]))
-            # TODO: `and triple[2] in canonical_entities` is removed because its was to strict.
-            #  May need to reconsider that decision.
+            # TODO: `and triple[2] in canonical_entities` is removed from the condition below
+            #  because its was too strict. May need to reconsider that decision.
             if triple[0] in canonical_entities:
                 ax = OWLObjectPropertyAssertionAxiom(subject, prop, object)
                 onto.add_axiom(ax)
