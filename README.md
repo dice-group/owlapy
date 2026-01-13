@@ -474,4 +474,4 @@ If you use OWLAPY in your research, please cite our work:
 }
 ```
 
-Built by the DICE Research Group | [dice-research.org](dice-research.org) | [UPB homepage](https://en.cs.uni-paderborn.de/ds)
+Built by the DICE Research Group | [dice-research.org](https://dice-research.org/) | [UPB homepage](https://en.cs.uni-paderborn.de/ds)
