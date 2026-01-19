@@ -64,6 +64,11 @@ Our framework powers cutting-edge research in knowledge graph engineering, conce
 pip3 install owlapy
 ```
 
+For CPU-only:
+```bash
+pip3 install owlapy --extra-index-url https://download.pytorch.org/whl/cpu
+```
+
 ### 🌱 Installation from Source
 ``` bash
 git clone https://github.com/dice-group/owlapy && cd owlapy
