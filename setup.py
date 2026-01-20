@@ -14,7 +14,7 @@ _deps = [
     "fastapi>=0.115.5",
     "httpx>=0.27.2",
     "uvicorn>=0.32.1",
-    "dicee==0.2.0",
+    "dicee==0.3.0",
     "litserve>=0.2.0",
     "dspy==3.0.3",
     "ruff>=0.7.2",
@@ -53,7 +53,7 @@ with open('README.md', 'r') as fh:
 setup(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
-    version="1.6.2",
+    version="1.6.3",
     packages=find_packages(),
     include_package_data=True,
     package_data={'owlapy': ['jar_dependencies/*.jar'],},
