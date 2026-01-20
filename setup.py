@@ -66,7 +66,7 @@ setup(
         "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering"],
-    python_requires='>=3.10.13',
+    python_requires='>=3.11',
     entry_points={"console_scripts": ["owlapy=owlapy.scripts.run:main", "owlapy-serve=owlapy.scripts.owlapy_serve:main"]},
     long_description=long_description,
     long_description_content_type="text/markdown",
