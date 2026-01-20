@@ -5,10 +5,12 @@ from .iri import IRI
 from .owl_axiom import OWLEquivalentClassesAxiom, OWLDataPropertyAssertionAxiom
 from .owl_property import OWLDataProperty
 from .owl_literal import OWLLiteral
+from .owl_data_ranges import OWLDataComplementOf
+from .vocab import OWLFacet
 import os
 import json
 import random
-from typing import List, Set
+from typing import List, Set,Tuple, Optional
 from tqdm import tqdm
 import pandas as pd
 from rdflib import Graph, URIRef, Literal, RDFS, OWL, Namespace, RDF
@@ -560,3 +562,74 @@ def make_kb_inconsistent(kb_path, output_path, rate, seed, max_attempts=100):
     # Return the list of inconsistencies added
     return inconsistencies
 
+def parse_numeric_facets(restriction) -> Tuple[
+    Optional[float], Optional[float], Optional[float], Optional[float]
+]:
+    """
+    Given an OWLDatatypeRestriction, extract numeric facet bounds.
+
+    Returns:
+        (min_val, min_exclusive, max_val, max_exclusive)
+        where each is either a float or None.
+    """
+    is_complement = False
+    if isinstance(restriction, OWLDataComplementOf):
+        restriction = restriction.get_data_range()
+        is_complement = True
+
+    facet_restrictions = restriction.get_facet_restrictions()
+    if not facet_restrictions:
+        # No numeric bounds: everything allowed
+        return None, None, None, None
+
+    min_val = None
+    max_val = None
+    min_exclusive = None
+    max_exclusive = None
+
+    for facet in facet_restrictions:
+        value = facet._literal.to_python()
+
+        # Convert any literal to float safely
+        try:
+            numeric_value = float(value)
+        except Exception:
+            continue
+
+        if facet._facet == OWLFacet.MIN_INCLUSIVE:
+            min_val = numeric_value
+        elif facet._facet == OWLFacet.MIN_EXCLUSIVE:
+            min_exclusive = numeric_value
+        elif facet._facet == OWLFacet.MAX_INCLUSIVE:
+            max_val = numeric_value
+        elif facet._facet == OWLFacet.MAX_EXCLUSIVE:
+            max_exclusive = numeric_value
+
+    return min_val, min_exclusive, max_val, max_exclusive
+
+
+def numeric_value_satisfies(
+    v,
+    min_val: float | None,
+    min_exclusive: float | None,
+    max_val: float | None,
+    max_exclusive: float | None,
+) -> bool:
+    """
+    Check if numeric value v satisfies the given numeric facet bounds.
+    """
+    try:
+        x = float(v)
+    except Exception:
+        return False
+
+    if min_val is not None and x < min_val:
+        return False
+    if min_exclusive is not None and x <= min_exclusive:
+        return False
+    if max_val is not None and x > max_val:
+        return False
+    if max_exclusive is not None and x >= max_exclusive:
+        return False
+
+    return True

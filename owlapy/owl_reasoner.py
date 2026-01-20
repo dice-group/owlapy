@@ -15,7 +15,7 @@ from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom,
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
     OWLDataSomeValuesFrom, OWLDataOneOf, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataHasValue, \
-    OWLDataAllValuesFrom, OWLNothing, OWLThing
+    OWLDataAllValuesFrom, OWLNothing, OWLThing, OWLDataMinCardinality, OWLDataMaxCardinality
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
@@ -31,7 +31,7 @@ from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObject
     OWLTopDataProperty
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
-
+from owlapy.util_owl_static_funcs import parse_numeric_facets, numeric_value_satisfies
 
 logger = logging.getLogger(__name__)
 
@@ -1886,6 +1886,60 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
             h=None,
             r=self.STR_IRI_RANGE,
             t=self.STR_IRI_DOUBLE)]
+    
+    def _instances_data_cardinality(
+    self,
+    data_property_str: str,
+    data_range,          # OWLDatatypeRestriction / OWLDataRange
+    min_card: int = 0,
+    max_card: int | None = None,
+    ):
+        """
+        Keeps those entities x such that
+        min_card <= |{ v | (x,u,v) predicted and v satisfies data_range }| <= max_card
+        """
+        is_complement = isinstance(data_range, OWLDataComplementOf)
+        range_to_check = data_range.get_data_range() if is_complement else data_range
+        min_val, min_exclusive, max_val, max_exclusive = parse_numeric_facets(range_to_check)
+
+        candidates = self.individuals_in_signature()
+        all_entities = [i.str for i in candidates]
+        data_property_values = self.model.predict_literals(
+            entity=all_entities,
+            attribute=[data_property_str] * len(all_entities),
+        )
+        entity_to_values = dict(zip(all_entities, data_property_values))
+
+        satisfying_inds: list[OWLNamedIndividual] = []
+
+        for ent_str, values in entity_to_values.items():
+            values_iter = values if isinstance(values, (list, tuple, set)) else [values]
+
+            count = 0
+            for v in values_iter:
+                if numeric_value_satisfies(v, min_val, min_exclusive, max_val, max_exclusive):
+                    count += 1
+
+            if count < min_card:
+                continue
+            if max_card is not None and count > max_card:
+                continue
+
+            try:
+                ind = OWLNamedIndividual(IRI.create(ent_str))
+            except Exception:
+                print(f"Warning: Could not construct OWLNamedIndividual from '{ent_str}'")
+                continue
+
+            satisfying_inds.append(ind)
+
+        if is_complement:
+            universe = set(self.individuals_in_signature())
+            for ind in universe.difference(satisfying_inds):
+                yield ind
+        else:
+            for ind in satisfying_inds:
+                yield ind
 
     def individuals(self, expression: OWLClassExpression = None, named_individuals: bool = False) -> Generator[
         OWLNamedIndividual, None, None]:
@@ -1999,6 +2053,53 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
 
         elif isinstance(expression, OWLObjectOneOf):
             yield from expression.individuals()
+        
+        elif isinstance(expression, OWLDataSomeValuesFrom):
+            # ∃ u.D
+            data_property_str = expression.get_property().str
+            data_range = expression.get_filler()
+            yield from self._instances_data_cardinality(
+                data_property_str=data_property_str,
+                data_range=data_range,
+                min_card=1,
+                max_card=None
+            )
+        elif isinstance(expression, OWLDataAllValuesFrom):
+            # ∀ u.D ≡ ¬(∃ u.¬D)
+            filler = expression.get_filler()
+            if isinstance(filler, OWLDataComplementOf):
+                filler = filler.get_data_range()
+            else:
+                filler = OWLDataComplementOf(filler)
+            yield from self.instances(OWLDataSomeValuesFrom(
+                property=expression.get_property(),
+                filler=filler
+            ).get_object_complement_of())
+
+        elif isinstance(expression, OWLDataMinCardinality):
+            # ≥ n u.D
+            n = expression.get_cardinality()
+            data_property_str = expression.get_property().str
+            data_range = expression.get_filler()
+            yield from self._instances_data_cardinality(
+                data_property_str=data_property_str,
+                data_range=data_range,
+                min_card=n,
+                max_card=None
+            )
+
+        elif isinstance(expression, OWLDataMaxCardinality):
+            # ≤ n u.D
+            n = expression.get_cardinality()
+            data_property_str = expression.get_property().str
+            data_range = expression.get_filler()
+            yield from self._instances_data_cardinality(
+                data_property_str=data_property_str,
+                data_range=data_range,
+                min_card=0,
+                max_card=n
+            )
+
         else:
             raise NotImplementedError(f"Instances for {type(expression)} are not implemented yet")
 
