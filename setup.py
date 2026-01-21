@@ -14,7 +14,7 @@ _deps = [
     "fastapi>=0.115.5",
     "httpx>=0.27.2",
     "uvicorn>=0.32.1",
-    "dicee==0.3.0",
+    "dicee==0.3.1",
     "litserve>=0.2.0",
     "dspy==3.0.3",
     "ruff>=0.7.2",
