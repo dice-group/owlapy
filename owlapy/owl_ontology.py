@@ -43,11 +43,8 @@ from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassO
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
 import os
+import json
 from pathlib import Path
-from dicee.knowledge_graph_embeddings import KGE
-from dicee.executer import Execute
-from dicee.config import Namespace
-import torch
 
 logger = logging.getLogger(__name__)
 
@@ -1764,8 +1761,18 @@ class NeuralOntology(AbstractOWLOntology):
     STR_IRI_DATA_PROPERTY = "http://www.w3.org/2002/07/owl#DatatypeProperty"
 
     def __init__(self, path_neural_embedding: str, train_if_not_exists: bool = False,
-                 training_params: Optional[Dict[str, Any]] = None, batch_size: int = 1024, device: str = "gpu",
+                 training_params: Optional[Union[Dict[str, Any], str]] = None, batch_size: int = 1024, device: str = "gpu",
                  gamma: float = 0.5):
+        try:
+            from dicee.knowledge_graph_embeddings import KGE
+            # installing dicee will also install torch
+            import torch
+        except ImportError:
+            raise ImportError("The 'dicee' package is required to use NeuralOntology. "
+                              "Please install it via 'pip install dicee'."
+                              "For the CPU-only version (recommended): pip install dicee --extra-index-url https://download.pytorch.org/whl/cpu")
+
+
         """
         Initialize a Neural Ontology from a KGE model.
 
@@ -1800,14 +1807,17 @@ class NeuralOntology(AbstractOWLOntology):
             # warning
             print(f"Device {device} not supported, EBR will use CPU")
 
-    def _train_model(self, path: str, training_params: Optional[Dict[str, Any]] = None):
+    def _train_model(self, path: str, training_params: Optional[Union[Dict[str, Any], str]] = None):
         """
         Train a new KGE model with the given parameters.
 
         Args:
             path: Path to a directory containing train.txt or to the dataset directory
-            training_params: Optional dictionary of training parameters
+            training_params: Optional dictionary of training parameters or path to a JSON file.
         """
+        from dicee.config import Namespace
+        from dicee.executer import Execute
+        from dicee.knowledge_graph_embeddings import KGE
         args = Namespace()
 
         # Set default parameters
@@ -1831,6 +1841,15 @@ class NeuralOntology(AbstractOWLOntology):
         args.batch_size = 64
 
         # Override with user-provided parameters if any
+        if training_params is None:
+            json_path = os.path.join(path, "NeuralOntology.json")
+            if os.path.exists(json_path):
+                with open(json_path, "r") as f:
+                    training_params = json.load(f)
+        elif isinstance(training_params, str):
+            with open(training_params, "r") as f:
+                training_params = json.load(f)
+
         if training_params is not None:
             for key, value in training_params.items():
                 setattr(args, key, value)

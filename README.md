@@ -1,37 +1,77 @@
 # OWLAPY
 [![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
 [![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
-[![Coverage](https://img.shields.io/badge/coverage-64%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.6.2-blue)](https://pypi.org/project/owlapy/1.6.2/)
-[![Docs](https://img.shields.io/badge/documentation-1.6.2-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
+[![Pypi](https://img.shields.io/badge/pypi-1.6.3-blue)](https://pypi.org/project/owlapy/1.6.3/)
+[![Docs](https://img.shields.io/badge/documentation-1.6.3-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dice-group/owlapy)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/dice-group/owlapy/test.yml)
 ![GitHub License](https://img.shields.io/github/license/dice-group/owlapy)
 
 
 ![OWLAPY](docs/_static/images/owlapy_logo.png)
 
-OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.
+**The Python Framework for Modern Ontology Engineering and Knowledge Graph Development**
 
-Have a look at the [Documentation](https://dice-group.github.io/owlapy/).
+OWLAPY brings the power of OWL ontologies to Python's rich data science and AI ecosystem. Built for researchers, data scientists, and knowledge engineers who want to leverage semantic web technologies without leaving Python.
 
-[DeepWiki](https://deepwiki.com/dice-group/owlapy) can also help you get started with owlapy.
+## 🚀 Why OWLAPY?
+
+### Native Python Integration
+
+- **Pythonic API**: Work with ontologies using intuitive Python syntax, not verbose Java-style code
+- **Perfect for Machine Learning**: Atomic structure makes it easy to integrate with ML pipelines and data science workflows
+- **LLM-Powered Knowledge Extraction**: Fully automatic, scalable, agentic ontology (KG) generation from unstructured text using
+LLMs
+
+### Production-Ready Reasoning
+
+- **Python-native Reasoners**: Structural Reasoner and Embedding-based Reasoner
+- **Optimized Performance**: Benchmarked across complex ontologies (see our [performance data](#reasoners-runtime-benchmark))
+- **Synchronization with Java Reasoners**: HermiT, Pellet, JFact, Openllet, ELK, and Structural
+
+### Cutting-Edge Features
+
+- 🆕 **Automated Ontology Generation**: Extract knowledge graphs from text using LLMs with zero manual annotation through our 
+    agentic pipeline AGen-KG (scalable to large documents).
+- **Class Expression Simplification**: Automatically simplify complex logical expressions
+- **Syntax Conversion**: Convert between Manchester, DL, and SPARQL syntaxes effortlessly
+
+
+### Other Functionalities
+
+- **Synchronization with OWLAPI**: Access to [OWLAPI](https://github.com/owlcs/owlapi)'s features via a Pythonic interface
+- **Support for SWRL Rules**: Create and manipulate SWRL rules in Python
+
+### Research-Backed
+
+OWLAPY is actively developed by the DICE research group of Paderborn University. 
+Our framework powers cutting-edge research in knowledge graph engineering, concept learning, and semantic reasoning.
+
+[Documentation](https://dice-group.github.io/owlapy/usage/main.html) | [DeepWiki Assistant](https://deepwiki.com/dice-group/owlapy)
+
+### 🎯 What Can You Build?
+
+- **Knowledge Graph Pipelines**: Transform raw data into rich, queryable knowledge graphs
+- **AI-Enhanced Ontologies**: Leverage LLMs to extract structured knowledge from documents
+- **Semantic Search Systems**: Build intelligent search with logical reasoning
+- **Data Integration**: Unify heterogeneous data sources with formal semantics
+- **Explainable AI**: Add logical reasoning and justifications to ML pipelines
 
 ## Installation
 
-### Installation from PyPI
+### ⚡ Quick Start using PyPI
 ```bash
 pip3 install owlapy
 ```
 
-### Installation from Source
+### 🌱 Installation from Source
 ``` bash
 git clone https://github.com/dice-group/owlapy && cd owlapy
 
 conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip install -e '.[dev]'
 ```
 
-#### Extra files (optional)
+#### Extra Files (optional)
 
 ```shell
 # Download RDF knowledge graphs
@@ -41,7 +81,7 @@ wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && 
 PYTHONPATH=. pytest
 ```
 
-## Examples
+## 📋 Examples
 
 ### Exploring OWL Ontology
 
@@ -142,30 +182,66 @@ OWL objects in [owlapy api](https://dice-group.github.io/owlapy/autoapi/owlapy/i
 <details><summary> Click me! </summary>
 
 Our latest feature employees a combination of state-of-the-art approaches to extract knowledge graphs from unstructured
-text using Large Language Models (LLMs).
+text using Large Language Models (LLMs). The algorithm consist of an agentic pipeline called AGen-KG (stands for agent-generated KG)
+which can scale to large documents through chunking and merging strategies.
 
 ```python
-from owlapy.ontogen.data_extraction import GraphExtractor
+from owlapy.agen_kg import AGenKG
 from owlapy.owl_ontology import SyncOntology
 
-text_example = """J.P. Morgan & Co. is an American financial institution specialized in investment banking, 
-asset management and private banking founded by financier J. P. Morgan in 1871. Through a series of mergers and 
-acquisitions, the company is now a subsidiary of JPMorgan Chase, the largest banking institution in the world. 
-The company has been historically referred to as the "House of Morgan" or simply Morgan."""
 
-# Extract a graph from text using an LLM
-ontogen = GraphExtractor(model="<ENTER_MODELS_NAME> (e.g. 'Qwen/Qwen3-32B-AWQ')",api_key="<ENTER_YOUR_KEY>", api_base="<ENTER_YOUR_API_BASE_URL>",
-                         temperature=0.1, seed=42, enable_logging=True)
-ontogen.forward(text=text_example, generate_types = True, extract_spl_triples=True)
+filep = "examples/doctors_notes.txt" # make sure the path is pointing correctly
 
-# Load the generated ontology and print axioms
-onto = SyncOntology(path="generated_ontology.owl")
+# This example is set up to use GitHub's Models by providing your 
+# GitHub Personal Access Token (PAT) because it's for free (subject to change),
+# but of course, you can use any model & API base of your choice.
+agent = AGenKG(model="gpt-4o", api_key="<YOUR_GITHUB_PAT>",
+             api_base="https://models.github.ai/inference",
+             temperature=0.1, seed=42, max_tokens=6000, enable_logging=True)
+agent.generate_ontology(text=filep,
+                        ontology_type="domain",
+                        query="I want the resulting graph to represent medical information "
+                              "about each patient from the provided doctors' notes.",
+                        generate_types=True,
+                        extract_spl_triples=True,
+                        create_class_hierarchy=False,
+                        fact_reassurance=False,
+                        save_path="patients.owl")
+
+# === Logs ===
+# DomainGraphExtractor: INFO :: Decomposed the query into specific instructions
+# UniversalTextLoader: INFO :: Loading text from .txt file: doctors_notes.txt
+# UniversalTextLoader: INFO :: Successfully loaded 564 words (4257 characters)
+# DomainGraphExtractor: INFO :: Text will be processed in 1 chunks
+# DomainGraphExtractor: INFO :: Total chars: 4257, Est. tokens: 1064
+# DomainGraphExtractor: INFO :: Detected domain: medicine
+# DomainGraphExtractor: INFO :: Generating domain-specific few-shot examples for domain: medicine
+# DomainGraphExtractor: INFO :: Generated examples for entity_extraction
+# DomainGraphExtractor: INFO :: Generated examples for triples_extraction
+# DomainGraphExtractor: INFO :: Generated examples for type_assertion
+# DomainGraphExtractor: INFO :: Generated examples for type_generation
+# DomainGraphExtractor: INFO :: Generated examples for literal_extraction
+# DomainGraphExtractor: INFO :: Generated examples for triples_with_numeric_literals_extraction
+# DomainGraphExtractor: INFO :: Cached examples for domain 'medicine' to path_hidden/domain_examples_medicine.json
+# DomainGraphExtractor: INFO :: Generated the following entities: ['P001', 'EARLY HYPERTENSION', 'ACE INHIBITORS', 'P002', 'TYPE 2 DIABETES', 'METFORMIN', 'P003', 'SEASONAL FLU', 'ANTIVIRALS', 'P004', 'MECHANICAL BACK PAIN', 'NSAIDS', 'PHYSIOTHERAPY', 'P005', 'MIGRAINES', 'TRIPTANS', 'P006', 'OSTEOARTHRITIS', 'PAIN MANAGEMENT PLAN', 'P007', 'GERD', 'PPIs', 'P008', 'ANXIETY DISORDER', 'CBT', 'SSRIs', 'P009', 'HYPERLIPIDEMIA', 'STATINS', 'P010', 'ASTHMA', 'INHALED BRONCHODILATOR', 'P011', 'COPD', 'BRONCHODILATORS', 'P012', 'IRON DEFICIENCY ANEMIA', 'IRON SUPPLEMENTS', 'P013', 'DEPRESSION', 'ANTIDEPRESSANTS', 'P014', 'IBS', 'DIETARY MODIFICATIONS', 'P015', 'CATARACTS', 'SURGICAL EVALUATION', 'P016', 'HYPOTHYROIDISM', 'LEVOTHYROXINE', 'P017', 'ACUTE PHARYNGITIS', 'ANTIBIOTICS', 'P018', 'RHEUMATOID ARTHRITIS', 'DMARDs', 'P019', 'KIDNEY STONES', 'PAIN RELIEF', 'HYDRATION', 'P020', 'LOW VITAMIN D LEVELS', 'SUPPLEMENTS']
+# DomainGraphExtractor: INFO :: Generated the following triples: [('P001', 'HAS', 'EARLY HYPERTENSION'), ('EARLY HYPERTENSION', 'TREATED WITH', 'ACE INHIBITORS'), ('P001', 'PRESCRIBED', 'ACE INHIBITORS'), ('P002', 'HAS', 'TYPE 2 DIABETES'), ('TYPE 2 DIABETES', 'TREATED WITH', 'METFORMIN'), ('P002', 'PRESCRIBED', 'METFORMIN'), ('P003', 'HAS', 'SEASONAL FLU'), ('SEASONAL FLU', 'TREATED WITH', 'ANTIVIRALS'), ('P003', 'PRESCRIBED', 'ANTIVIRALS'), ('P004', 'HAS', 'MECHANICAL BACK PAIN'), ('MECHANICAL BACK PAIN', 'TREATED WITH', 'NSAIDS'), ('P004', 'PRESCRIBED', 'NSAIDS'), ('P004', 'REFERRED TO', 'PHYSIOTHERAPY'), ('P005', 'HAS', 'MIGRAINES'), ('MIGRAINES', 'TREATED WITH', 'TRIPTANS'), ('P005', 'PRESCRIBED', 'TRIPTANS'), ('P006', 'HAS', 'OSTEOARTHRITIS'), ('OSTEOARTHRITIS', 'TREATED WITH', 'PAIN MANAGEMENT PLAN'), ('P007', 'HAS', 'GERD'), ('GERD', 'TREATED WITH', 'PPIs'), ('P007', 'PRESCRIBED', 'PPIs'), ('P008', 'HAS', 'ANXIETY DISORDER'), ('ANXIETY DISORDER', 'TREATED WITH', 'CBT'), ('ANXIETY DISORDER', 'TREATED WITH', 'SSRIs'), ('P008', 'PRESCRIBED', 'SSRIs'), ('P009', 'HAS', 'HYPERLIPIDEMIA'), ('HYPERLIPIDEMIA', 'TREATED WITH', 'STATINS'), ('P009', 'PRESCRIBED', 'STATINS'), ('P010', 'HAS', 'ASTHMA'), ('ASTHMA', 'TREATED WITH', 'INHALED BRONCHODILATOR'), ('P010', 'PRESCRIBED', 'INHALED BRONCHODILATOR'), ('P011', 'HAS', 'COPD'), ('COPD', 'TREATED WITH', 'BRONCHODILATORS'), ('P011', 'PRESCRIBED', 'BRONCHODILATORS'), ('P012', 'HAS', 'IRON DEFICIENCY ANEMIA'), ('IRON DEFICIENCY ANEMIA', 'TREATED WITH', 'IRON SUPPLEMENTS'), ('P012', 'PRESCRIBED', 'IRON SUPPLEMENTS'), ('P013', 'HAS', 'DEPRESSION'), ('DEPRESSION', 'TREATED WITH', 'ANTIDEPRESSANTS'), ('P013', 'PRESCRIBED', 'ANTIDEPRESSANTS'), ('P014', 'HAS', 'IBS'), ('IBS', 'TREATED WITH', 'DIETARY MODIFICATIONS'), ('P015', 'HAS', 'CATARACTS'), ('CATARACTS', 'TREATED WITH', 'SURGICAL EVALUATION'), ('P016', 'HAS', 'HYPOTHYROIDISM'), ('HYPOTHYROIDISM', 'TREATED WITH', 'LEVOTHYROXINE'), ('P016', 'PRESCRIBED', 'LEVOTHYROXINE'), ('P017', 'HAS', 'ACUTE PHARYNGITIS'), ('ACUTE PHARYNGITIS', 'TREATED WITH', 'ANTIBIOTICS'), ('P017', 'PRESCRIBED', 'ANTIBIOTICS'), ('P018', 'HAS', 'RHEUMATOID ARTHRITIS'), ('RHEUMATOID ARTHRITIS', 'TREATED WITH', 'DMARDs'), ('P018', 'PRESCRIBED', 'DMARDs'), ('P019', 'HAS', 'KIDNEY STONES'), ('KIDNEY STONES', 'TREATED WITH', 'PAIN RELIEF'), ('KIDNEY STONES', 'TREATED WITH', 'HYDRATION'), ('P020', 'HAS', 'LOW VITAMIN D LEVELS'), ('LOW VITAMIN D LEVELS', 'TREATED WITH', 'SUPPLEMENTS')]
+# DomainGraphExtractor: INFO :: Using summary (3000 chars) for relation clustering
+# DomainGraphExtractor: INFO :: Merged 1 duplicate relations
+# DomainGraphExtractor: INFO :: After relation clustering: ['TREATED WITH', 'HAS', 'REFERRED TO']
+# DomainGraphExtractor: INFO :: Skipped coherence check, using all 58 triples
+# DomainGraphExtractor: INFO :: Finished generating types and assigned them to entities as following: [('P001', 'Patient'), ('EARLY HYPERTENSION', 'MedicalCondition'), ('ACE INHIBITORS', 'Medication'), ('P002', 'Patient'), ('TYPE 2 DIABETES', 'MedicalCondition'), ('METFORMIN', 'Medication'), ('P003', 'Patient'), ('SEASONAL FLU', 'MedicalCondition'), ('ANTIVIRALS', 'Medication'), ('P004', 'Patient'), ('MECHANICAL BACK PAIN', 'MedicalCondition'), ('NSAIDS', 'Medication'), ('PHYSIOTHERAPY', 'Procedure'), ('P005', 'Patient'), ('MIGRAINES', 'MedicalCondition'), ('TRIPTANS', 'Medication'), ('P006', 'Patient'), ('OSTEOARTHRITIS', 'MedicalCondition'), ('PAIN MANAGEMENT PLAN', 'Procedure'), ('P007', 'Patient'), ('GERD', 'MedicalCondition'), ('PPIs', 'Medication'), ('P008', 'Patient'), ('ANXIETY DISORDER', 'MedicalCondition'), ('CBT', 'Procedure'), ('SSRIs', 'Medication'), ('P009', 'Patient'), ('HYPERLIPIDEMIA', 'MedicalCondition'), ('STATINS', 'Medication'), ('P010', 'Patient'), ('ASTHMA', 'MedicalCondition'), ('INHALED BRONCHODILATOR', 'Medication'), ('P011', 'Patient'), ('COPD', 'MedicalCondition'), ('BRONCHODILATORS', 'Medication'), ('P012', 'Patient'), ('IRON DEFICIENCY ANEMIA', 'MedicalCondition'), ('IRON SUPPLEMENTS', 'Medication'), ('P013', 'Patient'), ('DEPRESSION', 'MedicalCondition'), ('ANTIDEPRESSANTS', 'Medication'), ('P014', 'Patient'), ('IBS', 'MedicalCondition'), ('DIETARY MODIFICATIONS', 'Procedure'), ('P015', 'Patient'), ('CATARACTS', 'MedicalCondition'), ('SURGICAL EVALUATION', 'Procedure'), ('P016', 'Patient'), ('HYPOTHYROIDISM', 'MedicalCondition'), ('LEVOTHYROXINE', 'Medication'), ('P017', 'Patient'), ('ACUTE PHARYNGITIS', 'MedicalCondition'), ('ANTIBIOTICS', 'Medication'), ('P018', 'Patient'), ('RHEUMATOID ARTHRITIS', 'MedicalCondition'), ('DMARDs', 'Medication'), ('P019', 'Patient'), ('KIDNEY STONES', 'MedicalCondition'), ('PAIN RELIEF', 'Procedure'), ('HYDRATION', 'Procedure'), ('P020', 'Patient'), ('LOW VITAMIN D LEVELS', 'LabResult'), ('SUPPLEMENTS', 'Medication')]
+# DomainGraphExtractor: INFO :: Generated the following numeric literals: ['34', '58', '22', '45', '29', '67', '41', '36', '50', '19', '62', '27', '48', '33', '71', '39', '24', '55', '46', '31', '1']
+# DomainGraphExtractor: INFO :: Generated the following s-p-l triples: [('P001', 'AGE', '34'), ('P002', 'AGE', '58'), ('P003', 'AGE', '22'), ('P004', 'AGE', '45'), ('P005', 'AGE', '29'), ('P006', 'AGE', '67'), ('P007', 'AGE', '41'), ('P008', 'AGE', '36'), ('P009', 'AGE', '50'), ('P010', 'AGE', '19'), ('P011', 'AGE', '62'), ('P012', 'AGE', '27'), ('P013', 'AGE', '48'), ('P014', 'AGE', '33'), ('P015', 'AGE', '71'), ('P016', 'AGE', '39'), ('P017', 'AGE', '24'), ('P018', 'AGE', '55'), ('P019', 'AGE', '46'), ('P020', 'AGE', '31')]
+# Saving patients.owl..
+
+
+# You can load the generated ontology and work with it as normally
+onto = SyncOntology(path="patients.owl")
 [print(ax) for ax in onto.get_abox_axioms()]
 [print(ax) for ax in onto.get_tbox_axioms()]
 ```
 
-If you just want to give it a quick try, and you don't have access to a paid API token, you can use GitHub Models.
-Check out this example [here](https://github.com/dice-group/owlapy/blob/develop/examples/ontogen_example.py) where it shows how to configure `GraphExtractor` with GitHub PAT.
+You can find this example [here](https://github.com/dice-group/owlapy/blob/develop/examples/ag-gen_example.py).
 
 
 </details>
@@ -366,12 +442,12 @@ Instance retrieval runtime (in seconds) of each reasoner for different class exp
 
 Check also the [examples](https://github.com/dice-group/owlapy/tree/develop/examples) and [tests](https://github.com/dice-group/owlapy/tree/develop/tests) directories for more examples.
 
-## Try OWLAPY in the Browser
-You can explore OWLAPY's features through [OntoSource](https://github.com/dice-group/OntoSource), a web interface for working with ontologies. 
+## 🌐 Try It Online
+Explore OWLAPY through [OntoSource](https://github.com/dice-group/OntoSource) - a web-based interface for ontology engineering, no installation required.
 
 
-## How to cite
-If you find our work useful in your research, please consider citing the respective paper:
+## 📄 How to Cite
+If you use OWLAPY in your research, please cite our work:
 
 ```
 # OWLAPY
@@ -397,3 +473,5 @@ If you find our work useful in your research, please consider citing the respect
       url={https://arxiv.org/abs/2510.20457}, 
 }
 ```
+
+Built by the DICE Research Group | [dice-research.org](https://dice-research.org/) | [UPB homepage](https://en.cs.uni-paderborn.de/ds)
