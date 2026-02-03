@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg.signatures &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg.signatures</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.agen_kg.signatures</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
+
+<div class="viewcode-block" id="Entity">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.Entity">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Entity</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text as input identify key entities extracted form the text. The result </span>
+<span class="s2">    should be a list of capitalized entities. E.g., [&quot;ENTITY1&quot;, &quot;ENTITY2&quot;, ...]&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Specific instructions that must be considered.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of key entities, capitalized.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Triple">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.Triple">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Triple</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text and entities, identify triples of type source_entity-relation-target_entity</span>
+<span class="s2">    where source_entity and target_entity are strictly part of the given entities.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to consider.&quot;</span><span class="p">)</span>
+    <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Specific instructions that must be considered.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">triples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of source_entity-relation-target_entity, capitalized.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TypeAssertion">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.TypeAssertion">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeAssertion</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of entities, a list of types and textual contex, assign types to the entities.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to assign a type to.&quot;</span><span class="p">)</span>
+    <span class="n">entity_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of types to be assigned to entities.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Specific instructions that must be considered.&quot;</span><span class="p">)</span>
+    <span class="n">pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entity-entity_type pairs.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TypeGeneration">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.TypeGeneration">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeGeneration</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of entities and textual contex, assign meaningful general types to the entities.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to assign a type to.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Specific instructions that must be considered.&quot;</span><span class="p">)</span>
+    <span class="n">pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entity-entity_type pairs.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Literal">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.Literal">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Literal</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text as input identify key numerical values extracted form the text. The result</span>
+<span class="s2">    should be a list of numerical literals. E.g., [&quot;123&quot;, &quot;45.67&quot;, &quot;50%&quot;, ...]&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Specific instructions that must be considered.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">l_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of key numerical values.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SPLTriples">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.SPLTriples">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SPLTriples</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text, entities and numeric literals, identify triples of type </span>
+<span class="s2">    source_entity-relation-target_value where source_entity is strictly part of the given entities and the target_value </span>
+<span class="s2">    is strictly part of the given numeric literals.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input about some topic.&quot;</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to consider.&quot;</span><span class="p">)</span>
+    <span class="n">numeric_literals</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of literals to consider.&quot;</span><span class="p">)</span>
+    <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Specific instructions that must be considered.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Few shot examples for this task.&quot;</span><span class="p">)</span>
+    <span class="n">triples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span>
+        <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of source_entity-relation-target_value triples.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Domain">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.Domain">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Domain</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text, identify the primary domain or topic of the text.</span>
+<span class="s2">    Example domains: &#39;biology&#39;, &#39;chemistry&#39;, &#39;finance&#39;, &#39;sports&#39;, &#39;politics&#39;, &#39;medicine&#39;, &#39;computer science&#39;.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input whose domain should be identified.&quot;</span><span class="p">)</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Detected domain/category of the text, normalized (lowercase).&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DomainSpecificFewShotGenerator">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DomainSpecificFewShotGenerator</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a domain (e.g., &#39;biology&#39;, &#39;finance&#39;, &#39;sports&#39;), generate few-shot examples tailored to that domain </span>
+<span class="s2">    for a specific task (entity extraction, triple extraction, type assertion, etc.). The examples should follow the same </span>
+<span class="s2">    format as the general few-shot examples but with domain-specific content.&quot;&quot;&quot;</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;The domain for which to generate few-shot examples (e.g., &#39;biology&#39;, &#39;finance&#39;).&quot;</span><span class="p">)</span>
+    <span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;The task type: &#39;entity_extraction&#39;, &#39;triples_extraction&#39;, &#39;type_assertion&#39;, &#39;type_generation&#39;, &#39;literal_extraction&#39;, or &#39;triples_with_numeric_literals_extraction&#39;.&quot;</span><span class="p">)</span>
+    <span class="n">num_examples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Number of examples to generate.&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">examples_example_structure</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span>
+        <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;The example structure to use as a guiding template for generating few-shot examples.&quot;</span><span class="p">)</span>
+    <span class="n">few_shot_examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Generated few-shot examples formatted as a string, following the standard format with Example 1, Example 2, etc.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EntityDeduplication">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.EntityDeduplication">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EntityDeduplication</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of entities, identify and remove redundant near-duplicates that refer to the same real-world entity.</span>
+<span class="s2">    Consider variations in spelling, abbreviations, and naming conventions. For example, given [&#39;Ben Smith&#39;, &#39;B. Smith&#39;], </span>
+<span class="s2">    remove &#39;B. Smith&#39; and keep &#39;Ben Smith&#39;. Preserve most entities - only filter out those that are very closely resembled or </span>
+<span class="s2">    abbreviated versions of more complete entities. Return a filtered list with redundant entities removed.&quot;&quot;&quot;</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to deduplicate.&quot;</span><span class="p">)</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;The original text context to help understand entity relationships.&quot;</span><span class="p">)</span>
+    <span class="n">filtered_entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Filtered list of entities with redundant near-duplicates removed.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CoherenceChecker">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.CoherenceChecker">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CoherenceChecker</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a batch of triples, textual context and optional instructions, evaluate the logical coherence and factual consistency </span>
+<span class="s2">    of the triples. Rate each triple&#39;s coherence on a scale of 1-5, where 1 means incoherent, contradictory or trivial and 5 means highly </span>
+<span class="s2">    coherent and consistent. Identify any contradictions or logical inconsistencies between triples.&quot;&quot;&quot;</span>
+    <span class="n">triples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of triples to evaluate for coherence (source-relation-target).&quot;</span><span class="p">)</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;The original text context to verify triples against.&quot;</span><span class="p">)</span>
+    <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Specific instructions that must be considered.&quot;</span><span class="p">)</span>
+    <span class="n">coherence_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of tuples: (triple, coherence_score_1_to_5, explanation).&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TypeClustering">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.TypeClustering">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeClustering</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of entity types, identify duplicates and near-duplicates that refer to the same conceptual type.</span>
+<span class="s2">    Consider variations in spelling, singular/plural forms, synonyms, and different naming conventions. Return clusters of types </span>
+<span class="s2">    that should be merged together, along with the canonical type name to use for each cluster.&quot;&quot;&quot;</span>
+    <span class="n">types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entity types to cluster and identify duplicates.&quot;</span><span class="p">)</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;The original text context to help understand type relationships.&quot;</span><span class="p">)</span>
+    <span class="n">clusters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of tuples where each tuple contains (list_of_duplicate_types, canonical_type_name).&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RelationClustering">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.RelationClustering">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RelationClustering</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of relations, identify duplicates and near-duplicates that refer to the same relationship.</span>
+<span class="s2">    Consider variations in spelling, synonyms, different phrasings, and naming conventions. Return clusters of relations </span>
+<span class="s2">    that should be merged together, along with the canonical relation name to use for each cluster.&quot;&quot;&quot;</span>
+    <span class="n">relations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of relations to cluster and identify duplicates.&quot;</span><span class="p">)</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;The original text context to help understand relation meanings.&quot;</span><span class="p">)</span>
+    <span class="n">clusters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of tuples where each tuple contains (list_of_duplicate_relations, canonical_relation_name).&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="TextSummarizer">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.TextSummarizer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TextSummarizer</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a piece of text, generate a concise summary that preserves all key entities, relationships,</span>
+<span class="s2">    types, and factual information mentioned. The summary should capture the essential semantic content without </span>
+<span class="s2">    losing important details needed for knowledge graph extraction.&quot;&quot;&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A textual input to summarize.&quot;</span><span class="p">)</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A concise summary preserving entities, relationships, types, and key facts.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ChunkSummarizer">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.ChunkSummarizer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ChunkSummarizer</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given multiple text chunk summaries, combine them into a unified comprehensive summary.</span>
+<span class="s2">    The combined summary should deduplicate information, preserve all unique entities and relationships,</span>
+<span class="s2">    and maintain coherence across the merged content.&quot;&quot;&quot;</span>
+    <span class="n">chunk_summaries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of summaries from different text chunks.&quot;</span><span class="p">)</span>
+    <span class="n">combined_summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A unified summary that combines and deduplicates information from all chunks.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EntityDeduplicationWithSummary">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.EntityDeduplicationWithSummary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EntityDeduplicationWithSummary</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of entities and a summary of the source text, identify and remove redundant near-duplicates </span>
+<span class="s2">    that refer to the same real-world entity. Consider variations in spelling, abbreviations, and naming conventions. </span>
+<span class="s2">    For example, given [&#39;Ben Smith&#39;, &#39;B. Smith&#39;], remove &#39;B. Smith&#39; and keep &#39;Ben Smith&#39;. Preserve most entities - only </span>
+<span class="s2">    filter out those that are very closely resembled or abbreviated versions of more complete entities. </span>
+<span class="s2">    Return a filtered list with redundant entities removed.&quot;&quot;&quot;</span>
+    <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entities to deduplicate.&quot;</span><span class="p">)</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A summary of the original text context to help understand entity relationships.&quot;</span><span class="p">)</span>
+    <span class="n">filtered_entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Filtered list of entities with redundant near-duplicates removed.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TypeClusteringWithSummary">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.TypeClusteringWithSummary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeClusteringWithSummary</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of entity types and a summary of the source text, identify duplicates and near-duplicates </span>
+<span class="s2">    that refer to the same conceptual type. Consider variations in spelling, singular/plural forms, synonyms, </span>
+<span class="s2">    and different naming conventions. Return clusters of types that should be merged together, </span>
+<span class="s2">    along with the canonical type name to use for each cluster.&quot;&quot;&quot;</span>
+    <span class="n">types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of entity types to cluster and identify duplicates.&quot;</span><span class="p">)</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A summary of the original text context to help understand type relationships.&quot;</span><span class="p">)</span>
+    <span class="n">clusters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of tuples where each tuple contains (list_of_duplicate_types, canonical_type_name).&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RelationClusteringWithSummary">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.RelationClusteringWithSummary">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RelationClusteringWithSummary</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given a list of relations and a summary of the source text, identify duplicates and near-duplicates </span>
+<span class="s2">    that refer to the same relationship. Consider variations in spelling, synonyms, different phrasings, </span>
+<span class="s2">    and naming conventions. Return clusters of relations that should be merged together, </span>
+<span class="s2">    along with the canonical relation name to use for each cluster.&quot;&quot;&quot;</span>
+    <span class="n">relations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of relations to cluster and identify duplicates.&quot;</span><span class="p">)</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A summary of the original text context to help understand relation meanings.&quot;</span><span class="p">)</span>
+    <span class="n">clusters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of tuples where each tuple contains (list_of_duplicate_relations, canonical_relation_name).&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="IncrementalEntityMerger">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.IncrementalEntityMerger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IncrementalEntityMerger</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given two sets of entities from different text chunks along with context, merge them into a unified </span>
+<span class="s2">    list. Identify entities that refer to the same real-world entity across chunks and produce a canonical list.</span>
+<span class="s2">    Consider different mentions, abbreviations, and naming conventions that may appear across chunks.&quot;&quot;&quot;</span>
+    <span class="n">entities_a</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;First list of entities from chunk A.&quot;</span><span class="p">)</span>
+    <span class="n">entities_b</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Second list of entities from chunk B.&quot;</span><span class="p">)</span>
+    <span class="n">context_a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Summary/context from chunk A to understand entity meanings.&quot;</span><span class="p">)</span>
+    <span class="n">context_b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Summary/context from chunk B to understand entity meanings.&quot;</span><span class="p">)</span>
+    <span class="n">merged_entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Unified list of entities with duplicates merged to canonical forms.&quot;</span><span class="p">)</span>
+    <span class="n">entity_mapping</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;List of (original_entity, canonical_entity) mappings for entities that were merged.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="IncrementalTripleMerger">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.IncrementalTripleMerger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IncrementalTripleMerger</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given two sets of triples from different text chunks along with context, merge them into a unified </span>
+<span class="s2">    list. Identify triples that represent the same relationship (possibly with different wording) and produce</span>
+<span class="s2">    a canonical list. Handle variations in entity names and relation phrasings across chunks.&quot;&quot;&quot;</span>
+    <span class="n">triples_a</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;First list of triples from chunk A.&quot;</span><span class="p">)</span>
+    <span class="n">triples_b</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Second list of triples from chunk B.&quot;</span><span class="p">)</span>
+    <span class="n">context_a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Summary/context from chunk A.&quot;</span><span class="p">)</span>
+    <span class="n">context_b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Summary/context from chunk B.&quot;</span><span class="p">)</span>
+    <span class="n">merged_triples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Unified list of triples with semantic duplicates merged.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="IncrementalTypeMerger">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.IncrementalTypeMerger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IncrementalTypeMerger</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Given two sets of entity-type pairs from different text chunks, merge them into a unified list.</span>
+<span class="s2">    Resolve any conflicting type assignments for the same entity, preferring more specific types.</span>
+<span class="s2">    Handle variations in type naming across chunks.&quot;&quot;&quot;</span>
+    <span class="n">types_a</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;First list of (entity, type) pairs from chunk A.&quot;</span><span class="p">)</span>
+    <span class="n">types_b</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Second list of (entity, type) pairs from chunk B.&quot;</span><span class="p">)</span>
+    <span class="n">context_a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Summary/context from chunk A.&quot;</span><span class="p">)</span>
+    <span class="n">context_b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Summary/context from chunk B.&quot;</span><span class="p">)</span>
+    <span class="n">merged_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Unified list of entity-type pairs with conflicts resolved.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlanDecomposer">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/signatures/index.html#owlapy.agen_kg.signatures.PlanDecomposer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlanDecomposer</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Signature</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;We want to extract knowledge from text in triples format. The pipeline follows these steps:</span>
+<span class="s2">    entity extraction, triple extraction, type assertion, literal extraction, triple extraction with numeric literals.</span>
+<span class="s2">    Given the user&#39;s query about the knowledge graph to be extracted, decompose it into sub-tasks that can be used</span>
+<span class="s2">    as instructions for each step of the pipeline.&quot;&quot;&quot;</span>
+    <span class="n">user_request</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">InputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;The user request to be decomposed into sub-tasks.&quot;</span><span class="p">)</span>
+    <span class="n">entity_extraction_task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Sub-task description for entity extraction.The entities should include everything needed to fulfill the user&#39;s request.&quot;</span><span class="p">)</span>
+    <span class="n">triple_extraction_task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Sub-task description for triple extraction.&quot;</span><span class="p">)</span>
+    <span class="n">type_generation_task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Sub-task description for generating types for entities.&quot;</span><span class="p">)</span>
+    <span class="n">type_assertion_task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Sub-task description for asserting types to entities.&quot;</span><span class="p">)</span>
+    <span class="n">literal_extraction_task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Sub-task description for literal extraction.&quot;</span><span class="p">)</span>
+    <span class="n">triple_with_literal_extraction_task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Sub-task description for triple extraction with numeric literals.&quot;</span><span class="p">)</span>
+    <span class="n">fact_checking_task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">OutputField</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Sub-task description for fact checking and coherence verification of extracted triples.&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1015 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg.signatures &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="owlapy.agen_kg.text_loader" href="../text_loader/index.html" />
+    <link rel="prev" title="owlapy.agen_kg.helper" href="../helper/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html">owlapy.agen_kg</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="../agent/index.html">owlapy.agen_kg.agent</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../chunking_models/index.html">owlapy.agen_kg.chunking_models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../domain_examples_cache/index.html">owlapy.agen_kg.domain_examples_cache</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../few_shot_examples/index.html">owlapy.agen_kg.few_shot_examples</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../graph_extracting_models/index.html">owlapy.agen_kg.graph_extracting_models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../graph_extractor/index.html">owlapy.agen_kg.graph_extractor</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../helper/index.html">owlapy.agen_kg.helper</a></li>
+<li class="toctree-l5 current"><a class="current reference internal" href="#">owlapy.agen_kg.signatures</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l6"><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../text_loader/index.html">owlapy.agen_kg.text_loader</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">owlapy</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy.agen_kg</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg.signatures</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/owlapy/agen_kg/signatures/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.agen_kg.signatures">
+<span id="owlapy-agen-kg-signatures"></span><h1>owlapy.agen_kg.signatures<a class="headerlink" href="#module-owlapy.agen_kg.signatures" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.Entity" title="owlapy.agen_kg.signatures.Entity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Entity</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.Triple" title="owlapy.agen_kg.signatures.Triple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Triple</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.TypeAssertion" title="owlapy.agen_kg.signatures.TypeAssertion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypeAssertion</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.TypeGeneration" title="owlapy.agen_kg.signatures.TypeGeneration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypeGeneration</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.Literal" title="owlapy.agen_kg.signatures.Literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.SPLTriples" title="owlapy.agen_kg.signatures.SPLTriples"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SPLTriples</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.Domain" title="owlapy.agen_kg.signatures.Domain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Domain</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator" title="owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DomainSpecificFewShotGenerator</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.EntityDeduplication" title="owlapy.agen_kg.signatures.EntityDeduplication"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EntityDeduplication</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.CoherenceChecker" title="owlapy.agen_kg.signatures.CoherenceChecker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CoherenceChecker</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.TypeClustering" title="owlapy.agen_kg.signatures.TypeClustering"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypeClustering</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.RelationClustering" title="owlapy.agen_kg.signatures.RelationClustering"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RelationClustering</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.TextSummarizer" title="owlapy.agen_kg.signatures.TextSummarizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextSummarizer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.ChunkSummarizer" title="owlapy.agen_kg.signatures.ChunkSummarizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChunkSummarizer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.EntityDeduplicationWithSummary" title="owlapy.agen_kg.signatures.EntityDeduplicationWithSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EntityDeduplicationWithSummary</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.TypeClusteringWithSummary" title="owlapy.agen_kg.signatures.TypeClusteringWithSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypeClusteringWithSummary</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.RelationClusteringWithSummary" title="owlapy.agen_kg.signatures.RelationClusteringWithSummary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RelationClusteringWithSummary</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger" title="owlapy.agen_kg.signatures.IncrementalEntityMerger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IncrementalEntityMerger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.IncrementalTripleMerger" title="owlapy.agen_kg.signatures.IncrementalTripleMerger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IncrementalTripleMerger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.IncrementalTypeMerger" title="owlapy.agen_kg.signatures.IncrementalTypeMerger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IncrementalTypeMerger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.signatures.PlanDecomposer" title="owlapy.agen_kg.signatures.PlanDecomposer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlanDecomposer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Entity">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">Entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#Entity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.Entity" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Entity.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Entity.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a piece of text as input identify key entities extracted form the text. The result</span>
+<span class="sd">    should be a list of capitalized entities. E.g., [&quot;ENTITY1&quot;, &quot;ENTITY2&quot;, ...]&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Entity.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Entity.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Entity.few_shot_examples">
+<span class="sig-name descname"><span class="pre">few_shot_examples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Entity.few_shot_examples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Entity.task_instructions">
+<span class="sig-name descname"><span class="pre">task_instructions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Entity.task_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Entity.entities">
+<span class="sig-name descname"><span class="pre">entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Entity.entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Triple">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">Triple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#Triple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.Triple" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Triple.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Triple.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a piece of text and entities, identify triples of type source_entity-relation-target_entity</span>
+<span class="sd">    where source_entity and target_entity are strictly part of the given entities.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Triple.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Triple.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Triple.entities">
+<span class="sig-name descname"><span class="pre">entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Triple.entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Triple.task_instructions">
+<span class="sig-name descname"><span class="pre">task_instructions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Triple.task_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Triple.few_shot_examples">
+<span class="sig-name descname"><span class="pre">few_shot_examples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Triple.few_shot_examples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Triple.triples">
+<span class="sig-name descname"><span class="pre">triples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Triple.triples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeAssertion">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">TypeAssertion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#TypeAssertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeAssertion" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeAssertion.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Given</span> <span class="pre">a</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">entities,</span> <span class="pre">a</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">types</span> <span class="pre">and</span> <span class="pre">textual</span> <span class="pre">contex,</span> <span class="pre">assign</span> <span class="pre">types</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">entities.'</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeAssertion.__doc__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeAssertion.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeAssertion.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeAssertion.entities">
+<span class="sig-name descname"><span class="pre">entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeAssertion.entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeAssertion.entity_types">
+<span class="sig-name descname"><span class="pre">entity_types</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeAssertion.entity_types" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeAssertion.few_shot_examples">
+<span class="sig-name descname"><span class="pre">few_shot_examples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeAssertion.few_shot_examples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeAssertion.task_instructions">
+<span class="sig-name descname"><span class="pre">task_instructions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeAssertion.task_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeAssertion.pairs">
+<span class="sig-name descname"><span class="pre">pairs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeAssertion.pairs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeGeneration">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">TypeGeneration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#TypeGeneration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeGeneration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeGeneration.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Given</span> <span class="pre">a</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">entities</span> <span class="pre">and</span> <span class="pre">textual</span> <span class="pre">contex,</span> <span class="pre">assign</span> <span class="pre">meaningful</span> <span class="pre">general</span> <span class="pre">types</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">entities.'</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeGeneration.__doc__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeGeneration.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeGeneration.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeGeneration.entities">
+<span class="sig-name descname"><span class="pre">entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeGeneration.entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeGeneration.few_shot_examples">
+<span class="sig-name descname"><span class="pre">few_shot_examples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeGeneration.few_shot_examples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeGeneration.task_instructions">
+<span class="sig-name descname"><span class="pre">task_instructions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeGeneration.task_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeGeneration.pairs">
+<span class="sig-name descname"><span class="pre">pairs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeGeneration.pairs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Literal">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">Literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#Literal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.Literal" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Literal.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Literal.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a piece of text as input identify key numerical values extracted form the text. The result</span>
+<span class="sd">    should be a list of numerical literals. E.g., [&quot;123&quot;, &quot;45.67&quot;, &quot;50%&quot;, ...]&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Literal.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Literal.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Literal.task_instructions">
+<span class="sig-name descname"><span class="pre">task_instructions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Literal.task_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Literal.few_shot_examples">
+<span class="sig-name descname"><span class="pre">few_shot_examples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Literal.few_shot_examples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Literal.l_values">
+<span class="sig-name descname"><span class="pre">l_values</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Literal.l_values" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.SPLTriples">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">SPLTriples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#SPLTriples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.SPLTriples" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.SPLTriples.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.SPLTriples.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a piece of text, entities and numeric literals, identify triples of type</span>
+<span class="sd">    source_entity-relation-target_value where source_entity is strictly part of the given entities and the target_value</span>
+<span class="sd">    is strictly part of the given numeric literals.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.SPLTriples.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.SPLTriples.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.SPLTriples.entities">
+<span class="sig-name descname"><span class="pre">entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.SPLTriples.entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.SPLTriples.numeric_literals">
+<span class="sig-name descname"><span class="pre">numeric_literals</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.SPLTriples.numeric_literals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.SPLTriples.task_instructions">
+<span class="sig-name descname"><span class="pre">task_instructions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.SPLTriples.task_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.SPLTriples.few_shot_examples">
+<span class="sig-name descname"><span class="pre">few_shot_examples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.SPLTriples.few_shot_examples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.SPLTriples.triples">
+<span class="sig-name descname"><span class="pre">triples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.SPLTriples.triples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Domain">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">Domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#Domain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.Domain" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Domain.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Domain.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a piece of text, identify the primary domain or topic of the text.</span>
+<span class="sd">    Example domains: &#39;biology&#39;, &#39;chemistry&#39;, &#39;finance&#39;, &#39;sports&#39;, &#39;politics&#39;, &#39;medicine&#39;, &#39;computer science&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Domain.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Domain.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.Domain.domain">
+<span class="sig-name descname"><span class="pre">domain</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.Domain.domain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">DomainSpecificFewShotGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#DomainSpecificFewShotGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a domain (e.g., &#39;biology&#39;, &#39;finance&#39;, &#39;sports&#39;), generate few-shot examples tailored to that domain</span>
+<span class="sd">    for a specific task (entity extraction, triple extraction, type assertion, etc.). The examples should follow the same</span>
+<span class="sd">    format as the general few-shot examples but with domain-specific content.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.domain">
+<span class="sig-name descname"><span class="pre">domain</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.domain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.task_type">
+<span class="sig-name descname"><span class="pre">task_type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.task_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.num_examples">
+<span class="sig-name descname"><span class="pre">num_examples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.num_examples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.examples_example_structure">
+<span class="sig-name descname"><span class="pre">examples_example_structure</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.examples_example_structure" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.few_shot_examples">
+<span class="sig-name descname"><span class="pre">few_shot_examples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator.few_shot_examples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplication">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">EntityDeduplication</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#EntityDeduplication"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplication" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplication.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplication.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a list of entities, identify and remove redundant near-duplicates that refer to the same real-world entity.</span>
+<span class="sd">    Consider variations in spelling, abbreviations, and naming conventions. For example, given [&#39;Ben Smith&#39;, &#39;B. Smith&#39;],</span>
+<span class="sd">    remove &#39;B. Smith&#39; and keep &#39;Ben Smith&#39;. Preserve most entities - only filter out those that are very closely resembled or</span>
+<span class="sd">    abbreviated versions of more complete entities. Return a filtered list with redundant entities removed.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplication.entities">
+<span class="sig-name descname"><span class="pre">entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplication.entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplication.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplication.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplication.filtered_entities">
+<span class="sig-name descname"><span class="pre">filtered_entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplication.filtered_entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.CoherenceChecker">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">CoherenceChecker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#CoherenceChecker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.CoherenceChecker" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.CoherenceChecker.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.CoherenceChecker.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a batch of triples, textual context and optional instructions, evaluate the logical coherence and factual consistency</span>
+<span class="sd">    of the triples. Rate each triple&#39;s coherence on a scale of 1-5, where 1 means incoherent, contradictory or trivial and 5 means highly</span>
+<span class="sd">    coherent and consistent. Identify any contradictions or logical inconsistencies between triples.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.CoherenceChecker.triples">
+<span class="sig-name descname"><span class="pre">triples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.CoherenceChecker.triples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.CoherenceChecker.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.CoherenceChecker.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.CoherenceChecker.task_instructions">
+<span class="sig-name descname"><span class="pre">task_instructions</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.CoherenceChecker.task_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.CoherenceChecker.coherence_scores">
+<span class="sig-name descname"><span class="pre">coherence_scores</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.CoherenceChecker.coherence_scores" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClustering">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">TypeClustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#TypeClustering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClustering" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClustering.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClustering.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a list of entity types, identify duplicates and near-duplicates that refer to the same conceptual type.</span>
+<span class="sd">    Consider variations in spelling, singular/plural forms, synonyms, and different naming conventions. Return clusters of types</span>
+<span class="sd">    that should be merged together, along with the canonical type name to use for each cluster.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClustering.types">
+<span class="sig-name descname"><span class="pre">types</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClustering.types" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClustering.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClustering.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClustering.clusters">
+<span class="sig-name descname"><span class="pre">clusters</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClustering.clusters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClustering">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">RelationClustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#RelationClustering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClustering" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClustering.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClustering.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a list of relations, identify duplicates and near-duplicates that refer to the same relationship.</span>
+<span class="sd">    Consider variations in spelling, synonyms, different phrasings, and naming conventions. Return clusters of relations</span>
+<span class="sd">    that should be merged together, along with the canonical relation name to use for each cluster.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClustering.relations">
+<span class="sig-name descname"><span class="pre">relations</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClustering.relations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClustering.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClustering.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClustering.clusters">
+<span class="sig-name descname"><span class="pre">clusters</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClustering.clusters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TextSummarizer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">TextSummarizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#TextSummarizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.TextSummarizer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TextSummarizer.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TextSummarizer.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a piece of text, generate a concise summary that preserves all key entities, relationships,</span>
+<span class="sd">    types, and factual information mentioned. The summary should capture the essential semantic content without</span>
+<span class="sd">    losing important details needed for knowledge graph extraction.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TextSummarizer.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TextSummarizer.text" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TextSummarizer.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TextSummarizer.summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.ChunkSummarizer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">ChunkSummarizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#ChunkSummarizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.ChunkSummarizer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.ChunkSummarizer.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.ChunkSummarizer.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given multiple text chunk summaries, combine them into a unified comprehensive summary.</span>
+<span class="sd">    The combined summary should deduplicate information, preserve all unique entities and relationships,</span>
+<span class="sd">    and maintain coherence across the merged content.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.ChunkSummarizer.chunk_summaries">
+<span class="sig-name descname"><span class="pre">chunk_summaries</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.ChunkSummarizer.chunk_summaries" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.ChunkSummarizer.combined_summary">
+<span class="sig-name descname"><span class="pre">combined_summary</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.ChunkSummarizer.combined_summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplicationWithSummary">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">EntityDeduplicationWithSummary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#EntityDeduplicationWithSummary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplicationWithSummary" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplicationWithSummary.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplicationWithSummary.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a list of entities and a summary of the source text, identify and remove redundant near-duplicates</span>
+<span class="sd">    that refer to the same real-world entity. Consider variations in spelling, abbreviations, and naming conventions.</span>
+<span class="sd">    For example, given [&#39;Ben Smith&#39;, &#39;B. Smith&#39;], remove &#39;B. Smith&#39; and keep &#39;Ben Smith&#39;. Preserve most entities - only</span>
+<span class="sd">    filter out those that are very closely resembled or abbreviated versions of more complete entities.</span>
+<span class="sd">    Return a filtered list with redundant entities removed.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplicationWithSummary.entities">
+<span class="sig-name descname"><span class="pre">entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplicationWithSummary.entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplicationWithSummary.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplicationWithSummary.summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.EntityDeduplicationWithSummary.filtered_entities">
+<span class="sig-name descname"><span class="pre">filtered_entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.EntityDeduplicationWithSummary.filtered_entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClusteringWithSummary">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">TypeClusteringWithSummary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#TypeClusteringWithSummary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClusteringWithSummary" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClusteringWithSummary.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClusteringWithSummary.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a list of entity types and a summary of the source text, identify duplicates and near-duplicates</span>
+<span class="sd">    that refer to the same conceptual type. Consider variations in spelling, singular/plural forms, synonyms,</span>
+<span class="sd">    and different naming conventions. Return clusters of types that should be merged together,</span>
+<span class="sd">    along with the canonical type name to use for each cluster.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClusteringWithSummary.types">
+<span class="sig-name descname"><span class="pre">types</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClusteringWithSummary.types" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClusteringWithSummary.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClusteringWithSummary.summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.TypeClusteringWithSummary.clusters">
+<span class="sig-name descname"><span class="pre">clusters</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.TypeClusteringWithSummary.clusters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClusteringWithSummary">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">RelationClusteringWithSummary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#RelationClusteringWithSummary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClusteringWithSummary" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClusteringWithSummary.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClusteringWithSummary.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given a list of relations and a summary of the source text, identify duplicates and near-duplicates</span>
+<span class="sd">    that refer to the same relationship. Consider variations in spelling, synonyms, different phrasings,</span>
+<span class="sd">    and naming conventions. Return clusters of relations that should be merged together,</span>
+<span class="sd">    along with the canonical relation name to use for each cluster.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClusteringWithSummary.relations">
+<span class="sig-name descname"><span class="pre">relations</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClusteringWithSummary.relations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClusteringWithSummary.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClusteringWithSummary.summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.RelationClusteringWithSummary.clusters">
+<span class="sig-name descname"><span class="pre">clusters</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.RelationClusteringWithSummary.clusters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalEntityMerger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">IncrementalEntityMerger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#IncrementalEntityMerger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalEntityMerger.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given two sets of entities from different text chunks along with context, merge them into a unified</span>
+<span class="sd">    list. Identify entities that refer to the same real-world entity across chunks and produce a canonical list.</span>
+<span class="sd">    Consider different mentions, abbreviations, and naming conventions that may appear across chunks.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalEntityMerger.entities_a">
+<span class="sig-name descname"><span class="pre">entities_a</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger.entities_a" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalEntityMerger.entities_b">
+<span class="sig-name descname"><span class="pre">entities_b</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger.entities_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalEntityMerger.context_a">
+<span class="sig-name descname"><span class="pre">context_a</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger.context_a" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalEntityMerger.context_b">
+<span class="sig-name descname"><span class="pre">context_b</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger.context_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalEntityMerger.merged_entities">
+<span class="sig-name descname"><span class="pre">merged_entities</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger.merged_entities" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalEntityMerger.entity_mapping">
+<span class="sig-name descname"><span class="pre">entity_mapping</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalEntityMerger.entity_mapping" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTripleMerger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">IncrementalTripleMerger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#IncrementalTripleMerger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTripleMerger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTripleMerger.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTripleMerger.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given two sets of triples from different text chunks along with context, merge them into a unified</span>
+<span class="sd">    list. Identify triples that represent the same relationship (possibly with different wording) and produce</span>
+<span class="sd">    a canonical list. Handle variations in entity names and relation phrasings across chunks.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTripleMerger.triples_a">
+<span class="sig-name descname"><span class="pre">triples_a</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTripleMerger.triples_a" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTripleMerger.triples_b">
+<span class="sig-name descname"><span class="pre">triples_b</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTripleMerger.triples_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTripleMerger.context_a">
+<span class="sig-name descname"><span class="pre">context_a</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTripleMerger.context_a" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTripleMerger.context_b">
+<span class="sig-name descname"><span class="pre">context_b</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTripleMerger.context_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTripleMerger.merged_triples">
+<span class="sig-name descname"><span class="pre">merged_triples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTripleMerger.merged_triples" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTypeMerger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">IncrementalTypeMerger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#IncrementalTypeMerger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTypeMerger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTypeMerger.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTypeMerger.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Given two sets of entity-type pairs from different text chunks, merge them into a unified list.</span>
+<span class="sd">    Resolve any conflicting type assignments for the same entity, preferring more specific types.</span>
+<span class="sd">    Handle variations in type naming across chunks.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTypeMerger.types_a">
+<span class="sig-name descname"><span class="pre">types_a</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTypeMerger.types_a" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTypeMerger.types_b">
+<span class="sig-name descname"><span class="pre">types_b</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTypeMerger.types_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTypeMerger.context_a">
+<span class="sig-name descname"><span class="pre">context_a</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTypeMerger.context_a" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTypeMerger.context_b">
+<span class="sig-name descname"><span class="pre">context_b</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTypeMerger.context_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.IncrementalTypeMerger.merged_types">
+<span class="sig-name descname"><span class="pre">merged_types</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.IncrementalTypeMerger.merged_types" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.signatures.</span></span><span class="sig-name descname"><span class="pre">PlanDecomposer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/signatures.html#PlanDecomposer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Signature</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.__doc__">
+<span class="sig-name descname"><span class="pre">__doc__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.__doc__" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;We want to extract knowledge from text in triples format. The pipeline follows these steps:</span>
+<span class="sd">    entity extraction, triple extraction, type assertion, literal extraction, triple extraction with numeric literals.</span>
+<span class="sd">    Given the user&#39;s query about the knowledge graph to be extracted, decompose it into sub-tasks that can be used</span>
+<span class="sd">    as instructions for each step of the pipeline.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.user_request">
+<span class="sig-name descname"><span class="pre">user_request</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.user_request" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.entity_extraction_task">
+<span class="sig-name descname"><span class="pre">entity_extraction_task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.entity_extraction_task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.triple_extraction_task">
+<span class="sig-name descname"><span class="pre">triple_extraction_task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.triple_extraction_task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.type_generation_task">
+<span class="sig-name descname"><span class="pre">type_generation_task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.type_generation_task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.type_assertion_task">
+<span class="sig-name descname"><span class="pre">type_assertion_task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.type_assertion_task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.literal_extraction_task">
+<span class="sig-name descname"><span class="pre">literal_extraction_task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.literal_extraction_task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.triple_with_literal_extraction_task">
+<span class="sig-name descname"><span class="pre">triple_with_literal_extraction_task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.triple_with_literal_extraction_task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.signatures.PlanDecomposer.fact_checking_task">
+<span class="sig-name descname"><span class="pre">fact_checking_task</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.signatures.PlanDecomposer.fact_checking_task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../helper/index.html" class="btn btn-neutral float-left" title="owlapy.agen_kg.helper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../text_loader/index.html" class="btn btn-neutral float-right" title="owlapy.agen_kg.text_loader" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

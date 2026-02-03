@@ -1,0 +1,185 @@
+owlapy.agen_kg.text_loader
+==========================
+
+.. py:module:: owlapy.agen_kg.text_loader
+
+.. autoapi-nested-parse::
+
+   Text loading module for extracting text from various file formats.
+   Supports: TXT, PDF, DOCX, RTF, HTML, and raw text strings.
+
+   Also provides text chunking utilities for handling large documents
+   that may not fit in an LLM's context window.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.agen_kg.text_loader.TextLoader
+   owlapy.agen_kg.text_loader.TXTLoader
+   owlapy.agen_kg.text_loader.PDFLoader
+   owlapy.agen_kg.text_loader.DOCXLoader
+   owlapy.agen_kg.text_loader.RTFLoader
+   owlapy.agen_kg.text_loader.HTMLLoader
+   owlapy.agen_kg.text_loader.RawTextLoader
+   owlapy.agen_kg.text_loader.UniversalTextLoader
+
+
+Module Contents
+---------------
+
+.. py:class:: TextLoader
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base class for text loaders.
+
+
+   .. py:method:: load(source: Union[str, pathlib.Path]) -> str
+      :abstractmethod:
+
+
+      Load text from the given source.
+
+      :param source: File path or raw text string.
+
+      :returns: Extracted text content.
+
+      :raises ValueError: If the source is invalid or cannot be processed.
+
+
+
+.. py:class:: TXTLoader
+
+   Bases: :py:obj:`TextLoader`
+
+
+   Loader for plain text files.
+
+
+   .. py:method:: load(source: Union[str, pathlib.Path]) -> str
+
+      Load text from a .txt file.
+
+
+
+.. py:class:: PDFLoader
+
+   Bases: :py:obj:`TextLoader`
+
+
+   Loader for PDF files.
+
+
+   .. py:method:: load(source: Union[str, pathlib.Path]) -> str
+
+      Load text from a PDF file.
+
+
+
+.. py:class:: DOCXLoader
+
+   Bases: :py:obj:`TextLoader`
+
+
+   Loader for DOCX files.
+
+
+   .. py:method:: load(source: Union[str, pathlib.Path]) -> str
+
+      Load text from a DOCX file.
+
+
+
+.. py:class:: RTFLoader
+
+   Bases: :py:obj:`TextLoader`
+
+
+   Loader for RTF files.
+
+
+   .. py:method:: load(source: Union[str, pathlib.Path]) -> str
+
+      Load text from an RTF file.
+
+
+
+.. py:class:: HTMLLoader
+
+   Bases: :py:obj:`TextLoader`
+
+
+   Loader for HTML files.
+
+
+   .. py:method:: load(source: Union[str, pathlib.Path]) -> str
+
+      Load text from an HTML file.
+
+
+
+.. py:class:: RawTextLoader
+
+   Bases: :py:obj:`TextLoader`
+
+
+   Loader for raw text strings.
+
+
+   .. py:method:: load(source: Union[str, pathlib.Path]) -> str
+
+      Return the source as-is if it's not a file.
+
+
+
+.. py:class:: UniversalTextLoader(enable_logging: bool = False)
+
+   Universal text loader that automatically detects file type and loads content.
+   Handles multiple formats: TXT, PDF, DOCX, RTF, HTML, and raw text strings.
+
+
+   .. py:attribute:: logging
+      :value: False
+
+
+
+   .. py:attribute:: loaders
+
+
+   .. py:method:: load(source: Union[str, pathlib.Path], file_type: Optional[str] = None) -> str
+
+      Load text from various sources.
+
+      :param source: File path (str or Path), or raw text string.
+      :param file_type: Optional file extension (e.g., '.pdf', '.txt').
+                        If not provided, will be auto-detected from the source.
+
+      :returns: Extracted text content.
+
+      :raises ValueError: If the file type is not supported or content cannot be extracted.
+      :raises FileNotFoundError: If the specified file does not exist.
+
+
+
+   .. py:method:: supports_file_type(file_type: str) -> bool
+
+      Check if a file type is supported.
+
+      :param file_type: File extension (e.g., '.pdf', 'pdf').
+
+      :returns: True if the file type is supported, False otherwise.
+
+
+
+   .. py:property:: supported_formats
+      :type: list
+
+
+      Get list of supported file formats.
+
+

@@ -1,0 +1,204 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg.helper &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg.helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.agen_kg.helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.few_shot_examples</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">EXAMPLES_FOR_ENTITY_EXTRACTION</span><span class="p">,</span> <span class="n">EXAMPLES_FOR_TRIPLES_EXTRACTION</span><span class="p">,</span>
+                                              <span class="n">EXAMPLES_FOR_TYPE_ASSERTION</span><span class="p">,</span> <span class="n">EXAMPLES_FOR_TYPE_GENERATION</span><span class="p">,</span>
+                                              <span class="n">EXAMPLES_FOR_LITERAL_EXTRACTION</span><span class="p">,</span> <span class="n">EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION</span><span class="p">)</span>
+
+<span class="c1"># DBpedia often uses British English, so we define a mapping for common American to British English terms.</span>
+<span class="n">american_to_british</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;organization&quot;</span><span class="p">:</span> <span class="s2">&quot;organisation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;colour&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;honor&quot;</span><span class="p">:</span> <span class="s2">&quot;honour&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;analyze&quot;</span><span class="p">:</span> <span class="s2">&quot;analyse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="s2">&quot;centre&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;meter&quot;</span><span class="p">:</span> <span class="s2">&quot;metre&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;theater&quot;</span><span class="p">:</span> <span class="s2">&quot;theatre&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;catalog&quot;</span><span class="p">:</span> <span class="s2">&quot;catalogue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;defense&quot;</span><span class="p">:</span> <span class="s2">&quot;defence&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offense&quot;</span><span class="p">:</span> <span class="s2">&quot;offence&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;license&quot;</span><span class="p">:</span> <span class="s2">&quot;licence&quot;</span><span class="p">,</span>  <span class="c1"># noun in UK</span>
+    <span class="s2">&quot;practice&quot;</span><span class="p">:</span> <span class="s2">&quot;practise&quot;</span><span class="p">,</span>  <span class="c1"># verb in UK</span>
+    <span class="s2">&quot;traveled&quot;</span><span class="p">:</span> <span class="s2">&quot;travelled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;canceled&quot;</span><span class="p">:</span> <span class="s2">&quot;cancelled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;labeled&quot;</span><span class="p">:</span> <span class="s2">&quot;labelled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;modeling&quot;</span><span class="p">:</span> <span class="s2">&quot;modelling&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;programme&quot;</span><span class="p">,</span>  <span class="c1"># when referring to TV/show</span>
+    <span class="s2">&quot;check&quot;</span><span class="p">:</span> <span class="s2">&quot;cheque&quot;</span><span class="p">,</span>  <span class="c1"># bank sense</span>
+    <span class="s2">&quot;gray&quot;</span><span class="p">:</span> <span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plow&quot;</span><span class="p">:</span> <span class="s2">&quot;plough&quot;</span>
+<span class="p">}</span>
+
+<span class="n">task_example_mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;entity_extraction&#39;</span><span class="p">:</span> <span class="n">EXAMPLES_FOR_ENTITY_EXTRACTION</span><span class="p">,</span>
+    <span class="s1">&#39;triples_extraction&#39;</span><span class="p">:</span> <span class="n">EXAMPLES_FOR_TRIPLES_EXTRACTION</span><span class="p">,</span>
+    <span class="s1">&#39;type_assertion&#39;</span><span class="p">:</span> <span class="n">EXAMPLES_FOR_TYPE_ASSERTION</span><span class="p">,</span>
+    <span class="s1">&#39;type_generation&#39;</span><span class="p">:</span> <span class="n">EXAMPLES_FOR_TYPE_GENERATION</span><span class="p">,</span>
+    <span class="s1">&#39;literal_extraction&#39;</span><span class="p">:</span> <span class="n">EXAMPLES_FOR_LITERAL_EXTRACTION</span><span class="p">,</span>
+    <span class="s1">&#39;triples_with_numeric_literals_extraction&#39;</span><span class="p">:</span> <span class="n">EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="configure_dspy">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/helper/index.html#owlapy.agen_kg.helper.configure_dspy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">configure_dspy</span><span class="p">(</span><span class="n">signature</span><span class="p">):</span>
+    <span class="n">lm</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">LM</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;openai/gpt-4o&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;ENTER_API_KEY&gt;&quot;</span><span class="p">,</span>
+                 <span class="n">api_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">dspy</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">lm</span><span class="o">=</span><span class="n">lm</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">signature</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="run_query">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/helper/index.html#owlapy.agen_kg.helper.run_query">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs a SPARQL query against the DBpedia SPARQL endpoint.&quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;application/sparql-results+json&quot;</span>
+    <span class="p">}</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://dbpedia.org/sparql&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">binding</span><span class="p">[</span><span class="s1">&#39;superclass&#39;</span> <span class="k">if</span> <span class="s1">&#39;superclass&#39;</span> <span class="ow">in</span> <span class="n">binding</span> <span class="k">else</span> <span class="s1">&#39;subclass&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;bindings&#39;</span><span class="p">]]</span></div>
+
+
+<div class="viewcode-block" id="extract_hierarchy_from_dbpedia">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/helper/index.html#owlapy.agen_kg.helper.extract_hierarchy_from_dbpedia">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_hierarchy_from_dbpedia</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extracts the hierarchy of an entity from DBpedia using the SPARQL endpoint.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cls (str): The DBpedia class remainder.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing two lists:</span>
+<span class="sd">            - superclasses: List of superclasses of the entity.</span>
+<span class="sd">            - subclasses: List of subclasses of the entity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">american_to_british</span><span class="p">:</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">american_to_british</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+    <span class="n">dbpedia_class_uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://dbpedia.org/ontology/</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">superclass_query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT ?superclass WHERE </span><span class="se">{{</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">dbpedia_class_uri</span><span class="si">}</span><span class="s2">&gt; rdfs:subClassOf ?superclass .</span><span class="se">}}</span><span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">subclass_query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT ?subclass WHERE </span><span class="se">{{</span><span class="s2">?subclass rdfs:subClassOf &lt;</span><span class="si">{</span><span class="n">dbpedia_class_uri</span><span class="si">}</span><span class="s2">&gt; .</span><span class="se">}}</span><span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">superclasses</span> <span class="o">=</span> <span class="n">run_query</span><span class="p">(</span><span class="n">superclass_query</span><span class="p">)</span>
+    <span class="n">subclasses</span> <span class="o">=</span> <span class="n">run_query</span><span class="p">(</span><span class="n">subclass_query</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">superclasses</span><span class="p">,</span> <span class="n">subclasses</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

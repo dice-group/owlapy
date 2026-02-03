@@ -1,0 +1,740 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg.graph_extractor &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="owlapy.agen_kg.helper" href="../helper/index.html" />
+    <link rel="prev" title="owlapy.agen_kg.graph_extracting_models.open_graph_extractor" href="../graph_extracting_models/open_graph_extractor/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html">owlapy.agen_kg</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="../agent/index.html">owlapy.agen_kg.agent</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../chunking_models/index.html">owlapy.agen_kg.chunking_models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../domain_examples_cache/index.html">owlapy.agen_kg.domain_examples_cache</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../few_shot_examples/index.html">owlapy.agen_kg.few_shot_examples</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../graph_extracting_models/index.html">owlapy.agen_kg.graph_extracting_models</a></li>
+<li class="toctree-l5 current"><a class="current reference internal" href="#">owlapy.agen_kg.graph_extractor</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l6"><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../helper/index.html">owlapy.agen_kg.helper</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../signatures/index.html">owlapy.agen_kg.signatures</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../text_loader/index.html">owlapy.agen_kg.text_loader</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">owlapy</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy.agen_kg</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg.graph_extractor</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/owlapy/agen_kg/graph_extractor/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.agen_kg.graph_extractor">
+<span id="owlapy-agen-kg-graph-extractor"></span><h1>owlapy.agen_kg.graph_extractor<a class="headerlink" href="#module-owlapy.agen_kg.graph_extractor" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.graph_extractor.GraphExtractorMeta" title="owlapy.agen_kg.graph_extractor.GraphExtractorMeta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphExtractorMeta</span></code></a></p></td>
+<td><p>Metaclass that resolves conflicts between dspy.Module and ABC.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.graph_extractor.GraphExtractor" title="owlapy.agen_kg.graph_extractor.GraphExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphExtractor</span></code></a></p></td>
+<td><p>Base class for all graph extractors.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractorMeta">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.graph_extractor.</span></span><span class="sig-name descname"><span class="pre">GraphExtractorMeta</span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractorMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractorMeta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(<code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Module</span></code>), <code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(<code class="xref py py-obj docutils literal notranslate"><span class="pre">ABC</span></code>)</p>
+<p>Metaclass that resolves conflicts between dspy.Module and ABC.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.graph_extractor.</span></span><span class="sig-name descname"><span class="pre">GraphExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_incremental_merging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dspy.Module</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Base class for all graph extractors.
+Provides common functionality for entity clustering, coherence checking,
+text chunking for large documents, and utility methods shared across all extractor types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.fact_checking_instructions">
+<span class="sig-name descname"><span class="pre">fact_checking_instructions</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.fact_checking_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.triple_with_literal_extraction_instructions">
+<span class="sig-name descname"><span class="pre">triple_with_literal_extraction_instructions</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.triple_with_literal_extraction_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.literal_extraction_instructions">
+<span class="sig-name descname"><span class="pre">literal_extraction_instructions</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.literal_extraction_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.type_assertion_instructions">
+<span class="sig-name descname"><span class="pre">type_assertion_instructions</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.type_assertion_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.type_generation_instructions">
+<span class="sig-name descname"><span class="pre">type_generation_instructions</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.type_generation_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.triple_extraction_instructions">
+<span class="sig-name descname"><span class="pre">triple_extraction_instructions</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.triple_extraction_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.entity_extraction_instructions">
+<span class="sig-name descname"><span class="pre">entity_extraction_instructions</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.entity_extraction_instructions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.logging">
+<span class="sig-name descname"><span class="pre">logging</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.logging" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.use_incremental_merging">
+<span class="sig-name descname"><span class="pre">use_incremental_merging</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.use_incremental_merging" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.plan_decomposer">
+<span class="sig-name descname"><span class="pre">plan_decomposer</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.plan_decomposer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.entity_deduplicator">
+<span class="sig-name descname"><span class="pre">entity_deduplicator</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.entity_deduplicator" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.coherence_checker">
+<span class="sig-name descname"><span class="pre">coherence_checker</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.coherence_checker" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.type_clusterer">
+<span class="sig-name descname"><span class="pre">type_clusterer</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.type_clusterer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.relation_clusterer">
+<span class="sig-name descname"><span class="pre">relation_clusterer</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.relation_clusterer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.entity_deduplicator_with_summary">
+<span class="sig-name descname"><span class="pre">entity_deduplicator_with_summary</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.entity_deduplicator_with_summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.type_clusterer_with_summary">
+<span class="sig-name descname"><span class="pre">type_clusterer_with_summary</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.type_clusterer_with_summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.relation_clusterer_with_summary">
+<span class="sig-name descname"><span class="pre">relation_clusterer_with_summary</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.relation_clusterer_with_summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.text_summarizer">
+<span class="sig-name descname"><span class="pre">text_summarizer</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.text_summarizer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.chunk_summarizer">
+<span class="sig-name descname"><span class="pre">chunk_summarizer</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.chunk_summarizer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.entity_merger">
+<span class="sig-name descname"><span class="pre">entity_merger</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.entity_merger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.triple_merger">
+<span class="sig-name descname"><span class="pre">triple_merger</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.triple_merger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.type_merger">
+<span class="sig-name descname"><span class="pre">type_merger</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.type_merger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.text_loader">
+<span class="sig-name descname"><span class="pre">text_loader</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.text_loader" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.text_chunker">
+<span class="sig-name descname"><span class="pre">text_chunker</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.text_chunker" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.auto_chunk_threshold">
+<span class="sig-name descname"><span class="pre">auto_chunk_threshold</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4000</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.auto_chunk_threshold" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.summarization_threshold">
+<span class="sig-name descname"><span class="pre">summarization_threshold</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8000</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.summarization_threshold" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.max_summary_length">
+<span class="sig-name descname"><span class="pre">max_summary_length</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3000</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.max_summary_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.snake_case">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">snake_case</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.snake_case"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.snake_case" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.format_type_name">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">format_type_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.format_type_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.format_type_name" title="Link to this definition"></a></dt>
+<dd><p>Format a type name to start with capital letter and rest lowercase.
+E.g., ‘PERSON’ -&gt; ‘Person’, ‘person’ -&gt; ‘Person’, ‘PERSON_TYPE’ -&gt; ‘Person_type’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> – The type name to format.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Formatted type name with capital first letter and lowercase rest.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.plan_decompose">
+<span class="sig-name descname"><span class="pre">plan_decompose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.plan_decompose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.plan_decompose" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.load_text">
+<span class="sig-name descname"><span class="pre">load_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.load_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.load_text" title="Link to this definition"></a></dt>
+<dd><p>Load text from various sources (files or raw text).</p>
+<p>Supports multiple file formats:
+- Plain text: .txt
+- PDF: .pdf
+- Word documents: .docx, .doc
+- Rich Text: .rtf
+- HTML: .html, .htm
+- Raw text strings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – File path (str or Path) or raw text string.</p></li>
+<li><p><strong>file_type</strong> – Optional file extension (e.g., ‘.pdf’, ‘.txt’).
+If not provided, will be auto-detected from the source.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Extracted text content as a string.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the file type is not supported or content cannot be extracted.</p></li>
+<li><p><strong>FileNotFoundError</strong> – If the specified file does not exist.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p># Load from file
+text = extractor.load_text(‘document.pdf’)
+text = extractor.load_text(‘/path/to/file.docx’)</p>
+<p># Load from raw text
+text = extractor.load_text(‘This is raw text input’)</p>
+<p># Specify file type explicitly
+text = extractor.load_text(‘file.txt’, file_type=’.txt’)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.get_supported_formats">
+<span class="sig-name descname"><span class="pre">get_supported_formats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.get_supported_formats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.get_supported_formats" title="Link to this definition"></a></dt>
+<dd><p>Get list of supported file formats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of supported file extensions (e.g., [‘.txt’, ‘.pdf’, ‘.docx’, …])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.configure_chunking">
+<span class="sig-name descname"><span class="pre">configure_chunking</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_chunk_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summarization_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_summary_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.configure_chunking"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.configure_chunking" title="Link to this definition"></a></dt>
+<dd><p>Configure text chunking settings for handling large documents.</p>
+<p>This method allows fine-tuning of how large texts are split into
+manageable pieces for LLM processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chunk_size</strong> – Maximum characters per chunk (default: 3000, ~750 tokens).</p></li>
+<li><p><strong>overlap</strong> – Characters to overlap between chunks (default: 200).</p></li>
+<li><p><strong>strategy</strong> – Chunking strategy - “sentence”, “paragraph”, or “fixed”.</p></li>
+<li><p><strong>auto_chunk_threshold</strong> – Character threshold for automatic chunking (default: 4000).
+Texts larger than this will be automatically chunked.</p></li>
+<li><p><strong>summarization_threshold</strong> – Character threshold for using summarization in clustering
+(default: 8000). When text exceeds this, summaries are
+generated to provide context for clustering operations.</p></li>
+<li><p><strong>max_summary_length</strong> – Maximum length of summaries used for clustering context
+(default: 3000, ~750 tokens).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p># Configure for a model with smaller context window
+extractor.configure_chunking(chunk_size=2000, overlap=150, strategy=”sentence”)</p>
+<p># Configure for larger context window (e.g., GPT-4-turbo)
+extractor.configure_chunking(chunk_size=8000, overlap=500)</p>
+<p># Configure summarization thresholds
+extractor.configure_chunking(summarization_threshold=10000, max_summary_length=4000)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.configure_chunking_for_model">
+<span class="sig-name descname"><span class="pre">configure_chunking_for_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_context_tokens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_overhead_tokens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.configure_chunking_for_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.configure_chunking_for_model" title="Link to this definition"></a></dt>
+<dd><p>Automatically configure chunking based on model specifications.</p>
+<p>This is a convenience method that calculates optimal chunk size
+based on your model’s context window.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_context_tokens</strong> – Maximum context window of your model (e.g., 4096 for GPT-3.5).</p></li>
+<li><p><strong>prompt_overhead_tokens</strong> – Estimated tokens used by prompts/few-shot examples.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p># For GPT-3.5-turbo (4K context)
+extractor.configure_chunking_for_model(4096, 1000)</p>
+<p># For GPT-4 (8K context)
+extractor.configure_chunking_for_model(8192, 1500)</p>
+<p># For GPT-4-turbo (128K context)
+extractor.configure_chunking_for_model(128000, 2000)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.should_chunk_text">
+<span class="sig-name descname"><span class="pre">should_chunk_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.should_chunk_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.should_chunk_text" title="Link to this definition"></a></dt>
+<dd><p>Determine if text should be chunked based on its size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> – The text to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if text exceeds the auto_chunk_threshold.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.chunk_text">
+<span class="sig-name descname"><span class="pre">chunk_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.chunk_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.chunk_text" title="Link to this definition"></a></dt>
+<dd><p>Split text into chunks for processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> – The text to chunk.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of text chunks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.get_chunking_info">
+<span class="sig-name descname"><span class="pre">get_chunking_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../converter/index.html#owlapy.converter.VariablesMapping.dict" title="owlapy.converter.VariablesMapping.dict"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.get_chunking_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.get_chunking_info" title="Link to this definition"></a></dt>
+<dd><p>Get information about how a text would be chunked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> – The text to analyze.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with chunking information including number of chunks,
+chunk sizes, etc.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.should_use_summarization">
+<span class="sig-name descname"><span class="pre">should_use_summarization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.should_use_summarization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.should_use_summarization" title="Link to this definition"></a></dt>
+<dd><p>Determine if text is large enough to require summarization for clustering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> – The text to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if text exceeds the summarization_threshold.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.summarize_chunk">
+<span class="sig-name descname"><span class="pre">summarize_chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.summarize_chunk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.summarize_chunk" title="Link to this definition"></a></dt>
+<dd><p>Generate a summary of a text chunk that preserves key entities and relationships.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>chunk</strong> – Text chunk to summarize.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Summary of the chunk.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.summarize_chunks">
+<span class="sig-name descname"><span class="pre">summarize_chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.summarize_chunks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.summarize_chunks" title="Link to this definition"></a></dt>
+<dd><p>Generate summaries for multiple text chunks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>chunks</strong> – List of text chunks.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of chunk summaries.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.create_combined_summary">
+<span class="sig-name descname"><span class="pre">create_combined_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk_summaries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.create_combined_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.create_combined_summary" title="Link to this definition"></a></dt>
+<dd><p>Combine multiple chunk summaries into a unified summary for clustering context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>chunk_summaries</strong> – List of summaries from individual chunks.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A combined summary suitable for clustering operations.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.get_clustering_context">
+<span class="sig-name descname"><span class="pre">get_clustering_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.get_clustering_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.get_clustering_context" title="Link to this definition"></a></dt>
+<dd><p>Get appropriate context for clustering operations based on text size.</p>
+<p>For small texts, returns the text directly (possibly truncated).
+For large texts, generates a summary to use as clustering context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – The full text.</p></li>
+<li><p><strong>chunks</strong> – Optional pre-computed chunks of the text.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Context string suitable for clustering operations.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.clear_summary_cache">
+<span class="sig-name descname"><span class="pre">clear_summary_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.clear_summary_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.clear_summary_cache" title="Link to this definition"></a></dt>
+<dd><p>Clear the chunk summary cache.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.configure_cache">
+<span class="sig-name descname"><span class="pre">configure_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cache_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.configure_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.configure_cache" title="Link to this definition"></a></dt>
+<dd><p>Configure summary cache settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>max_cache_size</strong> – Maximum number of summaries to cache (default: 1000).
+Set to 0 to disable caching.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p># Increase cache size for large batch processing
+extractor.configure_cache(max_cache_size=5000)</p>
+<p># Disable caching to minimize memory usage
+extractor.configure_cache(max_cache_size=0)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.filter_entities">
+<span class="sig-name descname"><span class="pre">filter_entities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.filter_entities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.filter_entities" title="Link to this definition"></a></dt>
+<dd><p>Deduplicate entities by removing redundant near-duplicates.</p>
+<p>For large texts, automatically uses summarization to provide context
+that fits within token limits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>entities</strong> – List of extracted entities.</p></li>
+<li><p><strong>text</strong> – Original text context (or pre-computed summary).</p></li>
+<li><p><strong>use_summary</strong> – Whether to use summary-based deduplication.
+- None (default): Auto-detect based on text size.
+- True: Force summary-based deduplication.
+- False: Use direct text (may fail for large texts).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary mapping original entity names to their canonical names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.cluster_types">
+<span class="sig-name descname"><span class="pre">cluster_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../converter/index.html#owlapy.converter.VariablesMapping.dict" title="owlapy.converter.VariablesMapping.dict"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.cluster_types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.cluster_types" title="Link to this definition"></a></dt>
+<dd><p>Cluster entity types to identify and merge duplicates.</p>
+<p>For large texts, automatically uses summarization to provide context
+that fits within token limits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>types</strong> – List of extracted entity types.</p></li>
+<li><p><strong>text</strong> – Original text context (or pre-computed summary).</p></li>
+<li><p><strong>use_summary</strong> – Whether to use summary-based clustering.
+- None (default): Auto-detect based on text size.
+- True: Force summary-based clustering.
+- False: Use direct text (may fail for large texts).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary mapping original type names to their canonical names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.cluster_relations">
+<span class="sig-name descname"><span class="pre">cluster_relations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../converter/index.html#owlapy.converter.VariablesMapping.dict" title="owlapy.converter.VariablesMapping.dict"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.cluster_relations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.cluster_relations" title="Link to this definition"></a></dt>
+<dd><p>Cluster relations to identify and merge duplicates.</p>
+<p>For large texts, automatically uses summarization to provide context
+that fits within token limits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>relations</strong> – List of extracted relations.</p></li>
+<li><p><strong>text</strong> – Original text context (or pre-computed summary).</p></li>
+<li><p><strong>use_summary</strong> – Whether to use summary-based clustering.
+- None (default): Auto-detect based on text size.
+- True: Force summary-based clustering.
+- False: Use direct text (may fail for large texts).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary mapping original relation names to their canonical names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.check_coherence">
+<span class="sig-name descname"><span class="pre">check_coherence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_instructions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.check_coherence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.check_coherence" title="Link to this definition"></a></dt>
+<dd><p>Check coherence of extracted triples and filter out low-quality ones.</p>
+<p>For large texts, automatically uses summarization to provide context
+that fits within token limits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>triples</strong> – List of extracted triples.</p></li>
+<li><p><strong>text</strong> – Original text context (or pre-computed summary).</p></li>
+<li><p><strong>task_instructions</strong> – Optional instructions to guide coherence checking.</p></li>
+<li><p><strong>batch_size</strong> – Number of triples to check per batch.</p></li>
+<li><p><strong>threshold</strong> – Minimum coherence score (1-5) to keep a triple.</p></li>
+<li><p><strong>use_summary</strong> – Whether to use summary for coherence checking.
+- None (default): Auto-detect based on text size.
+- True: Force summary-based checking.
+- False: Use direct text (may fail for large texts).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of coherent triples that passed the threshold.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.get_corresponding_literal">
+<span class="sig-name descname"><span class="pre">get_corresponding_literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">literal_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.get_corresponding_literal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.get_corresponding_literal" title="Link to this definition"></a></dt>
+<dd><p>Convert a string literal value to an OWLLiteral with the appropriate datatype.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.generate_ontology">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">generate_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ontology_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'open'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="pre">owlapy.owl_ontology.Ontology</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.generate_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.generate_ontology" title="Link to this definition"></a></dt>
+<dd><p>Generate an ontology from the given text or file.
+Must be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – Input text or file path to extract ontology from.
+Supports files: .txt, .pdf, .docx, .doc, .rtf, .html, .htm</p></li>
+<li><p><strong>ontology_type</strong> (<a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><em>str</em></a>) – The ontology type to use. Options are:
+1. ‘domain’: Focused on a specific domain (e.g., healthcare, finance),
+2. ‘cross-domain’: Spans multiple related domains,
+3. ‘enterprise’: Tailored for organizational knowledge representation,
+4. ‘open’: General-purpose ontology covering a wide range of topics, similar to Wikidata.</p></li>
+<li><p><strong>**kwargs</strong> – Additional arguments specific to the extractor type.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated Ontology object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../graph_extracting_models/open_graph_extractor/index.html" class="btn btn-neutral float-left" title="owlapy.agen_kg.graph_extracting_models.open_graph_extractor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../helper/index.html" class="btn btn-neutral float-right" title="owlapy.agen_kg.helper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

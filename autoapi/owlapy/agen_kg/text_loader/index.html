@@ -1,0 +1,379 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg.text_loader &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="owlapy.class_expression" href="../../class_expression/index.html" />
+    <link rel="prev" title="owlapy.agen_kg.signatures" href="../signatures/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html">owlapy.agen_kg</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="../agent/index.html">owlapy.agen_kg.agent</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../chunking_models/index.html">owlapy.agen_kg.chunking_models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../domain_examples_cache/index.html">owlapy.agen_kg.domain_examples_cache</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../few_shot_examples/index.html">owlapy.agen_kg.few_shot_examples</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../graph_extracting_models/index.html">owlapy.agen_kg.graph_extracting_models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../graph_extractor/index.html">owlapy.agen_kg.graph_extractor</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../helper/index.html">owlapy.agen_kg.helper</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../signatures/index.html">owlapy.agen_kg.signatures</a></li>
+<li class="toctree-l5 current"><a class="current reference internal" href="#">owlapy.agen_kg.text_loader</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l6"><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">owlapy</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy.agen_kg</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg.text_loader</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/owlapy/agen_kg/text_loader/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.agen_kg.text_loader">
+<span id="owlapy-agen-kg-text-loader"></span><h1>owlapy.agen_kg.text_loader<a class="headerlink" href="#module-owlapy.agen_kg.text_loader" title="Link to this heading"></a></h1>
+<p>Text loading module for extracting text from various file formats.
+Supports: TXT, PDF, DOCX, RTF, HTML, and raw text strings.</p>
+<p>Also provides text chunking utilities for handling large documents
+that may not fit in an LLM’s context window.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.text_loader.TextLoader" title="owlapy.agen_kg.text_loader.TextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextLoader</span></code></a></p></td>
+<td><p>Base class for text loaders.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.text_loader.TXTLoader" title="owlapy.agen_kg.text_loader.TXTLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TXTLoader</span></code></a></p></td>
+<td><p>Loader for plain text files.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.text_loader.PDFLoader" title="owlapy.agen_kg.text_loader.PDFLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PDFLoader</span></code></a></p></td>
+<td><p>Loader for PDF files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.text_loader.DOCXLoader" title="owlapy.agen_kg.text_loader.DOCXLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DOCXLoader</span></code></a></p></td>
+<td><p>Loader for DOCX files.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.text_loader.RTFLoader" title="owlapy.agen_kg.text_loader.RTFLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RTFLoader</span></code></a></p></td>
+<td><p>Loader for RTF files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.text_loader.HTMLLoader" title="owlapy.agen_kg.text_loader.HTMLLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTMLLoader</span></code></a></p></td>
+<td><p>Loader for HTML files.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.text_loader.RawTextLoader" title="owlapy.agen_kg.text_loader.RawTextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RawTextLoader</span></code></a></p></td>
+<td><p>Loader for raw text strings.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.text_loader.UniversalTextLoader" title="owlapy.agen_kg.text_loader.UniversalTextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UniversalTextLoader</span></code></a></p></td>
+<td><p>Universal text loader that automatically detects file type and loads content.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.TextLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.text_loader.</span></span><span class="sig-name descname"><span class="pre">TextLoader</span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#TextLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.TextLoader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Base class for text loaders.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.TextLoader.load">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#TextLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.TextLoader.load" title="Link to this definition"></a></dt>
+<dd><p>Load text from the given source.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>source</strong> – File path or raw text string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Extracted text content.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the source is invalid or cannot be processed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.TXTLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.text_loader.</span></span><span class="sig-name descname"><span class="pre">TXTLoader</span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#TXTLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.TXTLoader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.agen_kg.text_loader.TextLoader" title="owlapy.agen_kg.text_loader.TextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextLoader</span></code></a></p>
+<p>Loader for plain text files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.TXTLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#TXTLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.TXTLoader.load" title="Link to this definition"></a></dt>
+<dd><p>Load text from a .txt file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.PDFLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.text_loader.</span></span><span class="sig-name descname"><span class="pre">PDFLoader</span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#PDFLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.PDFLoader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.agen_kg.text_loader.TextLoader" title="owlapy.agen_kg.text_loader.TextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextLoader</span></code></a></p>
+<p>Loader for PDF files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.PDFLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#PDFLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.PDFLoader.load" title="Link to this definition"></a></dt>
+<dd><p>Load text from a PDF file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.DOCXLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.text_loader.</span></span><span class="sig-name descname"><span class="pre">DOCXLoader</span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#DOCXLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.DOCXLoader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.agen_kg.text_loader.TextLoader" title="owlapy.agen_kg.text_loader.TextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextLoader</span></code></a></p>
+<p>Loader for DOCX files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.DOCXLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#DOCXLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.DOCXLoader.load" title="Link to this definition"></a></dt>
+<dd><p>Load text from a DOCX file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.RTFLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.text_loader.</span></span><span class="sig-name descname"><span class="pre">RTFLoader</span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#RTFLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.RTFLoader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.agen_kg.text_loader.TextLoader" title="owlapy.agen_kg.text_loader.TextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextLoader</span></code></a></p>
+<p>Loader for RTF files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.RTFLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#RTFLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.RTFLoader.load" title="Link to this definition"></a></dt>
+<dd><p>Load text from an RTF file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.HTMLLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.text_loader.</span></span><span class="sig-name descname"><span class="pre">HTMLLoader</span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#HTMLLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.HTMLLoader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.agen_kg.text_loader.TextLoader" title="owlapy.agen_kg.text_loader.TextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextLoader</span></code></a></p>
+<p>Loader for HTML files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.HTMLLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#HTMLLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.HTMLLoader.load" title="Link to this definition"></a></dt>
+<dd><p>Load text from an HTML file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.RawTextLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.text_loader.</span></span><span class="sig-name descname"><span class="pre">RawTextLoader</span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#RawTextLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.RawTextLoader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.agen_kg.text_loader.TextLoader" title="owlapy.agen_kg.text_loader.TextLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TextLoader</span></code></a></p>
+<p>Loader for raw text strings.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.RawTextLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#RawTextLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.RawTextLoader.load" title="Link to this definition"></a></dt>
+<dd><p>Return the source as-is if it’s not a file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.UniversalTextLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.text_loader.</span></span><span class="sig-name descname"><span class="pre">UniversalTextLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#UniversalTextLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.UniversalTextLoader" title="Link to this definition"></a></dt>
+<dd><p>Universal text loader that automatically detects file type and loads content.
+Handles multiple formats: TXT, PDF, DOCX, RTF, HTML, and raw text strings.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.UniversalTextLoader.logging">
+<span class="sig-name descname"><span class="pre">logging</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#owlapy.agen_kg.text_loader.UniversalTextLoader.logging" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.UniversalTextLoader.loaders">
+<span class="sig-name descname"><span class="pre">loaders</span></span><a class="headerlink" href="#owlapy.agen_kg.text_loader.UniversalTextLoader.loaders" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.UniversalTextLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#UniversalTextLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.UniversalTextLoader.load" title="Link to this definition"></a></dt>
+<dd><p>Load text from various sources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – File path (str or Path), or raw text string.</p></li>
+<li><p><strong>file_type</strong> – Optional file extension (e.g., ‘.pdf’, ‘.txt’).
+If not provided, will be auto-detected from the source.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Extracted text content.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the file type is not supported or content cannot be extracted.</p></li>
+<li><p><strong>FileNotFoundError</strong> – If the specified file does not exist.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.UniversalTextLoader.supports_file_type">
+<span class="sig-name descname"><span class="pre">supports_file_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/text_loader.html#UniversalTextLoader.supports_file_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.text_loader.UniversalTextLoader.supports_file_type" title="Link to this definition"></a></dt>
+<dd><p>Check if a file type is supported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_type</strong> – File extension (e.g., ‘.pdf’, ‘pdf’).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the file type is supported, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="owlapy.agen_kg.text_loader.UniversalTextLoader.supported_formats">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">supported_formats</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></span><a class="headerlink" href="#owlapy.agen_kg.text_loader.UniversalTextLoader.supported_formats" title="Link to this definition"></a></dt>
+<dd><p>Get list of supported file formats.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../signatures/index.html" class="btn btn-neutral float-left" title="owlapy.agen_kg.signatures" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../class_expression/index.html" class="btn btn-neutral float-right" title="owlapy.class_expression" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

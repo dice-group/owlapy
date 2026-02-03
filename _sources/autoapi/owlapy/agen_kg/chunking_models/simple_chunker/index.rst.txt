@@ -1,0 +1,101 @@
+owlapy.agen_kg.chunking_models.simple_chunker
+=============================================
+
+.. py:module:: owlapy.agen_kg.chunking_models.simple_chunker
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.agen_kg.chunking_models.simple_chunker.TextChunker
+
+
+Module Contents
+---------------
+
+.. py:class:: TextChunker(chunk_size: int = 3000, overlap: int = 200, strategy: str = 'sentence', enable_logging: bool = False)
+
+   Utility class for splitting large texts into smaller chunks that fit within
+   an LLM's context window. Supports multiple chunking strategies.
+
+   This is essential for handling large documents (e.g., long PDFs, books,
+   extensive reports) when using LLMs with limited context windows.
+
+
+   .. py:attribute:: DEFAULT_CHARS_PER_TOKEN
+      :value: 4
+
+
+
+   .. py:attribute:: chunk_size
+      :value: 3000
+
+
+
+   .. py:attribute:: overlap
+      :value: 200
+
+
+
+   .. py:attribute:: strategy
+      :value: 'sentence'
+
+
+
+   .. py:attribute:: logging
+      :value: False
+
+
+
+   .. py:method:: chunk_text(text: str) -> List[str]
+
+      Split text into chunks based on the configured strategy.
+
+      :param text: The text to split into chunks.
+
+      :returns: List of text chunks.
+
+
+
+   .. py:method:: estimate_tokens(text: str, chars_per_token: int = None) -> int
+
+      Estimate the number of tokens in a text.
+
+      :param text: The text to estimate tokens for.
+      :param chars_per_token: Character to token ratio (default: 4 for English).
+
+      :returns: Estimated number of tokens.
+
+
+
+   .. py:method:: get_chunk_info(text: str) -> dict
+
+      Get information about how a text would be chunked.
+
+      :param text: The text to analyze.
+
+      :returns: Dictionary with chunking information.
+
+
+
+   .. py:method:: calculate_chunk_size_for_model(max_context_tokens: int, prompt_overhead_tokens: int = 1000, chars_per_token: int = 4) -> int
+      :staticmethod:
+
+
+      Calculate an appropriate chunk size based on model parameters.
+
+      :param max_context_tokens: Maximum context window size of the model.
+      :param prompt_overhead_tokens: Estimated tokens used by prompts, few-shot examples, etc.
+      :param chars_per_token: Character to token ratio (default: 4 for English).
+
+      :returns: Recommended chunk size in characters.
+
+      .. rubric:: Example
+
+      # For GPT-4 with 8K context window
+      chunk_size = TextChunker.calculate_chunk_size_for_model(8000, 2000)
+
+
+

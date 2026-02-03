@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="owlapy.agen_kg.agent" href="agent/index.html" />
+    <link rel="prev" title="owlapy.abstracts.abstract_owl_reasoner" href="../abstracts/abstract_owl_reasoner/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.agen_kg</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="agent/index.html">owlapy.agen_kg.agent</a></li>
+<li class="toctree-l5"><a class="reference internal" href="chunking_models/index.html">owlapy.agen_kg.chunking_models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="domain_examples_cache/index.html">owlapy.agen_kg.domain_examples_cache</a></li>
+<li class="toctree-l5"><a class="reference internal" href="few_shot_examples/index.html">owlapy.agen_kg.few_shot_examples</a></li>
+<li class="toctree-l5"><a class="reference internal" href="graph_extracting_models/index.html">owlapy.agen_kg.graph_extracting_models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="graph_extractor/index.html">owlapy.agen_kg.graph_extractor</a></li>
+<li class="toctree-l5"><a class="reference internal" href="helper/index.html">owlapy.agen_kg.helper</a></li>
+<li class="toctree-l5"><a class="reference internal" href="signatures/index.html">owlapy.agen_kg.signatures</a></li>
+<li class="toctree-l5"><a class="reference internal" href="text_loader/index.html">owlapy.agen_kg.text_loader</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.agen_kg.AGenKG"><code class="docutils literal notranslate"><span class="pre">AGenKG</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.logging"><code class="docutils literal notranslate"><span class="pre">AGenKG.logging</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.model"><code class="docutils literal notranslate"><span class="pre">AGenKG.model</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.api_key"><code class="docutils literal notranslate"><span class="pre">AGenKG.api_key</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.api_base"><code class="docutils literal notranslate"><span class="pre">AGenKG.api_base</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.temperature"><code class="docutils literal notranslate"><span class="pre">AGenKG.temperature</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.seed"><code class="docutils literal notranslate"><span class="pre">AGenKG.seed</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.cache"><code class="docutils literal notranslate"><span class="pre">AGenKG.cache</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.enable_logging"><code class="docutils literal notranslate"><span class="pre">AGenKG.enable_logging</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.max_tokens"><code class="docutils literal notranslate"><span class="pre">AGenKG.max_tokens</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.open_graph_extractor"><code class="docutils literal notranslate"><span class="pre">AGenKG.open_graph_extractor</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.domain_graph_extractor"><code class="docutils literal notranslate"><span class="pre">AGenKG.domain_graph_extractor</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.configure_chunking"><code class="docutils literal notranslate"><span class="pre">AGenKG.configure_chunking()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.configure_chunking_for_model"><code class="docutils literal notranslate"><span class="pre">AGenKG.configure_chunking_for_model()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.agen_kg.AGenKG.generate_ontology"><code class="docutils literal notranslate"><span class="pre">AGenKG.generate_ontology()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/owlapy/agen_kg/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.agen_kg">
+<span id="owlapy-agen-kg"></span><h1>owlapy.agen_kg<a class="headerlink" href="#module-owlapy.agen_kg" title="Link to this heading"></a></h1>
+<p>AGen-KG module</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="agent/index.html">owlapy.agen_kg.agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chunking_models/index.html">owlapy.agen_kg.chunking_models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="domain_examples_cache/index.html">owlapy.agen_kg.domain_examples_cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="few_shot_examples/index.html">owlapy.agen_kg.few_shot_examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph_extracting_models/index.html">owlapy.agen_kg.graph_extracting_models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph_extractor/index.html">owlapy.agen_kg.graph_extractor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="helper/index.html">owlapy.agen_kg.helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signatures/index.html">owlapy.agen_kg.signatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_loader/index.html">owlapy.agen_kg.text_loader</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.AGenKG" title="owlapy.agen_kg.AGenKG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AGenKG</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.</span></span><span class="sig-name descname"><span class="pre">AGenKG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gpt-4o'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'&lt;YOUR_GITHUB_PAT&gt;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://models.github.ai/inference'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/agen_kg/agent.html#AGenKG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.AGenKG" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.logging">
+<span class="sig-name descname"><span class="pre">logging</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.logging" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.model">
+<span class="sig-name descname"><span class="pre">model</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'gpt-4o'</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.api_key">
+<span class="sig-name descname"><span class="pre">api_key</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;YOUR_GITHUB_PAT&gt;'</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.api_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.api_base">
+<span class="sig-name descname"><span class="pre">api_base</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://models.github.ai/inference'</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.api_base" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.temperature">
+<span class="sig-name descname"><span class="pre">temperature</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.1</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.temperature" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.seed">
+<span class="sig-name descname"><span class="pre">seed</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.seed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.cache">
+<span class="sig-name descname"><span class="pre">cache</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.cache" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.enable_logging">
+<span class="sig-name descname"><span class="pre">enable_logging</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.enable_logging" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.max_tokens">
+<span class="sig-name descname"><span class="pre">max_tokens</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4000</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.max_tokens" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.open_graph_extractor">
+<span class="sig-name descname"><span class="pre">open_graph_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.open_graph_extractor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.domain_graph_extractor">
+<span class="sig-name descname"><span class="pre">domain_graph_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.AGenKG.domain_graph_extractor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.configure_chunking">
+<span class="sig-name descname"><span class="pre">configure_chunking</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_chunk_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summarization_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_summary_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/agen_kg/agent.html#AGenKG.configure_chunking"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.AGenKG.configure_chunking" title="Link to this definition"></a></dt>
+<dd><p>Configure text chunking settings for all extractors.</p>
+<p>This method allows fine-tuning of how large texts are split into
+manageable pieces for LLM processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chunk_size</strong> – Maximum characters per chunk (default: 3000, ~750 tokens).</p></li>
+<li><p><strong>overlap</strong> – Characters to overlap between chunks (default: 200).</p></li>
+<li><p><strong>strategy</strong> – Chunking strategy - “sentence”, “paragraph”, or “fixed”.</p></li>
+<li><p><strong>auto_chunk_threshold</strong> – Character threshold for automatic chunking (default: 4000).</p></li>
+<li><p><strong>summarization_threshold</strong> – Character threshold for using summarization in clustering
+(default: 8000). When text exceeds this, summaries are
+generated to provide context for clustering operations.</p></li>
+<li><p><strong>max_summary_length</strong> – Maximum length of summaries used for clustering context
+(default: 3000, ~750 tokens).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p># Configure for a model with smaller context window
+agenkg.configure_chunking(chunk_size=2000, overlap=150, strategy=”sentence”)</p>
+<p># Configure summarization thresholds for large documents
+agenkg.configure_chunking(summarization_threshold=10000, max_summary_length=4000)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.configure_chunking_for_model">
+<span class="sig-name descname"><span class="pre">configure_chunking_for_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_context_tokens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_overhead_tokens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/agen_kg/agent.html#AGenKG.configure_chunking_for_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.AGenKG.configure_chunking_for_model" title="Link to this definition"></a></dt>
+<dd><p>Automatically configure chunking based on model specifications for all extractors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_context_tokens</strong> – Maximum context window of your model (e.g., 4096 for GPT-3.5).</p></li>
+<li><p><strong>prompt_overhead_tokens</strong> – Estimated tokens used by prompts/few-shot examples.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p># For GPT-3.5-turbo (4K context)
+agenkg.configure_chunking_for_model(4096, 1000)</p>
+<p># For GPT-4 (8K context)
+agenkg.configure_chunking_for_model(8192, 1500)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.AGenKG.generate_ontology">
+<span class="sig-name descname"><span class="pre">generate_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ontology_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'domain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/agen_kg/agent.html#AGenKG.generate_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.AGenKG.generate_ontology" title="Link to this definition"></a></dt>
+<dd><p>Generate an ontology from the provided text using the specified extractor type.
+:param text: The input text from which to extract the ontology or path to a text file.</p>
+<blockquote>
+<div><p>Supported file formats: .txt, .docx, .pdf, .rtf, .html.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ontology_type</strong> – Type of ontology extraction - “domain” or “open”.
+“domain” stands for domain-specific ontology extraction.
+“open” stands for open-world ontology extraction (more general).</p></li>
+<li><p><strong>query</strong> – Specific instructions to the agent.</p></li>
+<li><p><strong>**kwargs</strong> – Additional parameters for customization.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../abstracts/abstract_owl_reasoner/index.html" class="btn btn-neutral float-left" title="owlapy.abstracts.abstract_owl_reasoner" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="agent/index.html" class="btn btn-neutral float-right" title="owlapy.agen_kg.agent" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

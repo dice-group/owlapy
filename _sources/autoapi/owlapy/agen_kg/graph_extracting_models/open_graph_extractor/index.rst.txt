@@ -1,0 +1,77 @@
+owlapy.agen_kg.graph_extracting_models.open_graph_extractor
+===========================================================
+
+.. py:module:: owlapy.agen_kg.graph_extracting_models.open_graph_extractor
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.agen_kg.graph_extracting_models.open_graph_extractor.OpenGraphExtractor
+
+
+Module Contents
+---------------
+
+.. py:class:: OpenGraphExtractor(enable_logging=False)
+
+   Bases: :py:obj:`owlapy.agen_kg.graph_extractor.GraphExtractor`
+
+
+   Base class for all graph extractors.
+   Provides common functionality for entity clustering, coherence checking,
+   text chunking for large documents, and utility methods shared across all extractor types.
+
+
+   .. py:attribute:: entity_extractor
+
+
+   .. py:attribute:: triples_extractor
+
+
+   .. py:attribute:: type_asserter
+
+
+   .. py:attribute:: type_generator
+
+
+   .. py:attribute:: literal_extractor
+
+
+   .. py:attribute:: spl_triples_extractor
+
+
+   .. py:method:: generate_ontology(text: Union[str, pathlib.Path], ontology_namespace=f'http://ontology.local/{uuid.uuid4()}#', query: str = None, entity_types: List[str] = None, generate_types=False, extract_spl_triples=False, create_class_hierarchy=False, entity_clustering=True, use_chunking: bool = None, use_incremental_merging: bool = False, examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION, examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION, examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION, examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION, examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION, examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION, fact_reassurance=True, save_path='generated_ontology.owl') -> owlapy.owl_ontology.Ontology
+
+      Generate an ontology from the given text or file.
+
+      Supports automatic chunking for large texts that exceed the LLM's context window.
+
+      :param text: Input text or file path.
+      :param ontology_namespace: Namespace for the ontology.
+      :param query: A custom prompt to give directions to the agent.
+      :param entity_types: List of entity types to assign.
+      :param generate_types: Whether to generate types automatically.
+      :param extract_spl_triples: Whether to extract subject-property-literal triples.
+      :param create_class_hierarchy: Whether to create class hierarchy from DBpedia.
+      :param entity_clustering: Whether to perform entity clustering.
+      :param use_chunking: Whether to use text chunking for large documents.
+                           - None (default): Auto-detect based on text size (uses auto_chunk_threshold).
+                           - True: Force chunking even for smaller texts.
+                           - False: Disable chunking (may fail for very large texts).
+      :param use_incremental_merging: Whether to use incremental merging when chunking is enabled (default: False).
+      :param examples_for_entity_extraction: Few-shot examples for entity extraction.
+      :param examples_for_triples_extraction: Few-shot examples for triple extraction.
+      :param examples_for_type_assertion: Few-shot examples for type assertion.
+      :param examples_for_type_generation: Few-shot examples for type generation and assertion.
+      :param examples_for_literal_extraction: Few-shot examples for literal extraction.
+      :param examples_for_spl_triples_extraction: Few-shot examples for s-p-l triples extraction.
+      :param fact_reassurance: Whether to enforce as step of fact checking after triple extraction.
+      :param save_path: Path to save the ontology.
+
+      :returns: Generated Ontology object.
+
+
+

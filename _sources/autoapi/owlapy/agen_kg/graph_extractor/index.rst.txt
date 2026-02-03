@@ -1,0 +1,469 @@
+owlapy.agen_kg.graph_extractor
+==============================
+
+.. py:module:: owlapy.agen_kg.graph_extractor
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.agen_kg.graph_extractor.GraphExtractorMeta
+   owlapy.agen_kg.graph_extractor.GraphExtractor
+
+
+Module Contents
+---------------
+
+.. py:class:: GraphExtractorMeta
+
+   Bases: :py:obj:`type`\ (\ :py:obj:`dspy.Module`\ ), :py:obj:`type`\ (\ :py:obj:`ABC`\ )
+
+
+   Metaclass that resolves conflicts between dspy.Module and ABC.
+
+
+.. py:class:: GraphExtractor(enable_logging=False, use_incremental_merging=True)
+
+   Bases: :py:obj:`dspy.Module`, :py:obj:`abc.ABC`
+
+
+   Base class for all graph extractors.
+   Provides common functionality for entity clustering, coherence checking,
+   text chunking for large documents, and utility methods shared across all extractor types.
+
+
+   .. py:attribute:: fact_checking_instructions
+      :value: None
+
+
+
+   .. py:attribute:: triple_with_literal_extraction_instructions
+      :value: None
+
+
+
+   .. py:attribute:: literal_extraction_instructions
+      :value: None
+
+
+
+   .. py:attribute:: type_assertion_instructions
+      :value: None
+
+
+
+   .. py:attribute:: type_generation_instructions
+      :value: None
+
+
+
+   .. py:attribute:: triple_extraction_instructions
+      :value: None
+
+
+
+   .. py:attribute:: entity_extraction_instructions
+      :value: None
+
+
+
+   .. py:attribute:: logging
+      :value: False
+
+
+
+   .. py:attribute:: use_incremental_merging
+      :value: True
+
+
+
+   .. py:attribute:: plan_decomposer
+
+
+   .. py:attribute:: entity_deduplicator
+
+
+   .. py:attribute:: coherence_checker
+
+
+   .. py:attribute:: type_clusterer
+
+
+   .. py:attribute:: relation_clusterer
+
+
+   .. py:attribute:: entity_deduplicator_with_summary
+
+
+   .. py:attribute:: type_clusterer_with_summary
+
+
+   .. py:attribute:: relation_clusterer_with_summary
+
+
+   .. py:attribute:: text_summarizer
+
+
+   .. py:attribute:: chunk_summarizer
+
+
+   .. py:attribute:: entity_merger
+
+
+   .. py:attribute:: triple_merger
+
+
+   .. py:attribute:: type_merger
+
+
+   .. py:attribute:: text_loader
+
+
+   .. py:attribute:: text_chunker
+
+
+   .. py:attribute:: auto_chunk_threshold
+      :value: 4000
+
+
+
+   .. py:attribute:: summarization_threshold
+      :value: 8000
+
+
+
+   .. py:attribute:: max_summary_length
+      :value: 3000
+
+
+
+   .. py:method:: snake_case(text)
+      :staticmethod:
+
+
+
+   .. py:method:: format_type_name(text)
+      :staticmethod:
+
+
+      Format a type name to start with capital letter and rest lowercase.
+      E.g., 'PERSON' -> 'Person', 'person' -> 'Person', 'PERSON_TYPE' -> 'Person_type'
+
+      :param text: The type name to format.
+
+      :returns: Formatted type name with capital first letter and lowercase rest.
+
+
+
+   .. py:method:: plan_decompose(query: str)
+
+
+   .. py:method:: load_text(source: Union[str, pathlib.Path], file_type: Optional[str] = None) -> str
+
+      Load text from various sources (files or raw text).
+
+      Supports multiple file formats:
+      - Plain text: .txt
+      - PDF: .pdf
+      - Word documents: .docx, .doc
+      - Rich Text: .rtf
+      - HTML: .html, .htm
+      - Raw text strings
+
+      :param source: File path (str or Path) or raw text string.
+      :param file_type: Optional file extension (e.g., '.pdf', '.txt').
+                        If not provided, will be auto-detected from the source.
+
+      :returns: Extracted text content as a string.
+
+      :raises ValueError: If the file type is not supported or content cannot be extracted.
+      :raises FileNotFoundError: If the specified file does not exist.
+
+      .. rubric:: Examples
+
+      # Load from file
+      text = extractor.load_text('document.pdf')
+      text = extractor.load_text('/path/to/file.docx')
+
+      # Load from raw text
+      text = extractor.load_text('This is raw text input')
+
+      # Specify file type explicitly
+      text = extractor.load_text('file.txt', file_type='.txt')
+
+
+
+   .. py:method:: get_supported_formats() -> list
+
+      Get list of supported file formats.
+
+      :returns: List of supported file extensions (e.g., ['.txt', '.pdf', '.docx', ...])
+
+
+
+   .. py:method:: configure_chunking(chunk_size: int = None, overlap: int = None, strategy: str = None, auto_chunk_threshold: int = None, summarization_threshold: int = None, max_summary_length: int = None)
+
+      Configure text chunking settings for handling large documents.
+
+      This method allows fine-tuning of how large texts are split into
+      manageable pieces for LLM processing.
+
+      :param chunk_size: Maximum characters per chunk (default: 3000, ~750 tokens).
+      :param overlap: Characters to overlap between chunks (default: 200).
+      :param strategy: Chunking strategy - "sentence", "paragraph", or "fixed".
+      :param auto_chunk_threshold: Character threshold for automatic chunking (default: 4000).
+                                   Texts larger than this will be automatically chunked.
+      :param summarization_threshold: Character threshold for using summarization in clustering
+                                      (default: 8000). When text exceeds this, summaries are
+                                      generated to provide context for clustering operations.
+      :param max_summary_length: Maximum length of summaries used for clustering context
+                                 (default: 3000, ~750 tokens).
+
+      .. rubric:: Example
+
+      # Configure for a model with smaller context window
+      extractor.configure_chunking(chunk_size=2000, overlap=150, strategy="sentence")
+
+      # Configure for larger context window (e.g., GPT-4-turbo)
+      extractor.configure_chunking(chunk_size=8000, overlap=500)
+
+      # Configure summarization thresholds
+      extractor.configure_chunking(summarization_threshold=10000, max_summary_length=4000)
+
+
+
+   .. py:method:: configure_chunking_for_model(max_context_tokens: int, prompt_overhead_tokens: int = 1500)
+
+      Automatically configure chunking based on model specifications.
+
+      This is a convenience method that calculates optimal chunk size
+      based on your model's context window.
+
+      :param max_context_tokens: Maximum context window of your model (e.g., 4096 for GPT-3.5).
+      :param prompt_overhead_tokens: Estimated tokens used by prompts/few-shot examples.
+
+      .. rubric:: Example
+
+      # For GPT-3.5-turbo (4K context)
+      extractor.configure_chunking_for_model(4096, 1000)
+
+      # For GPT-4 (8K context)
+      extractor.configure_chunking_for_model(8192, 1500)
+
+      # For GPT-4-turbo (128K context)
+      extractor.configure_chunking_for_model(128000, 2000)
+
+
+
+   .. py:method:: should_chunk_text(text: str) -> bool
+
+      Determine if text should be chunked based on its size.
+
+      :param text: The text to check.
+
+      :returns: True if text exceeds the auto_chunk_threshold.
+
+
+
+   .. py:method:: chunk_text(text: str) -> List[str]
+
+      Split text into chunks for processing.
+
+      :param text: The text to chunk.
+
+      :returns: List of text chunks.
+
+
+
+   .. py:method:: get_chunking_info(text: str) -> dict
+
+      Get information about how a text would be chunked.
+
+      :param text: The text to analyze.
+
+      :returns: Dictionary with chunking information including number of chunks,
+                chunk sizes, etc.
+
+
+
+   .. py:method:: should_use_summarization(text: str) -> bool
+
+      Determine if text is large enough to require summarization for clustering.
+
+      :param text: The text to check.
+
+      :returns: True if text exceeds the summarization_threshold.
+
+
+
+   .. py:method:: summarize_chunk(chunk: str) -> str
+
+      Generate a summary of a text chunk that preserves key entities and relationships.
+
+      :param chunk: Text chunk to summarize.
+
+      :returns: Summary of the chunk.
+
+
+
+   .. py:method:: summarize_chunks(chunks: List[str]) -> List[str]
+
+      Generate summaries for multiple text chunks.
+
+      :param chunks: List of text chunks.
+
+      :returns: List of chunk summaries.
+
+
+
+   .. py:method:: create_combined_summary(chunk_summaries: List[str]) -> str
+
+      Combine multiple chunk summaries into a unified summary for clustering context.
+
+      :param chunk_summaries: List of summaries from individual chunks.
+
+      :returns: A combined summary suitable for clustering operations.
+
+
+
+   .. py:method:: get_clustering_context(text: str, chunks: List[str] = None) -> str
+
+      Get appropriate context for clustering operations based on text size.
+
+      For small texts, returns the text directly (possibly truncated).
+      For large texts, generates a summary to use as clustering context.
+
+      :param text: The full text.
+      :param chunks: Optional pre-computed chunks of the text.
+
+      :returns: Context string suitable for clustering operations.
+
+
+
+   .. py:method:: clear_summary_cache()
+
+      Clear the chunk summary cache.
+
+
+
+   .. py:method:: configure_cache(max_cache_size: int = None)
+
+      Configure summary cache settings.
+
+      :param max_cache_size: Maximum number of summaries to cache (default: 1000).
+                             Set to 0 to disable caching.
+
+      .. rubric:: Example
+
+      # Increase cache size for large batch processing
+      extractor.configure_cache(max_cache_size=5000)
+
+      # Disable caching to minimize memory usage
+      extractor.configure_cache(max_cache_size=0)
+
+
+
+   .. py:method:: filter_entities(entities: List[str], text: str, use_summary: bool = None) -> list
+
+      Deduplicate entities by removing redundant near-duplicates.
+
+      For large texts, automatically uses summarization to provide context
+      that fits within token limits.
+
+      :param entities: List of extracted entities.
+      :param text: Original text context (or pre-computed summary).
+      :param use_summary: Whether to use summary-based deduplication.
+                          - None (default): Auto-detect based on text size.
+                          - True: Force summary-based deduplication.
+                          - False: Use direct text (may fail for large texts).
+
+      :returns: Dictionary mapping original entity names to their canonical names.
+
+
+
+   .. py:method:: cluster_types(types: List[str], text: str, use_summary: bool = None) -> dict
+
+      Cluster entity types to identify and merge duplicates.
+
+      For large texts, automatically uses summarization to provide context
+      that fits within token limits.
+
+      :param types: List of extracted entity types.
+      :param text: Original text context (or pre-computed summary).
+      :param use_summary: Whether to use summary-based clustering.
+                          - None (default): Auto-detect based on text size.
+                          - True: Force summary-based clustering.
+                          - False: Use direct text (may fail for large texts).
+
+      :returns: Dictionary mapping original type names to their canonical names.
+
+
+
+   .. py:method:: cluster_relations(relations: List[str], text: str, use_summary: bool = None) -> dict
+
+      Cluster relations to identify and merge duplicates.
+
+      For large texts, automatically uses summarization to provide context
+      that fits within token limits.
+
+      :param relations: List of extracted relations.
+      :param text: Original text context (or pre-computed summary).
+      :param use_summary: Whether to use summary-based clustering.
+                          - None (default): Auto-detect based on text size.
+                          - True: Force summary-based clustering.
+                          - False: Use direct text (may fail for large texts).
+
+      :returns: Dictionary mapping original relation names to their canonical names.
+
+
+
+   .. py:method:: check_coherence(triples: List[tuple], text: str, task_instructions: str = None, batch_size: int = 50, threshold: int = 3, use_summary: bool = None) -> List[tuple]
+
+      Check coherence of extracted triples and filter out low-quality ones.
+
+      For large texts, automatically uses summarization to provide context
+      that fits within token limits.
+
+      :param triples: List of extracted triples.
+      :param text: Original text context (or pre-computed summary).
+      :param task_instructions: Optional instructions to guide coherence checking.
+      :param batch_size: Number of triples to check per batch.
+      :param threshold: Minimum coherence score (1-5) to keep a triple.
+      :param use_summary: Whether to use summary for coherence checking.
+                          - None (default): Auto-detect based on text size.
+                          - True: Force summary-based checking.
+                          - False: Use direct text (may fail for large texts).
+
+      :returns: List of coherent triples that passed the threshold.
+
+
+
+   .. py:method:: get_corresponding_literal(literal_value: str) -> owlapy.owl_literal.OWLLiteral
+
+      Convert a string literal value to an OWLLiteral with the appropriate datatype.
+
+
+
+   .. py:method:: generate_ontology(text: Union[str, pathlib.Path], ontology_type: str = 'open', **kwargs) -> owlapy.owl_ontology.Ontology
+      :abstractmethod:
+
+
+      Generate an ontology from the given text or file.
+      Must be implemented by subclasses.
+
+      :param text: Input text or file path to extract ontology from.
+                   Supports files: .txt, .pdf, .docx, .doc, .rtf, .html, .htm
+      :param ontology_type: The ontology type to use. Options are:
+                            1. 'domain': Focused on a specific domain (e.g., healthcare, finance),
+                            2. 'cross-domain': Spans multiple related domains,
+                            3. 'enterprise': Tailored for organizational knowledge representation,
+                            4. 'open': General-purpose ontology covering a wide range of topics, similar to Wikidata.
+      :type ontology_type: str
+      :param \*\*kwargs: Additional arguments specific to the extractor type.
+
+      :returns: Generated Ontology object.
+
+
+

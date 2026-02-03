@@ -1,0 +1,414 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg.chunking_models.simple_chunker &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg.chunking_models.simple_chunker</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.agen_kg.chunking_models.simple_chunker</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
+
+
+<div class="viewcode-block" id="TextChunker">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/chunking_models/simple_chunker/index.html#owlapy.agen_kg.chunking_models.simple_chunker.TextChunker">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TextChunker</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Utility class for splitting large texts into smaller chunks that fit within</span>
+<span class="sd">    an LLM&#39;s context window. Supports multiple chunking strategies.</span>
+
+<span class="sd">    This is essential for handling large documents (e.g., long PDFs, books,</span>
+<span class="sd">    extensive reports) when using LLMs with limited context windows.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Approximate token/character ratios for different models</span>
+    <span class="c1"># These are conservative estimates (1 token ≈ 4 characters for English text)</span>
+    <span class="n">DEFAULT_CHARS_PER_TOKEN</span> <span class="o">=</span> <span class="mi">4</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3000</span><span class="p">,</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sentence&quot;</span><span class="p">,</span>
+        <span class="n">enable_logging</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the text chunker.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            chunk_size: Maximum number of characters per chunk (default: 3000, ~750 tokens).</span>
+<span class="sd">                       Set based on your model&#39;s context window and prompt overhead.</span>
+<span class="sd">            overlap: Number of characters to overlap between consecutive chunks (default: 200).</span>
+<span class="sd">                    This helps preserve context at chunk boundaries.</span>
+<span class="sd">            strategy: Chunking strategy to use:</span>
+<span class="sd">                - &quot;sentence&quot;: Split on sentence boundaries (default, recommended)</span>
+<span class="sd">                - &quot;paragraph&quot;: Split on paragraph boundaries</span>
+<span class="sd">                - &quot;fixed&quot;: Split at fixed character positions (may break mid-word/sentence)</span>
+<span class="sd">            enable_logging: Whether to log chunking information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span> <span class="o">=</span> <span class="n">chunk_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="o">=</span> <span class="n">enable_logging</span>
+
+        <span class="c1"># Sentence boundary patterns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sentence_end_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?&lt;=[.!?])\s+(?=[A-Z])&#39;</span><span class="p">)</span>
+        <span class="c1"># Paragraph boundary pattern (two or more newlines)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_paragraph_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\n\s*\n&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TextChunker.chunk_text">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/chunking_models/simple_chunker/index.html#owlapy.agen_kg.chunking_models.simple_chunker.TextChunker.chunk_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">chunk_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Split text into chunks based on the configured strategy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text: The text to split into chunks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of text chunks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">text</span><span class="p">]</span> <span class="k">if</span> <span class="n">text</span> <span class="k">else</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">==</span> <span class="s2">&quot;sentence&quot;</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_by_sentences</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">==</span> <span class="s2">&quot;paragraph&quot;</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_by_paragraphs</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">==</span> <span class="s2">&quot;fixed&quot;</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_fixed</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown chunking strategy: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="si">}</span><span class="s2">. &quot;</span>
+                           <span class="sa">f</span><span class="s2">&quot;Use &#39;sentence&#39;, &#39;paragraph&#39;, or &#39;fixed&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TextChunker: INFO :: Split text (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars) into </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2"> chunks&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunks</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Chunk </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">chunks</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_chunk_by_sentences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split text into chunks at sentence boundaries.&quot;&quot;&quot;</span>
+        <span class="c1"># Split text into sentences</span>
+        <span class="n">sentences</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sentence_end_pattern</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="c1"># If no sentence boundaries found, fall back to paragraph chunking</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sentences</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_by_paragraphs</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="n">chunks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_chunk</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">sentences</span><span class="p">:</span>
+            <span class="n">sentence</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sentence</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">sentence_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+            <span class="c1"># If single sentence is too long, split it further</span>
+            <span class="k">if</span> <span class="n">sentence_length</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">:</span>
+                <span class="c1"># Save current chunk if exists</span>
+                <span class="k">if</span> <span class="n">current_chunk</span><span class="p">:</span>
+                    <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_chunk</span><span class="p">))</span>
+                    <span class="n">current_chunk</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="c1"># Split long sentence by paragraphs or fixed chunks</span>
+                <span class="n">long_sentence_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_fixed</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+                <span class="n">chunks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">long_sentence_chunks</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Check if adding this sentence would exceed chunk size</span>
+            <span class="k">if</span> <span class="n">current_length</span> <span class="o">+</span> <span class="n">sentence_length</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">:</span>
+                <span class="c1"># Save current chunk</span>
+                <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_chunk</span><span class="p">))</span>
+
+                <span class="c1"># Start new chunk with overlap</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">current_chunk</span><span class="p">:</span>
+                    <span class="c1"># Include last sentences up to overlap size</span>
+                    <span class="n">overlap_text</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">overlap_length</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">prev_sentence</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">current_chunk</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">overlap_length</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">prev_sentence</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">:</span>
+                            <span class="n">overlap_text</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">prev_sentence</span><span class="p">)</span>
+                            <span class="n">overlap_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prev_sentence</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">break</span>
+                    <span class="n">current_chunk</span> <span class="o">=</span> <span class="n">overlap_text</span>
+                    <span class="n">current_length</span> <span class="o">=</span> <span class="n">overlap_length</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">current_chunk</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">current_chunk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+            <span class="n">current_length</span> <span class="o">+=</span> <span class="n">sentence_length</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># Add final chunk</span>
+        <span class="k">if</span> <span class="n">current_chunk</span><span class="p">:</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_chunk</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">chunks</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_chunk_by_paragraphs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split text into chunks at paragraph boundaries.&quot;&quot;&quot;</span>
+        <span class="c1"># Split text into paragraphs</span>
+        <span class="n">paragraphs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_paragraph_pattern</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">paragraphs</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paragraphs</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+
+        <span class="c1"># If no paragraph boundaries found, fall back to fixed chunking</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paragraphs</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_fixed</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="n">chunks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_chunk</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">para</span> <span class="ow">in</span> <span class="n">paragraphs</span><span class="p">:</span>
+            <span class="n">para_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">para</span><span class="p">)</span>
+
+            <span class="c1"># If single paragraph is too long, split it by sentences</span>
+            <span class="k">if</span> <span class="n">para_length</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">:</span>
+                <span class="c1"># Save current chunk if exists</span>
+                <span class="k">if</span> <span class="n">current_chunk</span><span class="p">:</span>
+                    <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_chunk</span><span class="p">))</span>
+                    <span class="n">current_chunk</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="c1"># Split long paragraph by sentences</span>
+                <span class="n">long_para_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_by_sentences</span><span class="p">(</span><span class="n">para</span><span class="p">)</span>
+                <span class="n">chunks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">long_para_chunks</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Check if adding this paragraph would exceed chunk size</span>
+            <span class="k">if</span> <span class="n">current_length</span> <span class="o">+</span> <span class="n">para_length</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">:</span>
+                <span class="c1"># Save current chunk</span>
+                <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_chunk</span><span class="p">))</span>
+
+                <span class="c1"># Start new chunk with overlap (take last paragraph if fits)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">current_chunk</span><span class="p">:</span>
+                    <span class="n">last_para</span> <span class="o">=</span> <span class="n">current_chunk</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_para</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">:</span>
+                        <span class="n">current_chunk</span> <span class="o">=</span> <span class="p">[</span><span class="n">last_para</span><span class="p">]</span>
+                        <span class="n">current_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_para</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">current_chunk</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">current_chunk</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">current_chunk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">para</span><span class="p">)</span>
+            <span class="n">current_length</span> <span class="o">+=</span> <span class="n">para_length</span> <span class="o">+</span> <span class="mi">2</span>
+
+        <span class="c1"># Add final chunk</span>
+        <span class="k">if</span> <span class="n">current_chunk</span><span class="p">:</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_chunk</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">chunks</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_chunk_fixed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split text at fixed character positions with overlap.&quot;&quot;&quot;</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">text_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="n">text_length</span><span class="p">:</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">text_length</span><span class="p">)</span>
+
+            <span class="c1"># Try to break at word boundary</span>
+            <span class="k">if</span> <span class="n">end</span> <span class="o">&lt;</span> <span class="n">text_length</span><span class="p">:</span>
+                <span class="c1"># Look for last space within the chunk</span>
+                <span class="n">last_space</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">last_space</span> <span class="o">&gt;</span> <span class="n">start</span><span class="p">:</span>
+                    <span class="n">end</span> <span class="o">=</span> <span class="n">last_space</span>
+
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+            <span class="c1"># Move start position with overlap</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">end</span>
+
+            <span class="c1"># Ensure we&#39;re making progress</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">text_length</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">chunks</span>
+
+<div class="viewcode-block" id="TextChunker.estimate_tokens">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/chunking_models/simple_chunker/index.html#owlapy.agen_kg.chunking_models.simple_chunker.TextChunker.estimate_tokens">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chars_per_token</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the number of tokens in a text.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text: The text to estimate tokens for.</span>
+<span class="sd">            chars_per_token: Character to token ratio (default: 4 for English).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Estimated number of tokens.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">chars_per_token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">chars_per_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_CHARS_PER_TOKEN</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">//</span> <span class="n">chars_per_token</span></div>
+
+
+<div class="viewcode-block" id="TextChunker.get_chunk_info">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/chunking_models/simple_chunker/index.html#owlapy.agen_kg.chunking_models.simple_chunker.TextChunker.get_chunk_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_chunk_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get information about how a text would be chunked.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text: The text to analyze.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary with chunking information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;total_chars&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span>
+            <span class="s2">&quot;estimated_tokens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">),</span>
+            <span class="s2">&quot;num_chunks&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">),</span>
+            <span class="s2">&quot;chunk_sizes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">],</span>
+            <span class="s2">&quot;avg_chunk_size&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="k">if</span> <span class="n">chunks</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;strategy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="p">,</span>
+            <span class="s2">&quot;configured_chunk_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">,</span>
+            <span class="s2">&quot;configured_overlap&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="TextChunker.calculate_chunk_size_for_model">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/chunking_models/simple_chunker/index.html#owlapy.agen_kg.chunking_models.simple_chunker.TextChunker.calculate_chunk_size_for_model">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_chunk_size_for_model</span><span class="p">(</span>
+        <span class="n">max_context_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">prompt_overhead_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">chars_per_token</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate an appropriate chunk size based on model parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            max_context_tokens: Maximum context window size of the model.</span>
+<span class="sd">            prompt_overhead_tokens: Estimated tokens used by prompts, few-shot examples, etc.</span>
+<span class="sd">            chars_per_token: Character to token ratio (default: 4 for English).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Recommended chunk size in characters.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            # For GPT-4 with 8K context window</span>
+<span class="sd">            chunk_size = TextChunker.calculate_chunk_size_for_model(8000, 2000)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">available_tokens</span> <span class="o">=</span> <span class="n">max_context_tokens</span> <span class="o">-</span> <span class="n">prompt_overhead_tokens</span>
+        <span class="c1"># Leave some buffer (use 80% of available space)</span>
+        <span class="n">safe_tokens</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">available_tokens</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">safe_tokens</span> <span class="o">*</span> <span class="n">chars_per_token</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

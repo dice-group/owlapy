@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg.chunking_models &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="owlapy.agen_kg.chunking_models.simple_chunker" href="simple_chunker/index.html" />
+    <link rel="prev" title="owlapy.agen_kg.agent" href="../agent/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html">owlapy.agen_kg</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="../agent/index.html">owlapy.agen_kg.agent</a></li>
+<li class="toctree-l5 current"><a class="current reference internal" href="#">owlapy.agen_kg.chunking_models</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../domain_examples_cache/index.html">owlapy.agen_kg.domain_examples_cache</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../few_shot_examples/index.html">owlapy.agen_kg.few_shot_examples</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../graph_extracting_models/index.html">owlapy.agen_kg.graph_extracting_models</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../graph_extractor/index.html">owlapy.agen_kg.graph_extractor</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../helper/index.html">owlapy.agen_kg.helper</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../signatures/index.html">owlapy.agen_kg.signatures</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../text_loader/index.html">owlapy.agen_kg.text_loader</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">owlapy</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy.agen_kg</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg.chunking_models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/owlapy/agen_kg/chunking_models/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.agen_kg.chunking_models">
+<span id="owlapy-agen-kg-chunking-models"></span><h1>owlapy.agen_kg.chunking_models<a class="headerlink" href="#module-owlapy.agen_kg.chunking_models" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="simple_chunker/index.html">owlapy.agen_kg.chunking_models.simple_chunker</a></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../agent/index.html" class="btn btn-neutral float-left" title="owlapy.agen_kg.agent" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="simple_chunker/index.html" class="btn btn-neutral float-right" title="owlapy.agen_kg.chunking_models.simple_chunker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,611 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.agen_kg.graph_extracting_models.domain_graph_extractor &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.agen_kg.graph_extracting_models.domain_graph_extractor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.agen_kg.graph_extracting_models.domain_graph_extractor</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">,</span> \
+    <span class="n">OWLSubClassOfAxiom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">Entity</span><span class="p">,</span> <span class="n">Triple</span><span class="p">,</span> <span class="n">TypeAssertion</span><span class="p">,</span> <span class="n">TypeGeneration</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">SPLTriples</span><span class="p">,</span> <span class="n">Domain</span><span class="p">,</span>
+    <span class="n">DomainSpecificFewShotGenerator</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_hierarchy_from_dbpedia</span><span class="p">,</span> <span class="n">task_example_mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.domain_examples_cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DomainExamplesCache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.graph_extractor</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphExtractor</span>
+
+
+
+<div class="viewcode-block" id="DomainGraphExtractor">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/graph_extracting_models/index.html#owlapy.agen_kg.graph_extracting_models.domain_graph_extractor.DomainGraphExtractor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DomainGraphExtractor</span><span class="p">(</span><span class="n">GraphExtractor</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable_logging</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">examples_cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A module to extract an RDF graph from domain-specific text input.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            enable_logging: Whether to enable logging.</span>
+<span class="sd">            examples_cache_dir: Directory to cache domain-specific examples. If None, uses current working directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">enable_logging</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">domain_detector</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">Domain</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">few_shot_generator</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">DomainSpecificFewShotGenerator</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity_extractor</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">Entity</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triples_extractor</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">Triple</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_asserter</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">TypeAssertion</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_generator</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">TypeGeneration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">literal_extractor</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">Literal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spl_triples_extractor</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">SPLTriples</span><span class="p">)</span>
+        <span class="c1"># Initialize examples cache manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span> <span class="o">=</span> <span class="n">DomainExamplesCache</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="n">examples_cache_dir</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DomainGraphExtractor.generate_domain_specific_examples">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/graph_extracting_models/index.html#owlapy.agen_kg.graph_extracting_models.domain_graph_extractor.DomainGraphExtractor.generate_domain_specific_examples">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_domain_specific_examples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate domain-specific few-shot examples for all task types.</span>
+
+<span class="sd">        Automatically caches examples to disk for future reuse. If examples have been</span>
+<span class="sd">        previously generated for the domain, they will be loaded from cache.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            domain: The domain for which to generate examples.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary containing few-shot examples for each task type, keyed by:</span>
+<span class="sd">            &#39;entity_extraction&#39;, &#39;triples_extraction&#39;, &#39;type_assertion&#39;, &#39;type_generation&#39;,</span>
+<span class="sd">            &#39;literal_extraction&#39;, &#39;triples_with_numeric_literals_extraction&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if examples are already cached</span>
+        <span class="n">cached_examples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">load_examples</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached_examples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">get_cache_file_path</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Loaded cached examples for domain &#39;</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&#39; from </span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cached_examples</span>
+
+        <span class="c1"># Generate new examples if not cached</span>
+        <span class="n">examples</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">task_types</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;entity_extraction&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;triples_extraction&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;type_assertion&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;type_generation&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;literal_extraction&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;triples_with_numeric_literals_extraction&#39;</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Generating domain-specific few-shot examples for domain: </span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">task_type</span> <span class="ow">in</span> <span class="n">task_types</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">few_shot_generator</span><span class="p">(</span>
+                <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span>
+                <span class="n">task_type</span><span class="o">=</span><span class="n">task_type</span><span class="p">,</span>
+                <span class="n">num_examples</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">examples_example_structure</span><span class="o">=</span><span class="n">task_example_mapping</span><span class="p">[</span><span class="n">task_type</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">examples</span><span class="p">[</span><span class="n">task_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">few_shot_examples</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Generated examples for </span><span class="si">{</span><span class="n">task_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Save examples to cache</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">save_examples</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="n">examples</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">get_cache_file_path</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Cached examples for domain &#39;</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&#39; to </span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: WARNING :: Failed to cache examples for domain &#39;</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">examples</span></div>
+
+
+<div class="viewcode-block" id="DomainGraphExtractor.clear_domain_cache">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/graph_extracting_models/index.html#owlapy.agen_kg.graph_extracting_models.domain_graph_extractor.DomainGraphExtractor.clear_domain_cache">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_domain_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear the cached examples for a specific domain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            domain: The domain for which to clear cached examples.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the cache was cleared successfully, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">clear_domain_cache</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">success</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Cleared cache for domain &#39;</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">success</span></div>
+
+
+<div class="viewcode-block" id="DomainGraphExtractor.clear_all_domain_caches">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/graph_extracting_models/index.html#owlapy.agen_kg.graph_extracting_models.domain_graph_extractor.DomainGraphExtractor.clear_all_domain_caches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_all_domain_caches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear all cached domain examples.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if all caches were cleared successfully, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">clear_all_caches</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">success</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Cleared all domain example caches&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">success</span></div>
+
+
+<div class="viewcode-block" id="DomainGraphExtractor.list_cached_domains">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/graph_extracting_models/index.html#owlapy.agen_kg.graph_extracting_models.domain_graph_extractor.DomainGraphExtractor.list_cached_domains">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_cached_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        List all domains that have cached examples.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of domain names with cached examples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">domains</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">list_cached_domains</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="ow">and</span> <span class="n">domains</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Cached domains: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">domains</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">domains</span></div>
+
+
+<div class="viewcode-block" id="DomainGraphExtractor.is_domain_cached">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/graph_extracting_models/index.html#owlapy.agen_kg.graph_extracting_models.domain_graph_extractor.DomainGraphExtractor.is_domain_cached">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_domain_cached</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if examples exist for a domain in the cache.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            domain: The domain to check.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if examples are cached for the domain, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">examples_exist</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DomainGraphExtractor.get_cache_file_path">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/graph_extracting_models/index.html#owlapy.agen_kg.graph_extracting_models.domain_graph_extractor.DomainGraphExtractor.get_cache_file_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cache_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the full path to the cache file for a domain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            domain: The domain name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String path to the cache file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">examples_cache</span><span class="o">.</span><span class="n">get_cache_file_path</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DomainGraphExtractor.generate_ontology">
+<a class="viewcode-back" href="../../../../autoapi/owlapy/agen_kg/graph_extracting_models/index.html#owlapy.agen_kg.graph_extracting_models.domain_graph_extractor.DomainGraphExtractor.generate_ontology">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+                          <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">ontology_namespace</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;http://ontology.local/</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">#&quot;</span><span class="p">,</span>
+                          <span class="n">entity_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">generate_types</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">extract_spl_triples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">create_class_hierarchy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">use_chunking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">use_incremental_merging</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                          <span class="n">fact_reassurance</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                          <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;generated_ontology.owl&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Ontology</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a domain-specific ontology from text.</span>
+
+<span class="sd">        Supports automatic chunking for large texts that exceed the LLM&#39;s context window.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text: Input text or file path to extract ontology from.</span>
+<span class="sd">                Supports files: .txt, .pdf, .docx, .doc, .rtf, .html, .htm</span>
+<span class="sd">            domain: The domain of the text. If None, will be detected automatically.</span>
+<span class="sd">            query: A custom prompt to give directions to the agent.</span>
+<span class="sd">            ontology_namespace: Namespace for the ontology.</span>
+<span class="sd">            entity_types: List of entity types to assign.</span>
+<span class="sd">            generate_types: Whether to generate types automatically.</span>
+<span class="sd">            extract_spl_triples: Whether to extract subject-property-literal triples.</span>
+<span class="sd">            create_class_hierarchy: Whether to create class hierarchy from DBpedia.</span>
+<span class="sd">            use_chunking: Whether to use text chunking for large documents.</span>
+<span class="sd">                - None (default): Auto-detect based on text size (uses auto_chunk_threshold).</span>
+<span class="sd">                - True: Force chunking even for smaller texts.</span>
+<span class="sd">                - False: Disable chunking (may fail for very large texts).</span>
+<span class="sd">            use_incremental_merging: Whether to use incremental merging when chunking is enabled (default: False).</span>
+<span class="sd">            fact_reassurance: Whether to perform the coherence check on triples (default: True).</span>
+<span class="sd">            save_path: Path to save the ontology.</span>
+
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Generated Ontology object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">plan_decompose</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="c1"># Load text from file if necessary</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+            <span class="c1"># Check if it&#39;s a file path</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">source_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">Path</span><span class="p">)</span> <span class="k">else</span> <span class="n">text</span>
+                <span class="k">if</span> <span class="n">source_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                <span class="c1"># else: treat as raw text string</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="c1"># Determine whether to use chunking</span>
+        <span class="k">if</span> <span class="n">use_chunking</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">use_chunking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">should_chunk_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_incremental_merging</span> <span class="o">=</span> <span class="n">use_incremental_merging</span>
+
+        <span class="k">if</span> <span class="n">use_chunking</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="n">chunk_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_chunking_info</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Text will be processed in </span><span class="si">{</span><span class="n">chunk_info</span><span class="p">[</span><span class="s1">&#39;num_chunks&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> chunks&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Total chars: </span><span class="si">{</span><span class="n">chunk_info</span><span class="p">[</span><span class="s1">&#39;total_chars&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+                      <span class="sa">f</span><span class="s2">&quot;Est. tokens: </span><span class="si">{</span><span class="n">chunk_info</span><span class="p">[</span><span class="s1">&#39;estimated_tokens&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span><span class="n">text</span><span class="p">]</span>
+
+        <span class="c1"># Use a representative sample for domain detection</span>
+        <span class="n">domain_detection_text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">auto_chunk_threshold</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_chunk_threshold</span> <span class="k">else</span> <span class="n">text</span>
+
+        <span class="c1"># Step 1: Detect domain if not provided</span>
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">domain_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_detector</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">domain_detection_text</span><span class="p">)</span>
+            <span class="n">domain</span> <span class="o">=</span> <span class="n">domain_result</span><span class="o">.</span><span class="n">domain</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Detected domain: </span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Using provided domain: </span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Step 2: Generate domain-specific few-shot examples if not provided</span>
+
+        <span class="n">generated_examples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_domain_specific_examples</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+
+        <span class="c1"># Use generated examples only if user hasn&#39;t provided their own</span>
+        <span class="n">examples_for_entity_extraction</span> <span class="o">=</span> <span class="n">generated_examples</span><span class="p">[</span><span class="s1">&#39;entity_extraction&#39;</span><span class="p">]</span>
+        <span class="n">examples_for_triples_extraction</span> <span class="o">=</span> <span class="n">generated_examples</span><span class="p">[</span><span class="s1">&#39;triples_extraction&#39;</span><span class="p">]</span>
+        <span class="n">examples_for_type_assertion</span> <span class="o">=</span> <span class="n">generated_examples</span><span class="p">[</span><span class="s1">&#39;type_assertion&#39;</span><span class="p">]</span>
+        <span class="n">examples_for_type_generation</span> <span class="o">=</span> <span class="n">generated_examples</span><span class="p">[</span><span class="s1">&#39;type_generation&#39;</span><span class="p">]</span>
+        <span class="n">examples_for_literal_extraction</span> <span class="o">=</span>  <span class="n">generated_examples</span><span class="p">[</span><span class="s1">&#39;literal_extraction&#39;</span><span class="p">]</span>
+        <span class="n">examples_for_spl_triples_extraction</span> <span class="o">=</span> <span class="n">generated_examples</span><span class="p">[</span><span class="s1">&#39;triples_with_numeric_literals_extraction&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Step 3: Extract entities (from chunks if needed)</span>
+        <span class="c1"># if self.logging:</span>
+        <span class="c1">#     print(</span>
+        <span class="c1">#         &quot;DomainGraphExtractor: INFO :: In the generated triples, you may see entities or literals that were not &quot;</span>
+        <span class="c1">#         &quot;part of the extracted entities or literals. They are filtered before added to the ontology.&quot;)</span>
+
+        <span class="n">chunk_summaries</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">use_chunking</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">entities</span><span class="p">,</span> <span class="n">chunk_summaries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_entities_from_chunks</span><span class="p">(</span>
+                <span class="n">chunks</span><span class="p">,</span> <span class="n">examples_for_entity_extraction</span><span class="p">,</span> <span class="s2">&quot;DomainGraphExtractor&quot;</span><span class="p">,</span>
+                <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_extraction_instructions</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">entities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                                             <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_entity_extraction</span><span class="p">,</span>
+                                             <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_extraction_instructions</span><span class="p">)</span><span class="o">.</span><span class="n">entities</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Generated the following entities: </span><span class="si">{</span><span class="n">entities</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Step 4: Cluster entities to identify and merge duplicates</span>
+        <span class="c1"># Use summaries if available from chunked extraction, or create clustering context</span>
+        <span class="k">if</span> <span class="n">chunk_summaries</span><span class="p">:</span>
+            <span class="n">clustering_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_combined_summary</span><span class="p">(</span><span class="n">chunk_summaries</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">clustering_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clustering_context</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="n">canonical_entities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_entities</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">clustering_context</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">canonical_entities</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: After filtering: </span><span class="si">{</span><span class="n">canonical_entities</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Step 5: Extract triples using canonical entities (from chunks if needed)</span>
+        <span class="k">if</span> <span class="n">use_chunking</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">triples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_triples_from_chunks</span><span class="p">(</span>
+                <span class="n">chunks</span><span class="p">,</span> <span class="n">canonical_entities</span><span class="p">,</span> <span class="n">examples_for_triples_extraction</span><span class="p">,</span>
+                <span class="s2">&quot;DomainGraphExtractor&quot;</span><span class="p">,</span> <span class="n">chunk_summaries</span><span class="p">,</span>
+                <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">triple_extraction_instructions</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">triples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">triples_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">canonical_entities</span><span class="p">,</span>
+                                             <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_triples_extraction</span><span class="p">,</span>
+                                             <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">triple_extraction_instructions</span><span class="p">)</span><span class="o">.</span><span class="n">triples</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Generated the following triples: </span><span class="si">{</span><span class="n">triples</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Step 5.5: Cluster relations (object properties) and update triples programmatically BEFORE coherence check</span>
+        <span class="n">relations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">triples</span><span class="p">]))</span>
+        <span class="n">relation_mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_relations</span><span class="p">(</span><span class="n">relations</span><span class="p">,</span> <span class="n">clustering_context</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="c1"># Update triples with canonical relations</span>
+        <span class="n">updated_triples</span> <span class="o">=</span> <span class="p">[(</span><span class="n">triple</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">relation_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">triples</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">relations</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">relation_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">())):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: After relation clustering: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">relation_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Step 6: Check coherence of the relation-normalized triples</span>
+        <span class="k">if</span> <span class="n">fact_reassurance</span><span class="p">:</span>
+            <span class="n">coherent_triples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_coherence</span><span class="p">(</span><span class="n">updated_triples</span><span class="p">,</span>
+                                                    <span class="n">clustering_context</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">fact_checking_instructions</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: After coherence check, kept </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">coherent_triples</span><span class="p">)</span><span class="si">}</span><span class="s2"> triples&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">coherent_triples</span> <span class="o">=</span> <span class="n">updated_triples</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Skipped coherence check, using all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">coherent_triples</span><span class="p">)</span><span class="si">}</span><span class="s2"> triples&quot;</span><span class="p">)</span>
+
+
+        <span class="c1"># Step 7: Create ontology and add triples</span>
+        <span class="n">onto</span> <span class="o">=</span> <span class="n">Ontology</span><span class="p">(</span><span class="n">ontology_iri</span><span class="o">=</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.com/ontogen&quot;</span><span class="p">),</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">coherent_triples</span><span class="p">:</span>
+            <span class="n">subject</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="nb">object</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="c1"># TODO: `and triple[2] in canonical_entities` is removed from the condition below</span>
+            <span class="c1">#  because its was too strict. May need to reconsider that decision.</span>
+            <span class="k">if</span> <span class="n">triple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">canonical_entities</span><span class="p">:</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="nb">object</span><span class="p">)</span>
+                <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+        <span class="c1"># Step 8: Handle type assertions</span>
+        <span class="k">if</span> <span class="n">entity_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">generate_types</span><span class="p">:</span>
+            <span class="n">type_assertions</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="n">use_chunking</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">type_assertions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_types_from_chunks</span><span class="p">(</span>
+                    <span class="n">chunks</span><span class="p">,</span> <span class="n">canonical_entities</span><span class="p">,</span> <span class="n">entity_types</span><span class="p">,</span> <span class="n">generate_types</span><span class="p">,</span>
+                    <span class="n">examples_for_type_assertion</span><span class="p">,</span> <span class="n">examples_for_type_generation</span><span class="p">,</span>
+                    <span class="s2">&quot;DomainGraphExtractor&quot;</span><span class="p">,</span> <span class="n">chunk_summaries</span><span class="p">,</span>
+                    <span class="n">task_instructions_assertion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">type_assertion_instructions</span><span class="p">,</span>
+                    <span class="n">task_instructions_generation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">type_generation_instructions</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">entity_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">generate_types</span><span class="p">:</span>
+                    <span class="n">type_assertions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_asserter</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">canonical_entities</span><span class="p">,</span>
+                                                         <span class="n">entity_types</span><span class="o">=</span><span class="n">entity_types</span><span class="p">,</span>
+                                                         <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">type_assertion_instructions</span><span class="p">,</span>
+                                                         <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_type_assertion</span><span class="p">)</span><span class="o">.</span><span class="n">pairs</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Assigned types for entities as following: </span><span class="si">{</span><span class="n">type_assertions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">generate_types</span><span class="p">:</span>
+                    <span class="n">type_assertions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_generator</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">canonical_entities</span><span class="p">,</span>
+                                                          <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">type_generation_instructions</span><span class="p">,</span>
+                                                          <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_type_generation</span><span class="p">)</span><span class="o">.</span><span class="n">pairs</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Finished generating types and assigned them to entities as following: </span><span class="si">{</span><span class="n">type_assertions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Cluster types and update type assertions programmatically</span>
+            <span class="n">types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">type_assertions</span><span class="p">]))</span>
+            <span class="n">type_mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_types</span><span class="p">(</span><span class="n">types</span><span class="p">,</span> <span class="n">clustering_context</span><span class="p">)</span>
+            <span class="c1"># Update type assertions with canonical types</span>
+            <span class="n">type_assertions</span> <span class="o">=</span> <span class="p">[(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">type_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">type_assertions</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">types</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">type_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">())):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: After type clustering: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">type_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Add class assertion axioms</span>
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">type_assertions</span><span class="p">:</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="n">entity_type</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_type_name</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">entity_type</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subject: </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">, Entity Type: </span><span class="si">{</span><span class="n">entity_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Step 9: Extract SPL triples if requested</span>
+        <span class="k">if</span> <span class="n">extract_spl_triples</span><span class="p">:</span>
+            <span class="c1"># Extract literals (from chunks if needed)</span>
+            <span class="k">if</span> <span class="n">use_chunking</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">literals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_literals_from_chunks</span><span class="p">(</span>
+                    <span class="n">chunks</span><span class="p">,</span> <span class="n">examples_for_literal_extraction</span><span class="p">,</span> <span class="s2">&quot;DomainGraphExtractor&quot;</span><span class="p">,</span>
+                    <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">literal_extraction_instructions</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">literals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">literal_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                                                  <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">literal_extraction_instructions</span><span class="p">,</span>
+                                                  <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_literal_extraction</span><span class="p">)</span><span class="o">.</span><span class="n">l_values</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Generated the following numeric literals: </span><span class="si">{</span><span class="n">literals</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Extract SPL triples (from chunks if needed)</span>
+            <span class="k">if</span> <span class="n">use_chunking</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">spl_triples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_spl_triples_from_chunks</span><span class="p">(</span>
+                    <span class="n">chunks</span><span class="p">,</span> <span class="n">canonical_entities</span><span class="p">,</span> <span class="n">literals</span><span class="p">,</span>
+                    <span class="n">examples_for_spl_triples_extraction</span><span class="p">,</span>
+                    <span class="s2">&quot;DomainGraphExtractor&quot;</span><span class="p">,</span>
+                    <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">triple_with_literal_extraction_instructions</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spl_triples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spl_triples_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">canonical_entities</span><span class="p">,</span>
+                                                         <span class="n">numeric_literals</span><span class="o">=</span><span class="n">literals</span><span class="p">,</span>
+                                                         <span class="n">task_instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">triple_with_literal_extraction_instructions</span><span class="p">,</span>
+                                                         <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_spl_triples_extraction</span><span class="p">)</span><span class="o">.</span><span class="n">triples</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Generated the following s-p-l triples: </span><span class="si">{</span><span class="n">spl_triples</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Cluster relations (data properties) in SPL triples and update programmatically</span>
+            <span class="n">spl_relations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">spl_triples</span><span class="p">]))</span>
+            <span class="n">spl_relation_mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_relations</span><span class="p">(</span><span class="n">spl_relations</span><span class="p">,</span> <span class="n">clustering_context</span><span class="p">)</span>
+            <span class="c1"># Update SPL triples with canonical relations</span>
+            <span class="n">spl_triples</span> <span class="o">=</span> <span class="p">[(</span><span class="n">triple</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">spl_relation_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                           <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">spl_triples</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">spl_relations</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">spl_relation_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">())):</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: After SPL relation clustering: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">spl_relation_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">spl_triples</span><span class="p">:</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="n">prop</span> <span class="o">=</span> <span class="n">OWLDataProperty</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">snake_case</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="n">literal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_corresponding_literal</span><span class="p">(</span><span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">triple</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">in</span> <span class="n">literals</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">literal</span><span class="p">)</span>
+                        <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="k">pass</span>
+
+        <span class="c1"># Step 10: Create class hierarchy if requested</span>
+        <span class="k">if</span> <span class="n">create_class_hierarchy</span><span class="p">:</span>
+            <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">superclasses</span><span class="p">,</span> <span class="n">subclasses</span> <span class="o">=</span> <span class="n">extract_hierarchy_from_dbpedia</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">remainder</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: For class </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">remainder</span><span class="si">}</span><span class="s2"> found superclasses: </span><span class="si">{</span><span class="p">[</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">remainder</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">superclasses</span><span class="p">]</span><span class="si">}</span><span class="s2"> and subclasses: </span><span class="si">{</span><span class="p">[</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">remainder</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">subclasses</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">superclass</span> <span class="ow">in</span> <span class="n">superclasses</span><span class="p">:</span>
+                    <span class="n">dbpedia_class_remainder</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">superclass</span><span class="p">)</span><span class="o">.</span><span class="n">remainder</span>
+                    <span class="n">sup_cls</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="n">dbpedia_class_remainder</span><span class="p">)</span>
+                    <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">sup_cls</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                <span class="k">for</span> <span class="n">subclass</span> <span class="ow">in</span> <span class="n">subclasses</span><span class="p">:</span>
+                    <span class="n">dbpedia_class_remainder</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">subclass</span><span class="p">)</span><span class="o">.</span><span class="n">remainder</span>
+                    <span class="n">sub_cls</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">ontology_namespace</span> <span class="o">+</span> <span class="n">dbpedia_class_remainder</span><span class="p">)</span>
+                    <span class="n">ax</span> <span class="o">=</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">(</span><span class="n">sub_cls</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">onto</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="k">pass</span>
+
+        <span class="c1"># Step 11: Save ontology</span>
+        <span class="n">onto</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">save_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;DomainGraphExtractor: INFO :: Successfully saved the ontology at </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span><span class="w"> </span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">onto</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

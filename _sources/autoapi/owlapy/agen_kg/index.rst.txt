@@ -1,0 +1,149 @@
+owlapy.agen_kg
+==============
+
+.. py:module:: owlapy.agen_kg
+
+.. autoapi-nested-parse::
+
+   AGen-KG module
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/owlapy/agen_kg/agent/index
+   /autoapi/owlapy/agen_kg/chunking_models/index
+   /autoapi/owlapy/agen_kg/domain_examples_cache/index
+   /autoapi/owlapy/agen_kg/few_shot_examples/index
+   /autoapi/owlapy/agen_kg/graph_extracting_models/index
+   /autoapi/owlapy/agen_kg/graph_extractor/index
+   /autoapi/owlapy/agen_kg/helper/index
+   /autoapi/owlapy/agen_kg/signatures/index
+   /autoapi/owlapy/agen_kg/text_loader/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.agen_kg.AGenKG
+
+
+Package Contents
+----------------
+
+.. py:class:: AGenKG(model='gpt-4o', api_key='<YOUR_GITHUB_PAT>', api_base='https://models.github.ai/inference', temperature=0.1, seed=42, cache=False, enable_logging=False, max_tokens=4000)
+
+   .. py:attribute:: logging
+      :value: False
+
+
+
+   .. py:attribute:: model
+      :value: 'gpt-4o'
+
+
+
+   .. py:attribute:: api_key
+      :value: '<YOUR_GITHUB_PAT>'
+
+
+
+   .. py:attribute:: api_base
+      :value: 'https://models.github.ai/inference'
+
+
+
+   .. py:attribute:: temperature
+      :value: 0.1
+
+
+
+   .. py:attribute:: seed
+      :value: 42
+
+
+
+   .. py:attribute:: cache
+      :value: False
+
+
+
+   .. py:attribute:: enable_logging
+      :value: False
+
+
+
+   .. py:attribute:: max_tokens
+      :value: 4000
+
+
+
+   .. py:attribute:: open_graph_extractor
+
+
+   .. py:attribute:: domain_graph_extractor
+
+
+   .. py:method:: configure_chunking(chunk_size: int = None, overlap: int = None, strategy: str = None, auto_chunk_threshold: int = None, summarization_threshold: int = None, max_summary_length: int = None)
+
+      Configure text chunking settings for all extractors.
+
+      This method allows fine-tuning of how large texts are split into
+      manageable pieces for LLM processing.
+
+      :param chunk_size: Maximum characters per chunk (default: 3000, ~750 tokens).
+      :param overlap: Characters to overlap between chunks (default: 200).
+      :param strategy: Chunking strategy - "sentence", "paragraph", or "fixed".
+      :param auto_chunk_threshold: Character threshold for automatic chunking (default: 4000).
+      :param summarization_threshold: Character threshold for using summarization in clustering
+                                      (default: 8000). When text exceeds this, summaries are
+                                      generated to provide context for clustering operations.
+      :param max_summary_length: Maximum length of summaries used for clustering context
+                                 (default: 3000, ~750 tokens).
+
+      .. rubric:: Example
+
+      # Configure for a model with smaller context window
+      agenkg.configure_chunking(chunk_size=2000, overlap=150, strategy="sentence")
+
+      # Configure summarization thresholds for large documents
+      agenkg.configure_chunking(summarization_threshold=10000, max_summary_length=4000)
+
+
+
+   .. py:method:: configure_chunking_for_model(max_context_tokens: int, prompt_overhead_tokens: int = 1500)
+
+      Automatically configure chunking based on model specifications for all extractors.
+
+      :param max_context_tokens: Maximum context window of your model (e.g., 4096 for GPT-3.5).
+      :param prompt_overhead_tokens: Estimated tokens used by prompts/few-shot examples.
+
+      .. rubric:: Example
+
+      # For GPT-3.5-turbo (4K context)
+      agenkg.configure_chunking_for_model(4096, 1000)
+
+      # For GPT-4 (8K context)
+      agenkg.configure_chunking_for_model(8192, 1500)
+
+
+
+   .. py:method:: generate_ontology(text, ontology_type='domain', query=None, **kwargs)
+
+      Generate an ontology from the provided text using the specified extractor type.
+      :param text: The input text from which to extract the ontology or path to a text file.
+                   Supported file formats: .txt, .docx, .pdf, .rtf, .html.
+      :param ontology_type: Type of ontology extraction - "domain" or "open".
+                            "domain" stands for domain-specific ontology extraction.
+                            "open" stands for open-world ontology extraction (more general).
+      :param query: Specific instructions to the agent.
+      :param \*\*kwargs: Additional parameters for customization.
+
+
+

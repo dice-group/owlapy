@@ -1,0 +1,1057 @@
+owlapy.agen_kg.signatures
+=========================
+
+.. py:module:: owlapy.agen_kg.signatures
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.agen_kg.signatures.Entity
+   owlapy.agen_kg.signatures.Triple
+   owlapy.agen_kg.signatures.TypeAssertion
+   owlapy.agen_kg.signatures.TypeGeneration
+   owlapy.agen_kg.signatures.Literal
+   owlapy.agen_kg.signatures.SPLTriples
+   owlapy.agen_kg.signatures.Domain
+   owlapy.agen_kg.signatures.DomainSpecificFewShotGenerator
+   owlapy.agen_kg.signatures.EntityDeduplication
+   owlapy.agen_kg.signatures.CoherenceChecker
+   owlapy.agen_kg.signatures.TypeClustering
+   owlapy.agen_kg.signatures.RelationClustering
+   owlapy.agen_kg.signatures.TextSummarizer
+   owlapy.agen_kg.signatures.ChunkSummarizer
+   owlapy.agen_kg.signatures.EntityDeduplicationWithSummary
+   owlapy.agen_kg.signatures.TypeClusteringWithSummary
+   owlapy.agen_kg.signatures.RelationClusteringWithSummary
+   owlapy.agen_kg.signatures.IncrementalEntityMerger
+   owlapy.agen_kg.signatures.IncrementalTripleMerger
+   owlapy.agen_kg.signatures.IncrementalTypeMerger
+   owlapy.agen_kg.signatures.PlanDecomposer
+
+
+Module Contents
+---------------
+
+.. py:class:: Entity(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a piece of text as input identify key entities extracted form the text. The result 
+             should be a list of capitalized entities. E.g., ["ENTITY1", "ENTITY2", ...]"""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: task_instructions
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+      :value: None
+
+
+
+.. py:class:: Triple(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a piece of text and entities, identify triples of type source_entity-relation-target_entity
+             where source_entity and target_entity are strictly part of the given entities."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: task_instructions
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: triples
+      :type:  list[tuple[str, str, str]]
+      :value: None
+
+
+
+.. py:class:: TypeAssertion(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: 'Given a list of entities, a list of types and textual contex, assign types to the entities.'
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: entity_types
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: task_instructions
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: pairs
+      :type:  list[tuple[str, str]]
+      :value: None
+
+
+
+.. py:class:: TypeGeneration(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: 'Given a list of entities and textual contex, assign meaningful general types to the entities.'
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: task_instructions
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: pairs
+      :type:  list[tuple[str, str]]
+      :value: None
+
+
+
+.. py:class:: Literal(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a piece of text as input identify key numerical values extracted form the text. The result
+             should be a list of numerical literals. E.g., ["123", "45.67", "50%", ...]"""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: task_instructions
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: l_values
+      :type:  list[str]
+      :value: None
+
+
+
+.. py:class:: SPLTriples(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a piece of text, entities and numeric literals, identify triples of type 
+             source_entity-relation-target_value where source_entity is strictly part of the given entities and the target_value 
+             is strictly part of the given numeric literals."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: numeric_literals
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: task_instructions
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: triples
+      :type:  list[tuple[str, str, str]]
+      :value: None
+
+
+
+.. py:class:: Domain(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a piece of text, identify the primary domain or topic of the text.
+             Example domains: 'biology', 'chemistry', 'finance', 'sports', 'politics', 'medicine', 'computer science'.
+             """
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: domain
+      :type:  str
+      :value: None
+
+
+
+.. py:class:: DomainSpecificFewShotGenerator(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a domain (e.g., 'biology', 'finance', 'sports'), generate few-shot examples tailored to that domain 
+             for a specific task (entity extraction, triple extraction, type assertion, etc.). The examples should follow the same 
+             format as the general few-shot examples but with domain-specific content."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: domain
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: task_type
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: num_examples
+      :type:  int
+      :value: None
+
+
+
+   .. py:attribute:: examples_example_structure
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: few_shot_examples
+      :type:  str
+      :value: None
+
+
+
+.. py:class:: EntityDeduplication(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a list of entities, identify and remove redundant near-duplicates that refer to the same real-world entity.
+             Consider variations in spelling, abbreviations, and naming conventions. For example, given ['Ben Smith', 'B. Smith'], 
+             remove 'B. Smith' and keep 'Ben Smith'. Preserve most entities - only filter out those that are very closely resembled or 
+             abbreviated versions of more complete entities. Return a filtered list with redundant entities removed."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: filtered_entities
+      :type:  list[str]
+      :value: None
+
+
+
+.. py:class:: CoherenceChecker(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a batch of triples, textual context and optional instructions, evaluate the logical coherence and factual consistency 
+             of the triples. Rate each triple's coherence on a scale of 1-5, where 1 means incoherent, contradictory or trivial and 5 means highly 
+             coherent and consistent. Identify any contradictions or logical inconsistencies between triples."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: triples
+      :type:  list[tuple[str, str, str]]
+      :value: None
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: task_instructions
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: coherence_scores
+      :type:  list[tuple[tuple[str, str, str], int, str]]
+      :value: None
+
+
+
+.. py:class:: TypeClustering(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a list of entity types, identify duplicates and near-duplicates that refer to the same conceptual type.
+             Consider variations in spelling, singular/plural forms, synonyms, and different naming conventions. Return clusters of types 
+             that should be merged together, along with the canonical type name to use for each cluster."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: types
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: clusters
+      :type:  list[tuple[list[str], str]]
+      :value: None
+
+
+
+.. py:class:: RelationClustering(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a list of relations, identify duplicates and near-duplicates that refer to the same relationship.
+             Consider variations in spelling, synonyms, different phrasings, and naming conventions. Return clusters of relations 
+             that should be merged together, along with the canonical relation name to use for each cluster."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: relations
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: clusters
+      :type:  list[tuple[list[str], str]]
+      :value: None
+
+
+
+.. py:class:: TextSummarizer(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a piece of text, generate a concise summary that preserves all key entities, relationships,
+             types, and factual information mentioned. The summary should capture the essential semantic content without 
+             losing important details needed for knowledge graph extraction."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: text
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: summary
+      :type:  str
+      :value: None
+
+
+
+.. py:class:: ChunkSummarizer(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given multiple text chunk summaries, combine them into a unified comprehensive summary.
+             The combined summary should deduplicate information, preserve all unique entities and relationships,
+             and maintain coherence across the merged content."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: chunk_summaries
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: combined_summary
+      :type:  str
+      :value: None
+
+
+
+.. py:class:: EntityDeduplicationWithSummary(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a list of entities and a summary of the source text, identify and remove redundant near-duplicates 
+             that refer to the same real-world entity. Consider variations in spelling, abbreviations, and naming conventions. 
+             For example, given ['Ben Smith', 'B. Smith'], remove 'B. Smith' and keep 'Ben Smith'. Preserve most entities - only 
+             filter out those that are very closely resembled or abbreviated versions of more complete entities. 
+             Return a filtered list with redundant entities removed."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: entities
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: summary
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: filtered_entities
+      :type:  list[str]
+      :value: None
+
+
+
+.. py:class:: TypeClusteringWithSummary(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a list of entity types and a summary of the source text, identify duplicates and near-duplicates 
+             that refer to the same conceptual type. Consider variations in spelling, singular/plural forms, synonyms, 
+             and different naming conventions. Return clusters of types that should be merged together, 
+             along with the canonical type name to use for each cluster."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: types
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: summary
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: clusters
+      :type:  list[tuple[list[str], str]]
+      :value: None
+
+
+
+.. py:class:: RelationClusteringWithSummary(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given a list of relations and a summary of the source text, identify duplicates and near-duplicates 
+             that refer to the same relationship. Consider variations in spelling, synonyms, different phrasings, 
+             and naming conventions. Return clusters of relations that should be merged together, 
+             along with the canonical relation name to use for each cluster."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: relations
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: summary
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: clusters
+      :type:  list[tuple[list[str], str]]
+      :value: None
+
+
+
+.. py:class:: IncrementalEntityMerger(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given two sets of entities from different text chunks along with context, merge them into a unified 
+             list. Identify entities that refer to the same real-world entity across chunks and produce a canonical list.
+             Consider different mentions, abbreviations, and naming conventions that may appear across chunks."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: entities_a
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: entities_b
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: context_a
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: context_b
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: merged_entities
+      :type:  list[str]
+      :value: None
+
+
+
+   .. py:attribute:: entity_mapping
+      :type:  list[tuple[str, str]]
+      :value: None
+
+
+
+.. py:class:: IncrementalTripleMerger(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given two sets of triples from different text chunks along with context, merge them into a unified 
+             list. Identify triples that represent the same relationship (possibly with different wording) and produce
+             a canonical list. Handle variations in entity names and relation phrasings across chunks."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: triples_a
+      :type:  list[tuple[str, str, str]]
+      :value: None
+
+
+
+   .. py:attribute:: triples_b
+      :type:  list[tuple[str, str, str]]
+      :value: None
+
+
+
+   .. py:attribute:: context_a
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: context_b
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: merged_triples
+      :type:  list[tuple[str, str, str]]
+      :value: None
+
+
+
+.. py:class:: IncrementalTypeMerger(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """Given two sets of entity-type pairs from different text chunks, merge them into a unified list.
+             Resolve any conflicting type assignments for the same entity, preferring more specific types.
+             Handle variations in type naming across chunks."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: types_a
+      :type:  list[tuple[str, str]]
+      :value: None
+
+
+
+   .. py:attribute:: types_b
+      :type:  list[tuple[str, str]]
+      :value: None
+
+
+
+   .. py:attribute:: context_a
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: context_b
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: merged_types
+      :type:  list[tuple[str, str]]
+      :value: None
+
+
+
+.. py:class:: PlanDecomposer(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """We want to extract knowledge from text in triples format. The pipeline follows these steps:
+             entity extraction, triple extraction, type assertion, literal extraction, triple extraction with numeric literals.
+             Given the user's query about the knowledge graph to be extracted, decompose it into sub-tasks that can be used
+             as instructions for each step of the pipeline."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: user_request
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: entity_extraction_task
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: triple_extraction_task
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: type_generation_task
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: type_assertion_task
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: literal_extraction_task
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: triple_with_literal_extraction_task
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: fact_checking_task
+      :type:  str
+      :value: None
+
+
+
