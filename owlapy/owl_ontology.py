@@ -46,8 +46,6 @@ import os
 import json
 from pathlib import Path
 
-import torch
-
 logger = logging.getLogger(__name__)
 
 _Datatype_map: Final = MappingProxyType({
@@ -1767,6 +1765,8 @@ class NeuralOntology(AbstractOWLOntology):
                  gamma: float = 0.5):
         try:
             from dicee.knowledge_graph_embeddings import KGE
+            # installing dicee will also install torch
+            import torch
         except ImportError:
             raise ImportError("The 'dicee' package is required to use NeuralOntology. "
                               "Please install it via 'pip install dicee'."
