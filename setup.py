@@ -14,7 +14,7 @@ _deps = [
     "fastapi>=0.115.5",
     "httpx>=0.27.2",
     "uvicorn>=0.32.1",
-    "dicee==0.3.1",
+    "dicee==0.3.2",
     "litserve>=0.2.0",
     "dspy==3.0.3",
     "ruff>=0.7.2",
@@ -40,12 +40,11 @@ extras["min"] = deps_list(
     "fastapi",
     "httpx",
     "uvicorn",
-    "dicee",
     "litserve",
     "dspy",
 )
 
-extras["dev"] = (extras["min"] + deps_list("pytest", "ruff"))
+extras["dev"] = (extras["min"] + deps_list("pytest", "ruff", "dicee"))
 install_requires = [extras["min"]]
 
 with open('README.md', 'r') as fh:
