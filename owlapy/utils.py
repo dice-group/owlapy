@@ -1014,7 +1014,7 @@ class CESimplifier:
         s = set(e.get_filler().individuals())
         if isinstance(nary_ce, OWLObjectUnionOf):
             for op in nary_ce.operands():
-                if isinstance(op, OWLObjectHasValue):
+                if isinstance(op, OWLObjectHasValue) and op.get_property() == e.get_property():
                     s.add(op.get_filler())
         return OWLObjectSomeValuesFrom(property=e.get_property(), filler=OWLObjectOneOf(s))
 

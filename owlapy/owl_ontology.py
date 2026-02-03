@@ -45,9 +45,7 @@ from owlapy.vocab import OWLFacet
 import os
 import json
 from pathlib import Path
-from dicee.knowledge_graph_embeddings import KGE
-from dicee.executer import Execute
-from dicee.config import Namespace
+
 import torch
 
 logger = logging.getLogger(__name__)
@@ -1767,6 +1765,14 @@ class NeuralOntology(AbstractOWLOntology):
     def __init__(self, path_neural_embedding: str, train_if_not_exists: bool = False,
                  training_params: Optional[Union[Dict[str, Any], str]] = None, batch_size: int = 1024, device: str = "gpu",
                  gamma: float = 0.5):
+        try:
+            from dicee.knowledge_graph_embeddings import KGE
+        except ImportError:
+            raise ImportError("The 'dicee' package is required to use NeuralOntology. "
+                              "Please install it via 'pip install dicee'."
+                              "For the CPU-only version (recommended): pip install dicee --extra-index-url https://download.pytorch.org/whl/cpu")
+
+
         """
         Initialize a Neural Ontology from a KGE model.
 
@@ -1809,6 +1815,9 @@ class NeuralOntology(AbstractOWLOntology):
             path: Path to a directory containing train.txt or to the dataset directory
             training_params: Optional dictionary of training parameters or path to a JSON file.
         """
+        from dicee.config import Namespace
+        from dicee.executer import Execute
+        from dicee.knowledge_graph_embeddings import KGE
         args = Namespace()
 
         # Set default parameters
