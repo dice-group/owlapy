@@ -62,8 +62,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#save-an-ontology">Save an Ontology</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#generate-an-ontology-from-text">Generate an ontology from text</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#notes">Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generate-ontology-from-text">Generate Ontology From Text</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#worlds">Worlds</a></li>
@@ -265,43 +265,65 @@ It requires one argument, the IRI of the new ontology.</p>
 <p>The above line of code will save the ontology <code class="docutils literal notranslate"><span class="pre">onto</span></code> in the file <em>test.owl</em> which will be
 created in the same directory as the file you are running this code.</p>
 </section>
-<section id="generate-an-ontology-from-text">
-<h2>Generate an ontology from text<a class="headerlink" href="#generate-an-ontology-from-text" title="Link to this heading"></a></h2>
-<p>In OWLAPY, you’ll find a module named ontogen — a concise name we chose for our ontology generation module powered by LLMs.
-This functionality is built on top of <a class="reference external" href="https://dspy.ai/">DSPy</a>. To use it, you need to create an instance of the <code class="docutils literal notranslate"><span class="pre">GraphExtractor</span></code> class,
+<section id="generate-ontology-from-text">
+<h2>Generate Ontology From Text<a class="headerlink" href="#generate-ontology-from-text" title="Link to this heading"></a></h2>
+<p>In OWLAPY, you’ll find a module named agen_kg (short for “agent-generated knowledge graph”) that enables you to
+extract ontologies from unstructured text using Large Language Models (LLMs).
+This functionality is built on using <a class="reference external" href="https://dspy.ai/">DSPy</a>. To use it, you need to create an instance of the <code class="docutils literal notranslate"><span class="pre">AGenKG</span></code> class,
 where you can configure general LLM settings. Once initialized, the instance can be used as a callable object to generate an ontology, as shown below:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.ontogen.data_extraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphExtractor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg</span><span class="w"> </span><span class="kn">import</span> <span class="n">AGenKG</span>
 
-<span class="n">ontogen</span> <span class="o">=</span> <span class="n">GraphExtractor</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;openai/gpt-4o&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;ENTER_API_KEY&gt;&quot;</span><span class="p">,</span> <span class="n">api_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">AGenKG</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;openai/gpt-4o&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;ENTER_API_KEY&gt;&quot;</span><span class="p">,</span> <span class="n">api_base</span><span class="o">=</span><span class="s2">&quot;&lt;YOUR_API_ENDPOINT_IF_APPLICABLE&gt;&quot;</span><span class="p">,</span>
                          <span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">enable_logging</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ontogen</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Text to be used for ontology generation&quot;</span><span class="p">,</span> <span class="n">generate_types</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">generate_ontology</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Text to be used for ontology generation&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<section id="notes">
-<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h3>
+<section id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>The model argument should be a string of the form <code class="docutils literal notranslate"><span class="pre">llm_provider/llm_name</span></code>, supported by LiteLLM.</p></li>
 <li><p>Provide your API key and (optionally) an API endpoint in the respective fields.
 You can use GitHub Models for free by creating a GitHub PAT with permission to “models”.</p></li>
 <li><p>To view detailed logs during extraction or generation, set <code class="docutils literal notranslate"><span class="pre">enable_logging=True</span></code>.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">ontogen</span></code> object is callable — internally, it forwards the call to the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method.
-You can also inspect available parameters by checking its docstring <code class="docutils literal notranslate"><span class="pre">help(ontogen.forward)</span></code></p></li>
-<li><p>In the example above, setting <code class="docutils literal notranslate"><span class="pre">generate_types=True</span></code> triggers automatic generation of classes for the extracted entities,
-while all other parameters use their default values.</p></li>
-<li><p>To restrict the types of entities to be extracted, you can pass a list to <code class="docutils literal notranslate"><span class="pre">entity_types</span></code>.
-By default, it is set to <code class="docutils literal notranslate"><span class="pre">None</span></code>, allowing the LLM to infer entity types automatically.</p></li>
-<li><p>Setting <code class="docutils literal notranslate"><span class="pre">extract_spl_triples=True</span></code> enables extraction of subject–predicate–literal (s-p-l) triples, where l represents a numeric literal.</p></li>
-<li><p>To customize prompt behavior, you can provide your own few-shot examples using any of the following arguments:</p>
+<li><p>Full list of arguments:</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_entity_extraction</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_triples_extraction</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_type_assertion</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_type_generation</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_literal_extraction</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">examples_for_spl_triples_extraction</span></code>
-If none are provided, a default set of examples is used. You can review the defaults <a class="reference external" href="https://github.com/dice-group/owlapy/blob/main/owlapy/ontogen/few_shot_examples.py">here</a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> →  The input text from which to extract the ontology or path to a text file.
+Supported file formats: <em>.txt</em>, <em>.docx</em>, <em>.pdf</em>, <em>.rtf</em>, <em>.html</em>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ontology_type</span></code> → Type of ontology extraction - “domain” or “open”.</p>
+<ul>
+<li><p>“domain” stands for domain-specific ontology extraction.</p></li>
+<li><p>“open” stands for open-world ontology extraction (more general).</p></li>
 </ul>
 </li>
+<li><p><code class="docutils literal notranslate"><span class="pre">query</span></code> → Specific instructions to the agent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">entity_types</span></code>: List of entity types to assign. This is used to restrict the types of entities to be
+extracted. By default, it is set to None, allowing the LLM to infer entity types automatically.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_types</span></code>: Whether to generate types for individuals.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">extract_spl_triples</span></code>: Whether to extract subject-property-literal triples.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">create_class_hierarchy</span></code>: Whether to create class hierarchy from (imported from DBpedia - not LLM generated).</p></li>
+<li><p>use_chunking: Whether to use text chunking for large documents.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code> (default): Auto-detect based on text size (uses auto_chunk_threshold).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">True</span></code>: Force chunking even for smaller texts.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">False</span></code>: Disable chunking (may fail for very large texts).</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>You can also configure chunking settings by calling <code class="docutils literal notranslate"><span class="pre">configure_chunking</span></code> method of the <code class="docutils literal notranslate"><span class="pre">AGenKG</span></code> instance:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">chunk_size</span></code>: Maximum characters per chunk (default: 3000, ~750 tokens)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">overlap</span></code>: Characters to overlap between chunks (default: 200).
+strategy: Chunking strategy - “sentence”, “paragraph”, or “fixed”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">auto_chunk_threshold</span></code>: Character threshold for automatic chunking (default: 4000).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">summarization_threshold</span></code>: Character threshold for using summarization of chunks in clustering
+(default: 8000) to preserve context. When text exceeds this,
+summaries are generated to provide context for clustering operations.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_summary_length</span></code>: Maximum length of summaries used for clustering context
+(default: 3000, ~750 tokens).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fact_reassurance</span></code>: Whether to perform the coherence check on triples (default: True).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">save_path</span></code>: Path to save the ontology.</p></li>
 </ul>
 <p>After running the example, a file named <code class="docutils literal notranslate"><span class="pre">generated_ontology.owl</span></code> will be created in your working directory.
 You can change the output path by setting the <code class="docutils literal notranslate"><span class="pre">save_path</span></code> argument.</p>
