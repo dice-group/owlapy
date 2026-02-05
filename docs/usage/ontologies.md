@@ -189,40 +189,55 @@ The above line of code will save the ontology `onto` in the file *test.owl* whic
 created in the same directory as the file you are running this code.
 
 
-## Generate an ontology from text
-In OWLAPY, you’ll find a module named ontogen — a concise name we chose for our ontology generation module powered by LLMs.
-This functionality is built on top of [DSPy](https://dspy.ai/). To use it, you need to create an instance of the `GraphExtractor` class, 
+## Generate Ontology From Text
+In OWLAPY, you’ll find a module named agen_kg (short for "agent-generated knowledge graph") that enables you to 
+extract ontologies from unstructured text using Large Language Models (LLMs).
+This functionality is built on using [DSPy](https://dspy.ai/). To use it, you need to create an instance of the `AGenKG` class, 
 where you can configure general LLM settings. Once initialized, the instance can be used as a callable object to generate an ontology, as shown below:
 
 ```python
-from owlapy.ontogen.data_extraction import GraphExtractor
+from owlapy.agen_kg import AGenKG
 
-ontogen = GraphExtractor(model="openai/gpt-4o", api_key="<ENTER_API_KEY>", api_base=None,
+agent = AGenKG(model="openai/gpt-4o", api_key="<ENTER_API_KEY>", api_base="<YOUR_API_ENDPOINT_IF_APPLICABLE>",
                          temperature=0.1, seed=42, enable_logging=True)
-ontogen(text="Text to be used for ontology generation", generate_types = True)
+agent.generate_ontology(text="Text to be used for ontology generation")
 ```
 
-#### Notes
+### Configuration
 
 - The model argument should be a string of the form `llm_provider/llm_name`, supported by LiteLLM.
 - Provide your API key and (optionally) an API endpoint in the respective fields.
   You can use GitHub Models for free by creating a GitHub PAT with permission to "models".
 - To view detailed logs during extraction or generation, set `enable_logging=True`.
-- The `ontogen` object is callable — internally, it forwards the call to the `forward()` method.
-  You can also inspect available parameters by checking its docstring `help(ontogen.forward)`
-- In the example above, setting `generate_types=True` triggers automatic generation of classes for the extracted entities,
-  while all other parameters use their default values.
-- To restrict the types of entities to be extracted, you can pass a list to `entity_types`.
-  By default, it is set to `None`, allowing the LLM to infer entity types automatically.
-- Setting `extract_spl_triples=True` enables extraction of subject–predicate–literal (s-p-l) triples, where l represents a numeric literal.
-- To customize prompt behavior, you can provide your own few-shot examples using any of the following arguments:
-  - `examples_for_entity_extraction`
-  - `examples_for_triples_extraction`
-  - `examples_for_type_assertion`
-  - `examples_for_type_generation`
-  - `examples_for_literal_extraction`
-  - `examples_for_spl_triples_extraction`
- If none are provided, a default set of examples is used. You can review the defaults [here](https://github.com/dice-group/owlapy/blob/main/owlapy/ontogen/few_shot_examples.py).
+- Full list of arguments:
+  - `text` &rarr;  The input text from which to extract the ontology or path to a text file.
+                Supported file formats: _.txt_, _.docx_, _.pdf_, _.rtf_, _.html_.
+  - `ontology_type` &rarr; Type of ontology extraction - "domain" or "open".
+    - "domain" stands for domain-specific ontology extraction.
+    - "open" stands for open-world ontology extraction (more general).
+  - `query` &rarr; Specific instructions to the agent.
+  - `entity_types`: List of entity types to assign. This is used to restrict the types of entities to be 
+                    extracted. By default, it is set to None, allowing the LLM to infer entity types automatically.
+  - `generate_types`: Whether to generate types for individuals.
+  - `extract_spl_triples`: Whether to extract subject-property-literal triples.
+  - `create_class_hierarchy`: Whether to create class hierarchy from (imported from DBpedia - not LLM generated).
+  - use_chunking: Whether to use text chunking for large documents.
+    - `None` (default): Auto-detect based on text size (uses auto_chunk_threshold).
+    - `True`: Force chunking even for smaller texts.
+    - `False`: Disable chunking (may fail for very large texts).
+
+You can also configure chunking settings by calling `configure_chunking` method of the `AGenKG` instance:
+  - `chunk_size`: Maximum characters per chunk (default: 3000, ~750 tokens)
+  - `overlap`: Characters to overlap between chunks (default: 200).
+            strategy: Chunking strategy - "sentence", "paragraph", or "fixed".
+  - `auto_chunk_threshold`: Character threshold for automatic chunking (default: 4000).
+  - `summarization_threshold`: Character threshold for using summarization of chunks in clustering
+                                    (default: 8000) to preserve context. When text exceeds this, 
+                                    summaries are generated to provide context for clustering operations. 
+  - `max_summary_length`: Maximum length of summaries used for clustering context
+                               (default: 3000, ~750 tokens).
+  - `fact_reassurance`: Whether to perform the coherence check on triples (default: True).
+  - `save_path`: Path to save the ontology.
 
 After running the example, a file named `generated_ontology.owl` will be created in your working directory.
 You can change the output path by setting the `save_path` argument.
