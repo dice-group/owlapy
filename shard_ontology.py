@@ -67,8 +67,14 @@ def shard_ontology(ontology_path: str, num_shards: int, output_dir: str = None):
         if ind and ind in ind_to_shard:
             shard_abox[ind_to_shard[ind]].append(axiom)
     
-    # Create shard ontologies
-    base_iri = onto.get_ontology_id().get_ontology_iri().as_str()
+    # Create shard ontologies - handle anonymous ontologies
+    ont_iri = onto.get_ontology_id().get_ontology_iri()
+    if ont_iri is not None:
+        base_iri = ont_iri.as_str()
+    else:
+        # Fallback for anonymous ontologies
+        base_iri = f"http://example.org/{source.stem}"
+        print(f"Warning: Ontology has no IRI, using fallback: {base_iri}")
     
     for i in range(num_shards):
         shard_name = f"{source.stem}_shard_{i}{source.suffix}"
