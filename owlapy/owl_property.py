@@ -1,7 +1,7 @@
 """OWL Properties"""
 from .owl_object import OWLObject, OWLEntity
 from abc import ABCMeta, abstractmethod
-from typing import Final, Union
+from typing import Final, Union, List
 from .iri import IRI
 
 
@@ -217,3 +217,63 @@ class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
 
     def __hash__(self):
         return hash(("OWLDataProperty",self._iri))
+    
+
+class OWLObjectPropertyChain(OWLObjectPropertyExpression):
+    """Represents a property chain expression. A property chain is a sequence of object properties
+    that can be used in the subproperty axioms to specify that the composition of the properties
+    in the chain is a subproperty of another property.
+    """
+    __slots__ = '_object_property_expressions'
+
+    def __init__(
+        self,
+        object_property_expressions: List[OWLObjectPropertyExpression],
+    ):
+        super().__init__()
+        assert isinstance(object_property_expressions, list), "object_property_expressions must be a list."
+        assert len(object_property_expressions) > 1, "A property chain must have at least 2 property expressions."
+        self._object_property_expressions = object_property_expressions
+
+    def get_inverse_property(self) -> 'OWLObjectPropertyChain':
+        # documented in parent
+        return OWLObjectPropertyChain(
+            [
+                ope.get_inverse_property()
+                for ope in reversed(self._object_property_expressions)
+            ]
+        )
+
+    def __repr__(self):
+        return f"OWLObjectPropertyChain({repr(self._object_property_expressions)})"
+    
+    def __eq__( self, other ):
+        if type(other) is type(self):
+            if len(self._object_property_expressions) != len(other._object_property_expressions):
+                return False
+            for i in range(len(self._object_property_expressions)):
+                if self._object_property_expressions[i] != other._object_property_expressions[i]:
+                    return False
+            return True
+        return False
+    
+    def __hash__(self):
+        hash_value = hash(
+            ("OWLObjectPropertyChain", tuple(self._object_property_expressions))
+        )
+        return hash_value
+    
+    def get_object_property_expressions(self) -> List[OWLObjectPropertyExpression]:
+        """Gets the list of object property expressions in this property chain.
+
+        Returns:
+            The list of object property expressions in this property chain.
+        """
+        return self._object_property_expressions
+    
+    def get_named_property(self):
+        # I have no idea how to do it because I am not familiar with the implementation.
+        # TODO: Implement this method.
+        raise NotImplementedError("get_named_property is not implemented for OWLObjectPropertyChain.")
+    
+

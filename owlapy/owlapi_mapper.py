@@ -10,7 +10,8 @@ from owlapy.class_expression import OWLDataOneOf, OWLFacetRestriction, OWLDataty
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationProperty, OWLClassAssertionAxiom, \
     OWLDataPropertyAssertionAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, \
-    OWLObjectPropertyRangeAxiom, OWLObjectPropertyAssertionAxiom, OWLEquivalentClassesAxiom, \
+    OWLObjectPropertyRangeAxiom, OWLSubPropertyChainAxiom, \
+    OWLObjectPropertyAssertionAxiom, OWLEquivalentClassesAxiom, \
     OWLEquivalentDataPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLDisjointClassesAxiom, \
     OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLHasKeyAxiom, OWLSubDataPropertyOfAxiom, \
     OWLSubClassOfAxiom, OWLSubObjectPropertyOfAxiom, OWLAsymmetricObjectPropertyAxiom, OWLDatatypeDefinitionAxiom, \
@@ -55,6 +56,7 @@ from uk.ac.manchester.cs.owl.owlapi import (OWLClassImpl, OWLDataAllValuesFromIm
                                             OWLEquivalentDataPropertiesAxiomImpl, OWLDataIntersectionOfImpl,
                                             OWLEquivalentObjectPropertiesAxiomImpl, OWLDataOneOfImpl,
                                             OWLObjectPropertyDomainAxiomImpl, OWLObjectPropertyRangeAxiomImpl,
+                                            OWLSubPropertyChainAxiomImpl,
                                             OWLObjectPropertyAssertionAxiomImpl, OWLDisjointDataPropertiesAxiomImpl,
                                             OWLDisjointObjectPropertiesAxiomImpl, OWLHasKeyAxiomImpl,
                                             OWLSubClassOfAxiomImpl, OWLSubDataPropertyOfAxiomImpl,
@@ -381,6 +383,23 @@ class OWLAPIMapper:
     @map_.register(OWLAnnotationPropertyRangeAxiomImpl)
     def _(self, e):
         return init(e)(self.map_(e.getProperty()), self.map_(e.getRange()), self.map_(e.annotationsAsList()))
+
+    @map_.register(OWLSubPropertyChainAxiom)
+    def _(self, e):
+        return init(e)(
+            self.map_(e.get_property_chain()).stream(),
+            self.map_(e.get_super_property()),
+            self.map_(e.annotations()))
+
+    @map_.register(OWLSubPropertyChainAxiomImpl)
+    def _(self, e):
+        property_chain_array = []
+        for prop in e.getPropertyChain():
+            property_chain_array.append(self.map_(prop))
+        return init(e)(
+            property_chain_array,
+            self.map_(e.getSuperProperty()),
+            self.map_(e.annotationsAsList()))
 
     @map_.register(OWLEquivalentDataPropertiesAxiom)
     @map_.register(OWLEquivalentObjectPropertiesAxiom)
