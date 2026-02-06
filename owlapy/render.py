@@ -10,7 +10,7 @@ from .iri import IRI
 from .owl_individual import OWLNamedIndividual
 from .owl_literal import OWLLiteral
 from .owl_object import OWLObjectRenderer, OWLEntity, OWLObject
-from .owl_property import OWLObjectInverseOf, OWLPropertyExpression, OWLDataProperty
+from .owl_property import OWLObjectInverseOf, OWLPropertyExpression, OWLDataProperty, OWLObjectPropertyChain
 from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWLClass, OWLObjectSomeValuesFrom, \
     OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectMinCardinality, \
     OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
@@ -299,9 +299,9 @@ class DLSyntaxObjectRenderer(OWLObjectRenderer):
             "%s" % (self.render(_)) for _ in r.values())
 
     # TODO
-    # @render.register
-    # def _(self, r: OWLObjectPropertyChain):
-    #     return (" %s " % _DL_SYNTAX.COMP).join(self.render(_) for _ in r.property_chain())
+    @render.register
+    def _(self, r: OWLObjectPropertyChain):
+        return (" %s " % _DL_SYNTAX.COMP).join(self.render(_) for _ in r.property_chain())
 
     @render.register
     def _(self, n: OWLDataComplementOf) -> str:
@@ -493,9 +493,9 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
             "%s" % (self.render(_)) for _ in r.values())
 
     # TODO
-    # @render.register
-    # def _(self, r: OWLObjectPropertyChain):
-    #     return (" %s " % _MAN_SYNTAX.COMP).join(self.render(_) for _ in r.property_chain())
+    @render.register
+    def _(self, r: OWLObjectPropertyChain):
+        return (" %s " % _MAN_SYNTAX.COMP).join(self.render(_) for _ in r.property_chain())
 
     @render.register
     def _(self, n: OWLDataComplementOf) -> str:

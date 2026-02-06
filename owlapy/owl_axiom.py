@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from itertools import combinations
 
 from typing import TypeVar, List, Optional, Iterable, Generic, Union
-from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
+from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression, OWLObjectPropertyChain
 from .owl_object import OWLObject, OWLEntity
 from .owl_datatype import OWLDatatype, OWLDataRange
 from .meta_classes import HasOperands
@@ -1367,3 +1367,27 @@ class OWLDataPropertyRangeAxiom(OWLPropertyRangeAxiom[OWLDataPropertyExpression,
     def __init__(self, property_: OWLDataPropertyExpression, range_: OWLDataRange,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
         super().__init__(property_=property_, range_=range_, annotations=annotations)
+
+
+class OWLSubPropertyChainAxiom(OWLSubPropertyAxiom[OWLObjectPropertyExpression], OWLObjectPropertyAxiom):
+    """An object property subproperty chain axiom SubObjectPropertyOf( ObjectPropertyChain( OPE1 ... OPEn ) OPE )
+    states that the object property expression formed by chaining OPE1 to OPEn is a subproperty of the object
+    property expression OPE — that is, if an individual x is connected by OPE1 to an individual y1 that is
+    connected by OPE2 to an individual y2 that is connected by OPE3 to ... that is connected by OPEn to an
+    individual z, then x is also connected by OPE to z.
+
+     (https://www.w3.org/TR/owl2-syntax/#Object_Subproperties)"""
+    __slots__ = '_property_chain'
+
+    _property_chain: OWLObjectPropertyChain
+
+    def __init__(self, property_chain: List[OWLObjectPropertyExpression], super_property: OWLObjectPropertyExpression,
+                 annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if isinstance(property_chain, OWLObjectPropertyChain):
+            self._property_chain = property_chain
+        else:
+            self._property_chain = OWLObjectPropertyChain(list(property_chain))
+        super().__init__(sub_property=self._property_chain, super_property=super_property, annotations=annotations)
+
+    def get_property_chain(self) -> Iterable[OWLObjectPropertyExpression]:
+        yield from self._property_chain.property_chain()

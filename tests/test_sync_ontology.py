@@ -203,3 +203,60 @@ class TestSyncOntology(unittest.TestCase):
                                OWLEquivalentClassesAxiom([OWLObjectComplementOf(
                                    OWLClass(IRI('http://example.com/father#', 'female'))),
                                                           OWLClass(IRI('http://example.com/father#', 'male'))],[])])
+
+    def test_get_rbox(self):
+        new_ontology = SyncOntology("KGs/Family/father.owl")
+        print("Previous rbox axioms: ", father_onto.get_rbox_axioms())
+        # Introduce the hasBrother property
+        hasBrother = OWLObjectProperty(IRI('http://example.com/father#', 'hasBrother'))
+        # Introduce the hasFamilyMember property
+        hasFamilyMember = OWLObjectProperty(IRI('http://example.com/father#', 'hasFamilyMember'))
+        # Add them to the ontology
+        from owlapy.owl_axiom import OWLDeclarationAxiom
+        new_ontology.add_axiom(OWLDeclarationAxiom(hasBrother))
+        new_ontology.add_axiom(OWLDeclarationAxiom(hasFamilyMember))
+
+        # Add the axiom that hasBrother is a subproperty of hasFamilyMember
+        # Add the axiom that hasChild is a subproperty of hasFamilyMember
+        from owlapy.owl_axiom import OWLSubObjectPropertyOfAxiom
+        hasBrother_sub_hasFamilyMember = OWLSubObjectPropertyOfAxiom(sub_property=hasBrother, super_property=hasFamilyMember, annotations=[])
+        hasChild_sub_hasFamilyMember = OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')), super_property=hasFamilyMember, annotations=[])
+        # Add the axiom that hasChild o hasBrother is a subproperty of hasChild
+        from owlapy.owl_property import OWLObjectPropertyChain
+        from owlapy.owl_axiom import OWLSubPropertyChainAxiom
+        hasChild = OWLObjectProperty(IRI('http://example.com/father#', 'hasChild'))
+        print("Constructing hasChild o hasBrother subproperty axiom with hasChild: ", hasChild, " and hasBrother: ", hasBrother)
+        hasChild_o_hasBrother_sub_hasChild = OWLSubPropertyChainAxiom(
+            property_chain=OWLObjectPropertyChain(
+                [hasChild, hasBrother]
+            ), super_property=hasChild, annotations=[]
+            )
+        hasChild_o_hasBrother_o_hasFamilyMember_sub_hasFamilyMember = OWLSubPropertyChainAxiom(
+            property_chain=OWLObjectPropertyChain(
+                [hasChild, hasBrother, hasFamilyMember]
+            ), super_property=hasFamilyMember, annotations=[]
+        )
+        print("Constructed hasChild o hasBrother subproperty axiom: ", hasChild_o_hasBrother_sub_hasChild)
+        new_ontology.add_axiom(hasBrother_sub_hasFamilyMember)
+        new_ontology.add_axiom(hasChild_sub_hasFamilyMember)
+        new_ontology.add_axiom(hasChild_o_hasBrother_sub_hasChild)
+        new_ontology.add_axiom(hasChild_o_hasBrother_o_hasFamilyMember_sub_hasFamilyMember)
+        
+        rbox_axioms = [
+            hasChild_sub_hasFamilyMember,
+            hasBrother_sub_hasFamilyMember,
+            hasChild_o_hasBrother_sub_hasChild,
+            hasChild_o_hasBrother_o_hasFamilyMember_sub_hasFamilyMember
+        ]
+        print("Current rbox axioms: ")
+        for axiom in new_ontology.get_rbox_axioms():
+            print(axiom)
+        print("Collected rbox axioms: ")
+        for axiom in new_ontology.get_rbox_axioms():
+            print(axiom)
+
+        self.assertCountEqual(list(new_ontology.get_rbox_axioms()), rbox_axioms)
+        # Try to save and reload
+        new_ontology.save("KGs/Family/father_with_rbox.owl")
+        father_onto_reloaded = SyncOntology("KGs/Family/father_with_rbox.owl")
+        self.assertCountEqual(list(father_onto_reloaded.get_rbox_axioms()), rbox_axioms)
