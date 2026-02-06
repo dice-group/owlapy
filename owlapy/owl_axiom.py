@@ -1390,4 +1390,4 @@ class OWLSubPropertyChainAxiom(OWLSubPropertyAxiom[OWLObjectPropertyExpression],
         super().__init__(sub_property=self._property_chain, super_property=super_property, annotations=annotations)
 
     def get_property_chain(self) -> Iterable[OWLObjectPropertyExpression]:
-        yield from self._property_chain.get_object_property_expressions()
+        yield from self._property_chain.property_chain()

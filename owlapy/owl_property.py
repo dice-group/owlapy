@@ -263,7 +263,7 @@ class OWLObjectPropertyChain(OWLObjectPropertyExpression):
         )
         return hash_value
     
-    def get_object_property_expressions(self) -> List[OWLObjectPropertyExpression]:
+    def property_chain(self) -> List[OWLObjectPropertyExpression]:
         """Gets the list of object property expressions in this property chain.
 
         Returns:
