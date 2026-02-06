@@ -493,9 +493,9 @@ class ManchesterOWLSyntaxOWLObjectRenderer(OWLObjectRenderer):
             "%s" % (self.render(_)) for _ in r.values())
 
     # TODO
-    # @render.register
-    # def _(self, r: OWLObjectPropertyChain):
-    #     return (" %s " % _MAN_SYNTAX.COMP).join(self.render(_) for _ in r.property_chain())
+    @render.register
+    def _(self, r: OWLObjectPropertyChain):
+        return (" %s " % _MAN_SYNTAX.COMP).join(self.render(_) for _ in r.property_chain())
 
     @render.register
     def _(self, n: OWLDataComplementOf) -> str:
