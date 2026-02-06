@@ -23,7 +23,8 @@ from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationPr
 from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf, OWLNaryDataRange
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral
+from owlapy.owl_literal import (OWLLiteral, PositiveIntegerOWLDatatype, NegativeIntegerOWLDatatype,
+                                NonPositiveIntegerOWLDatatype, NonNegativeIntegerOWLDatatype)
 from owlapy.owl_ontology import OWLOntologyID
 from owlapy.owl_property import OWLObjectProperty, OWLDataProperty, OWLObjectInverseOf
 from owlapy.static_funcs import startJVM
@@ -46,6 +47,7 @@ from uk.ac.manchester.cs.owl.owlapi import (OWLClassImpl, OWLDataAllValuesFromIm
                                             OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl, OWLNaryDataRangeImpl,
                                             OWLObjectUnionOfImpl,OWLLiteralImplBoolean, OWLLiteralImplString,
                                             OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger,
+                                            OWLLiteralImplNoCompression,
                                             OWLDisjointClassesAxiomImpl, OWLDeclarationAxiomImpl, OWLAnnotationImpl,
                                             OWLAnnotationPropertyImpl, OWLClassAssertionAxiomImpl,
                                             OWLDataPropertyAssertionAxiomImpl, OWLDataPropertyDomainAxiomImpl,
@@ -217,6 +219,28 @@ class OWLAPIMapper:
     @map_.register
     def _(self, e: OWLLiteralImplInteger):
         return OWLLiteral(int(str(e.getLiteral())))
+
+    @map_.register
+    def _(self, e: OWLLiteralImplNoCompression):
+        datatype_str = str(e.getDatatype())
+        literal_val = str(e.getLiteral())
+        if "positiveInteger" in datatype_str:
+            return OWLLiteral(int(literal_val), type_=PositiveIntegerOWLDatatype)
+        elif "negativeInteger" in datatype_str:
+            return OWLLiteral(int(literal_val), type_=NegativeIntegerOWLDatatype)
+        elif "nonPositiveInteger" in datatype_str:
+            return OWLLiteral(int(literal_val), type_=NonPositiveIntegerOWLDatatype)
+        elif "nonNegativeInteger" in datatype_str:
+            return OWLLiteral(int(literal_val), type_=NonNegativeIntegerOWLDatatype)
+        elif "integer" in datatype_str or "int" in datatype_str:
+            return OWLLiteral(int(literal_val))
+        elif "double" in datatype_str or "float" in datatype_str or "decimal" in datatype_str:
+            return OWLLiteral(float(literal_val))
+        elif "boolean" in datatype_str:
+            return OWLLiteral(literal_val.lower() == "true")
+        else:
+            # Default to string for unknown datatypes
+            return OWLLiteral(literal_val)
 
     @map_.register
     def _(self, e: OWLObjectInverseOf):
