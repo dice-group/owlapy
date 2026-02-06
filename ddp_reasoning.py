@@ -8,28 +8,59 @@ and computing the final answer on the coordinator.
 # ============================================================================
 # SETUP OPTIONS
 # ============================================================================
+#
+# There are two modes of operation:
+#
+# 1. SINGLE MACHINE (multiple cores) - Use ONE terminal
+#    Declare all shard resources on the head node in a single command.
+#    Ray handles multi-core parallelism automatically.
+#
+# 2. MULTIPLE MACHINES (distributed) - Use MULTIPLE terminals
+#    Start head on one machine, then connect workers from other machines.
+#    Each `ray start --address=...` runs on a DIFFERENT physical machine.
+#
+# Docs: https://docs.ray.io/en/latest/ray-core/configure.html#cluster-resources
+# ============================================================================
 
-# 1 worker
-# Terminal 1: ray start --head --port=6379 --num-cpus=1 --resources='{"shard_0": 1}'
-# Terminal 2: python ddp_reasoning.py
+# --------------------------------------------------------------------------
+# SINGLE MACHINE EXAMPLES (one terminal for ray, one for the script)
+# --------------------------------------------------------------------------
+
+# 1 shard (baseline)
+# Terminal 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
+# Terminal 1 or 2: python ddp_reasoning.py
 # Set NUM_SHARDS = 1 in main()
 
-# 2 workers
-# Terminal 1: ray start --head --port=6379 --num-cpus=1 --resources='{"shard_0": 1}'
-# Terminal 2: ray start --address='<HEAD_IP>:6379' --num-cpus=1 --resources='{"shard_1": 1}'
-# Terminal 3: python ddp_reasoning.py
+# 4 shards on ONE machine
+# Terminal 1: ray start --head --port=6379 --resources='{"shard_0": 1, "shard_1": 1, "shard_2": 1, "shard_3": 1}'
+# Terminal 1 or 2: python ddp_reasoning.py
+# Set NUM_SHARDS = 4 in main()
+
+# 8 shards on ONE machine
+# Terminal 1: ray start --head --port=6379 --resources='{"shard_0": 1, "shard_1": 1, "shard_2": 1, "shard_3": 1, "shard_4": 1, "shard_5": 1, "shard_6": 1, "shard_7": 1}'
+# Terminal 1 or 2: python ddp_reasoning.py
+# Set NUM_SHARDS = 8 in main()
+
+# --------------------------------------------------------------------------
+# MULTI-MACHINE EXAMPLES (one terminal PER machine)
+# --------------------------------------------------------------------------
+
+# 2 machines (1 shard each)
+# Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
+# Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
+# Any terminal: python ddp_reasoning.py
 # Set NUM_SHARDS = 2 in main()
 
-# 8 workers 
-# Terminal 1: ray start --head --port=6379 --num-cpus=1 --resources='{"shard_0": 1}'
-# Terminal 2: ray start --address='<HEAD_IP>:6379' --num-cpus=1 --resources='{"shard_1": 1}'
-# Terminal 3: ray start --address='<HEAD_IP>:6379' --num-cpus=1 --resources='{"shard_2": 1}'
-# Terminal 4: ray start --address='<HEAD_IP>:6379' --num-cpus=1 --resources='{"shard_3": 1}'
-# Terminal 5: ray start --address='<HEAD_IP>:6379' --num-cpus=1 --resources='{"shard_4": 1}'
-# Terminal 6: ray start --address='<HEAD_IP>:6379' --num-cpus=1 --resources='{"shard_5": 1}'
-# Terminal 7: ray start --address='<HEAD_IP>:6379' --num-cpus=1 --resources='{"shard_6": 1}'
-# Terminal 8: ray start --address='<HEAD_IP>:6379' --num-cpus=1 --resources='{"shard_7": 1}'
-# Terminal 9: python ddp_reasoning.py
+# 8 machines (1 shard each)
+# Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
+# Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
+# Machine 3: ray start --address='<HEAD_IP>:6379' --resources='{"shard_2": 1}'
+# Machine 4: ray start --address='<HEAD_IP>:6379' --resources='{"shard_3": 1}'
+# Machine 5: ray start --address='<HEAD_IP>:6379' --resources='{"shard_4": 1}'
+# Machine 6: ray start --address='<HEAD_IP>:6379' --resources='{"shard_5": 1}'
+# Machine 7: ray start --address='<HEAD_IP>:6379' --resources='{"shard_6": 1}'
+# Machine 8: ray start --address='<HEAD_IP>:6379' --resources='{"shard_7": 1}'
+# Any terminal: python ddp_reasoning.py
 # Set NUM_SHARDS = 8 in main()
 
 # ============================================================================

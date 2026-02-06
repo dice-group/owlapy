@@ -1,10 +1,37 @@
-"""$ python examples/ddp_reasoning_eval.py --path_kg KGs/Family/father.owl --num_shards 1
-
-Evaluates the DistributedReasoner from ddp_reasoning.py against a StructuralReasoner
+"""
+Evaluates the DistributedReasoner from ddp_reasoning.py against a SyncReasoner
 ground truth, generating OWL class expressions and comparing their retrieval results.
 
-Requires a Ray cluster to be running. Example setup for 1 shard:
-  ray start --head --port=6379 --num-cpus=1 --resources='{"shard_0": 1}'
+Usage:
+  python ddp_reasoning_eval.py --path_kg KGs/Family/father.owl --num_shards 4
+
+# ============================================================================
+# RAY CLUSTER SETUP
+# ============================================================================
+#
+# SINGLE MACHINE - All resources declared on head node:
+#
+#   4 shards:
+#   ray start --head --port=6379 --resources='{"shard_0": 1, "shard_1": 1, "shard_2": 1, "shard_3": 1}'
+#   python ddp_reasoning_eval.py --path_kg KGs/Mutagenesis/mutagenesis.owl --num_shards 4
+#
+#   8 shards:
+#   ray start --head --port=6379 --resources='{"shard_0": 1, "shard_1": 1, "shard_2": 1, "shard_3": 1, "shard_4": 1, "shard_5": 1, "shard_6": 1, "shard_7": 1}'
+#   python ddp_reasoning_eval.py --path_kg KGs/Mutagenesis/mutagenesis.owl --num_shards 8
+#
+#   16 shards:
+#   ray start --head --port=6379 --resources='{"shard_0": 1, "shard_1": 1, "shard_2": 1, "shard_3": 1, "shard_4": 1, "shard_5": 1, "shard_6": 1, "shard_7": 1, "shard_8": 1, "shard_9": 1, "shard_10": 1, "shard_11": 1, "shard_12": 1, "shard_13": 1, "shard_14": 1, "shard_15": 1}'
+#   python ddp_reasoning_eval.py --path_kg KGs/Mutagenesis/mutagenesis.owl --num_shards 16
+#
+# MULTI-MACHINE (4 shards) - One command per physical machine:
+#   Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
+#   Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
+#   Machine 3: ray start --address='<HEAD_IP>:6379' --resources='{"shard_2": 1}'
+#   Machine 4: ray start --address='<HEAD_IP>:6379' --resources='{"shard_3": 1}'
+#   Any terminal: python ddp_reasoning_eval.py --path_kg KGs/Mutagenesis/mutagenesis.owl --num_shards 4
+#
+# Docs: https://docs.ray.io/en/latest/ray-core/configure.html#cluster-resources
+# ============================================================================
 """
 
 import ray
