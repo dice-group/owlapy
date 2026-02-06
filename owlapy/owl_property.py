@@ -245,7 +245,7 @@ class OWLObjectPropertyChain(OWLObjectPropertyExpression):
         )
 
     def __repr__(self):
-        return f"OWLObjectPropertyChain({repr(self._object_property_expressions)})"
+        return f"OWLObjectPropertyChain([{', '.join([repr(ope) for ope in self._object_property_expressions])}])"
     
     def __eq__( self, other ):
         if type(other) is type(self):

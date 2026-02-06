@@ -1383,7 +1383,10 @@ class OWLSubPropertyChainAxiom(OWLSubPropertyAxiom[OWLObjectPropertyExpression],
 
     def __init__(self, property_chain: List[OWLObjectPropertyExpression], super_property: OWLObjectPropertyExpression,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
-        self._property_chain = OWLObjectPropertyChain(list(property_chain))
+        if isinstance(property_chain, OWLObjectPropertyChain):
+            self._property_chain = property_chain
+        else:
+            self._property_chain = OWLObjectPropertyChain(list(property_chain))
         super().__init__(sub_property=self._property_chain, super_property=super_property, annotations=annotations)
 
     def get_property_chain(self) -> Iterable[OWLObjectPropertyExpression]:

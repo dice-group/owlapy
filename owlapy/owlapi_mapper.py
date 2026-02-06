@@ -386,18 +386,24 @@ class OWLAPIMapper:
 
     @map_.register(OWLSubPropertyChainAxiom)
     def _(self, e):
+        property_chain_list = []
+        for prop in e.get_property_chain():
+            property_chain_list.append(prop)
+        # Reverse the list from Python to Java
+        property_chain_list.reverse()
         return init(e)(
-            self.map_(e.get_property_chain()).stream(),
+            self.map_(property_chain_list),
             self.map_(e.get_super_property()),
             self.map_(e.annotations()))
 
     @map_.register(OWLSubPropertyChainAxiomImpl)
     def _(self, e):
-        property_chain_array = []
+        property_chain_list = []
         for prop in e.getPropertyChain():
-            property_chain_array.append(self.map_(prop))
+            property_chain_list.append(self.map_(prop))
+        # No need to reverse the list from Java to Python
         return init(e)(
-            property_chain_array,
+            property_chain_list,
             self.map_(e.getSuperProperty()),
             self.map_(e.annotationsAsList()))
 
