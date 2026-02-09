@@ -1,7 +1,7 @@
 """OWL Properties"""
 from .owl_object import OWLObject, OWLEntity
 from abc import ABCMeta, abstractmethod
-from typing import Final, Union, List
+from typing import Final, Union, List, Sequence
 from .iri import IRI
 
 
@@ -228,14 +228,12 @@ class OWLObjectPropertyChain(OWLObjectPropertyExpression):
 
     def __init__(
         self,
-        object_property_expressions: List[OWLObjectPropertyExpression],
+        object_property_expressions: Sequence[OWLObjectPropertyExpression],
     ):
         super().__init__()
-        if not isinstance(object_property_expressions, list):
-            raise TypeError("object_property_expressions must be a list.")
         if len(object_property_expressions) <= 1:
             raise ValueError("A property chain must have at least 2 property expressions.")
-        self._object_property_expressions = object_property_expressions
+        self._object_property_expressions = tuple(object_property_expressions)
 
     def get_inverse_property(self) -> 'OWLObjectPropertyChain':
         # documented in parent
@@ -265,7 +263,7 @@ class OWLObjectPropertyChain(OWLObjectPropertyExpression):
         )
         return hash_value
     
-    def property_chain(self) -> List[OWLObjectPropertyExpression]:
+    def property_chain(self) -> Sequence[OWLObjectPropertyExpression]:
         """Gets the list of object property expressions in this property chain.
 
         Returns:

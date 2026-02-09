@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from itertools import combinations
 
-from typing import TypeVar, List, Optional, Iterable, Generic, Union
+from typing import TypeVar, List, Optional, Iterable, Generic, Union, Sequence
 from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression, OWLObjectPropertyChain
 from .owl_object import OWLObject, OWLEntity
 from .owl_datatype import OWLDatatype, OWLDataRange
@@ -1369,7 +1369,7 @@ class OWLDataPropertyRangeAxiom(OWLPropertyRangeAxiom[OWLDataPropertyExpression,
         super().__init__(property_=property_, range_=range_, annotations=annotations)
 
 
-class OWLSubPropertyChainAxiom(OWLSubPropertyAxiom[OWLObjectPropertyExpression], OWLObjectPropertyAxiom):
+class OWLSubPropertyChainAxiom(OWLObjectPropertyAxiom):
     """An object property subproperty chain axiom SubObjectPropertyOf( ObjectPropertyChain( OPE1 ... OPEn ) OPE )
     states that the object property expression formed by chaining OPE1 to OPEn is a subproperty of the object
     property expression OPE — that is, if an individual x is connected by OPE1 to an individual y1 that is
@@ -1377,17 +1377,38 @@ class OWLSubPropertyChainAxiom(OWLSubPropertyAxiom[OWLObjectPropertyExpression],
     individual z, then x is also connected by OPE to z.
 
      (https://www.w3.org/TR/owl2-syntax/#Object_Subproperties)"""
-    __slots__ = '_property_chain'
+    __slots__ = '_property_chain', '_super_property'
 
     _property_chain: OWLObjectPropertyChain
+    _super_property: OWLObjectPropertyExpression
 
-    def __init__(self, property_chain: List[OWLObjectPropertyExpression], super_property: OWLObjectPropertyExpression,
+    def __init__(self, property_chain: Sequence[OWLObjectPropertyExpression], super_property: OWLObjectPropertyExpression,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        super().__init__(annotations=annotations)
         if isinstance(property_chain, OWLObjectPropertyChain):
             self._property_chain = property_chain
         else:
-            self._property_chain = OWLObjectPropertyChain(list(property_chain))
-        super().__init__(sub_property=self._property_chain, super_property=super_property, annotations=annotations)
+            self._property_chain = OWLObjectPropertyChain(tuple(property_chain))
+        # self._sub_property = self._property_chain
+        self._super_property = super_property
 
-    def get_property_chain(self) -> Iterable[OWLObjectPropertyExpression]:
+
+    def get_super_property(self) -> _P:
+        return self._super_property
+    
+
+    def get_property_chain(self) -> Sequence[OWLObjectPropertyExpression]:
         yield from self._property_chain.property_chain()
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._property_chain == other._property_chain and self._super_property == other._super_property \
+                and self._annotations == other._annotations
+        return False
+
+    def __hash__(self):
+        return hash(("OWLSubPropertyChainAxiom", self._property_chain, self._super_property, *self._annotations))
+
+    def __repr__(self):
+        return f'OWLSubPropertyChainAxiom(property_chain={self._property_chain},' \
+               f'super_property={self._super_property},annotations={self._annotations})'
