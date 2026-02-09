@@ -231,8 +231,10 @@ class OWLObjectPropertyChain(OWLObjectPropertyExpression):
         object_property_expressions: List[OWLObjectPropertyExpression],
     ):
         super().__init__()
-        assert isinstance(object_property_expressions, list), "object_property_expressions must be a list."
-        assert len(object_property_expressions) > 1, "A property chain must have at least 2 property expressions."
+        if not isinstance(object_property_expressions, list):
+            raise TypeError("object_property_expressions must be a list.")
+        if len(object_property_expressions) <= 1:
+            raise ValueError("A property chain must have at least 2 property expressions.")
         self._object_property_expressions = object_property_expressions
 
     def get_inverse_property(self) -> 'OWLObjectPropertyChain':
