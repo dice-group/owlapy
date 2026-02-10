@@ -10,7 +10,8 @@ from owlapy.class_expression import OWLDataOneOf, OWLFacetRestriction, OWLDataty
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationProperty, OWLClassAssertionAxiom, \
     OWLDataPropertyAssertionAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, \
-    OWLObjectPropertyRangeAxiom, OWLObjectPropertyAssertionAxiom, OWLEquivalentClassesAxiom, \
+    OWLObjectPropertyRangeAxiom, OWLSubPropertyChainAxiom, \
+    OWLObjectPropertyAssertionAxiom, OWLEquivalentClassesAxiom, \
     OWLEquivalentDataPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLDisjointClassesAxiom, \
     OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLHasKeyAxiom, OWLSubDataPropertyOfAxiom, \
     OWLSubClassOfAxiom, OWLSubObjectPropertyOfAxiom, OWLAsymmetricObjectPropertyAxiom, OWLDatatypeDefinitionAxiom, \
@@ -55,6 +56,7 @@ from uk.ac.manchester.cs.owl.owlapi import (OWLClassImpl, OWLDataAllValuesFromIm
                                             OWLEquivalentDataPropertiesAxiomImpl, OWLDataIntersectionOfImpl,
                                             OWLEquivalentObjectPropertiesAxiomImpl, OWLDataOneOfImpl,
                                             OWLObjectPropertyDomainAxiomImpl, OWLObjectPropertyRangeAxiomImpl,
+                                            OWLSubPropertyChainAxiomImpl,
                                             OWLObjectPropertyAssertionAxiomImpl, OWLDisjointDataPropertiesAxiomImpl,
                                             OWLDisjointObjectPropertiesAxiomImpl, OWLHasKeyAxiomImpl,
                                             OWLSubClassOfAxiomImpl, OWLSubDataPropertyOfAxiomImpl,
@@ -382,6 +384,21 @@ class OWLAPIMapper:
     def _(self, e):
         return init(e)(self.map_(e.getProperty()), self.map_(e.getRange()), self.map_(e.annotationsAsList()))
 
+    @map_.register(OWLSubPropertyChainAxiom)
+    def _(self, e):
+        return init(e)(
+            self.map_(e.get_property_chain()),
+            self.map_(e.get_super_property()),
+            self.map_(e.annotations()))
+
+    @map_.register(OWLSubPropertyChainAxiomImpl)
+    def _(self, e):
+        property_chain_list = self.map_(e.getPropertyChain())
+        return init(e)(
+            tuple(property_chain_list),
+            self.map_(e.getSuperProperty()),
+            self.map_(e.annotationsAsList()))
+
     @map_.register(OWLEquivalentDataPropertiesAxiom)
     @map_.register(OWLEquivalentObjectPropertiesAxiom)
     def _(self, e):
@@ -530,6 +547,7 @@ class OWLAPIMapper:
     @map_.register(List)
     @map_.register(Set)
     @map_.register(LinkedHashSet)
+    @map_.register(ArrayList)
     def _(self, e):
         python_list = list()
         casted_list = list(e)
@@ -543,6 +561,7 @@ class OWLAPIMapper:
     @map_.register(list)
     @map_.register(set)
     @map_.register(frozenset)
+    @map_.register(tuple)
     def _(self, e):
         java_list = ArrayList()
         if e is not None and len(e) > 0:
