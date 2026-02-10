@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from itertools import combinations
 
 from typing import TypeVar, List, Optional, Iterable, Generic, Union, Sequence
-from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression, OWLObjectPropertyChain
+from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
 from .owl_object import OWLObject, OWLEntity
 from .owl_datatype import OWLDatatype, OWLDataRange
 from .meta_classes import HasOperands
@@ -1379,16 +1379,13 @@ class OWLSubPropertyChainAxiom(OWLObjectPropertyAxiom):
      (https://www.w3.org/TR/owl2-syntax/#Object_Subproperties)"""
     __slots__ = '_property_chain', '_super_property'
 
-    _property_chain: OWLObjectPropertyChain
+    _property_chain: Sequence[OWLObjectPropertyExpression]
     _super_property: OWLObjectPropertyExpression
 
     def __init__(self, property_chain: Sequence[OWLObjectPropertyExpression], super_property: OWLObjectPropertyExpression,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
         super().__init__(annotations=annotations)
-        if isinstance(property_chain, OWLObjectPropertyChain):
-            self._property_chain = property_chain
-        else:
-            self._property_chain = OWLObjectPropertyChain(tuple(property_chain))
+        self._property_chain = tuple(property_chain)
         # self._sub_property = self._property_chain
         self._super_property = super_property
 
@@ -1398,7 +1395,7 @@ class OWLSubPropertyChainAxiom(OWLObjectPropertyAxiom):
     
 
     def get_property_chain(self) -> Sequence[OWLObjectPropertyExpression]:
-        yield from self._property_chain.property_chain()
+        yield from self._property_chain
 
     def __eq__(self, other):
         if type(other) is type(self):

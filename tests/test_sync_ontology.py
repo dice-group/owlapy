@@ -222,18 +222,17 @@ class TestSyncOntology(unittest.TestCase):
         hasBrother_sub_hasFamilyMember = OWLSubObjectPropertyOfAxiom(sub_property=hasBrother, super_property=hasFamilyMember, annotations=[])
         hasChild_sub_hasFamilyMember = OWLSubObjectPropertyOfAxiom(sub_property=OWLObjectProperty(IRI('http://example.com/father#', 'hasChild')), super_property=hasFamilyMember, annotations=[])
         # Add the axiom that hasChild o hasBrother is a subproperty of hasChild
-        from owlapy.owl_property import OWLObjectPropertyChain
         from owlapy.owl_axiom import OWLSubPropertyChainAxiom
         hasChild = OWLObjectProperty(IRI('http://example.com/father#', 'hasChild'))
         print("Constructing hasChild o hasBrother subproperty axiom with hasChild: ", hasChild, " and hasBrother: ", hasBrother)
         hasChild_o_hasBrother_sub_hasChild = OWLSubPropertyChainAxiom(
-            property_chain=OWLObjectPropertyChain(
-                [hasChild, hasBrother]
+            property_chain=(
+                hasChild, hasBrother
             ), super_property=hasChild, annotations=[]
             )
         hasChild_o_hasBrother_o_hasFamilyMember_sub_hasFamilyMember = OWLSubPropertyChainAxiom(
-            property_chain=OWLObjectPropertyChain(
-                [hasChild, hasBrother, hasFamilyMember]
+            property_chain=(
+                hasChild, hasBrother, hasFamilyMember
             ), super_property=hasFamilyMember, annotations=[]
         )
         print("Constructed hasChild o hasBrother subproperty axiom: ", hasChild_o_hasBrother_sub_hasChild)
