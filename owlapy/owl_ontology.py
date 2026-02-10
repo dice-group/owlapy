@@ -39,7 +39,7 @@ from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassO
     OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom, \
     OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom, OWLClassAxiom, \
-    OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom
+    OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, OWLSubPropertyChainAxiom
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
 import os
@@ -258,6 +258,28 @@ def _(axiom: OWLSubClassOfAxiom, ontology: AbstractOWLOntology, world: owlready2
             # add the super_class_x to its is_a attribute
             sub_class_x = GeneralClassAxiom(sub_class_x)
         sub_class_x.is_a.append(super_class_x)
+
+
+@_add_axiom.register
+def _(axiom: OWLSubPropertyChainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+    conv = ToOwlready2(world)
+    ont_x: owlready2.Ontology = conv.map_object(ontology)
+
+    super_property = axiom.get_super_property()
+    property_chain = list(axiom.get_property_chain())
+
+    # Ensure all properties in the chain and the super property are declared
+    _add_axiom(OWLDeclarationAxiom(super_property), ontology, world)
+    for prop in property_chain:
+        if isinstance(prop, OWLObjectInverseOf):
+            _add_axiom(OWLDeclarationAxiom(prop.get_named_property()), ontology, world)
+        else:
+            _add_axiom(OWLDeclarationAxiom(prop), ontology, world)
+
+    with ont_x:
+        super_property_x = conv._to_owlready2_property(super_property)
+        property_chain_x = [conv._to_owlready2_property(prop) for prop in property_chain]
+        super_property_x.property_chain.append(owlready2.PropertyChain(property_chain_x))
 
 
 # TODO: Update as soon as owlready2 adds support for EquivalentClasses general class axioms
@@ -676,6 +698,30 @@ def _(axiom: OWLSubPropertyAxiom, ontology: AbstractOWLOntology, world: owlready
             sub_property_x.is_a.remove(super_property_x)
         else:
             ont_x._del_obj_triple_spo(sub_property_x.storid, owlready2.rdfs_subpropertyof, super_property_x.storid)
+
+
+@_remove_axiom.register
+def _(axiom: OWLSubPropertyChainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+    conv = ToOwlready2(world)
+    ont_x: owlready2.Ontology = conv.map_object(ontology)
+
+    super_property = axiom.get_super_property()
+    property_chain = list(axiom.get_property_chain())
+
+    with ont_x:
+        super_property_x = conv._to_owlready2_property(super_property)
+        if super_property_x is None:
+            return
+
+        property_chain_x = [conv._to_owlready2_property(prop) for prop in property_chain]
+        if not all(property_chain_x):
+            return
+
+        # Find and remove the matching property chain
+        for pc in super_property_x.property_chain:
+            if list(pc.properties) == property_chain_x:
+                super_property_x.property_chain.remove(pc)
+                break
 
 
 @_remove_axiom.register
