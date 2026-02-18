@@ -134,7 +134,7 @@ def execute(args):
         )
         shards.append(shard)
     
-    distributed_reasoner = DistributedReasoner(shards)
+    distributed_reasoner = DistributedReasoner(shards, open_world=args.open_world)
     
     # Fix the random seed
     random.seed(args.seed)
@@ -397,6 +397,8 @@ def get_default_arguments():
                         help="Path to save the evaluation results CSV")
     parser.add_argument("--no_negations", action="store_true",
                         help="Exclude negation-based expressions (¬C, ∀r.C) from evaluation")
+    parser.add_argument("--open_world", action="store_true",
+                        help="Use open-world reasoning (no CE decomposition, union shard results)")
     return parser.parse_args()
 
 

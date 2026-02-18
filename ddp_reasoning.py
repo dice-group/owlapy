@@ -99,6 +99,11 @@ class ShardReasoner:
     
     # ========== Atomic Query Methods (all return IRI strings) ==========
     
+    def query_instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[str]:
+        """Pass a full CE directly to this shard's reasoner (no decomposition).
+        Used in open-world mode where each shard evaluates independently."""
+        return {ind.str for ind in self.sync_reasoner.instances(ce, direct=direct)}
+    
     def get_class_instances_iris(self, class_iri: str, direct: bool = False) -> Set[str]:
         """Get instances of a named class from this shard (as IRI strings)."""
         owl_class = OWLClass(class_iri)
@@ -167,21 +172,33 @@ class DistributedReasoner:
     3. Computing the final answer by joining/intersecting the gathered data
     """
     
-    def __init__(self, shards: List[ray.actor.ActorHandle]):
+    def __init__(self, shards: List[ray.actor.ActorHandle], open_world: bool = False):
         """
         Args:
             shards: List of ShardReasoner actor handles
+            open_world: If True, pass full CEs directly to each shard and union
+                        results (no recursive decomposition). If False, use
+                        closed-world recursive decomposition (default).
         """
         self.shards = shards
-        print(f"DistributedReasoner initialized with {len(shards)} shards")
+        self.open_world = open_world
+        print(f"DistributedReasoner initialized with {len(shards)} shards (open_world={open_world})")
     
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[OWLNamedIndividual]:
         """
-        Get all instances of a class expression by decomposing the query
-        and gathering results from all shards.
+        Get all instances of a class expression.
+        
+        If open_world=True: pass the full CE to each shard and union results.
+        If open_world=False: decompose the query and gather results from all shards.
         """
-        # Internal methods work with IRI strings, convert at the boundary
-        iris = self._find_instance_iris(ce, direct)
+        if self.open_world:
+            # Open-world: each shard evaluates the full CE independently, union results
+            futures = [shard.query_instances.remote(ce, direct) for shard in self.shards]
+            results = ray.get(futures)
+            iris = set().union(*results) if results else set()
+        else:
+            # Closed-world: recursive decomposition
+            iris = self._find_instance_iris(ce, direct)
         return {OWLNamedIndividual(iri) for iri in iris}
     
     def _gather_iris_from_all_shards(self, method_name: str, *args) -> Set[str]:
