@@ -9,6 +9,8 @@ Example:
 """
 
 import sys
+import glob
+import os
 from pathlib import Path
 from owlapy.owl_ontology import SyncOntology
 from owlapy.owl_axiom import (
@@ -31,6 +33,11 @@ def shard_ontology(ontology_path: str, num_shards: int, output_dir: str = None):
     source = Path(ontology_path)
     output_dir = Path(output_dir) if output_dir else source.parent
     output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Clean up any old shard files before generating new ones
+    old_shards = glob.glob(str(output_dir / f"{source.stem}_shard_*.owl"))
+    for old in old_shards:
+        os.remove(old)
     
     print(f"Loading ontology: {source}")
     onto = SyncOntology(str(source))
