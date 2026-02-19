@@ -816,7 +816,7 @@ def main(args):
         shard = ShardReasoner.options(resources={f"shard_{i}": 1}).remote(f"Shard-{i}", shard_path, args.reasoner)
         shards.append(shard)
     
-    dist_reasoner = DistributedReasoner(shards)
+    dist_reasoner = DistributedReasoner(shards, open_world=True)
     
     # Define Classes and Properties 
     atom = OWLClass(IRI(NS, 'Atom'))
@@ -955,27 +955,6 @@ def main(args):
          ])),
     ]
 
-    # TODO: CD:
-
-    """
-    A scenario:
-
-Lets assume that we have a graph (TBOX, and fragment of ABOX) G_1, G_2
-
-An expression: exists r1 (exists r2. {o3})
-
-
-(o1 r1 o2) =Abox of G1
-
-(o2 r2 o3) = Abox of G2
-
-Hence, Abox of G1 and G2 contians only single triple each.
-
-Can we return o1 if we retrieve the instance of exists r1 (exists r2. {o3}) ?
-
-Answer: No for the time being
-
-    """
     
     # Run Benchmark 
     run_timing_benchmark(ground_truth_reasoner, dist_reasoner, complex_queries)
