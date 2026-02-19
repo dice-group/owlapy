@@ -524,12 +524,12 @@ class CrossShardReasoner(DistributedReasoner):
       Query: exists r1.(exists r2.{o3}) -> correctly returns o1
     """
     
-    def __init__(self, shards: List[ray.actor.ActorHandle]):
+    def __init__(self, shards: List[ray.actor.ActorHandle],open_world: bool = False):
         """
         Args:
             shards: List of ShardReasoner actor handles
         """
-        super().__init__(shards, open_world=False)
+        super().__init__(shards, open_world=open_world)
         print(f"CrossShardReasoner initialized with {len(shards)} shards (cross-shard intermediate results mode)")
     
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[OWLNamedIndividual]:
@@ -584,6 +584,13 @@ class CrossShardReasoner(DistributedReasoner):
                 combined[ce_str] = self._combine_existential_across_shards(
                     ce_obj, combined, shard_results
                 )
+            elif isinstance(ce_obj, OWLObjectOneOf):
+                # Members of a nominal are defined by the expression itself — not by what
+                # individual shards happen to know.  Relying on per-shard query results
+                # fails because the named individuals may lack class assertions in every
+                # shard they don't own, so each shard returns 0 and the filler set ends
+                # up empty.  Extract the IRIs directly from the CE instead.
+                combined[ce_str] = {ind.str for ind in ce_obj.individuals()}
             else:
                 # For other CEs (classes, unions, intersections), simple union across shards
                 combined[ce_str] = set()
