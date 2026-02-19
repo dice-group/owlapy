@@ -597,8 +597,32 @@ class CrossShardReasoner(DistributedReasoner):
                 # shard they don't own, so each shard returns 0 and the filler set ends
                 # up empty.  Extract the IRIs directly from the CE instead.
                 combined[ce_str] = {ind.str for ind in ce_obj.individuals()}
+            elif isinstance(ce_obj, OWLObjectMinCardinality):
+                # ≥n r.C: CWA and OWA agree — if there ARE ≥n known r-successors in C,
+                # the restriction is proven regardless of open-world unknowns. Merging
+                # the full property map across shards gives a correct cross-shard count
+                # (handles the case where an individual's r-successors live in different
+                # shards than the individual itself).
+                combined[ce_str] = self._combine_cardinality_across_shards(
+                    ce_obj, combined
+                )
+            elif isinstance(ce_obj, (OWLObjectMaxCardinality, OWLObjectExactCardinality)):
+                # ≤n and =n use OWA semantics in Pellet: an individual satisfies ≤n r.C
+                # only when the ontology can PROVE it (e.g., via nominal + all-values
+                # constraints), so the result is often {} for plain ABox queries.
+                # CWA counting would over-approximate (treating 0 known bonds as
+                # satisfying ≤n).  Rely on per-shard Pellet results to preserve OWA:
+                # each compound's property assertions are entirely in its own shard
+                # (subject-keyed partitioning), so the per-shard count is exact, and
+                # unioning across shards gives the correct global set.
+                combined[ce_str] = set()
+                for shard_res in shard_results:
+                    if ce_str in shard_res:
+                        combined[ce_str] |= shard_res[ce_str]
             else:
-                # For other CEs (classes, unions, intersections), simple union across shards
+                # For other CEs (atomic classes, unions, intersections): union across
+                # shards is correct because the ABox is partitioned — each individual
+                # lives in exactly one shard.
                 combined[ce_str] = set()
                 for shard_res in shard_results:
                     if ce_str in shard_res:
@@ -647,6 +671,70 @@ class CrossShardReasoner(DistributedReasoner):
         else:
             return 0
     
+    def _combine_cardinality_across_shards(
+        self,
+        ce,  # OWLObjectMinCardinality | OWLObjectMaxCardinality | OWLObjectExactCardinality
+        combined: Dict[str, Set[str]],
+    ) -> Set[str]:
+        """
+        Combine results for a cardinality restriction across shards.
+
+        For ≥n / ≤n / =n r.C:
+        1. Retrieve the cross-shard filler instances (C) from `combined`.
+        2. Merge the full property map for r from ALL shards so that every
+           (subject, object) pair is visible regardless of shard assignment.
+        3. Count qualifying r-successors (those in C) per subject globally and
+           apply the cardinality threshold.
+
+        This fixes two problems with the naive per-shard approach:
+        - Correctness: a subject in shard-i may have r-successors in shard-j;
+          local Pellet would miss them and return a wrong count.
+        - Performance: avoids invoking Pellet's full cardinality reasoning on
+          every shard, replacing it with a lightweight set-count over merged maps.
+        """
+        property_expr = ce.get_property()
+        filler = ce.get_filler()
+        filler_str = str(filler)
+        cardinality = ce.get_cardinality()
+
+        # Filler instances were already computed bottom-up.
+        filler_iris = combined.get(filler_str, set())
+
+        is_inverse = isinstance(property_expr, OWLObjectInverseOf)
+        prop_iri = property_expr.get_named_property().str if is_inverse else property_expr.str
+
+        # Merge property maps from all shards into a single subject -> objects dict.
+        futures = [shard.get_object_property_map.remote(prop_iri, is_inverse) for shard in self.shards]
+        shard_maps = ray.get(futures)
+
+        merged_prop_map: Dict[str, Set[str]] = {}
+        for prop_map in shard_maps:
+            for subj_iri, obj_iris in prop_map.items():
+                if subj_iri not in merged_prop_map:
+                    merged_prop_map[subj_iri] = set(obj_iris)
+                else:
+                    merged_prop_map[subj_iri] |= obj_iris
+
+        # Collect the full individual set from all shards.
+        all_iris = self._gather_iris_from_all_shards("get_all_individual_iris")
+
+        # Determine cardinality bounds.
+        if isinstance(ce, OWLObjectMinCardinality):
+            min_count, max_count = cardinality, None
+        elif isinstance(ce, OWLObjectMaxCardinality):
+            min_count, max_count = 0, cardinality
+        else:  # OWLObjectExactCardinality
+            min_count, max_count = cardinality, cardinality
+
+        result: Set[str] = set()
+        for subj_iri in all_iris:
+            qualifying = merged_prop_map.get(subj_iri, set()) & filler_iris
+            count = len(qualifying)
+            if count >= min_count and (max_count is None or count <= max_count):
+                result.add(subj_iri)
+
+        return result
+
     def _combine_existential_across_shards(
         self,
         ce: OWLObjectSomeValuesFrom,

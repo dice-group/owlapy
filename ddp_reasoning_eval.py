@@ -387,28 +387,22 @@ def execute(args):
     concepts.sort(key=lambda c: owl_expression_to_dl(c))
     random.shuffle(concepts)
     
-    # Check if CSV already exists and delete it
-    if os.path.exists(args.path_report):
-        os.remove(args.path_report)
-    file_exists = False
-    
     data = []
-    
+
     # Iterate over OWL Class Expressions
     for expression in (tqdm_bar := tqdm(concepts, position=0, leave=True)):
         try:
             # Retrieve ground truth results
             retrieval_y, runtime_y = concept_retrieval(symbolic_kb, expression)
-            
+
             # Retrieve distributed reasoner results
             retrieval_distributed_y, runtime_distributed_y = concept_retrieval(distributed_reasoner, expression)
-            
+
             # Compute similarity metrics
             jaccard_sim = jaccard_similarity(retrieval_y, retrieval_distributed_y)
             f1_sim = f1_set_similarity(retrieval_y, retrieval_distributed_y)
-            
-            # Store the data
-            df_row = pd.DataFrame([{
+
+            data.append({
                 "Expression": owl_expression_to_dl(expression),
                 "Type": type(expression).__name__,
                 "Jaccard Similarity": jaccard_sim,
@@ -419,26 +413,20 @@ def execute(args):
                 "Ground_Truth_Retrieval": retrieval_y,
                 "Distributed_Retrieval": retrieval_distributed_y,
                 "Match": retrieval_y == retrieval_distributed_y,
-            }])
-            
-            # Append to CSV
-            df_row.to_csv(args.path_report, mode='a', header=not file_exists, index=False)
-            file_exists = True
-            
+            })
+
             # Update progress bar
             tqdm_bar.set_description_str(
                 f"Expression: {owl_expression_to_dl(expression)[:40]}... | Jaccard:{jaccard_sim:.4f} | F1:{f1_sim:.4f} | Speedup:{runtime_y/max(runtime_distributed_y, 1e-6):.2f}x"
             )
-            
+
         except Exception as e:
             print(f"\nError processing expression {owl_expression_to_dl(expression)}: {e}")
             continue
-    
-    # Read and analyze results
-    df = pd.read_csv(args.path_report, converters={
-        'Ground_Truth_Retrieval': lambda x: ast.literal_eval(x),
-        'Distributed_Retrieval': lambda x: ast.literal_eval(x)
-    })
+
+    # Build dataframe from collected results and write CSV once (avoids header/append race)
+    df = pd.DataFrame(data)
+    df.to_csv(args.path_report, index=False)
     
     # Summary statistics
     print("\n" + "=" * 70)
