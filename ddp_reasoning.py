@@ -524,12 +524,12 @@ class CrossShardReasoner(DistributedReasoner):
       Query: exists r1.(exists r2.{o3}) -> correctly returns o1
     """
     
-    def __init__(self, shards: List[ray.actor.ActorHandle]):
+    def __init__(self, shards: List[ray.actor.ActorHandle],open_world: bool = False):
         """
         Args:
             shards: List of ShardReasoner actor handles
         """
-        super().__init__(shards, open_world=False)
+        super().__init__(shards, open_world=open_world)
         print(f"CrossShardReasoner initialized with {len(shards)} shards (cross-shard intermediate results mode)")
     
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[OWLNamedIndividual]:
