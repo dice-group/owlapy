@@ -355,6 +355,7 @@ def execute(args):
     print("#" * 50, end="\n\n")
     
     # Shuffle concepts for better progress bar estimation
+    concepts.sort(key=lambda c: owl_expression_to_dl(c))
     random.shuffle(concepts)
     
     # Check if CSV already exists and delete it
