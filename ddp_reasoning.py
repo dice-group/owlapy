@@ -794,9 +794,15 @@ def main(args):
 
     # Auto-generate shard files if any are missing (single call creates all shards)
     if NUM_SHARDS > 1:
-        first_shard = Path(BASE) / f"{ONTOLOGY_STEM}_shard_0.owl"
-        if not first_shard.exists():
-            print(f"  [auto-shard] Shard files not found — generating {NUM_SHARDS} shards from {ORIGINAL_ONTOLOGY}...")
+        all_shards_exist = all(
+            (Path(BASE) / f"{ONTOLOGY_STEM}_shard_{i}.owl").exists()
+            for i in range(NUM_SHARDS)
+        )
+        # Also check no extra shards from a previous run with more shards
+        extra_shard = (Path(BASE) / f"{ONTOLOGY_STEM}_shard_{NUM_SHARDS}.owl").exists()
+        
+        if not all_shards_exist or extra_shard:
+            print(f"  [auto-shard] Shard files not found (or wrong count) — generating {NUM_SHARDS} shards from {ORIGINAL_ONTOLOGY}...")
             shard_ontology(ORIGINAL_ONTOLOGY, NUM_SHARDS, BASE)
             print(f"  [auto-shard] Done.")
 
