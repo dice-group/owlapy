@@ -145,6 +145,71 @@ class ShardReasoner:
         Used in open-world mode where each shard evaluates independently."""
         return {ind.str for ind in self.sync_reasoner.instances(ce, direct=direct)}
     
+    def query_instances_with_intermediate(
+        self, 
+        ce: OWLClassExpression, 
+        direct: bool = False
+    ) -> Dict[str, Set[str]]:
+        """
+        Evaluate CE and return intermediate results for all sub-CEs.
+        
+        This enables cross-shard inference for nested expressions.
+        Returns a dict mapping CE string representations to their instance sets.
+        
+        For example, for X = exists r1.(exists r2.C):
+        {
+            "C": {instances of C in this shard},
+            "exists r2.C": {instances of exists r2.C in this shard},
+            "exists r1.(exists r2.C)": {instances of X in this shard}
+        }
+        
+        Args:
+            ce: The class expression to evaluate
+            direct: Whether to get only direct instances
+            
+        Returns:
+            Dict mapping CE representations to instance IRI sets
+        """
+        results = {}
+        try:
+            self._collect_intermediate_results(ce, direct, results)
+        except Exception as e:
+            print(f"Error collecting intermediate results on {self.shard_id}: {e}")
+            # Fall back to empty results
+            results[str(ce)] = set()
+        return results
+    
+    def _collect_intermediate_results(
+        self,
+        ce: OWLClassExpression,
+        direct: bool,
+        results: Dict[str, Set[str]]
+    ) -> None:
+        """Recursively collect intermediate results for CE and all sub-CEs."""
+        ce_str = str(ce)
+        
+        # If already computed, skip
+        if ce_str in results:
+            return
+        
+        # Process sub-expressions first (depth-first)
+        if isinstance(ce, OWLObjectSomeValuesFrom):
+            self._collect_intermediate_results(ce.get_filler(), direct, results)
+        elif isinstance(ce, OWLObjectAllValuesFrom):
+            self._collect_intermediate_results(ce.get_filler(), direct, results)
+        elif isinstance(ce, (OWLObjectIntersectionOf, OWLObjectUnionOf)):
+            for operand in ce.operands():
+                self._collect_intermediate_results(operand, direct, results)
+        elif isinstance(ce, OWLObjectComplementOf):
+            self._collect_intermediate_results(ce.get_operand(), direct, results)
+        elif isinstance(ce, (OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality)):
+            self._collect_intermediate_results(ce.get_filler(), direct, results)
+        
+        # Compute instances for this CE on this shard
+        print(f"    [{self.shard_id}] Evaluating: {ce_str[:60]}...")
+        results[ce_str] = self.query_instances(ce, direct)
+        print(f"    [{self.shard_id}] Found {len(results[ce_str])} instances")
+    
     def get_class_instances_iris(self, class_iri: str, direct: bool = False) -> Set[str]:
         """Get instances of a named class from this shard (as IRI strings)."""
         owl_class = OWLClass(class_iri)
@@ -437,6 +502,177 @@ class DistributedReasoner:
                 result.add(subj_iri)
         
         return result
+
+
+class CrossShardReasoner(DistributedReasoner):
+    """
+    A distributed reasoner that enables cross-shard inference for nested queries
+    using intermediate results.
+    
+    Unlike the base DistributedReasoner which either:
+    - (open_world=True) evaluates queries independently on each shard, or
+    - (open_world=False) decomposes queries and gathers atomic facts,
+    
+    CrossShardReasoner uses a hybrid approach:
+    1. Each shard evaluates the full query AND all sub-queries
+    2. Returns intermediate results for each sub-expression
+    3. The coordinator combines these results bottom-up with cross-shard joins
+    
+    This solves the cross-shard inference problem for nested existentials:
+      Shard1: (o1 r1 o2)
+      Shard2: (o2 r2 o3) 
+      Query: exists r1.(exists r2.{o3}) -> correctly returns o1
+    """
+    
+    def __init__(self, shards: List[ray.actor.ActorHandle]):
+        """
+        Args:
+            shards: List of ShardReasoner actor handles
+        """
+        super().__init__(shards, open_world=False)
+        print(f"CrossShardReasoner initialized with {len(shards)} shards (cross-shard intermediate results mode)")
+    
+    def instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[OWLNamedIndividual]:
+        """
+        Get all instances of a class expression using cross-shard inference.
+        
+        Gathers intermediate results from all shards and combines them bottom-up.
+        """
+        iris = self._cross_shard_instances(ce, direct)
+        return {OWLNamedIndividual(iri) for iri in iris}
+    
+    def _cross_shard_instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[str]:
+        """
+        Cross-shard inference using intermediate results.
+        
+        Strategy:
+        1. Each shard evaluates the CE and returns intermediate results for all sub-CEs
+        2. For each sub-CE (bottom-up), combine results across shards:
+           - For atomic classes: union across shards
+           - For existential restrictions: find subjects whose property values
+             satisfy the filler (using combined filler results from step 2)
+        
+        This enables nested queries like exists r1.(exists r2.C) to work across shards.
+        """
+        print(f"  [cross-shard] Gathering intermediate results from {len(self.shards)} shards...")
+        
+        # Gather intermediate results from all shards
+        futures = [shard.query_instances_with_intermediate.remote(ce, direct) for shard in self.shards]
+        shard_results = ray.get(futures)  # List of dicts: ce_str -> instance set
+        
+        print(f"  [cross-shard] Received results from all shards")
+        
+        # Build a map of CE string -> combined instances across shards
+        combined = {}
+        
+        # Extract the CE structure and process bottom-up
+        ce_by_str = {}
+        self._collect_ce_structure(ce, ce_by_str)
+        
+        print(f"  [cross-shard] Processing {len(ce_by_str)} CE components...")
+        
+        # Process CEs by depth (leaves first)
+        ce_list = sorted(ce_by_str.items(), key=lambda x: self._ce_depth(x[1]))
+        
+        for idx, (ce_str, ce_obj) in enumerate(ce_list):
+            print(f"  [cross-shard] Processing {idx+1}/{len(ce_list)}: {ce_str[:80]}...")
+            
+            # Check if this is an existential restriction that needs cross-shard joining
+            if isinstance(ce_obj, OWLObjectSomeValuesFrom):
+                # For exists r.C, we need to find subjects whose r-values satisfy C
+                # C's instances have already been combined across shards
+                combined[ce_str] = self._combine_existential_across_shards(
+                    ce_obj, combined, shard_results
+                )
+            else:
+                # For other CEs (classes, unions, intersections), simple union across shards
+                combined[ce_str] = set()
+                for shard_res in shard_results:
+                    if ce_str in shard_res:
+                        combined[ce_str] |= shard_res[ce_str]
+        
+        print(f"  [cross-shard] Completed processing")
+        
+        # Return combined results for the top-level CE
+        return combined.get(str(ce), set())
+    
+    def _collect_ce_structure(self, ce: OWLClassExpression, ce_map: Dict[str, OWLClassExpression]) -> None:
+        """Recursively collect all CE objects and map them by their string representation."""
+        ce_str = str(ce)
+        if ce_str in ce_map:
+            return
+        
+        ce_map[ce_str] = ce
+        
+        if isinstance(ce, OWLObjectSomeValuesFrom):
+            self._collect_ce_structure(ce.get_filler(), ce_map)
+        elif isinstance(ce, OWLObjectAllValuesFrom):
+            self._collect_ce_structure(ce.get_filler(), ce_map)
+        elif isinstance(ce, (OWLObjectIntersectionOf, OWLObjectUnionOf)):
+            for operand in ce.operands():
+                self._collect_ce_structure(operand, ce_map)
+        elif isinstance(ce, OWLObjectComplementOf):
+            self._collect_ce_structure(ce.get_operand(), ce_map)
+        elif isinstance(ce, (OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality)):
+            self._collect_ce_structure(ce.get_filler(), ce_map)
+    
+    def _ce_depth(self, ce: OWLClassExpression) -> int:
+        """Calculate the depth of a CE (for bottom-up processing)."""
+        if isinstance(ce, OWLClass):
+            return 0
+        elif isinstance(ce, OWLObjectOneOf):
+            return 0
+        elif isinstance(ce, (OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom)):
+            return 1 + self._ce_depth(ce.get_filler())
+        elif isinstance(ce, (OWLObjectIntersectionOf, OWLObjectUnionOf)):
+            return 1 + max((self._ce_depth(op) for op in ce.operands()), default=0)
+        elif isinstance(ce, OWLObjectComplementOf):
+            return 1 + self._ce_depth(ce.get_operand())
+        elif isinstance(ce, (OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality)):
+            return 1 + self._ce_depth(ce.get_filler())
+        else:
+            return 0
+    
+    def _combine_existential_across_shards(
+        self,
+        ce: OWLObjectSomeValuesFrom,
+        combined: Dict[str, Set[str]],
+        shard_results: List[Dict[str, Set[str]]]
+    ) -> Set[str]:
+        """
+        Combine results for an existential restriction across shards.
+        
+        For exists r.C:
+        1. Get combined instances of C (filler) from `combined` dict
+        2. Get property relation (r) from ALL shards
+        3. Find subjects whose r-values include at least one instance of C
+        
+        This enables cross-shard joins like:
+          Shard1: (o1 r1 o2)  
+          Shard2: (o2 r2 o3)
+          Query: exists r1.(exists r2.{o3}) -> returns o1
+        """
+        property_expr = ce.get_property()
+        filler = ce.get_filler()
+        filler_str = str(filler)
+        
+        # Get combined filler instances (already computed from earlier CEs)
+        filler_iris = combined.get(filler_str, set())
+        
+        if not filler_iris:
+            return set()
+        
+        # Gather property relations from all shards
+        is_inverse = isinstance(property_expr, OWLObjectInverseOf)
+        prop_iri = property_expr.get_named_property().str if is_inverse else property_expr.str
+        
+        # Get subjects from all shards that have property values in the filler set
+        futures = [
+            shard.get_object_property_subjects.remote(prop_iri, is_inverse, filler_iris)
+            for shard in self.shards
+        ]
+        results = ray.get(futures)
+        return set().union(*results) if results else set()
 
 
 

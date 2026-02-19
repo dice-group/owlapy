@@ -16,8 +16,8 @@ Scenario
 
   Question: Can the DistributedReasoner return o1?
 
-Open-world mode  (open_world=True)
------------------------------------
+Open-world mode  (open_world=True, cross_shard=False)
+------------------------------------------------------
   Each shard evaluates the FULL CE independently, then results are unioned.
 
     G_1 evaluates exists r1.(exists r2.{o3}):
@@ -30,10 +30,39 @@ Open-world mode  (open_world=True)
 
   Conclusion: open-world mode CANNOT return o1 for this cross-shard scenario.
 
+Cross-shard mode  (open_world=True, cross_shard=True)
+------------------------------------------------------
+  Each shard evaluates the CE and returns intermediate results for all sub-CEs.
+  The coordinator combines these intermediate results bottom-up.
+
+  1. Each shard evaluates:
+       - {o3}  (instances of the innermost filler)
+       - exists r2.{o3}  (instances of inner existential)
+       - exists r1.(exists r2.{o3})  (instances of full query)
+
+  2. Combine across shards for {o3}:
+       G_1: {o3}  G_2: {o3}  ->  Union: {o3}
+
+  3. Combine across shards for exists r2.{o3}:
+       - Combined filler instances: {o3}
+       - Get r2 property relations from all shards
+       - G_1: no (x r2 o3) triples  ->  {}
+       - G_2: (o2 r2 o3), o3 in filler  ->  {o2}
+       - Union: {o2}  <- o2 found via cross-shard join
+
+  4. Combine across shards for exists r1.(exists r2.{o3}):
+       - Combined filler instances (from step 3): {o2}
+       - Get r1 property relations from all shards
+       - G_1: (o1 r1 o2), o2 in filler  ->  {o1}
+       - G_2: no (x r1 o2) triples  ->  {}
+       - Union: {o1}  <- o1 found via cross-shard join
+
+  Conclusion: cross-shard mode CAN return o1.
+
 Usage
 -----
   conda activate temp_owlapy
-  python test_cross_shard_inference.py
+  python fail_case_shard_inference.py
 """
 
 import os
@@ -52,7 +81,7 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.iri import IRI
 
-from ddp_reasoning import ShardReasoner, DistributedReasoner
+from ddp_reasoning import ShardReasoner, DistributedReasoner, CrossShardReasoner
 
 
 NS = "http://example.org/test#"
@@ -149,23 +178,78 @@ def main():
         print(f"  Query:   exists r1.(exists r2.{{o3}})")
         print(f"  Result:  {ow_results}")
 
+        # -- Distributed reasoning (CROSS-SHARD MODE) ----------------------
+        print("\n-- Distributed Reasoning: CROSS-SHARD MODE (2 shards) --")
+
+        # Kill the open-world actors so their shard resources become available
+        for actor in shard_actors_ow:
+            ray.kill(actor)
+
+        shard_actors_cs = [
+            ShardReasoner.options(resources={"shard_0": 1}).remote(
+                "Shard-0", shard1_path, "Pellet"),
+            ShardReasoner.options(resources={"shard_1": 1}).remote(
+                "Shard-1", shard2_path, "Pellet"),
+        ]
+
+        cross_shard_reasoner = CrossShardReasoner(shard_actors_cs)
+        cs_results = {ind.str for ind in cross_shard_reasoner.instances(query)}
+        print(f"  Query:   exists r1.(exists r2.{{o3}})")
+        print(f"  Result:  {cs_results}")
+
         # -- Verdict --------------------------------------------------------
         o1_iri = IRI(NS, "o1").str
-        print("\n-- Verdict --")
-        print(f"  Ground truth contains o1?       {o1_iri in gt_results}")
-        print(f"  Open-world  contains o1?        {o1_iri in ow_results}")
-        print(f"  Open-world  matches GT?         {gt_results == ow_results}")
+        # -- Verdict --------------------------------------------------------
+        gt_has_o1 = o1_iri in gt_results
+        ow_has_o1 = o1_iri in ow_results
+        cs_has_o1 = o1_iri in cs_results
+        ow_match  = gt_results == ow_results
+        cs_match  = gt_results == cs_results
 
-        print("\n" + "=" * 60)
-        if o1_iri not in ow_results:
-            print("CONFIRMED: Open-world mode CANNOT return o1.")
-            print("  Each shard evaluates the full CE independently.")
-            print("  G_1 sees (o1 r1 o2) but o2 has no r2 values locally.")
-            print("  G_2 sees (o2 r2 o3) but nobody has r1 values locally.")
-            print("  Neither shard can complete the chain alone.")
+        W = 62
+        print()
+        print("=" * W)
+        print("  VERDICT".center(W))
+        print("=" * W)
+
+        # Results table
+        header = f"  {'Mode':<25} {'Contains o1?':>14} {'Matches GT?':>14}"
+        print(header)
+        print("  " + "-" * (W - 4))
+        for label, has_o1, match in [
+            ("Ground truth",  gt_has_o1, None),
+            ("Open-world",    ow_has_o1, ow_match),
+            ("Cross-shard",   cs_has_o1, cs_match),
+        ]:
+            col1 = ("YES" if has_o1 else "NO").center(14)
+            col2 = ("—" if match is None else ("YES" if match else "NO")).center(14)
+            print(f"  {label:<25} {col1} {col2}")
+
+        print()
+
+        # Open-world analysis
+        if not ow_has_o1:
+            print("  [CONFIRMED] Open-world mode cannot return o1.")
+            print("    - Each shard evaluates the full CE independently.")
+            print("    - G_1: o1 ->r1-> o2, but o2 has no r2 values locally.")
+            print("    - G_2: o2 ->r2-> o3, but nobody has r1 values locally.")
+            print("    - Neither shard can complete the chain alone.")
         else:
-            print("UNEXPECTED: Open-world mode returned o1.")
-        print("=" * 60)
+            print("  [UNEXPECTED] Open-world mode returned o1.")
+
+        print()
+
+        # Cross-shard analysis
+        if cs_has_o1:
+            print("  [SUCCESS] Cross-shard mode correctly returns o1!")
+            print("    Bottom-up intermediate-result combination:")
+            print("      Step 1  Combine {{o3}} instances across shards  -> {{o3}}")
+            print("      Step 2  Find r2 subjects with object in {{o3}} -> {{o2}}")
+            print("      Step 3  Find r1 subjects with object in {{o2}} -> {{o1}}")
+        else:
+            print("  [FAILED] Cross-shard mode did not return o1.")
+
+        print("=" * W)
 
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
