@@ -1,73 +1,114 @@
 """
 Distributed OWL Reasoning with Query Decomposition
+==================================================
 
-This implementation addresses the problem of reasoning over sharded data by decomposing
-complex OWL class expressions into atomic queries, gathering results from all shards,
-and computing the final answer on the coordinator.
+Additional dependency: pip install ray
 
-# ============================================================================
-# SETUP OPTIONS
-# ============================================================================
-#
-# There are two modes of operation:
-#
-# 1. SINGLE MACHINE (multiple cores) - Use ONE terminal
-#    Declare all shard resources on the head node in a single command.
-#    Ray handles multi-core parallelism automatically.
-#
-# 2. MULTIPLE MACHINES (distributed) - Use MULTIPLE terminals
-#    Start head on one machine, then connect workers from other machines.
-#    Each `ray start --address=...` runs on a DIFFERENT physical machine.
-#
-# Docs: https://docs.ray.io/en/latest/ray-core/configure.html#cluster-resources
-# ============================================================================
+Overview
+--------
+This module implements distributed OWL instance retrieval over horizontally
+sharded ontologies using Ray as the distributed computing backend.
 
-# --------------------------------------------------------------------------
-# SINGLE MACHINE EXAMPLES (one terminal for ray, one for the script)
-# --------------------------------------------------------------------------
+The core idea is *query decomposition*: instead of sending a full OWL class
+expression (CE) to a single reasoner, the coordinator breaks the CE into atomic
+sub-queries, dispatches each sub-query to every shard in parallel, and then
+combines the results (union / intersection / set-difference) locally. This
+allows reasoning over datasets that are too large for a single machine and
+delivers super-linear speedups for complex union queries.
 
-# 1 shard (baseline)
-# Terminal 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
-# Terminal 1 or 2: python ddp_reasoning.py
-# Set NUM_SHARDS = 1 in main()
+Architecture
+------------
+  ShardReasoner (Ray actor, one per shard)
+      Wraps a SyncReasoner (Pellet / HermiT) for a single .owl shard.
+      Exposes atomic query methods that return plain IRI strings so that
+      results can be serialised across the Ray object store without issues.
 
-# 4 shards on ONE machine
-# Terminal 1: ray start --head --port=6379 --resources='{"shard_0": 1, "shard_1": 1, "shard_2": 1, "shard_3": 1}'
-# Terminal 1 or 2: python ddp_reasoning.py
-# Set NUM_SHARDS = 4 in main()
+  DistributedReasoner (coordinator, runs on the driver)
+      Accepts any OWLClassExpression and recursively decomposes it into
+      atomic sub-queries via singledispatch.  Supported constructors:
+        OWLClass, OWLObjectIntersectionOf, OWLObjectUnionOf,
+        OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom,
+        OWLObjectComplementOf, OWLObjectHasValue, OWLObjectOneOf,
+        OWLObjectMinCardinality, OWLObjectMaxCardinality,
+        OWLObjectExactCardinality
 
-# 8 shards on ONE machine
-# Terminal 1: ray start --head --port=6379 --resources='{"shard_0": 1, "shard_1": 1, "shard_2": 1, "shard_3": 1, "shard_4": 1, "shard_5": 1, "shard_6": 1, "shard_7": 1}'
-# Terminal 1 or 2: python ddp_reasoning.py
-# Set NUM_SHARDS = 8 in main()
+  shard_ontology (utility, from shard_ontology.py)
+      Splits an ontology into N shards: the TBox is replicated in every
+      shard while the ABox is partitioned round-robin across shards.
+      Called automatically on first run if the shard files are missing.
 
-# --------------------------------------------------------------------------
-# MULTI-MACHINE EXAMPLES (one terminal PER machine)
-# --------------------------------------------------------------------------
+Usage
+-----
+  # Fully automatic — no terminal setup needed:
+  python ddp_reasoning.py --auto_ray --num_shards 8
 
-# 2 machines (1 shard each)
-# Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
-# Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
-# Any terminal: python ddp_reasoning.py
-# Set NUM_SHARDS = 2 in main()
+  # Use a different ontology / namespace:
+  python ddp_reasoning.py --auto_ray --num_shards 4 \\
+      --base /path/to/KG --ns http://example.org/myonto# \\
+      --reasoner HermiT
 
-# 8 machines (1 shard each)
-# Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
-# Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
-# Machine 3: ray start --address='<HEAD_IP>:6379' --resources='{"shard_2": 1}'
-# Machine 4: ray start --address='<HEAD_IP>:6379' --resources='{"shard_3": 1}'
-# Machine 5: ray start --address='<HEAD_IP>:6379' --resources='{"shard_4": 1}'
-# Machine 6: ray start --address='<HEAD_IP>:6379' --resources='{"shard_5": 1}'
-# Machine 7: ray start --address='<HEAD_IP>:6379' --resources='{"shard_6": 1}'
-# Machine 8: ray start --address='<HEAD_IP>:6379' --resources='{"shard_7": 1}'
-# Any terminal: python ddp_reasoning.py
-# Set NUM_SHARDS = 8 in main()
+  # Manual Ray cluster (start Ray head node first in a separate terminal):
+  #   ray start --head --port=6379 \\
+  #       --resources='{"shard_0":1,"shard_1":1,"shard_2":1,"shard_3":1}'
+  python ddp_reasoning.py --num_shards 4
 
-# ============================================================================
+CLI Arguments
+-------------
+  --base          Base directory that contains the ontology and shard files.
+  --ontology      Explicit path to the source ontology
+                  (default: <base>/<stem>.owl, inferred from --base).
+  --num_shards    Number of shards / Ray workers  (default: 1).
+  --ns            Namespace URI prefix for the ontology  (default: Mutagenesis).
+  --reasoner      OWL reasoner backend: Pellet (default) or HermiT.
+  --auto_ray      When set, Ray is initialised in-process using all available
+                  CPU cores and the required shard custom resources.
+                  Shard .owl files are generated automatically if missing.
+                  When not set, the script connects to an existing Ray cluster
+                  started via `ray start --head ...`.
+
+Distributed Setup (multi-machine)
+----------------------------------
+Each physical machine runs `ray start` in its own terminal. The head node
+registers shard_0; every additional worker registers its own shard resource.
+The driver script can then be run from any machine that can reach the head.
+
+  2 machines (1 shard each):
+    Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
+    Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
+    Driver:    python ddp_reasoning.py --num_shards 2
+
+  4 machines (1 shard each):
+    Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
+    Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
+    Machine 3: ray start --address='<HEAD_IP>:6379' --resources='{"shard_2": 1}'
+    Machine 4: ray start --address='<HEAD_IP>:6379' --resources='{"shard_3": 1}'
+    Driver:    python ddp_reasoning.py --num_shards 4
+
+  8 machines (1 shard each):
+    Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
+    Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
+    Machine 3: ray start --address='<HEAD_IP>:6379' --resources='{"shard_2": 1}'
+    Machine 4: ray start --address='<HEAD_IP>:6379' --resources='{"shard_3": 1}'
+    Machine 5: ray start --address='<HEAD_IP>:6379' --resources='{"shard_4": 1}'
+    Machine 6: ray start --address='<HEAD_IP>:6379' --resources='{"shard_5": 1}'
+    Machine 7: ray start --address='<HEAD_IP>:6379' --resources='{"shard_6": 1}'
+    Machine 8: ray start --address='<HEAD_IP>:6379' --resources='{"shard_7": 1}'
+    Driver:    python ddp_reasoning.py --num_shards 8
+
+  Multiple shards per machine (declare several resources on one node):
+    Machine 1: ray start --head --port=6379 \
+                   --resources='{"shard_0":1,"shard_1":1,"shard_2":1,"shard_3":1}'
+    Driver:    python ddp_reasoning.py --num_shards 4
+
+Docs: https://docs.ray.io/en/latest/ray-core/configure.html#cluster-resources
 """
 
+import argparse
+import os
 import ray
 from functools import singledispatchmethod
+from pathlib import Path
+from shard_ontology import shard_ontology
 from typing import Set, FrozenSet, List, Dict, Tuple, Iterable
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.class_expression import (
@@ -491,14 +532,14 @@ def run_timing_benchmark(
     return timing_results
 
 
-def main():
+def main(args):
     """Setup reasoners and run benchmark with complex class expressions."""
     
     # Configuration 
-    BASE = "/home/lukef/Documents/GitHub/owlapy/KGs/Mutagenesis"
-    ORIGINAL_ONTOLOGY = f"{BASE}/mutagenesis.owl"
-    NUM_SHARDS = 1  # Number of shards/workers (1 = baseline comparison, 2/4/8 for scaling)
-    NS = 'http://dl-learner.org/mutagenesis#'
+    BASE = args.base
+    ORIGINAL_ONTOLOGY = args.ontology if args.ontology else f"{BASE}/mutagenesis.owl"
+    NUM_SHARDS = args.num_shards
+    NS = args.ns
     
     # Setup Reasoners 
     print("=" * 60)
@@ -508,18 +549,29 @@ def main():
     print("=" * 60)
     
     print("\n[1/2] Loading ground truth reasoner (complete ontology)...")
-    ground_truth_reasoner = SyncReasoner(ontology=ORIGINAL_ONTOLOGY, reasoner="Pellet")
+    ground_truth_reasoner = SyncReasoner(ontology=ORIGINAL_ONTOLOGY, reasoner=args.reasoner)
     
+    # Derive shard filename prefix from the ontology stem (e.g. "mutagenesis" → "mutagenesis_shard_0.owl")
+    ONTOLOGY_STEM = Path(ORIGINAL_ONTOLOGY).stem
+
     print(f"[2/2] Creating distributed reasoner with {NUM_SHARDS} shard(s)...")
+
+    # Auto-generate shard files if any are missing (single call creates all shards)
+    if NUM_SHARDS > 1:
+        first_shard = Path(BASE) / f"{ONTOLOGY_STEM}_shard_0.owl"
+        if not first_shard.exists():
+            print(f"  [auto-shard] Shard files not found — generating {NUM_SHARDS} shards from {ORIGINAL_ONTOLOGY}...")
+            shard_ontology(ORIGINAL_ONTOLOGY, NUM_SHARDS, BASE)
+            print(f"  [auto-shard] Done.")
+
     shards = []
     for i in range(NUM_SHARDS):
         if NUM_SHARDS == 1:
-            # Single shard = use complete ontology (fair baseline comparison)
             shard_path = ORIGINAL_ONTOLOGY
         else:
-            shard_path = f"{BASE}/mutagenesis_shard_{i}.owl"
+            shard_path = str(Path(BASE) / f"{ONTOLOGY_STEM}_shard_{i}.owl")
         # Each shard pinned to its own Ray node via resource constraint
-        shard = ShardReasoner.options(resources={f"shard_{i}": 1}).remote(f"Shard-{i}", shard_path)
+        shard = ShardReasoner.options(resources={f"shard_{i}": 1}).remote(f"Shard-{i}", shard_path, args.reasoner)
         shards.append(shard)
     
     dist_reasoner = DistributedReasoner(shards)
@@ -660,11 +712,88 @@ def main():
                  carbon, OWLObjectSomeValuesFrom(property=in_bond, filler=bond2)]))
          ])),
     ]
+
+    # TODO: CD:
+
+    """
+    A scenario:
+
+Lets assume that we have a graph (TBOX, and fragment of ABOX) G_1, G_2
+
+An expression: exists r1 (exists r2. {o3})
+
+
+(o1 r1 o2) =Abox of G1
+
+(o2 r2 o3) = Abox of G2
+
+Hence, Abox of G1 and G2 contians only single triple each.
+
+Can we return o1 if we retrieve the instance of exists r1 (exists r2. {o3}) ?
+
+Answer: No for the time being
+
+    """
     
     # Run Benchmark 
     run_timing_benchmark(ground_truth_reasoner, dist_reasoner, complex_queries)
 
 
 if __name__ == "__main__":
-    ray.init(address='auto')
-    main()
+    parser = argparse.ArgumentParser(description="Distributed OWL Reasoning with Query Decomposition")
+    parser.add_argument(
+        "--base",
+        type=str,
+        default="/home/cdemir/Desktop/Softwares/owlapy/KGs/Mutagenesis",
+        help="Base directory for the ontology shards"
+    )
+    parser.add_argument(
+        "--ontology",
+        type=str,
+        default=None,
+        help="Path to the original ontology file (defaults to <base>/mutagenesis.owl)"
+    )
+    parser.add_argument(
+        "--num_shards",
+        type=int,
+        default=1,
+        help="Number of shards/workers (1 = baseline comparison, 2/4/8 for scaling)"
+    )
+    parser.add_argument(
+        "--ns",
+        type=str,
+        default="http://dl-learner.org/mutagenesis#",
+        help="Namespace URI for the ontology"
+    )
+    parser.add_argument(
+        "--reasoner",
+        type=str,
+        default="Pellet",
+        help="Reasoner to use (e.g. Pellet, HermiT)"
+    )
+    parser.add_argument(
+        "--auto_ray",
+        action="store_true",
+        default=False,
+        help=(
+            "If set, Ray is initialised automatically in-process using all available "
+            "CPU cores and the required shard custom resources. "
+            "No 'ray start' terminal command is needed. "
+            "Run this script with the desired Python interpreter directly, e.g.: "
+            "/home/cdemir/anaconda3/envs/temp_owlapy/bin/python ddp_reasoning.py --auto_ray. "
+            "If not set (default), the script connects to an already-running Ray cluster "
+            "that was started manually via 'ray start --head ...'."
+        )
+    )
+    args = parser.parse_args()
+
+    if args.auto_ray:
+        num_cpus = os.cpu_count()
+        shard_resources = {f"shard_{i}": 1 for i in range(args.num_shards)}
+        print(f"[auto_ray] Starting local Ray cluster with {num_cpus} CPUs and resources: {shard_resources}")
+        ray.init(num_cpus=num_cpus, resources=shard_resources)
+    else:
+        print("[manual_ray] Connecting to existing Ray cluster (address='auto') ...")
+        ray.init(address='auto')
+
+    main(args)
