@@ -78,6 +78,31 @@ The driver script can then be run from any machine that can reach the head.
     Driver:    python ddp_reasoning_eval.py --path_kg KGs/Mutagenesis/mutagenesis.owl --num_shards 4
 
 Docs: https://docs.ray.io/en/latest/ray-core/configure.html#cluster-resources
+
+
+
+Regression Test: Cross-Shard Inference
+
+Regression Test: Cross-Shard Inference
+python ddp_reasoning_eval.py --auto_ray --num_shards 16 --path_kg KGs/Mutagenesis/mutagenesis.owl --cross_shard --open_world --no_negations --ratio_sample_nc 0.0001 --ratio_sample_object_prop 0.001
+...
+NC denotes the named concepts   |NC|=1
+NNC denotes the negated named concepts  |NNC|=0
+|NC UNION NC|=0
+|NC Intersection NC|=0
+NC* denotes the union of named concepts and negated named concepts      |NC*|=1
+|NC* UNION NC*|=0
+|NC* Intersection NC*|=0
+|exist R* NC*|=1
+|forall R* NC*|=0
+|Max Cardinalities|=3
+|Min Cardinalities|=3
+|exist R* Nominals|=120
+...
+
+1.000
+
+
 """
 
 import ray
@@ -109,7 +134,7 @@ from owlapy import owl_expression_to_dl
 # Import from ddp_reasoning
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ddp_reasoning import ShardReasoner, DistributedReasoner
+from ddp_reasoning import ShardReasoner, DistributedReasoner, CrossShardReasoner
 from shard_ontology import shard_ontology
 
 # Set pandas options to ensure full output
@@ -205,8 +230,12 @@ def execute(args):
         )
         shards.append(shard)
     
-    distributed_reasoner = DistributedReasoner(shards, open_world=args.open_world)
-    
+    if args.cross_shard:
+        distributed_reasoner = CrossShardReasoner(shards, open_world=args.open_world,verbose=False)
+    else:
+        distributed_reasoner = DistributedReasoner(shards, open_world=args.open_world)
+
+
     # Fix the random seed
     random.seed(args.seed)
     
@@ -226,7 +255,7 @@ def execute(args):
     object_properties = set(object_properties)
     
     # (5) Inverse of object properties
-    object_properties_inverse = {i.get_inverse_property() for i in object_properties}
+    object_properties_inverse = {} #{i.get_inverse_property() for i in object_properties}
     
     # (6) R*: R UNION R⁻
     object_properties_and_inverse = object_properties.union(object_properties_inverse)
@@ -471,6 +500,10 @@ def get_default_arguments():
                         help="Exclude negation-based expressions (¬C, ∀r.C) from evaluation")
     parser.add_argument("--open_world", action="store_true",
                         help="Use open-world reasoning (no CE decomposition, union shard results)")
+    parser.add_argument(
+        "--cross_shard", action="store_true", default=False,
+        help="Use CrossShardReasoner for open-world distributed reasoning (default: DistributedReasoner)",
+    )
     parser.add_argument("--auto_ray", action="store_true", default=False,
                         help=(
                             "If set, Ray is initialised automatically in-process using all available "

@@ -524,13 +524,15 @@ class CrossShardReasoner(DistributedReasoner):
       Query: exists r1.(exists r2.{o3}) -> correctly returns o1
     """
     
-    def __init__(self, shards: List[ray.actor.ActorHandle],open_world: bool = False):
+    def __init__(self, shards: List[ray.actor.ActorHandle],open_world: bool = False,verbose: bool = True):
         """
         Args:
             shards: List of ShardReasoner actor handles
         """
         super().__init__(shards, open_world=open_world)
-        print(f"CrossShardReasoner initialized with {len(shards)} shards (cross-shard intermediate results mode)")
+        self.verbose = verbose
+        if self.verbose:
+            print(f"CrossShardReasoner initialized with {len(shards)} shards (cross-shard intermediate results mode)")
     
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[OWLNamedIndividual]:
         """
@@ -554,13 +556,15 @@ class CrossShardReasoner(DistributedReasoner):
         
         This enables nested queries like exists r1.(exists r2.C) to work across shards.
         """
-        print(f"  [cross-shard] Gathering intermediate results from {len(self.shards)} shards...")
+        if self.verbose:
+            print(f"  [cross-shard] Gathering intermediate results from {len(self.shards)} shards...")
         
         # Gather intermediate results from all shards
         futures = [shard.query_instances_with_intermediate.remote(ce, direct) for shard in self.shards]
         shard_results = ray.get(futures)  # List of dicts: ce_str -> instance set
         
-        print(f"  [cross-shard] Received results from all shards")
+        if self.verbose:
+            print(f"  [cross-shard] Received results from all shards")
         
         # Build a map of CE string -> combined instances across shards
         combined = {}
@@ -569,13 +573,15 @@ class CrossShardReasoner(DistributedReasoner):
         ce_by_str = {}
         self._collect_ce_structure(ce, ce_by_str)
         
-        print(f"  [cross-shard] Processing {len(ce_by_str)} CE components...")
+        if self.verbose:
+            print(f"  [cross-shard] Processing {len(ce_by_str)} CE components...")
         
         # Process CEs by depth (leaves first)
         ce_list = sorted(ce_by_str.items(), key=lambda x: self._ce_depth(x[1]))
         
         for idx, (ce_str, ce_obj) in enumerate(ce_list):
-            print(f"  [cross-shard] Processing {idx+1}/{len(ce_list)}: {ce_str[:80]}...")
+            if self.verbose:
+                print(f"  [cross-shard] Processing {idx+1}/{len(ce_list)}: {ce_str[:80]}...")
             
             # Check if this is an existential restriction that needs cross-shard joining
             if isinstance(ce_obj, OWLObjectSomeValuesFrom):
@@ -598,7 +604,8 @@ class CrossShardReasoner(DistributedReasoner):
                     if ce_str in shard_res:
                         combined[ce_str] |= shard_res[ce_str]
         
-        print(f"  [cross-shard] Completed processing")
+        if self.verbose:
+            print(f"  [cross-shard] Completed processing")
         
         # Return combined results for the top-level CE
         return combined.get(str(ce), set())
