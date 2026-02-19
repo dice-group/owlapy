@@ -516,4 +516,13 @@ def get_default_arguments():
 
 
 if __name__ == "__main__":
-    execute(get_default_arguments())
+    args = get_default_arguments()
+    
+    # Ensure deterministic hash/set behavior by setting PYTHONHASHSEED
+    if os.environ.get("PYTHONHASHSEED") != str(args.seed):
+        print(f"[Info] Setting PYTHONHASHSEED={args.seed} for determinism.")
+        os.environ["PYTHONHASHSEED"] = str(args.seed)
+        sys.stdout.flush()
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+        
+    execute(args)
