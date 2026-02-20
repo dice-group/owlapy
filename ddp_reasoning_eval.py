@@ -277,7 +277,7 @@ def execute(args):
     object_properties = set(object_properties)
     
     # (5) Inverse of object properties
-    object_properties_inverse = {} #{i.get_inverse_property() for i in object_properties}
+    object_properties_inverse = {i.get_inverse_property() for i in object_properties}
     
     # (6) R*: R UNION R⁻
     object_properties_and_inverse = object_properties.union(object_properties_inverse)
