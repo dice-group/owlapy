@@ -429,8 +429,8 @@ def execute(args):
                 "Runtime Benefits": runtime_y - runtime_distributed_y,
                 "Runtime Ground Truth": runtime_y,
                 "Runtime Distributed": runtime_distributed_y,
-                "Ground_Truth_Retrieval": retrieval_y,
-                "Distributed_Retrieval": retrieval_distributed_y,
+                "Ground_Truth_Retrieval": None if jaccard_sim == 1.0 else retrieval_y,
+                "Distributed_Retrieval": None if jaccard_sim == 1.0 else retrieval_distributed_y,
                 "Match": retrieval_y == retrieval_distributed_y,
             })
 
