@@ -454,24 +454,58 @@ def execute(args):
     
     # Group by expression type
     df_g = df.groupby(by="Type")
-    print("\nExpression Type Counts:")
-    print(df_g["Type"].count())
     
     # Compute mean of numerical columns per group
     numerical_df = df.select_dtypes(include=["number"])
     mean_df = df_g[numerical_df.columns.tolist()].mean()
-    print("\nMean Metrics by Type:")
+    
+    # Combine counts and mean metrics into a single table
+    mean_df.insert(0, "Count", df_g["Type"].count())
+    
+    print("\nCombined Metrics by Type:")
     print(mean_df)
     
-    # Overall statistics
-    print("\n" + "-" * 70)
-    print("Overall Statistics:")
-    print(f"  Total expressions evaluated: {len(df)}")
-    print(f"  Mean Jaccard Similarity: {df['Jaccard Similarity'].mean():.4f}")
-    print(f"  Mean F1 Score: {df['F1'].mean():.4f}")
-    print(f"  Perfect matches (Jaccard=1.0): {(df['Jaccard Similarity'] == 1.0).sum()}/{len(df)}")
-    print(f"  Mean Runtime Benefit (GT - Dist): {df['Runtime Benefits'].mean()*1000:.2f}ms")
-    print(f"  Mean Speedup: {(df['Runtime Ground Truth'] / df['Runtime Distributed'].replace(0, 1e-6)).mean():.2f}x")
+    print("\nLaTeX Table:")
+    print("-" * 70)
+    
+    latex_df = mean_df.rename(columns={
+        "Jaccard Similarity": "Jaccard",
+        "Runtime Benefits": "RT Benefits"
+    })
+    latex_df = latex_df.rename(index={
+        "OWLObjectAllValuesFrom": "OWLObjAllValuesFrom",
+        "OWLObjectComplementOf": "OWLObjComplementOf",
+        "OWLObjectIntersectionOf": "OWLObjIntersectionOf",
+        "OWLObjectMaxCardinality": "OWLObjMaxCardinality",
+        "OWLObjectMinCardinality": "OWLObjMinCardinality",
+        "OWLObjectSomeValuesFrom": "OWLObjSomeValuesFrom",
+        "OWLObjectUnionOf": "OWLObjUnionOf",
+        "OWLObjectOneOf": "OWLObjOneOf",
+    })
+    
+    latex_table_str = []
+    latex_table_str.append(r"\begin{table}[htbp]")
+    latex_table_str.append(r"\centering")
+    latex_table_str.append(r"\small")
+    latex_table_str.append(r"\begin{tabular}{l r r r r}")
+    latex_table_str.append(r"\toprule")
+    latex_table_str.append(r"\textbf{Type} & \textbf{Count} & \textbf{Jaccard} & \textbf{F1} & \textbf{RT Benefits} \\")
+    latex_table_str.append(r"\midrule")
+    for idx, row in latex_df.iterrows():
+        latex_table_str.append(f"{idx:<23} & {int(row['Count']):<3} & {row['Jaccard']:.4f} & {row['F1']:.4f} & {row['RT Benefits']:.4f} \\\\")
+    latex_table_str.append(r"\bottomrule")
+    latex_table_str.append(r"\end{tabular}")
+    latex_table_str.append(r"\caption{Comparison of OWL Runtime Metrics}")
+    latex_table_str.append(r"\end{table}")
+    
+    latex_output = "\n".join(latex_table_str)
+    print(latex_output)
+    print("-" * 70)
+    
+    latex_filename = f"{ontology_stem}_{args.num_shards}_shards.txt"
+    with open(latex_filename, "w", encoding="utf-8") as f:
+        f.write(latex_output)
+    print(f"\nLaTeX table saved to {latex_filename}")
     
     # Assert correctness threshold
     mean_jaccard = df["Jaccard Similarity"].mean()
