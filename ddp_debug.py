@@ -22,6 +22,10 @@ Usage
   # Default expression (∃hasAtom.Nitrogen on Mutagenesis):
   python ddp_debug.py --auto_ray --num_shards 4
 
+  python ddp_debug.py --auto_ray --num_shards 16 --cross_shard --expression "≥ 3 hasBond.Bond-7"
+
+
+
   # Custom DL expression (parsed automatically):
   python ddp_debug.py --auto_ray --num_shards 4 \\
       --expression "∃hasAtom.Carbon"
