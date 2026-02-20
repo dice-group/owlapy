@@ -166,41 +166,44 @@ required.
 
 Regression testing: Any code change should be tested with the following command to ensure that distributed reasoning results remain consistent.  The test runs both reasoners on a complex CE and compares their answers for consistency (OWA vs CWA differences are expected for cardinality).
 
-(temp_owlapy) cdemir@cdemir:~/Desktop/Softwares/owlapy$ python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg K
-Gs/Mutagenesis/mutagenesis.owl --cross_shard --open_world --no_negations --ratio_sample_nc 0.2 --ratio_sample_object_prop 0
-.01
+python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg KGs/Mutagenesis/mutagenesis.owl --cross_shard --open_world --no_negations
+
 ======================================================================
 EVALUATION SUMMARY
 ======================================================================
 
 Expression Type Counts:
 Type
-OWLClass                    17
-OWLObjectIntersectionOf    152
-OWLObjectMaxCardinality     51
-OWLObjectMinCardinality     51
-OWLObjectSomeValuesFrom    137
-OWLObjectUnionOf           152
+OWLClass                     86
+OWLObjectAllValuesFrom      430
+OWLObjectIntersectionOf    4026
+OWLObjectMaxCardinality    1290
+OWLObjectMinCardinality    1290
+OWLObjectSomeValuesFrom    1030
+OWLObjectUnionOf           4026
 Name: Type, dtype: int64
 
 Mean Metrics by Type:
                          Jaccard Similarity  F1   Runtime Benefits  Runtime Ground Truth  Runtime Distributed
 Type                                                                                                         
-OWLClass                 1.0                 1.0 -0.000454          0.009295              0.009749           
-OWLObjectIntersectionOf  1.0                 1.0 -0.073462          0.009002              0.082464           
-OWLObjectMaxCardinality  1.0                 1.0 -0.012814          0.015855              0.028669           
-OWLObjectMinCardinality  1.0                 1.0  0.444850          0.599811              0.154960           
-OWLObjectSomeValuesFrom  1.0                 1.0  0.435361          0.647242              0.211881           
-OWLObjectUnionOf         1.0                 1.0 -0.012444          0.025367              0.037811           
+OWLClass                 1.0                 1.0  0.001125          0.012019              0.010893           
+OWLObjectAllValuesFrom   1.0                 1.0 -0.012781          0.020863              0.033644           
+OWLObjectIntersectionOf  1.0                 1.0 -0.014230          0.006741              0.020971           
+OWLObjectMaxCardinality  1.0                 1.0 -0.012307          0.019270              0.031577           
+OWLObjectMinCardinality  1.0                 1.0  2.954170          3.090149              0.135979           
+OWLObjectSomeValuesFrom  1.0                 1.0  0.267106          0.502817              0.235711           
+OWLObjectUnionOf         1.0                 1.0 -0.009525          0.032987              0.042512           
 
 ----------------------------------------------------------------------
 Overall Statistics:
-  Total expressions evaluated: 560
+  Total expressions evaluated: 12178
   Mean Jaccard Similarity: 1.0000
   Mean F1 Score: 1.0000
-  Perfect matches (Jaccard=1.0): 560/560
-  Mean Runtime Benefit (GT - Dist): 122.52ms
+  Perfect matches (Jaccard=1.0): 12178/12178
+  Mean Runtime Benefit (GT - Dist): 325.92ms
   Mean Speedup: 1.40x
+
+✓ Correctness check PASSED: Mean Jaccard (1.0000) >= threshold (0.0)
 
 """
 
