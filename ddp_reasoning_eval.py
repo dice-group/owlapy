@@ -85,9 +85,8 @@ Regression Test: Cross-Shard Inference
 
 Regression testing: Any code change should be tested with the following command to ensure that distributed reasoning results remain consistent.  The test runs both reasoners on a complex CE and compares their answers for consistency (OWA vs CWA differences are expected for cardinality).
 
-(temp_owlapy) cdemir@cdemir:~/Desktop/Softwares/owlapy$ python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg K
-Gs/Mutagenesis/mutagenesis.owl --cross_shard --open_world --no_negations --ratio_sample_nc 0.2 --ratio_sample_object_prop 0
-.01
+python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg KGs/Mutagenesis/mutagenesis.owl --cross_shard --open_world --no_negations --ratio_sample_nc 0.2 --ratio_sample_object_prop 0.2
+
 ======================================================================
 EVALUATION SUMMARY
 ======================================================================
@@ -95,6 +94,7 @@ EVALUATION SUMMARY
 Expression Type Counts:
 Type
 OWLClass                    17
+OWLObjectAllValuesFrom      17
 OWLObjectIntersectionOf    152
 OWLObjectMaxCardinality     51
 OWLObjectMinCardinality     51
@@ -105,21 +105,25 @@ Name: Type, dtype: int64
 Mean Metrics by Type:
                          Jaccard Similarity  F1   Runtime Benefits  Runtime Ground Truth  Runtime Distributed
 Type                                                                                                         
-OWLClass                 1.0                 1.0 -0.000454          0.009295              0.009749           
-OWLObjectIntersectionOf  1.0                 1.0 -0.073462          0.009002              0.082464           
-OWLObjectMaxCardinality  1.0                 1.0 -0.012814          0.015855              0.028669           
-OWLObjectMinCardinality  1.0                 1.0  0.444850          0.599811              0.154960           
-OWLObjectSomeValuesFrom  1.0                 1.0  0.435361          0.647242              0.211881           
-OWLObjectUnionOf         1.0                 1.0 -0.012444          0.025367              0.037811           
+OWLClass                 1.0                 1.0  0.000442          0.013348              0.012906           
+OWLObjectAllValuesFrom   1.0                 1.0 -0.011999          0.020150              0.032149           
+OWLObjectIntersectionOf  1.0                 1.0 -0.009181          0.007764              0.016945           
+OWLObjectMaxCardinality  1.0                 1.0 -0.014382          0.017747              0.032129           
+OWLObjectMinCardinality  1.0                 1.0  0.448223          0.612016              0.163792           
+OWLObjectSomeValuesFrom  1.0                 1.0  0.427984          0.639472              0.211488           
+OWLObjectUnionOf         1.0                 1.0 -0.079293          0.029787              0.109080           
 
 ----------------------------------------------------------------------
 Overall Statistics:
-  Total expressions evaluated: 560
+  Total expressions evaluated: 577
   Mean Jaccard Similarity: 1.0000
   Mean F1 Score: 1.0000
-  Perfect matches (Jaccard=1.0): 560/560
-  Mean Runtime Benefit (GT - Dist): 122.52ms
-  Mean Speedup: 1.40x
+  Perfect matches (Jaccard=1.0): 577/577
+  Mean Runtime Benefit (GT - Dist): 116.32ms
+  Mean Speedup: 1.44x
+
+✓ Correctness check PASSED: Mean Jaccard (1.0000) >= threshold (0.0)
+
 
 """
 
@@ -324,11 +328,8 @@ def execute(args):
         cls=OWLObjectSomeValuesFrom,
     )
     
-    # (17) ∀ r.C s.t. C ∈ NC* and r ∈ R* (skip if --no_negations, since ∀r.C ≡ ¬∃r.¬C)
-    if args.no_negations:
-        for_all_nc_star = set()
-    else:
-        for_all_nc_star = concept_reducer_properties(
+    # (17) ∀ r.C s.t. C ∈ NC* and r ∈ R* 
+    for_all_nc_star = concept_reducer_properties(
             concepts=nc_star,
             properties=object_properties_and_inverse,
             cls=OWLObjectAllValuesFrom,
