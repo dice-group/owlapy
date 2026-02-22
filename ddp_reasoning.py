@@ -961,7 +961,6 @@ class CrossShardReasoner(DistributedReasoner):
                 cross_results = set()
                 if filler_iris:
                     # Package globally known C instances into a closed OWA set: {i_1, i_2, ...}
-                    # (Ensure OWLNamedIndividual is imported from owlapy.owl_individual)
                     nominal_filler = OWLObjectOneOf([OWLNamedIndividual(iri) for iri in filler_iris])
                     
                     # Create a new query: ∀ r.{i_1, i_2, ...}
