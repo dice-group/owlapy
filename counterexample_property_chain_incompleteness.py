@@ -88,29 +88,31 @@ def main():
     # Shard the ontology
     shard_ontology(owl_path, args.num_shards, out)
 
-    # Initialize Ray
-    if args.auto_ray:
-        ray.init(num_cpus=os.cpu_count(),
-                 resources={f"shard_{i}": 1 for i in range(args.num_shards)})
-    else:
-        ray.init(address="auto")
-
     # Define Query: ∃ t.C
     C = OWLClass(IRI(NS, "C"))
     t = OWLObjectProperty(IRI(NS, "t"))
     exists_t_C = OWLObjectSomeValuesFrom(property=t, filler=C)
 
     # Ground truth (Full Ontology)
+    # NOTE: SyncReasoner must be created BEFORE ray.init() to avoid a
+    # SIGSEGV caused by JPype/Ray JVM conflicts in the driver process.
     print("Computing Ground Truth...")
     gt = SyncReasoner(ontology=owl_path, reasoner="Pellet")
     gt_exists = {i.str for i in gt.instances(exists_t_C)}
+
+    # Initialize Ray (after ground-truth JVM is running)
+    if args.auto_ray:
+        ray.init(num_cpus=os.cpu_count(),
+                 resources={f"shard_{i}": 1 for i in range(args.num_shards)})
+    else:
+        ray.init(address="auto")
 
     # Distributed Reasoning
     print("Computing Distributed Results...")
     stem = Path(owl_path).stem
     shards = [
         ShardReasoner.options(resources={f"shard_{i}": 1})
-            .remote(f"Shard-{i}", os.path.join(out, f"{stem}_shard_{i}.owl"), "Pellet")
+            .remote(f"Shard-{i}", os.path.join(out, f"{stem}_shard_{i}.owl"), "Pellet", verbose=False)
         for i in range(args.num_shards)
     ]
     dist = CrossShardReasoner(shards, open_world=True, verbose=False)

@@ -1,6 +1,15 @@
 """
 Counterexample: CrossShardReasoner is incomplete for ≥ 2 r.C under OWA.
 
+Usage
+-----
+  python counterexample_cardinality_incompleteness.py --auto_ray
+  python counterexample_cardinality_incompleteness.py --auto_ray --num_shards 4
+
+The ``--auto_ray`` flag is required unless you have a running Ray cluster
+(started via ``ray start --head ...``).  It initialises Ray in-process with
+the necessary shard custom resources.
+
 Ontology (TBox + ABox):
     AllDifferent(o1, o2)
     (a, r, o1)
@@ -86,13 +95,6 @@ def main():
     # Shard the ontology
     shard_ontology(owl_path, args.num_shards, out)
 
-    # Initialize Ray
-    if args.auto_ray:
-        ray.init(num_cpus=os.cpu_count(),
-                 resources={f"shard_{i}": 1 for i in range(args.num_shards)})
-    else:
-        ray.init(address="auto")
-
     # Define Queries
     C = OWLClass(IRI(NS, "C"))
     r = OWLObjectProperty(IRI(NS, "r"))
@@ -104,17 +106,26 @@ def main():
     exists_r_C = OWLObjectSomeValuesFrom(property=r, filler=C)
 
     # Ground truth (Full Ontology)
+    # NOTE: SyncReasoner must be created BEFORE ray.init() to avoid a
+    # SIGSEGV caused by JPype/Ray JVM conflicts in the driver process.
     print("Computing Ground Truth...")
     gt = SyncReasoner(ontology=owl_path, reasoner="Pellet")
     gt_min = {i.str for i in gt.instances(min_2_r_C)}
     gt_exists = {i.str for i in gt.instances(exists_r_C)}
+
+    # Initialize Ray (after ground-truth JVM is running)
+    if args.auto_ray:
+        ray.init(num_cpus=os.cpu_count(),
+                 resources={f"shard_{i}": 1 for i in range(args.num_shards)})
+    else:
+        ray.init(address="auto")
 
     # Distributed Reasoning
     print("Computing Distributed Results...")
     stem = Path(owl_path).stem
     shards = [
         ShardReasoner.options(resources={f"shard_{i}": 1})
-            .remote(f"Shard-{i}", os.path.join(out, f"{stem}_shard_{i}.owl"), "Pellet")
+            .remote(f"Shard-{i}", os.path.join(out, f"{stem}_shard_{i}.owl"), "Pellet", verbose=False)
         for i in range(args.num_shards)
     ]
     dist = CrossShardReasoner(shards, open_world=True, verbose=False)

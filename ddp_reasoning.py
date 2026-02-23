@@ -209,6 +209,8 @@ Overall Statistics:
 
 import argparse
 import os
+os.environ.setdefault("RAY_DEDUP_LOGS", "0")
+os.environ.setdefault("RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO", "0")
 import ray
 from functools import singledispatchmethod
 from pathlib import Path
@@ -252,11 +254,17 @@ class ShardReasoner:
       a property; used by ``DistributedReasoner`` for CWA cardinality counting.
     """
     
-    def __init__(self, shard_id: str, ontology_path: str, reasoner: str = "Pellet"):
+    def __init__(self, shard_id: str, ontology_path: str, reasoner: str = "Pellet", verbose: bool = True):
         self.shard_id = shard_id
         self.ontology_path = ontology_path
+        self.verbose = verbose
         self.sync_reasoner = SyncReasoner(ontology=ontology_path, reasoner=reasoner)
-        print(f"--- Shard {shard_id} initialized with {reasoner} reasoner ---")
+        if self.verbose:
+            print(f"--- Shard {shard_id} initialized with {reasoner} reasoner ---")
+
+    def set_verbose(self, verbose: bool) -> None:
+        """Update the verbose flag on this shard actor."""
+        self.verbose = verbose
     
     def get_shard_id(self) -> str:
         return self.shard_id
@@ -329,9 +337,11 @@ class ShardReasoner:
             self._collect_intermediate_results(ce.get_filler(), direct, results)
         
         # Compute instances for this CE on this shard
-        print(f"    [{self.shard_id}] Evaluating: {ce_str[:60]}...")
+        if self.verbose:
+            print(f"    [{self.shard_id}] Evaluating: {ce_str[:60]}...")
         results[ce_str] = self.query_instances(ce, direct)
-        print(f"    [{self.shard_id}] Found {len(results[ce_str])} instances")
+        if self.verbose:
+            print(f"    [{self.shard_id}] Found {len(results[ce_str])} instances")
     
     def get_class_instances_iris(self, class_iri: str, direct: bool = False) -> Set[str]:
         """Get instances of a named class from this shard (as IRI strings)."""
@@ -453,17 +463,20 @@ class DistributedReasoner:
     recommended approach for correct OWA distributed reasoning.
     """
     
-    def __init__(self, shards: List[ray.actor.ActorHandle], open_world: bool = False):
+    def __init__(self, shards: List[ray.actor.ActorHandle], open_world: bool = False, verbose: bool = True):
         """
         Args:
             shards: List of ShardReasoner actor handles
             open_world: If True, pass full CEs directly to each shard and union
                         results (no recursive decomposition). If False, use
                         closed-world recursive decomposition (default).
+            verbose: If True, print progress messages (default: True).
         """
         self.shards = shards
         self.open_world = open_world
-        print(f"DistributedReasoner initialized with {len(shards)} shards (open_world={open_world})")
+        self.verbose = verbose
+        if self.verbose:
+            print(f"DistributedReasoner initialized with {len(shards)} shards (open_world={open_world})")
     
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[OWLNamedIndividual]:
         """
@@ -830,8 +843,10 @@ class CrossShardReasoner(DistributedReasoner):
             verbose:    If True, print progress messages for each CE component
                         being processed (useful for debugging).
         """
-        super().__init__(shards, open_world=open_world)
+        super().__init__(shards, open_world=open_world, verbose=verbose)
         self.verbose = verbose
+        # Propagate verbose flag to all shard actors
+        ray.get([s.set_verbose.remote(verbose) for s in shards])
         if self.verbose:
             print(f"CrossShardReasoner initialized with {len(shards)} shards (cross-shard intermediate results mode)")
     
