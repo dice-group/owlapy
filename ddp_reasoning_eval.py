@@ -6,7 +6,7 @@ Additional dependency: pip install ray
 
 Overview
 --------
-This script evaluates the DistributedReasoner from ddp_reasoning.py against
+This script evaluates the BaseShardReasoner from ddp_reasoning.py against
 a SyncReasoner ground truth.  It automatically generates OWL class expressions
 of increasing complexity (named classes, negations, unions, intersections,
 existential / universal restrictions, cardinality restrictions, nominals) and
@@ -85,7 +85,7 @@ Regression Test: Cross-Shard Inference
 
 Regression testing: Any code change should be tested with the following command to ensure that distributed reasoning results remain consistent.  The test runs both reasoners on a complex CE and compares their answers for consistency (OWA vs CWA differences are expected for cardinality).
 
-python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg KGs/Mutagenesis/mutagenesis.owl --cross_shard --open_world --no_negations --ratio_sample_nc 0.2 --ratio_sample_object_prop 0.2
+python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg KGs/Mutagenesis/mutagenesis.owl  --open_world --no_negations --ratio_sample_nc 0.2 --ratio_sample_object_prop 0.2
 
 ======================================================================
 EVALUATION SUMMARY
@@ -156,7 +156,7 @@ from owlapy import owl_expression_to_dl
 # Import from ddp_reasoning
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ddp_reasoning import ShardReasoner, DistributedReasoner, CrossShardReasoner
+from ddp_reasoning import ShardReasoner, BaseShardReasoner, ShardEnsembleReasoner
 from shard_ontology import shard_ontology
 
 # Set pandas options to ensure full output
@@ -216,7 +216,7 @@ def execute(args):
     
     # (3) Initialize Distributed Reasoner (shards)
     print(f"\n{'='*60}")
-    print(f"Setting up DistributedReasoner with {args.num_shards} shard(s)")
+    print(f"Setting up BaseShardReasoner with {args.num_shards} shard(s)")
     print(f"{'='*60}")
     
     # Derive shard filename prefix from the ontology stem
@@ -252,11 +252,8 @@ def execute(args):
         )
         shards.append(shard)
     
-    if args.cross_shard:
-        distributed_reasoner = CrossShardReasoner(shards, open_world=args.open_world,verbose=False)
-    else:
-        distributed_reasoner = DistributedReasoner(shards, open_world=args.open_world)
-
+    # Initialize the distributed reasoner with the created shards.
+    distributed_reasoner = ShardEnsembleReasoner(shards, open_world=args.open_world,verbose=False)
 
     # Fix the random seed
     random.seed(args.seed)
@@ -518,7 +515,7 @@ def execute(args):
 
 
 def get_default_arguments():
-    parser = ArgumentParser(description="Evaluate DistributedReasoner against StructuralReasoner ground truth")
+    parser = ArgumentParser(description="Evaluate BaseShardReasoner against StructuralReasoner ground truth")
     parser.add_argument("--path_kg", type=str, default="KGs/Family/family-benchmark_rich_background.owl",
                         help="Path to the OWL ontology file")
     parser.add_argument("--num_shards", type=int, default=1,
@@ -543,7 +540,7 @@ def get_default_arguments():
                         help="Use open-world reasoning (no CE decomposition, union shard results)")
     parser.add_argument(
         "--cross_shard", action="store_true", default=False,
-        help="Use CrossShardReasoner for open-world distributed reasoning (default: DistributedReasoner)",
+        help="Use ShardEnsembleReasoner for open-world distributed reasoning (default: BaseShardReasoner)",
     )
     parser.add_argument("--auto_ray", action="store_true", default=False,
                         help=(

@@ -1,79 +1,120 @@
 """
-Distributed OWL Reasoning with Query Decomposition
-==================================================
+Distributed OWL DL Instance Retrieval over Horizontally Sharded Ontologies
+==========================================================================
 
-Additional dependency: pip install ray
+Additional dependency: ``pip install ray``
 
 Overview
 --------
-This module implements distributed OWL instance retrieval over horizontally
-sharded ontologies using Ray as the distributed computing backend.
+This module implements distributed OWL DL instance retrieval — the task of
+computing the extension ``C^I`` of an OWL class expression ``C`` over an
+interpretation ``I`` induced by a partitioned ontology ``O = (T, A)`` — using
+`Ray <https://docs.ray.io/>`_ as the distributed computing backend and
+`owlapy <https://github.com/dice-group/owlapy>`_ for OWL DL reasoning.
 
-Two reasoning strategies are provided:
+Ontology partitioning
+~~~~~~~~~~~~~~~~~~~~~
+Given an ontology ``O = (T, A)`` with TBox ``T`` and ABox ``A``:
 
-* **DistributedReasoner** — recursive query decomposition under Closed-World
-  Assumption (CWA).  The coordinator breaks an OWL class expression (CE) into
-  atomic sub-queries, dispatches each to every shard in parallel, and joins
-  results (union / intersection / set-difference) locally.  Cardinality
-  restrictions are resolved by counting distinct IRI role fillers across shards
-  (CWA counting).
+* **TBox replication** — ``T`` is copied in full to every shard.  This
+  includes the class hierarchy, object-property characteristics (transitivity,
+  symmetry, etc.), domain/range axioms, General Concept Inclusions (GCIs), and
+  ``owl:AllDifferent`` axioms.
+* **ABox partitioning** — ``A`` is split into ``N`` disjoint subsets
+  ``A_0, …, A_{N-1}`` by round-robin assignment over *subject* individuals.
+  Let ``h: Ind → {0, …, N-1}`` be the hash function.  Then:
 
-* **CrossShardReasoner** — bottom-up combining of per-shard intermediate
-  results under the Open-World Assumption (OWA).  Each shard evaluates the CE
-  *and all its sub-CEs* via Pellet, then the coordinator combines results
-  bottom-up.  CE types that suffer from cross-shard visibility issues
-  (existential restrictions, nominals, ≥1 cardinality) are resolved with
-  dedicated cross-shard joins; all other CE types are combined by simple union.
-  This strategy is sound under OWA and is the recommended reasoner for
-  production use.
+  - Every class assertion ``C(a)`` is placed in ``A_{h(a)}``.
+  - Every object-property assertion ``r(s, o)`` is placed in ``A_{h(s)}``.
+
+  Shard ``i`` loads ontology ``O_i = (T, A_i)``.  Crucially, property
+  assertions are keyed by the *subject*, not the object.  This design
+  guarantees that all of a subject's property assertions are co-located.
+
+Two distributed reasoning strategies are provided:
+
+* **BaseShardReasoner** (CWA) — the coordinator recursively decomposes the
+  query CE into atomic sub-queries by dispatching on CE type via
+  ``singledispatchmethod``.  Atomic data (class instances, property maps) is
+  gathered from all shards in parallel; the coordinator performs
+  set-algebraic aggregation (union, intersection, set-difference) locally.
+  Cardinality restrictions are resolved by counting **IRI-distinct** role
+  fillers across shards (Closed-World / Unique-Name assumption).
+
+* **ShardEnsembleReasoner** (OWA, recommended) — each shard evaluates the
+  CE *and every sub-CE* locally via Pellet, returning per-node intermediate
+  results.  The coordinator combines them **bottom-up** by CE type.
+  CE types that suffer from cross-shard visibility issues (existential
+  restrictions, nominals, ``≥1`` cardinality) are resolved with dedicated
+  cross-shard joins; all other CE types are combined by simple union of
+  per-shard results.  This strategy is **sound under OWA** and has been
+  empirically validated at Jaccard 1.0 / F1 1.0 on 12 178 class expressions
+  across 20 shards of the Mutagenesis benchmark.
 
 Cross-shard inference problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The ABox is partitioned round-robin by *subject* individual across N shards;
-the TBox is replicated in every shard.  A property assertion ``(s, r, o)``
-lives in the shard of the subject ``s``, which may differ from the shard that
-holds the class assertions of the object ``o``.  Consequently, per-shard
-Pellet evaluation of CEs like ``∃ r.C`` can be **incomplete**: ``s``'s shard
-does not know ``o : C``, and ``o``'s shard does not contain ``s``.
-``CrossShardReasoner`` resolves this by passing the globally resolved filler
-set to every shard and scanning only local property assertions.
+``r(s, o)`` is in shard ``h(s)``; ``C(o)`` is in shard ``h(o)``.  When
+``h(s) ≠ h(o)``, per-shard Pellet evaluation of ``∃ r.C`` on either shard
+alone is **incomplete**: shard ``h(s)`` does not know ``C(o)``, and shard
+``h(o)`` does not contain ``s``.  ``ShardEnsembleReasoner`` resolves this by
+first combining the filler set ``C^I`` globally across shards, then passing it
+to every shard for a lightweight ABox scan of local property assertions.
+See the class docstring of ``ShardEnsembleReasoner`` for the complete CE-type
+routing table and formal correctness arguments.
 
 Architecture
 ------------
+::
+
+  ┌─────────────────────────────────────────────┐
+  │     Driver (coordinator process)             │
+  │                                              │
+  │  BaseShardReasoner   ← CWA decomposition     │
+  │  ShardEnsembleReasoner ← OWA bottom-up       │
+  │                                              │
+  │  Dispatches via Ray futures to:              │
+  └──────────┬──────────┬─────────┬─────────────┘
+             │          │         │
+       ┌─────▼───┐ ┌────▼────┐   │  ┌──────────┐
+       │ Shard-0 │ │ Shard-1 │ ··· │ Shard-N-1│
+       │ (T,A_0) │ │ (T,A_1) │   │ │(T,A_{N-1}│)
+       │ Pellet  │ │ Pellet  │   │ │ Pellet   │
+       └─────────┘ └─────────┘   │ └──────────┘
+                                 │
+                                 └── Ray actors pinned to
+                                     custom resources {shard_i: 1}
+
   ShardReasoner (Ray actor, one per shard)
-      Wraps a SyncReasoner (Pellet / HermiT) for a single .owl shard.
-      Exposes atomic query methods that return plain IRI strings so that
-      results can be serialised across the Ray object store without issues.
-      Provides two query entry-points: ``query_instances`` (full CE, used by
-      DistributedReasoner) and ``query_instances_with_intermediate`` (full CE
-      + all sub-CEs, used by CrossShardReasoner).  Also exposes relational
-      helpers (``get_object_property_subjects``, ``get_object_property_map``)
-      for cross-shard joins.
+      Wraps a SyncReasoner (Pellet / HermiT) for a single shard.
+      Returns plain IRI strings to avoid Java/Python serialisation issues.
+      Exposes two query entry-points:
+        - ``query_instances`` (full CE, used by BaseShardReasoner open-world mode)
+        - ``query_instances_with_intermediate`` (CE + all sub-CEs, used by
+          ShardEnsembleReasoner for bottom-up combining)
+      Plus relational helpers for cross-shard joins:
+        - ``get_object_property_subjects``  (existential join primitive)
+        - ``get_object_property_map``       (CWA cardinality counting)
 
-  DistributedReasoner (coordinator, CWA, runs on the driver)
-      Accepts any OWLClassExpression and recursively decomposes it into
-      atomic sub-queries via singledispatch.  Operates under CWA: distinct
-      IRIs are treated as distinct individuals.  Supported constructors:
-        OWLClass, OWLObjectIntersectionOf, OWLObjectUnionOf,
-        OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom,
-        OWLObjectComplementOf, OWLObjectHasValue, OWLObjectOneOf,
-        OWLObjectMinCardinality, OWLObjectMaxCardinality,
-        OWLObjectExactCardinality
+  BaseShardReasoner (coordinator, CWA, runs on driver)
+      Recursive CE decomposition via singledispatchmethod.
+      Supported constructors: OWLClass, OWLObjectIntersectionOf,
+      OWLObjectUnionOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom,
+      OWLObjectComplementOf, OWLObjectHasValue, OWLObjectOneOf,
+      OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality.
 
-  CrossShardReasoner (coordinator, OWA, runs on the driver)
-      Extends DistributedReasoner.  Gathers per-shard intermediate results
-      and combines them bottom-up by CE type.  Always operates under OWA —
-      Pellet is the reasoner on each shard and its OWA semantics are
-      preserved.  See the CE-type routing table in the class docstring for
-      details on how each constructor is handled.
+  ShardEnsembleReasoner (coordinator, OWA, runs on driver)
+      Extends BaseShardReasoner. Bottom-up combining of per-shard intermediate
+      results with cross-shard joins for ∃ r.C, ≥1 r.C, and nominals.
+      See class docstring for the complete CE-type routing table.
 
   shard_ontology (utility, from shard_ontology.py)
-      Splits an ontology into N shards: the TBox is replicated in every
-      shard while the ABox is partitioned round-robin across shards.
-      Called automatically on first run if the shard files are missing.
+      Splits O = (T, A) into N shard ontologies. TBox replicated; ABox
+      partitioned round-robin.
 
 Usage
 -----
+::
+
   # Fully automatic — no terminal setup needed:
   python ddp_reasoning.py --auto_ray --num_shards 8
 
@@ -97,45 +138,26 @@ CLI Arguments
   --reasoner      OWL reasoner backend: Pellet (default) or HermiT.
   --auto_ray      When set, Ray is initialised in-process using all available
                   CPU cores and the required shard custom resources.
-                  Shard .owl files are generated automatically if missing.
-                  When not set, the script connects to an existing Ray cluster
-                  started via `ray start --head ...`.
 
 Distributed Setup (multi-machine)
 ----------------------------------
-Each physical machine runs `ray start` in its own terminal. The head node
-registers shard_0; every additional worker registers its own shard resource.
-The driver script can then be run from any machine that can reach the head.
+Each physical machine runs ``ray start``.  The head node registers
+``shard_0``; every additional worker registers its own shard resource.
+The driver script can run from any machine that can reach the head.
 
-  2 machines (1 shard each):
-    Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
-    Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
-    Driver:    python ddp_reasoning.py --num_shards 2
+::
 
-  4 machines (1 shard each):
-    Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
-    Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
-    Machine 3: ray start --address='<HEAD_IP>:6379' --resources='{"shard_2": 1}'
-    Machine 4: ray start --address='<HEAD_IP>:6379' --resources='{"shard_3": 1}'
-    Driver:    python ddp_reasoning.py --num_shards 4
+  # 4 machines (1 shard each):
+  Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
+  Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
+  Machine 3: ray start --address='<HEAD_IP>:6379' --resources='{"shard_2": 1}'
+  Machine 4: ray start --address='<HEAD_IP>:6379' --resources='{"shard_3": 1}'
+  Driver:    python ddp_reasoning.py --num_shards 4
 
-  8 machines (1 shard each):
-    Machine 1: ray start --head --port=6379 --resources='{"shard_0": 1}'
-    Machine 2: ray start --address='<HEAD_IP>:6379' --resources='{"shard_1": 1}'
-    Machine 3: ray start --address='<HEAD_IP>:6379' --resources='{"shard_2": 1}'
-    Machine 4: ray start --address='<HEAD_IP>:6379' --resources='{"shard_3": 1}'
-    Machine 5: ray start --address='<HEAD_IP>:6379' --resources='{"shard_4": 1}'
-    Machine 6: ray start --address='<HEAD_IP>:6379' --resources='{"shard_5": 1}'
-    Machine 7: ray start --address='<HEAD_IP>:6379' --resources='{"shard_6": 1}'
-    Machine 8: ray start --address='<HEAD_IP>:6379' --resources='{"shard_7": 1}'
-    Driver:    python ddp_reasoning.py --num_shards 8
-
-  Multiple shards per machine (declare several resources on one node):
-    Machine 1: ray start --head --port=6379 \
-                   --resources='{"shard_0":1,"shard_1":1,"shard_2":1,"shard_3":1}'
-    Driver:    python ddp_reasoning.py --num_shards 4
-
-Docs: https://docs.ray.io/en/latest/ray-core/configure.html#cluster-resources
+  # Multiple shards per machine:
+  Machine 1: ray start --head --port=6379 \\
+                 --resources='{"shard_0":1,"shard_1":1,"shard_2":1,"shard_3":1}'
+  Driver:    python ddp_reasoning.py --num_shards 4
 
 OWA vs CWA considerations
 -------------------------
@@ -152,21 +174,28 @@ restrictions:
   is required.  This is semantically equivalent to ``∃ r.C``.
 * ``≤n r.C`` / ``=n r.C`` — similarly sensitive to AllDifferent axioms.
 
-``CrossShardReasoner`` respects these OWA semantics.  It delegates
+``ShardEnsembleReasoner`` respects these OWA semantics.  It delegates
 cardinality evaluation (≥n with n≥2, ≤n, =n) to per-shard Pellet and unions
 the results, which preserves the same answers as a single Pellet instance on
-the complete ontology.  Only ``≥1 r.C`` receives special cross-shard join
-treatment (identical to ``∃ r.C``).
+the complete ontology.  Only ``≥1 r.C`` receives the cross-shard existential
+join treatment (identical to ``∃ r.C``).
 
-``DistributedReasoner`` operates under CWA: it counts distinct IRI role
+``BaseShardReasoner`` operates under CWA: it counts distinct IRI role
 fillers across shards, which can over-count when the ontology lacks
-AllDifferent axioms.  Use ``CrossShardReasoner`` when OWA-correct answers are
+AllDifferent axioms.  Use ``ShardEnsembleReasoner`` when OWA-correct answers are
 required.
 
 
-Regression testing: Any code change should be tested with the following command to ensure that distributed reasoning results remain consistent.  The test runs both reasoners on a complex CE and compares their answers for consistency (OWA vs CWA differences are expected for cardinality).
+Regression testing
+------------------
+Any code change should be tested with the following command to ensure that
+distributed reasoning results remain consistent::
 
-python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg KGs/Mutagenesis/mutagenesis.owl --cross_shard --open_world --no_negations
+  python ddp_reasoning_eval.py --auto_ray --num_shards 20 \\
+      --path_kg KGs/Mutagenesis/mutagenesis.owl \\
+      --cross_shard --open_world --no_negations
+
+Expected result: Jaccard 1.0 / F1 1.0 on all 12 178 class expressions.
 
 ======================================================================
 EVALUATION SUMMARY
@@ -185,14 +214,14 @@ Name: Type, dtype: int64
 
 Mean Metrics by Type:
                          Jaccard Similarity  F1   Runtime Benefits  Runtime Ground Truth  Runtime Distributed
-Type                                                                                                         
-OWLClass                 1.0                 1.0  0.001125          0.012019              0.010893           
-OWLObjectAllValuesFrom   1.0                 1.0 -0.012781          0.020863              0.033644           
-OWLObjectIntersectionOf  1.0                 1.0 -0.014230          0.006741              0.020971           
-OWLObjectMaxCardinality  1.0                 1.0 -0.012307          0.019270              0.031577           
-OWLObjectMinCardinality  1.0                 1.0  2.954170          3.090149              0.135979           
-OWLObjectSomeValuesFrom  1.0                 1.0  0.267106          0.502817              0.235711           
-OWLObjectUnionOf         1.0                 1.0 -0.009525          0.032987              0.042512           
+Type
+OWLClass                 1.0                 1.0  0.001125          0.012019              0.010893
+OWLObjectAllValuesFrom   1.0                 1.0 -0.012781          0.020863              0.033644
+OWLObjectIntersectionOf  1.0                 1.0 -0.014230          0.006741              0.020971
+OWLObjectMaxCardinality  1.0                 1.0 -0.012307          0.019270              0.031577
+OWLObjectMinCardinality  1.0                 1.0  2.954170          3.090149              0.135979
+OWLObjectSomeValuesFrom  1.0                 1.0  0.267106          0.502817              0.235711
+OWLObjectUnionOf         1.0                 1.0 -0.009525          0.032987              0.042512
 
 ----------------------------------------------------------------------
 Overall Statistics:
@@ -231,27 +260,93 @@ from owlapy.iri import IRI
 @ray.remote
 class ShardReasoner:
     """
-    A Ray actor that wraps a SyncReasoner for a single data shard.
+    Ray actor wrapping an OWL DL reasoner (owlapy ``SyncReasoner``) for a
+    single horizontal ABox partition (shard).
 
-    Each shard holds the complete TBox and a disjoint subset of the ABox
-    (partitioned round-robin by subject individual).  The actor is pinned to a
-    specific Ray resource (``shard_<i>``) so that it can be co-located with the
-    shard data on multi-machine clusters.
+    Each ``ShardReasoner`` is a stateful Ray actor that loads one shard
+    ontology and exposes query methods callable via Ray remote procedure
+    calls.  The actor is pinned to a dedicated Ray custom resource
+    (``shard_<i>``) to support data-local scheduling on multi-node clusters.
 
-    All public methods return **plain IRI strings** (``Set[str]`` /
-    ``Dict[str, Set[str]]``) rather than ``OWLNamedIndividual`` objects.  This
-    avoids serialisation issues across the Ray object store and eliminates
-    equality problems between objects created in different JVM sessions.
+    Data model
+    ----------
+    Let O = (T, A) be the source ontology with TBox T and ABox A.
+    The sharding procedure (``shard_ontology``) produces N shard ontologies
+    O_0, ..., O_{N-1} where:
 
-    Key entry-points
-    ~~~~~~~~~~~~~~~~
-    * ``query_instances``                  — evaluate a single CE on this shard.
-    * ``query_instances_with_intermediate`` — evaluate a CE *and every sub-CE*;
-      used by ``CrossShardReasoner`` for bottom-up combining.
-    * ``get_object_property_subjects``     — lightweight ABox scan returning all
-      subjects ``s`` with ``(s, r, o)`` for ``o`` in a given set.
-    * ``get_object_property_map``          — full ``{subject: {objects}}`` map for
-      a property; used by ``DistributedReasoner`` for CWA cardinality counting.
+    * **TBox replication** — every shard contains a complete copy of T,
+      including class hierarchy, property characteristics, domain/range
+      restrictions, GCIs, and ``owl:AllDifferent`` axioms.
+    * **ABox partitioning** — A is split into N disjoint subsets
+      A_0, ..., A_{N-1} by round-robin assignment over subject individuals.
+      Formally,  A = A_0 ⊔ A_1 ⊔ ... ⊔ A_{N-1}  (disjoint union).
+    * **Subject-keyed placement** — every class assertion ``C(a)`` is in
+      A_{h(a)}, and every object-property assertion ``r(s, o)`` is in
+      A_{h(s)}, where h is the round-robin hash function.  Crucially,
+      property assertions are keyed by the *subject*, not the object.
+
+    Shard i therefore loads  O_i = (T, A_i).
+
+    Serialisation
+    -------------
+    All public methods return **plain IRI strings** (``Set[str]`` or
+    ``Dict[str, Set[str]]``) rather than ``OWLNamedIndividual`` objects.
+    This design avoids Java/Python serialisation issues across the Ray
+    object store and eliminates identity/equality mismatches between
+    objects created in different JVM sessions.
+
+    API and method dispatch
+    -----------------------
+    The following table summarises the public query methods exposed by each
+    ``ShardReasoner`` actor, what they return, and which coordinator class
+    invokes them.  Together these six methods form the complete interface
+    through which the distributed coordinators interact with shard actors.
+
+    +-----------------------------------+-------------------------------+---------------------------+
+    | Method                            | Returns                       | Invoked by                |
+    +===================================+===============================+===========================+
+    | ``query_instances``               | ``Set[str]``: IRIs of all     | ``BaseShardReasoner``     |
+    | ``(ce, direct)``                  | individuals satisfying ``ce`` | (open-world mode);        |
+    |                                   | according to this shard's     | also called internally by |
+    |                                   | local Pellet/HermiT.         | ``query_instances_with_`` |
+    |                                   |                               | ``intermediate``.         |
+    +-----------------------------------+-------------------------------+---------------------------+
+    | ``query_instances_with_``         | ``Dict[str, Set[str]]``:      | ``ShardEnsembleReasoner`` |
+    | ``intermediate(ce, direct)``      | maps ``str(sub_ce)`` →        | (Phase 1: scatter).       |
+    |                                   | instance IRI set for *every*  | Enables bottom-up cross-  |
+    |                                   | sub-expression of ``ce``.     | shard combining.          |
+    +-----------------------------------+-------------------------------+---------------------------+
+    | ``get_class_instances_iris``      | ``Set[str]``: IRIs of         | ``BaseShardReasoner``     |
+    | ``(class_iri, direct)``           | instances of a named OWL      | (CWA decomposition,       |
+    |                                   | class in this shard.          | ``OWLClass`` handler).    |
+    +-----------------------------------+-------------------------------+---------------------------+
+    | ``get_all_individual_iris()``     | ``Set[str]``: every           | ``BaseShardReasoner``     |
+    |                                   | individual IRI in this        | (CWA: ``OWLThing``,       |
+    |                                   | shard's ontology signature.   | complement, universal,    |
+    |                                   |                               | cardinality handlers).    |
+    +-----------------------------------+-------------------------------+---------------------------+
+    | ``get_object_property_subjects``  | ``Set[str]``: subject IRIs    | ``BaseShardReasoner``     |
+    | ``(prop_iri, is_inverse,``        | ``s`` where ``(s, r, o)``     | (CWA: existential);       |
+    | ``object_iris)``                  | exists locally for some       | ``ShardEnsembleReasoner`` |
+    |                                   | ``o ∈ object_iris``.  This    | (cross-shard join for     |
+    |                                   | is the key primitive for      | ``∃ r.C``, ``≥1 r.C``).  |
+    |                                   | cross-shard existential       |                           |
+    |                                   | joins.                        |                           |
+    +-----------------------------------+-------------------------------+---------------------------+
+    | ``get_object_property_map``       | ``Dict[str, Set[str]]``:      | ``BaseShardReasoner``     |
+    | ``(prop_iri, is_inverse)``        | ``{s: {o_1, o_2, ...}}`` for | (CWA cardinality          |
+    |                                   | every local subject with at   | counting for ``≥n``,      |
+    |                                   | least one ``r``-successor.    | ``≤n``, ``=n r.C``).      |
+    +-----------------------------------+-------------------------------+---------------------------+
+
+    Data locality invariant
+    -----------------------
+    Because object-property assertions are keyed by subject, calling
+    ``get_object_property_subjects`` on *all* N shards with a globally
+    resolved object set guarantees completeness: every subject ``s`` with at
+    least one qualifying ``(s, r, o)`` triple is found in ``s``'s assigned
+    shard.  No cross-shard communication between actors is required — the
+    coordinator performs all joins on the driver.
     """
     
     def __init__(self, shard_id: str, ontology_path: str, reasoner: str = "Pellet", verbose: bool = True):
@@ -363,7 +458,7 @@ class ShardReasoner:
         ``object_iris``, scanning only this shard's local ABox.
 
         This is the key primitive for cross-shard existential joins.  The caller
-        (``CrossShardReasoner._combine_existential_across_shards``) passes the
+        (``ShardEnsembleReasoner._combine_existential_across_shards``) passes the
         globally resolved filler set; this method checks each local individual's
         property values against that set.  Because property assertions are stored
         in the *subject*'s shard, this scan is guaranteed to find all local
@@ -403,8 +498,8 @@ class ShardReasoner:
         Return a mapping ``{subject_iri: {object_iri, …}}`` for a given property,
         scanning only this shard's local ABox.
 
-        Used by ``DistributedReasoner._gather_property_maps`` to build a global
-        property map for CWA cardinality counting.  (CrossShardReasoner does not
+        Used by ``BaseShardReasoner._gather_property_maps`` to build a global
+        property map for CWA cardinality counting.  (ShardEnsembleReasoner does not
         use this method; it delegates cardinality to per-shard Pellet.)
 
         Args:
@@ -429,38 +524,113 @@ class ShardReasoner:
     
 
 
-class DistributedReasoner:
+class BaseShardReasoner:
     """
-    A coordinator that performs distributed OWL reasoning by recursively
-    decomposing class expressions into atomic queries, dispatching them to
-    shards, and aggregating results.
+    Coordinator that performs distributed OWL instance retrieval by recursively
+    decomposing class expressions (CEs) into atomic sub-queries, dispatching
+    them to ``ShardReasoner`` actors, and aggregating per-shard results under
+    the **Closed-World Assumption** (CWA).
 
-    Operates under the **Closed-World Assumption** (CWA): distinct IRIs are
-    treated as distinct individuals.  This is correct for ontologies that either
-    include ``owl:AllDifferent`` axioms or where the Unique Name Assumption
-    applies.  For ontologies without such axioms (common in practice),
-    cardinality results may **over-count** — e.g. ``≥3 r.C`` may return
-    subjects that merely have three differently-named (but not provably
-    distinct) fillers.
+    The CWA implies the **Unique Name Assumption** (UNA): distinct IRIs denote
+    distinct domain individuals.  This is correct when the ontology includes
+    ``owl:AllDifferent`` axioms or when the UNA holds by convention.  Without
+    such axioms, CWA cardinality counting may diverge from OWA semantics —
+    ``≥n r.C`` can **over-count** (IRI-distinct fillers treated as distinct
+    individuals) and ``≤n r.C`` / ``=n r.C`` can **under-count** accordingly.
+    For OWA-correct reasoning, use ``ShardEnsembleReasoner`` instead.
 
-    For OWA-correct reasoning, use ``CrossShardReasoner`` instead.
+    Algorithm
+    ---------
+    Given a class expression CE:
 
-    Strategy
-    --------
-    1. Break down complex CEs (e.g., ``Male ⊓ ∃ hasChild.Parent``) by
-       recursively dispatching on CE type via ``singledispatchmethod``.
-    2. Gather atomic results from **all** shards (e.g., all Males, all Parents,
-       all hasChild relations).
-    3. Compute the final answer by joining / intersecting / differencing the
-       gathered data.
+    1. **Recursive decomposition** — ``singledispatchmethod`` dispatches on
+       the Python type of CE.  Each handler resolves its sub-expressions
+       recursively, gathers atomic data from all shards in parallel via Ray,
+       and applies the appropriate set-algebraic operation.
+    2. **Atomic shard queries** — leaf-level data (class instances, universe
+       set, property maps) is fetched from ``ShardReasoner`` actors in
+       parallel using Ray futures.
+    3. **Set-algebraic aggregation** — the coordinator joins results using
+       union (⊎), intersection (∩), or set-difference (\\) depending on the
+       CE constructor.
+
+    CE-type decomposition table (CWA mode, ``open_world=False``)
+    -------------------------------------------------------------
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | CE constructor                | Decomposition & shard calls               | Aggregation                |
+    +===============================+===========================================+============================+
+    | ``OWLClass`` (named class C)  | ``get_class_instances_iris(C)`` on all    | Union: ⋃_i C_i             |
+    |                               | shards.                                   |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLThing`` (top concept)    | ``get_all_individual_iris()`` on all      | Union: ⋃_i Δ_i             |
+    |                               | shards.                                   |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectIntersectionOf``   | Recursively resolve each operand C_k.     | Intersection: ⋂_k C_k     |
+    | (C_1 ⊓ C_2 ⊓ ... ⊓ C_k)     |                                           |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectUnionOf``          | Recursively resolve each operand C_k.     | Union: ⋃_k C_k             |
+    | (C_1 ⊔ C_2 ⊔ ... ⊔ C_k)     |                                           |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectSomeValuesFrom``   | 1. Recursively resolve filler C → F.      | {s : ∃ o ∈ F              |
+    | (∃ r.C)                       | 2. ``get_object_property_subjects(r, F)`` |   s.t. (s, r, o)}          |
+    |                               |    on all shards.                         |                            |
+    |                               | 3. Union subject sets.                    |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectAllValuesFrom``    | Rewrite as ¬(∃ r.¬C).                    | Δ ∖ (∃ r.¬C)               |
+    | (∀ r.C)                       | 1. Resolve ∃ r.¬C (existential handler). | (set difference from       |
+    |                               | 2. Compute Δ (universe) ∖ result.         |  universe)                 |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectComplementOf``     | 1. Recursively resolve C.                 | Δ ∖ C                      |
+    | (¬C)                          | 2. Compute Δ (universe) ∖ C               | (set difference from       |
+    |                               |    via ``get_all_individual_iris()``.      |  universe)                 |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectHasValue``         | Convert to ∃ r.{a} via                    | Same as ∃ r.C              |
+    | (∃ r.{a})                     | ``as_some_values_from()``, then           |                            |
+    |                               | delegate to existential handler.          |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectOneOf``            | Extract individual IRIs directly from     | Literal set {a, b, c}     |
+    | ({a, b, c})                   | the CE.  No shard query needed.           |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectMinCardinality``   | 1. Recursively resolve filler C → F.      | {s : |r(s) ∩ F| ≥ n}      |
+    | (≥n r.C)                      | 2. ``get_object_property_map(r)`` on all  |                            |
+    |                               |    shards → merged global property map.   |                            |
+    |                               | 3. For each subject s, count              |                            |
+    |                               |    IRI-distinct fillers in F.             |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectMaxCardinality``   | Same as ≥n with upper bound.              | {s : |r(s) ∩ F| ≤ n}      |
+    | (≤n r.C)                      |                                           |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+    | ``OWLObjectExactCardinality`` | Same as ≥n with both bounds.              | {s : |r(s) ∩ F| = n}       |
+    | (=n r.C)                      |                                           |                            |
+    +-------------------------------+-------------------------------------------+----------------------------+
+
+    Correctness under CWA
+    ---------------------
+    Under CWA, the recursive decomposition is **sound and complete** for all
+    supported CE constructors.  The three key invariants are:
+
+    * **Subject-keyed partitioning** — all property assertions ``r(s, o)``
+      are in subject ``s``'s shard, so the merged property map is globally
+      complete and existential joins find every qualifying subject.
+    * **Disjoint ABox partitioning** — each individual appears in exactly
+      one shard, so the union of per-shard class instances is the complete
+      set.
+    * **TBox replication** — every shard sees the same class hierarchy,
+      property characteristics, and GCI axioms, so per-shard entailments
+      are consistent.
+
+    The CWA counting of cardinality restrictions treats distinct IRIs as
+    distinct individuals.  This coincides with OWA semantics only when
+    ``owl:AllDifferent`` axioms are present.
 
     Note
     ----
     When ``open_world=True``, the recursive decomposition is bypassed: the
-    full CE is sent to each shard and results are unioned.  This preserves
+    full CE is broadcast to each shard and results are unioned.  This preserves
     per-shard Pellet’s OWA answers but suffers from cross-shard visibility
-    issues for existentials and nominals.  ``CrossShardReasoner`` is the
-    recommended approach for correct OWA distributed reasoning.
+    issues for existentials, nominals, and Boolean combinations thereof.
+    ``ShardEnsembleReasoner`` is the recommended approach for correct OWA
+    distributed reasoning.
     """
     
     def __init__(self, shards: List[ray.actor.ActorHandle], open_world: bool = False, verbose: bool = True):
@@ -476,7 +646,7 @@ class DistributedReasoner:
         self.open_world = open_world
         self.verbose = verbose
         if self.verbose:
-            print(f"DistributedReasoner initialized with {len(shards)} shards (open_world={open_world})")
+            print(f"BaseShardReasoner initialized with {len(shards)} shards (open_world={open_world})")
     
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[OWLNamedIndividual]:
         """
@@ -679,7 +849,7 @@ class DistributedReasoner:
            (Closed-World Assumption).  Under OWA, Pellet requires explicit
            ``owl:AllDifferent`` axioms to prove distinctness.  Without them,
            this method can **over-count** for ``≥n`` (n ≥ 2) and
-           **under-count** for ``≤n`` / ``=n``.  Use ``CrossShardReasoner``
+           **under-count** for ``≤n`` / ``=n``.  Use ``ShardEnsembleReasoner``
            for OWA-correct cardinality evaluation.
 
         Args:
@@ -721,124 +891,221 @@ class DistributedReasoner:
         return result
 
 
-class CrossShardReasoner(DistributedReasoner):
+class ShardEnsembleReasoner(BaseShardReasoner):
     """
-    A distributed reasoner that enables correct cross-shard inference for nested
-    OWL class expressions by combining per-shard intermediate results bottom-up.
+    Distributed OWL DL reasoner that achieves correct cross-shard instance
+    retrieval under the **Open-World Assumption** (OWA) by combining per-shard
+    intermediate results in a bottom-up post-processing pass.
 
-    Background
-    ----------
+    This is the **recommended reasoner** for production use.  It is sound with
+    respect to the semantics of each supported OWL CE constructor and has been
+    validated at Jaccard 1.0 on 12 178 class expressions across 20 shards of
+    the Mutagenesis ontology (see module docstring for full results).
+
+    Cross-shard inference problem
+    ----------------------------
     The ABox is partitioned round-robin by subject individual across N shards;
-    the TBox is replicated in every shard.  This means:
+    the TBox is replicated in every shard (“horizontal partitioning”).
+    Concretely:
 
-    * A named individual ``a`` has its class-assertion axioms only in its assigned
-      shard ``shard_k``.
-    * An object-property assertion ``(s, r, o)`` lives in the shard of the *subject*
-      ``s``, which may differ from the shard of the *object* ``o``.
+    * A named individual ``a`` has its class-assertion axioms *only* in its
+      assigned shard ``shard_{h(a)}``.
+    * An object-property assertion ``r(s, o)`` lives in the shard of the
+      *subject* ``s``, which may differ from the shard that holds the class
+      assertions for the *object* ``o``.
 
-    As a consequence, per-shard Pellet evaluation of complex CEs can be incorrect:
-    a shard may literally not see the axioms it needs to answer part of the query.
+    Therefore, per-shard OWL DL reasoning on complex CEs can be **incomplete**.
+    Consider ``∃ r.C``: the shard of ``s`` contains the triple ``(s, r, o)``
+    but may lack the class assertion ``C(o)`` (which is in ``o``’s shard),
+    while ``o``’s shard lacks the triple entirely.  Neither shard alone can
+    confirm ``s ∈ ∃ r.C``.
 
-    Strategy
-    --------
-    1. Every shard evaluates the full CE **and all sub-CEs** via
-       ``query_instances_with_intermediate``, returning a ``{ce_str -> IRI set}``
-       dict of intermediate results.
-    2. The coordinator collects those dicts and combines them **bottom-up**
-       (leaves before parents) using the logic described in the table below.
-    3. For CE types that require cross-shard joins, the coordinator issues
-       additional Ray calls (``get_object_property_subjects``,
-       ``get_object_property_map``) to gather the relational data it needs.
+    Algorithm
+    ---------
+    ``ShardEnsembleReasoner`` resolves cross-shard visibility with a
+    three-phase protocol:
+
+    1. **Scatter** — broadcast ``query_instances_with_intermediate(CE)`` to
+       every shard in parallel.  Each shard evaluates the CE *and every
+       sub-CE* locally via Pellet (or HermiT), returning a dictionary
+       ``{str(sub_ce) → Set[IRI]}`` of intermediate results for all nodes
+       in the CE syntax tree.
+
+    2. **Bottom-up combine** — the coordinator walks the CE syntax tree from
+       leaves to root.  For each sub-expression, it applies a
+       type-specific combining strategy (see table below).  Most CE types
+       only need a union of per-shard results; two types (∃ r.C and
+       ≥1 r.C) require an additional cross-shard join using the globally
+       resolved filler set.
+
+    3. **Cross-shard join** (for ∃ r.C and ≥1 r.C only) — the coordinator
+       passes the already-combined filler set ``F = combined[str(C)]`` to
+       ``get_object_property_subjects(r, F)`` on every shard.  Each shard
+       scans its local property assertions and returns subject IRIs that
+       have at least one qualifying filler.  The union of these per-shard
+       subject sets is the correct global answer.
 
     CE-type routing table
     ---------------------
-    +---------------------------------------+-----------------------------------+--------------------------------+
-    | CE type                               | Coordinator strategy              | Reason                         |
-    +=======================================+===================================+================================+
-    | OWLClass, OWLObjectUnionOf,           | Union per-shard results           | ABox is subject-keyed: each    |
-    | OWLObjectIntersectionOf, etc.         |                                   | individual lives in exactly    |
-    |                                       |                                   | one shard, so the union is     |
-    |                                       |                                   | the complete set.              |
-    +---------------------------------------+-----------------------------------+--------------------------------+
-    | OWLObjectOneOf  ({a, b, c})           | Extract IRIs directly from the CE | Nominal members are defined    |
-    |                                       | — never query shards              | by the expression, not by      |
-    |                                       |                                   | entailment. Per-shard Pellet   |
-    |                                       |                                   | returns 0 for individuals whose|
-    |                                       |                                   | class assertions are in a      |
-    |                                       |                                   | different shard, making the    |
-    |                                       |                                   | filler set empty and causing   |
-    |                                       |                                   | OWLObjectSomeValuesFrom to     |
-    |                                       |                                   | short-circuit to {}.           |
-    +---------------------------------------+-----------------------------------+--------------------------------+
-    | OWLObjectSomeValuesFrom  (∃ r.C)      | 1. Use combined[filler] (already  | The subject of (s, r, o) lives |
-    |                                       |    computed) as the object set.   | in a different shard from o.   |
-    |                                       | 2. Call get_object_property_      | Per-shard Pellet only sees one |
-    |                                       |    subjects on ALL shards with    | side of the triple.            |
-    |                                       |    that object set.               |                                |
-    |                                       | 3. Union results.                 |                                |
-    +---------------------------------------+-----------------------------------+--------------------------------+
-    | OWLObjectMinCardinality  (≥1 r.C)     | Cross-shard existential join      | ≥1 r.C ≡ ∃ r.C: one qualifying|
-    |                                       | (same as ∃ r.C above)             | filler suffices, no distinct-  |
-    |                                       |                                   | ness proof needed. Same cross- |
-    |                                       |                                   | shard filler visibility issue  |
-    |                                       |                                   | as OWLObjectSomeValuesFrom.    |
-    +---------------------------------------+-----------------------------------+--------------------------------+
-    | OWLObjectMinCardinality  (≥n r.C,n≥2) | Union per-shard Pellet results    | OWA requires owl:AllDifferent  |
-    | OWLObjectMaxCardinality  (≤n r.C)     |                                   | to prove distinct role fillers.|
-    | OWLObjectExactCardinality (=n r.C)    |                                   | Without it Pellet returns 0    |
-    |                                       |                                   | for ≥n (n≥2). Subject-keyed    |
-    |                                       |                                   | partitioning places every      |
-    |                                       |                                   | subject's property assertions  |
-    |                                       |                                   | in one shard, so per-shard     |
-    |                                       |                                   | Pellet preserves OWA and the   |
-    |                                       |                                   | union is correct.              |
-    +---------------------------------------+-----------------------------------+--------------------------------+
+    Each row specifies how the coordinator combines per-shard Pellet results
+    for a particular OWL CE constructor, and *why* that strategy is correct
+    given the subject-keyed ABox partitioning.
 
-    Example
-    -------
-    Shard-1 contains:  ``(compound42, hasBond, bond17)``
-    Shard-7 contains:  ``bond17 : Bond-1``  (class assertion for bond17)
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | CE constructor                         | Coordinator combining strategy       | Correctness argument                |
+    +========================================+======================================+=====================================+
+    | ``OWLClass`` (named class C)           | Union per-shard Pellet results.      | Disjoint ABox: ``C(a)`` is in       |
+    |                                        |                                      | exactly one shard.  The union       |
+    |                                        |                                      | recovers the complete extension.    |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectIntersectionOf``            | Union per-shard Pellet results.      | Pellet evaluates C_1 ⊓ C_2 locally. |
+    | (C_1 ⊓ C_2 ⊓ ... ⊓ C_k)              |                                      | Each individual is in one shard     |
+    |                                        |                                      | that has all its class assertions,  |
+    |                                        |                                      | so per-shard intersection is        |
+    |                                        |                                      | locally exact; union is complete.   |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectUnionOf``                   | Union per-shard Pellet results.      | Same as intersection: per-shard     |
+    | (C_1 ⊔ C_2 ⊔ ... ⊔ C_k)              |                                      | union is locally exact; global      |
+    |                                        |                                      | union is complete.                  |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectComplementOf`` (¬C)         | Union per-shard Pellet results.      | Under OWA, ¬C is evaluated by       |
+    |                                        |                                      | Pellet w.r.t. local ABox + TBox.   |
+    |                                        |                                      | Each individual is tested in its    |
+    |                                        |                                      | home shard; union is complete.      |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectAllValuesFrom`` (∀ r.C)     | Union per-shard Pellet results.      | Subject-keyed partitioning places   |
+    |                                        |                                      | all of ``s``'s property assertions  |
+    |                                        |                                      | in ``s``'s shard.  Pellet checks    |
+    |                                        |                                      | ``∀ o: r(s,o) → C(o)`` using local |
+    |                                        |                                      | triples + TBox entailment; union    |
+    |                                        |                                      | across shards is complete.          |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectHasValue`` (∃ r.{a})        | Union per-shard Pellet results.      | Desugars to ∃ r.{a}; same as the   |
+    |                                        |                                      | default union path since OWLHas-    |
+    |                                        |                                      | Value is evaluated by Pellet.       |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectOneOf`` ({a, b, c})         | Extract IRIs directly from the CE    | A nominal’s extension is defined    |
+    |                                        | — **never query shards**.            | syntactically, not by entailment.   |
+    |                                        |                                      | Per-shard Pellet may return ∅ for   |
+    |                                        |                                      | individuals whose class assertions  |
+    |                                        |                                      | are in another shard.  Extracting   |
+    |                                        |                                      | IRIs directly is always correct.    |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectSomeValuesFrom`` (∃ r.C)    | **Cross-shard join**:                | The triple ``r(s, o)`` is in shard  |
+    |                                        | 1. Obtain filler set F =            | ``h(s)``; the assertion ``C(o)`` is |
+    |                                        |    combined[str(C)] (already         | in shard ``h(o)``.  When h(s)≠h(o), |
+    |                                        |    resolved bottom-up).              | per-shard Pellet on either shard    |
+    |                                        | 2. Call ``get_object_property_       | misses the connection.  The join    |
+    |                                        |    subjects(r, F)`` on ALL shards.   | passes the globally resolved F to   |
+    |                                        | 3. Union the per-shard subject sets. | each shard; each shard checks only  |
+    |                                        |                                      | its local triples against F.        |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectMinCardinality`` (≥1 r.C)   | **Cross-shard existential join**     | ≥1 r.C ≡ ∃ r.C: one qualifying      |
+    |                                        | (same as ∃ r.C above).              | filler suffices, no distinctness    |
+    |                                        |                                      | proof needed.  Same cross-shard     |
+    |                                        |                                      | filler visibility issue as          |
+    |                                        |                                      | OWLObjectSomeValuesFrom.            |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectMinCardinality`` (≥n r.C,   | Union per-shard Pellet results.      | Under OWA, Pellet requires          |
+    | n≥2)                                   |                                      | ``owl:AllDifferent`` axioms to      |
+    |                                        |                                      | prove ≥n distinct fillers.  Without |
+    |                                        |                                      | them, Pellet returns ∅ for the full |
+    |                                        |                                      | ontology anyway.  Subject-keyed     |
+    |                                        |                                      | partitioning places all of a        |
+    |                                        |                                      | subject’s property assertions in    |
+    |                                        |                                      | one shard, so per-shard Pellet      |
+    |                                        |                                      | cardinality counts are locally      |
+    |                                        |                                      | exact; union is correct.            |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectMaxCardinality`` (≤n r.C)   | Union per-shard Pellet results.      | Same reasoning as ≥n (n≥2): all    |
+    |                                        |                                      | of ``s``’s property assertions are  |
+    |                                        |                                      | in ``s``’s shard, so Pellet’s local |
+    |                                        |                                      | count equals the global count.      |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
+    | ``OWLObjectExactCardinality`` (=n r.C) | Union per-shard Pellet results.      | Conjunction of ≥n and ≤n; same     |
+    |                                        |                                      | correctness argument as above.      |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
 
-    Query: ``∃ hasBond.{bond17}``
+    Worked example: cross-shard ∃ r.C
+    ---------------------------------
+    Consider N = 8 shards and the Mutagenesis ontology with query
+    ``∃ hasBond.{bond17}``:
 
-    * Per-shard Pellet on Shard-1 returns {} — bond17 is not asserted to be
-      anything in Shard-1, so Pellet cannot confirm the query.
-    * Per-shard Pellet on Shard-7 returns {} — compound42 is not in Shard-7.
-    * CrossShardReasoner:
-      1. OWLObjectOneOf({bond17}) → {bond17.iri}  (extracted from CE, no shard query)
-      2. OWLObjectSomeValuesFrom → calls get_object_property_subjects on all shards
-         with object_iris={bond17.iri} → Shard-1 returns {compound42.iri}
-      3. Result: {compound42}  ✓
+    * Shard-1 contains: ``hasBond(compound42, bond17)``  (property assertion)
+    * Shard-7 contains: ``Bond-1(bond17)``               (class assertion)
+
+    Naive per-shard Pellet evaluation:
+
+    * Shard-1 returns {} — ``bond17`` has no class assertions there, so Pellet
+      cannot confirm that ``bond17`` belongs to the filler.
+    * Shard-7 returns {} — ``compound42`` is not in Shard-7, so no triple
+      ``hasBond(compound42, bond17)`` exists there.
+
+    ShardEnsembleReasoner bottom-up combining:
+
+    1. **OWLObjectOneOf({bond17})** → extract IRIs directly: ``{bond17}`` ✓
+    2. **OWLObjectSomeValuesFrom(hasBond, {bond17})** → cross-shard join:
+       call ``get_object_property_subjects(hasBond, {bond17})`` on all shards.
+       Shard-1 scans its local triples and finds ``hasBond(compound42, bond17)``
+       → returns ``{compound42}``.
+    3. **Result**: ``{compound42}`` ✓
+
+    Worked example: nested ∃ r1.(∃ r2.C)
+    -------------------------------------
+    Shard-1: ``r1(o1, o2)``     Shard-2: ``r2(o2, o3)``     Shard-3: ``C(o3)``
+
+    Bottom-up:
+
+    1. ``combined[C]    = {o3}``            (union of per-shard ``C`` results)
+    2. ``combined[∃ r2.C] = {o2}``          (cross-shard join: Shard-2 has
+       ``r2(o2, o3)`` and ``o3 ∈ {o3}``)
+    3. ``combined[∃ r1.(∃ r2.C)] = {o1}``  (cross-shard join: Shard-1 has
+       ``r1(o1, o2)`` and ``o2 ∈ {o2}``)
+
+    Result: ``{o1}`` ✓
 
     Soundness under OWA
     -------------------
-    CrossShardReasoner always operates under the Open-World Assumption.  No
-    Closed-World counting or Unique-Name reasoning is performed.  Cardinality
-    restrictions (≥n with n≥2, ≤n, =n) are evaluated by per-shard Pellet and
-    unioned, which exactly reproduces the answers a single Pellet instance
-    would return on the complete (unsharded) ontology.  Only ≥1 r.C receives
-    special cross-shard treatment (since ≥1 r.C ≡ ∃ r.C and needs the same
-    filler-visibility join).
+    ``ShardEnsembleReasoner`` always operates under the Open-World Assumption.
+    No Closed-World counting or Unique-Name reasoning is performed.
 
-    If the ontology contains ``owl:AllDifferent`` axioms they are replicated
-    in every shard via the TBox, so per-shard Pellet will still use them.
+    * **Union-based CE types** (named classes, Boolean combinators,
+      ∀ r.C, ¬C, cardinality with n≥2) — per-shard Pellet evaluates each CE
+      using the shard’s local ABox + replicated TBox.  Because class
+      assertions and property assertions for any given subject are co-located
+      in one shard, Pellet’s per-individual answer is the same as on the
+      full ontology.  The union across shards recovers the complete answer.
+
+    * **Cross-shard join CE types** (∃ r.C, ≥1 r.C) — the coordinator
+      resolves the filler set globally first, then performs a lightweight
+      ABox scan on every shard.  This is sound because the scan uses
+      ``object_property_values`` (which includes inferred triples via
+      property chains), and subject-keyed partitioning guarantees that
+      every ``(s, r, o)`` triple is checked in exactly the shard of ``s``.
+
+    * **Nominals** ({a, b, c}) — extracted directly from the CE; no
+      entailment is needed, so correctness is trivial.
+
+    If the ontology contains ``owl:AllDifferent`` axioms, they are replicated
+    in every shard via the TBox, so per-shard Pellet continues to use them
+    for cardinality reasoning.
     """
     
     def __init__(self, shards: List[ray.actor.ActorHandle], open_world: bool = False, verbose: bool = True):
         """
-        Initialise a CrossShardReasoner.
+        Initialise a ShardEnsembleReasoner.
 
         The reasoner always uses OWA-correct bottom-up combining logic in its
         ``instances`` method, regardless of the ``open_world`` flag (which is
-        only forwarded to the parent ``DistributedReasoner`` for API
+        only forwarded to the parent ``BaseShardReasoner`` for API
         compatibility).
 
         Args:
             shards:     List of ShardReasoner Ray actor handles, one per ontology
                         partition.  Each shard must hold the complete TBox and a
                         disjoint ABox subset.
-            open_world: Forwarded to ``DistributedReasoner.__init__`` but has
-                        **no effect** on ``CrossShardReasoner.instances``, which
+            open_world: Forwarded to ``BaseShardReasoner.__init__`` but has
+                        **no effect** on ``ShardEnsembleReasoner.instances``, which
                         always uses the cross-shard bottom-up path.
             verbose:    If True, print progress messages for each CE component
                         being processed (useful for debugging).
@@ -848,7 +1115,7 @@ class CrossShardReasoner(DistributedReasoner):
         # Propagate verbose flag to all shard actors
         ray.get([s.set_verbose.remote(verbose) for s in shards])
         if self.verbose:
-            print(f"CrossShardReasoner initialized with {len(shards)} shards (cross-shard intermediate results mode)")
+            print(f"ShardEnsembleReasoner initialized with {len(shards)} shards (cross-shard intermediate results mode)")
     
     def instances(self, ce: OWLClassExpression, direct: bool = False) -> Set[OWLNamedIndividual]:
         """
@@ -1113,7 +1380,7 @@ class CrossShardReasoner(DistributedReasoner):
 
 def run_timing_benchmark(
     ground_truth_reasoner: SyncReasoner,
-    dist_reasoner: DistributedReasoner,
+    dist_reasoner: BaseShardReasoner,
     queries: List[Tuple[str, OWLClassExpression]]
 ) -> List[Dict]:
     """
@@ -1121,7 +1388,7 @@ def run_timing_benchmark(
     
     Args:
         ground_truth_reasoner: SyncReasoner with complete ontology
-        dist_reasoner: DistributedReasoner with sharded data
+        dist_reasoner: BaseShardReasoner with sharded data
         queries: List of (name, OWLClassExpression) tuples
     
     Returns:
@@ -1248,7 +1515,7 @@ def main(args):
         shard = ShardReasoner.options(resources={f"shard_{i}": 1}).remote(f"Shard-{i}", shard_path, args.reasoner)
         shards.append(shard)
     
-    dist_reasoner = DistributedReasoner(shards, open_world=True)
+    dist_reasoner = BaseShardReasoner(shards, open_world=True)
     
     # Define Classes and Properties 
     atom = OWLClass(IRI(NS, 'Atom'))

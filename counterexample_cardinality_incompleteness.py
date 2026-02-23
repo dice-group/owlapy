@@ -1,5 +1,5 @@
 """
-Counterexample: CrossShardReasoner is incomplete for ≥ 2 r.C under OWA.
+Counterexample: ShardEnsembleReasoner is incomplete for ≥ 2 r.C under OWA.
 
 Usage
 -----
@@ -22,7 +22,7 @@ Query: ≥ 2 r.C
 Ground truth (single Pellet):  {a}
     a has two distinct r-fillers (o1, o2) that are both of type C → a ∈ ≥ 2 r.C ✓
 
-CrossShardReasoner (3 shards):  {}
+ShardEnsembleReasoner (3 shards):  {}
     Shard-0 has (a, r, o1) and (a, r, o2)  (but misses o1:C and o2:C)
     Shard-1 has o1:C                       (but misses a)
     Shard-2 has o2:C                       (but misses a)
@@ -39,7 +39,7 @@ from owlapy.iri import IRI
 
 # Assumes shard_ontology.py and ddp_reasoning.py are in the same directory
 from shard_ontology import shard_ontology
-from ddp_reasoning import ShardReasoner, CrossShardReasoner
+from ddp_reasoning import ShardReasoner, ShardEnsembleReasoner
 
 NS = "http://example.org/test#"
 ONTOLOGY_OWL = """\
@@ -128,7 +128,7 @@ def main():
             .remote(f"Shard-{i}", os.path.join(out, f"{stem}_shard_{i}.owl"), "Pellet", verbose=False)
         for i in range(args.num_shards)
     ]
-    dist = CrossShardReasoner(shards, open_world=True, verbose=False)
+    dist = ShardEnsembleReasoner(shards, open_world=True, verbose=False)
     dist_min = {i.str for i in dist.instances(min_2_r_C)}
     dist_exists = {i.str for i in dist.instances(exists_r_C)}
 

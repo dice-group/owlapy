@@ -14,7 +14,7 @@ Scenario
   Centralised answer: {o1}
     because  o1 --r1--> o2 --r2--> o3
 
-  Question: Can the DistributedReasoner return o1?
+  Question: Can the BaseShardReasoner return o1?
 
 Open-world mode  (open_world=True, cross_shard=False)
 ------------------------------------------------------
@@ -81,7 +81,7 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.iri import IRI
 
-from ddp_reasoning import ShardReasoner, DistributedReasoner, CrossShardReasoner
+from ddp_reasoning import ShardReasoner, BaseShardReasoner, ShardEnsembleReasoner
 
 
 NS = "http://example.org/test#"
@@ -173,7 +173,7 @@ def main():
                 "Shard-1", shard2_path, "Pellet"),
         ]
 
-        open_world_reasoner = DistributedReasoner(shard_actors_ow, open_world=True)
+        open_world_reasoner = BaseShardReasoner(shard_actors_ow, open_world=True)
         ow_results = {ind.str for ind in open_world_reasoner.instances(query)}
         print(f"  Query:   exists r1.(exists r2.{{o3}})")
         print(f"  Result:  {ow_results}")
@@ -192,7 +192,7 @@ def main():
                 "Shard-1", shard2_path, "Pellet"),
         ]
 
-        cross_shard_reasoner = CrossShardReasoner(shard_actors_cs)
+        cross_shard_reasoner = ShardEnsembleReasoner(shard_actors_cs)
         cs_results = {ind.str for ind in cross_shard_reasoner.instances(query)}
         print(f"  Query:   exists r1.(exists r2.{{o3}})")
         print(f"  Result:  {cs_results}")

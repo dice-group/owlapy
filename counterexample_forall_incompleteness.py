@@ -1,5 +1,5 @@
 """
-Counterexample: CrossShardReasoner is incomplete for ∀ r.C under OWA.
+Counterexample: ShardEnsembleReasoner is incomplete for ∀ r.C under OWA.
 
 Ontology (TBox + ABox):
     FunctionalObjectProperty(r)
@@ -11,7 +11,7 @@ Query: ∀ r.C
 Ground truth (single Pellet):  {a}
     r is functional → b is a's only filler → b : C → a ∈ ∀ r.C  ✓
 
-CrossShardReasoner (2 shards):  {}
+ShardEnsembleReasoner (2 shards):  {}
     Shard-0 has b : C       (but no a)
     Shard-1 has (a, r, b)   (but no b : C)
     → Shard-1 Pellet cannot confirm b ∈ C → misses a  ✗
@@ -26,7 +26,7 @@ from owlapy.class_expression import OWLClass, OWLObjectAllValuesFrom, OWLObjectS
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.iri import IRI
 from shard_ontology import shard_ontology
-from ddp_reasoning import ShardReasoner, CrossShardReasoner
+from ddp_reasoning import ShardReasoner, ShardEnsembleReasoner
 
 NS = "http://example.org/test#"
 ONTOLOGY_OWL = """\
@@ -95,7 +95,7 @@ def main():
             .remote(f"Shard-{i}", os.path.join(out, f"{stem}_shard_{i}.owl"), "Pellet", verbose=False)
         for i in range(args.num_shards)
     ]
-    dist = CrossShardReasoner(shards, open_world=True, verbose=False)
+    dist = ShardEnsembleReasoner(shards, open_world=True, verbose=False)
     dist_forall = {i.str for i in dist.instances(forall_r_C)}
     dist_exists = {i.str for i in dist.instances(exists_r_C)}
 

@@ -1,5 +1,5 @@
 """
-Counterexample: CrossShardReasoner is incomplete for property chains under OWA.
+Counterexample: ShardEnsembleReasoner is incomplete for property chains under OWA.
 
 Ontology (TBox + ABox):
     PropertyChain: r o s -> t  (If x has r to y, and y has s to z, then x has t to z)
@@ -12,7 +12,7 @@ Query: ∃ t.C
 Ground truth (single Pellet):  {a}
     a -> r -> b -> s -> c implies a -> t -> c. Since c:C, a ∈ ∃ t.C ✓
 
-CrossShardReasoner (3 shards):  {}
+ShardEnsembleReasoner (3 shards):  {}
     Shard-0 has (a, r, b)   (but misses b -> s -> c)
     Shard-1 has (b, s, c)   (but misses a -> r -> b)
     Shard-2 has c : C
@@ -32,7 +32,7 @@ from owlapy.iri import IRI
 
 # Assumes shard_ontology.py and ddp_reasoning.py are in the same directory
 from shard_ontology import shard_ontology
-from ddp_reasoning import ShardReasoner, CrossShardReasoner
+from ddp_reasoning import ShardReasoner, ShardEnsembleReasoner
 
 NS = "http://example.org/test#"
 ONTOLOGY_OWL = """\
@@ -115,7 +115,7 @@ def main():
             .remote(f"Shard-{i}", os.path.join(out, f"{stem}_shard_{i}.owl"), "Pellet", verbose=False)
         for i in range(args.num_shards)
     ]
-    dist = CrossShardReasoner(shards, open_world=True, verbose=False)
+    dist = ShardEnsembleReasoner(shards, open_world=True, verbose=False)
     dist_exists = {i.str for i in dist.instances(exists_t_C)}
 
     # Report

@@ -8,7 +8,7 @@ This script evaluates a **single** OWL class expression across three
 reasoning approaches and prints a detailed diagnostic report:
 
   1. Ground Truth   — SyncReasoner on the complete (unsharded) ontology
-  2. Open-World     — DistributedReasoner (open_world=True): each shard
+  2. Open-World     — BaseShardReasoner (open_world=True): each shard
                       evaluates the full CE independently, results are unioned.
 
 The report shows:
@@ -67,7 +67,7 @@ from owlapy import owl_expression_to_dl
 from owlapy.parser import dl_to_owl_expression
 from owlapy.utils import jaccard_similarity, f1_set_similarity
 
-from ddp_reasoning import ShardReasoner, DistributedReasoner, CrossShardReasoner
+from ddp_reasoning import ShardReasoner, BaseShardReasoner, ShardEnsembleReasoner
 from shard_ontology import shard_ontology
 
 
@@ -257,7 +257,7 @@ def main():
     )
     parser.add_argument(
         "--cross_shard", action="store_true", default=False,
-        help="Use CrossShardReasoner for open-world distributed reasoning (default: DistributedReasoner)",
+        help="Use ShardEnsembleReasoner for open-world distributed reasoning (default: BaseShardReasoner)",
     )
     args = parser.parse_args()
 
@@ -347,9 +347,9 @@ def main():
 
     # Setup open-world distributed reasoner
     if args.cross_shard:
-        open_world_reasoner = CrossShardReasoner(shards, open_world=True)
+        open_world_reasoner = ShardEnsembleReasoner(shards, open_world=True)
     else:
-        open_world_reasoner = DistributedReasoner(shards, open_world=True)
+        open_world_reasoner = BaseShardReasoner(shards, open_world=True)
 
     # ── Evaluate ─────────────────────────────────────────────────────
     print(f"\n[3/3] Evaluating expression: {dl_str}")
