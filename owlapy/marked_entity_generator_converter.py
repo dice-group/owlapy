@@ -99,12 +99,14 @@ class QueryGenerator(Owl2SparqlConverter):
     """
 
     __slots__ = (*Owl2SparqlConverter.__slots__, '_marker_mode', '_inside_filter',
-                 '_property_marker_mode', '_inverted')
+                 '_property_marker_mode', '_inverted',
+                 '_negated_class_marker_mode')
 
     _marker_mode: bool
     _inside_filter: bool
     _property_marker_mode: bool
     _inverted: bool
+    _negated_class_marker_mode: bool
 
     # -- override convert to reset extra flags --------------------------------
 
@@ -114,17 +116,24 @@ class QueryGenerator(Owl2SparqlConverter):
                 named_individuals: bool = False,
                 marker_mode: bool = False,
                 property_marker_mode: bool = False,
-                inverted: bool = False):
+                inverted: bool = False,
+                negated_class_marker_mode: bool = False):
         """Like the parent ``convert`` but accepts extra marker flags.
 
         When *marker_mode* is ``True`` the :data:`CONTEXT_POSITION_MARKER`
         class is treated specially – emitting ``?var a ?class .``.
+
+        When *negated_class_marker_mode* is ``True`` the marker emits
+        ``?class a owl:Class . FILTER NOT EXISTS { ?var a ?class . }``
+        instead, which discovers classes that the individual is **not** a
+        member of.  This mirrors the Java ``generateNegatedClassQuery``.
 
         When *property_marker_mode* is ``True`` the marker emits
         ``?var ?prop [] .`` (or ``[] ?prop ?var .`` when *inverted* is ``True``).
         """
         self._marker_mode = marker_mode
         self._property_marker_mode = property_marker_mode
+        self._negated_class_marker_mode = negated_class_marker_mode
         self._inverted = inverted
         self._inside_filter = False
         return super().convert(root_variable, ce,
@@ -144,13 +153,23 @@ class QueryGenerator(Owl2SparqlConverter):
 
     @process.register
     def _(self, ce: OWLClass):
-        if (self._marker_mode or self._property_marker_mode) and ce == CONTEXT_POSITION_MARKER:
+        if (self._marker_mode or self._property_marker_mode
+                or self._negated_class_marker_mode) and ce == CONTEXT_POSITION_MARKER:
             if self._property_marker_mode:
                 # Property marker – emit ``?var ?prop [] .`` or ``[] ?prop ?var .``
                 if self._inverted:
                     self.append(f"[] ?prop {self.current_variable} . ")
                 else:
                     self.append(f"{self.current_variable} ?prop [] . ")
+            elif self._negated_class_marker_mode:
+                # Negated class marker – emit:
+                #   ?class a owl:Class .
+                #   FILTER NOT EXISTS { ?var a ?class . }
+                # This discovers classes the individual is NOT a member of.
+                self.append(
+                    f"?class a <http://www.w3.org/2002/07/owl#Class> . "
+                    f"FILTER NOT EXISTS {{ {self.current_variable} a ?class . }} "
+                )
             else:
                 # Class marker – emit ``?var a ?class .``
                 self.append(f"{self.current_variable} a ?class . ")
@@ -181,7 +200,7 @@ class QueryGenerator(Owl2SparqlConverter):
 
         # If the marker was inside this negation, add type constraint
         if self._contains_marker(ce.get_operand()):
-            if self._marker_mode:
+            if self._marker_mode or self._negated_class_marker_mode:
                 self.append(" ?class a <http://www.w3.org/2002/07/owl#Class> . ")
             elif self._property_marker_mode:
                 self.append(" ?prop a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> . ")
@@ -522,6 +541,110 @@ class QueryGenerator(Owl2SparqlConverter):
         parseQuery(query)
         return query
 
+    # -- negated class query builder ------------------------------------------
+
+    def as_negated_class_query(
+        self,
+        context: OWLClassExpression,
+        positive_examples: Iterable[OWLNamedIndividual],
+        negative_examples: Iterable[OWLNamedIndividual],
+        root_variable_pos: str = "?pos",
+        root_variable_neg: str = "?neg",
+        for_all_de_morgan: bool = True,
+        named_individuals: bool = False,
+        filter_expression: Optional[OWLClassExpression] = None,
+    ) -> str:
+        """Generate a SPARQL query that discovers OWL classes the positives
+        are **not** members of, with hit-counts.
+
+        The generated query mirrors the Java
+        ``Suggestor.generateNegatedClassQuery``:
+
+        .. code-block:: sparql
+
+            SELECT ?class (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {
+                { SELECT ?class (COUNT(DISTINCT ?pos) AS ?tp) (0 AS ?fp) WHERE {
+                    VALUES ?pos { ... }
+                    ?class a owl:Class .
+                    FILTER NOT EXISTS { ?pos a ?class . }
+                } GROUP BY ?class }
+                UNION {
+                    SELECT ?class (0 AS ?tp) (COUNT(DISTINCT ?neg) AS ?fp) WHERE {
+                        VALUES ?neg { ... }
+                        ?class a owl:Class .
+                        FILTER NOT EXISTS { ?neg a ?class . }
+                    } GROUP BY ?class
+                }
+            } GROUP BY ?class
+
+        At the marker position the converter emits
+        ``?class a owl:Class . FILTER NOT EXISTS { ?var a ?class . }``
+        instead of ``?var a ?class .``.
+
+        Args:
+            context: A class expression containing :data:`CONTEXT_POSITION_MARKER`.
+            positive_examples: Positive example individuals.
+            negative_examples: Negative example individuals.
+            root_variable_pos: Variable name for positive examples (default ``?pos``).
+            root_variable_neg: Variable name for negative examples (default ``?neg``).
+            for_all_de_morgan: Passed through to :meth:`convert`.
+            named_individuals: Passed through to :meth:`convert`.
+            filter_expression: Optional additional class expression for
+                ``FILTER NOT EXISTS`` on the root variable.
+
+        Returns:
+            A valid SPARQL SELECT query string.
+        """
+        # -- 1. Build positive context string ---------------------------------
+        positive_list = list(positive_examples)
+        negative_list = list(negative_examples)
+
+        values_pos = _generate_values_stmt(root_variable_pos, positive_list)
+
+        tp = self.convert(root_variable_pos, context,
+                          for_all_de_morgan=for_all_de_morgan,
+                          named_individuals=named_individuals,
+                          negated_class_marker_mode=True)
+        context_parts = [values_pos]
+
+        # Optional filter expression (mirrors Java createNotExistsFilter)
+        if filter_expression is not None:
+            filter_tp = self.convert(root_variable_pos, filter_expression,
+                                     for_all_de_morgan=for_all_de_morgan,
+                                     named_individuals=named_individuals)
+            context_parts.append(f"FILTER NOT EXISTS {{ {''.join(filter_tp)} }} ")
+
+        context_parts.extend(tp)
+        context_string = "".join(context_parts)
+
+        # -- 2. Build negative context string (variable replacement) ----------
+        values_neg = _generate_values_stmt(root_variable_neg, negative_list)
+        neg_context = re.sub(
+            r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
+            values_neg.rstrip(". "),
+            context_string,
+        )
+        neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
+        neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
+
+        # -- 3. Assemble final query (UNION pattern) --------------------------
+        query_parts = [
+            "SELECT ?class (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {\n",
+            "  { SELECT ?class (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) (0 AS ?fp) WHERE {\n    ",
+            context_string,
+            "\n  } GROUP BY ?class }\n",
+            "  UNION {\n",
+            "    SELECT ?class (0 AS ?tp) (COUNT(DISTINCT " + root_variable_neg + ") AS ?fp) WHERE {\n    ",
+            neg_context,
+            "\n    } GROUP BY ?class\n",
+            "  }\n",
+            "} GROUP BY ?class",
+        ]
+        query = "".join(query_parts)
+
+        parseQuery(query)
+        return query
+
     # -- property query builder -----------------------------------------------
 
     def as_property_query(
@@ -714,3 +837,53 @@ def owl_expression_to_property_query(
         inverted=inverted,
         filter_expression=filter_expression,
     )
+
+
+def owl_expression_to_negated_class_query(
+    context: OWLClassExpression,
+    positive_examples: Iterable[OWLNamedIndividual],
+    negative_examples: Iterable[OWLNamedIndividual],
+    root_variable_pos: str = "?pos",
+    root_variable_neg: str = "?neg",
+    for_all_de_morgan: bool = True,
+    named_individuals: bool = False,
+    filter_expression: Optional[OWLClassExpression] = None,
+) -> str:
+    """Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`
+    into a SPARQL query that discovers OWL classes that the positive examples
+    are **not** members of, together with positive / negative hit counts.
+
+    This is the Python equivalent of the Java
+    ``Suggestor.generateNegatedClassQuery``.
+
+    At the marker position the converter emits::
+
+        ?class a owl:Class .
+        FILTER NOT EXISTS { ?var a ?class . }
+
+    instead of ``?var a ?class .``.
+
+    Args:
+        context: Class expression containing :data:`CONTEXT_POSITION_MARKER`.
+        positive_examples: Positive example individuals.
+        negative_examples: Negative example individuals.
+        root_variable_pos: SPARQL variable for positives (default ``?pos``).
+        root_variable_neg: SPARQL variable for negatives (default ``?neg``).
+        for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.
+        named_individuals: Restrict to ``owl:NamedIndividual`` instances.
+        filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).
+
+    Returns:
+        A valid SPARQL SELECT query string.
+    """
+    return generator.as_negated_class_query(
+        context=context,
+        positive_examples=positive_examples,
+        negative_examples=negative_examples,
+        root_variable_pos=root_variable_pos,
+        root_variable_neg=root_variable_neg,
+        for_all_de_morgan=for_all_de_morgan,
+        named_individuals=named_individuals,
+        filter_expression=filter_expression,
+    )
+

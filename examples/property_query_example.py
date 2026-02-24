@@ -181,6 +181,7 @@ query6 = property_query_with_counts(
 )
 print(query6)
 
+exit(1)
 
 # ---------------------------------------------------------------------------
 # Example 7 – inverted with counts

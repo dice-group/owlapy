@@ -44,6 +44,7 @@ from owlapy.owl_property import OWLObjectProperty
 from owlapy.marked_entity_generator_converter import (
     CONTEXT_POSITION_MARKER,
     owl_expression_to_class_query,
+    owl_expression_to_negated_class_query,
     owl_expression_to_property_query,
 )
 
@@ -811,12 +812,183 @@ class TestMarkedEntityGeneratorConverter(unittest.TestCase):
         self.assertEqual(results[NS + "Person"][0], 1)  # F2M11 has grandchildren
         self.assertEqual(results[NS + "Person"][1], 0)  # F2F14 has no children
 
+    # ------------------------------------------------------------------
+    # Test 15 – Negated class query: MARKER as root
+    #
+    # Context: ⌖  (with negated_class_marker_mode)
+    # At the marker the converter emits:
+    #     ?class a owl:Class .
+    #     FILTER NOT EXISTS { ?pos a ?class . }
+    #
+    # This finds classes the individual is NOT a member of.
+    #
+    # Positive: F2F14 (types: Person, Female, NamedIndividual, Thing)
+    #   → NOT member of: Male, Father, Mother, Brother, Sister, Son, Daughter,
+    #     Grandfather, Grandmother, Grandparent, Grandchild, Grandson,
+    #     Granddaughter, PersonWithASibling, Child, Parent
+    # Negative: F2M11 (types: Brother, Male, Person, Father, Grandfather, Son,
+    #                   NamedIndividual, Thing)
+    #   → NOT member of: Female, Mother, Sister, Daughter, Grandmother,
+    #     Grandparent, Grandchild, Grandson, Granddaughter,
+    #     PersonWithASibling, Child, Parent
+    # ------------------------------------------------------------------
+
+    def test_25_negated_marker_root_class_query(self):
+        """Negated MARKER as root: discover classes F2F14 is NOT a member of."""
+        context = CONTEXT_POSITION_MARKER
+        positives = [ind("F2F14")]
+        negatives = [ind("F2M11")]
+
+        query = owl_expression_to_negated_class_query(context, positives, negatives)
+        bindings = _execute_sparql(query)
+        results = self._parse_class_results_with_counts(bindings)
+
+        # F2F14 is NOT Male -> Male should appear with posHits >= 1
+        self.assertIn(NS + "Male", results)
+        self.assertGreaterEqual(results[NS + "Male"][0], 1)
+
+        # F2F14 is NOT Father -> Father should appear with posHits >= 1
+        self.assertIn(NS + "Father", results)
+        self.assertGreaterEqual(results[NS + "Father"][0], 1)
+
+        # F2F14 is NOT Mother -> Mother should appear with posHits >= 1
+        self.assertIn(NS + "Mother", results)
+        self.assertGreaterEqual(results[NS + "Mother"][0], 1)
+
+        # F2F14 IS Person -> Person should NOT appear (or posHits=0)
+        if NS + "Person" in results:
+            self.assertEqual(results[NS + "Person"][0], 0)
+
+        # F2F14 IS Female -> Female should NOT appear (or posHits=0)
+        if NS + "Female" in results:
+            self.assertEqual(results[NS + "Female"][0], 0)
+
+        # F2M11 is NOT Female -> negHits for Female >= 1
+        self.assertIn(NS + "Female", results)
+        self.assertGreaterEqual(results[NS + "Female"][1], 1)
+
+        # F2M11 IS Male -> Male negHits=0
+        self.assertEqual(results[NS + "Male"][1], 0)
+
+    def test_26_negated_marker_root_query_structure(self):
+        """Verify the negated class query has UNION structure (not OPTIONAL)."""
+        context = CONTEXT_POSITION_MARKER
+        positives = [ind("F2F14")]
+        negatives = [ind("F2M11")]
+
+        query = owl_expression_to_negated_class_query(context, positives, negatives)
+
+        # Should use UNION pattern, not OPTIONAL
+        self.assertIn("UNION", query)
+        self.assertNotIn("OPTIONAL", query)
+        # Should contain FILTER NOT EXISTS { ?pos a ?class . }
+        self.assertIn("FILTER NOT EXISTS", query)
+        self.assertIn("a ?class", query)
+        # Should contain ?class a owl:Class .
+        self.assertIn("?class a <http://www.w3.org/2002/07/owl#Class>", query)
+
+    # ------------------------------------------------------------------
+    # Test 16 – Negated class query with intersection context
+    #
+    # Context: Person ⊓ ⌖ (negated)
+    # Finds classes that Person-individuals (the positives) are NOT
+    # members of.
+    # Positive: F2F14 (Person, Female) → NOT: Male, Father, Mother, ...
+    # Negative: F2M11 (Person, Male, Father, ...) → NOT: Female, Mother, ...
+    # ------------------------------------------------------------------
+
+    def test_27_negated_intersection_class_query(self):
+        """Person ⊓ MARKER (negated): classes Person-positives are NOT members of."""
+        context = OWLObjectIntersectionOf([Person, CONTEXT_POSITION_MARKER])
+        positives = [ind("F2F14")]
+        negatives = [ind("F2M11")]
+
+        query = owl_expression_to_negated_class_query(context, positives, negatives)
+        bindings = _execute_sparql(query)
+        results = self._parse_class_results_with_counts(bindings)
+
+        # F2F14 is Person but NOT Male
+        self.assertIn(NS + "Male", results)
+        self.assertGreaterEqual(results[NS + "Male"][0], 1)
+
+        # F2F14 is Person but NOT Father
+        self.assertIn(NS + "Father", results)
+        self.assertGreaterEqual(results[NS + "Father"][0], 1)
+
+    # ------------------------------------------------------------------
+    # Test 17 – Negated class query with existential context
+    #
+    # Context: ∃hasChild.⌖ (negated)
+    # Finds classes that children of positives are NOT members of.
+    # Positive: F2M11 (children: F2F15, F2M13)
+    #   F2F15 types: Person, Daughter, Female, Granddaughter, Mother, Sister
+    #   F2M13 types: Brother, Male, Person, Grandson, Son
+    #   Classes children are NOT: e.g. F2M13 is NOT Female, NOT Mother, etc.
+    # Negative: F2F14 (no children)
+    # ------------------------------------------------------------------
+
+    def test_28_negated_existential_class_query(self):
+        """∃hasChild.MARKER (negated): classes children are NOT members of."""
+        context = OWLObjectSomeValuesFrom(hasChild, CONTEXT_POSITION_MARKER)
+        positives = [ind("F2M11")]
+        negatives = [ind("F2F14")]
+
+        query = owl_expression_to_negated_class_query(context, positives, negatives)
+        bindings = _execute_sparql(query)
+        results = self._parse_class_results_with_counts(bindings)
+
+        # F2M11 has children. F2M13 is NOT Female, NOT Mother, NOT Daughter, etc.
+        # So these should appear with posHits >= 1
+        # (At least one child of F2M11 is NOT a member of these classes)
+
+        # F2M13 is NOT Female
+        self.assertIn(NS + "Female", results)
+        self.assertGreaterEqual(results[NS + "Female"][0], 1)
+
+        # F2F14 has no children, so neg doesn't contribute through ∃hasChild
+        # -> negHits should be 0 for all classes
+        for cls_iri, (pos, neg) in results.items():
+            self.assertEqual(neg, 0,
+                             f"negHits should be 0 for {cls_iri} since F2F14 has no children")
+
+    # ------------------------------------------------------------------
+    # Test 18 – Multiple positives in negated class query
+    #
+    # Positive: F2M11 (Male, Father, Grandfather, Brother, Son, Person)
+    #           F2F14 (Female, Person)
+    # Negative: F2M13 (Male, Brother, Grandson, Son, Person)
+    # ------------------------------------------------------------------
+
+    def test_29_negated_multiple_positives(self):
+        """Negated MARKER with 2 positives: verify counts."""
+        context = CONTEXT_POSITION_MARKER
+        positives = [ind("F2M11"), ind("F2F14")]
+        negatives = [ind("F2M13")]
+
+        query = owl_expression_to_negated_class_query(context, positives, negatives)
+        bindings = _execute_sparql(query)
+        results = self._parse_class_results_with_counts(bindings)
+
+        # Female: F2M11 is NOT Female (pos=1), F2F14 IS Female (pos doesn't count)
+        # F2M13 is NOT Female (neg=1)
+        self.assertIn(NS + "Female", results)
+        self.assertEqual(results[NS + "Female"][0], 1)  # only F2M11
+        self.assertEqual(results[NS + "Female"][1], 1)  # F2M13
+
+        # Male: F2F14 is NOT Male (pos=1), F2M11 IS Male (pos doesn't count)
+        # F2M13 IS Male (neg doesn't count for Male)
+        self.assertIn(NS + "Male", results)
+        self.assertEqual(results[NS + "Male"][0], 1)  # only F2F14
+        self.assertEqual(results[NS + "Male"][1], 0)  # F2M13 IS Male
+
+        # Mother: neither F2M11 nor F2F14 is Mother -> pos=2
+        # F2M13 is NOT Mother -> neg=1
+        self.assertIn(NS + "Mother", results)
+        self.assertEqual(results[NS + "Mother"][0], 2)
+        self.assertEqual(results[NS + "Mother"][1], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
-
-
-
-
 
 
