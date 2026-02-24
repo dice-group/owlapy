@@ -1006,24 +1006,29 @@ class ShardEnsembleReasoner(BaseShardReasoner):
     |                                        |                                      | filler visibility issue as          |
     |                                        |                                      | OWLObjectSomeValuesFrom.            |
     +----------------------------------------+--------------------------------------+-------------------------------------+
-    | ``OWLObjectMinCardinality`` (≥n r.C,   | Union per-shard Pellet results.      | Under OWA, Pellet requires          |
-    | n≥2)                                   |                                      | ``owl:AllDifferent`` axioms to      |
-    |                                        |                                      | prove ≥n distinct fillers.  Without |
-    |                                        |                                      | them, Pellet returns ∅ for the full |
-    |                                        |                                      | ontology anyway.  Subject-keyed     |
-    |                                        |                                      | partitioning places all of a        |
-    |                                        |                                      | subject’s property assertions in    |
-    |                                        |                                      | one shard, so per-shard Pellet      |
-    |                                        |                                      | cardinality counts are locally      |
-    |                                        |                                      | exact; union is correct.            |
+    | ``OWLObjectMinCardinality`` (≥n r.C,   | **Cross-shard cardinality join**:    | Per-shard Pellet cannot see filler  |
+    | n≥2)                                   | 1. Obtain filler set F =             | type assertions ``C(o)`` on other   |
+    |                                        |    combined[str(C)] (bottom-up).     | shards, so it under-counts          |
+    |                                        | 2. Gather global property map        | qualifying fillers.  The cross-     |
+    |                                        |    from all shards.                  | shard join resolves fillers         |
+    |                                        | 3. Count IRI-distinct qualifying     | globally and counts on the          |
+    |                                        |    fillers per subject.              | coordinator.  Correct under UNA     |
+    |                                        | 4. Return subjects with count ≥ n.  | or with ``owl:AllDifferent``.       |
     +----------------------------------------+--------------------------------------+-------------------------------------+
-    | ``OWLObjectMaxCardinality`` (≤n r.C)   | Union per-shard Pellet results.      | Same reasoning as ≥n (n≥2): all    |
-    |                                        |                                      | of ``s``’s property assertions are  |
-    |                                        |                                      | in ``s``’s shard, so Pellet’s local |
-    |                                        |                                      | count equals the global count.      |
+    | ``OWLObjectMaxCardinality`` (≤n r.C)   | Union per-shard Pellet results.      | Under OWA, Pellet determines ≤n by  |
+    |                                        |                                      | checking whether it can prove MORE  |
+    |                                        |                                      | than n distinct fillers exist.      |
+    |                                        |                                      | CWA IRI-distinct counting would     |
+    |                                        |                                      | over-exclude subjects that Pellet   |
+    |                                        |                                      | cannot prove have too many fillers. |
+    |                                        |                                      | Per-shard union is correct because  |
+    |                                        |                                      | all property assertions are in the  |
+    |                                        |                                      | subject’s shard.                    |
     +----------------------------------------+--------------------------------------+-------------------------------------+
-    | ``OWLObjectExactCardinality`` (=n r.C) | Union per-shard Pellet results.      | Conjunction of ≥n and ≤n; same     |
-    |                                        |                                      | correctness argument as above.      |
+    | ``OWLObjectExactCardinality`` (=n r.C) | Union per-shard Pellet results.      | Conjunction of ≥n and ≤n.  The ≤n  |
+    |                                        |                                      | component requires OWA evaluation;  |
+    |                                        |                                      | per-shard union is used.            |
+    +----------------------------------------+--------------------------------------+-------------------------------------+
     +----------------------------------------+--------------------------------------+-------------------------------------+
 
     Worked example: cross-shard ∃ r.C
@@ -1067,14 +1072,12 @@ class ShardEnsembleReasoner(BaseShardReasoner):
     Soundness under OWA
     -------------------
     ``ShardEnsembleReasoner`` always operates under the Open-World Assumption.
-    No Closed-World counting or Unique-Name reasoning is performed.
-
     * **Union-based CE types** (named classes, Boolean combinators,
-      ∀ r.C, ¬C, cardinality with n≥2) — per-shard Pellet evaluates each CE
-      using the shard’s local ABox + replicated TBox.  Because class
-      assertions and property assertions for any given subject are co-located
-      in one shard, Pellet’s per-individual answer is the same as on the
-      full ontology.  The union across shards recovers the complete answer.
+      ∀ r.C, ¬C) — per-shard Pellet evaluates each CE using the shard’s
+      local ABox + replicated TBox.  Because class assertions and property
+      assertions for any given subject are co-located in one shard, Pellet’s
+      per-individual answer is the same as on the full ontology.  The union
+      across shards recovers the complete answer.
 
     * **Cross-shard join CE types** (∃ r.C, ≥1 r.C) — the coordinator
       resolves the filler set globally first, then performs a lightweight
@@ -1083,12 +1086,21 @@ class ShardEnsembleReasoner(BaseShardReasoner):
       property chains), and subject-keyed partitioning guarantees that
       every ``(s, r, o)`` triple is checked in exactly the shard of ``s``.
 
+    * **Cross-shard cardinality** (≥n r.C with n≥2) — the coordinator
+      resolves the filler set globally from the bottom-up combined results,
+      gathers the global property map from all shards, and counts
+      IRI-distinct qualifying fillers per subject.  This is necessary
+      because per-shard Pellet cannot see filler type assertions ``C(o)``
+      that reside on other shards.  Correct under UNA or with
+      ``owl:AllDifferent`` axioms.
+
+    * **Per-shard union cardinality** (≤n r.C, =n r.C) — per-shard Pellet
+      results are unioned.  CWA IRI-distinct counting would over-exclude
+      subjects under OWA (Pellet cannot prove distinctness without
+      ``owl:AllDifferent``), so per-shard evaluation is used instead.
+
     * **Nominals** ({a, b, c}) — extracted directly from the CE; no
       entailment is needed, so correctness is trivial.
-
-    If the ontology contains ``owl:AllDifferent`` axioms, they are replicated
-    in every shard via the TBox, so per-shard Pellet continues to use them
-    for cardinality reasoning.
     """
     
     def __init__(self, shards: List[ray.actor.ActorHandle], open_world: bool = False, verbose: bool = True):
@@ -1156,8 +1168,12 @@ class ShardEnsembleReasoner(BaseShardReasoner):
              ``_combine_existential_across_shards``.
            * ``OWLObjectMinCardinality`` with n=1 → cross-shard existential
              join (≥1 r.C ≡ ∃ r.C).
-           * Other cardinality types     → union per-shard Pellet results
-             (preserves OWA semantics).
+           * ``OWLObjectMinCardinality`` with n≥2 → cross-shard cardinality
+             resolution via ``_combine_cardinality_across_shards`` (globally
+             resolved filler set + global property map + IRI-distinct counting).
+           * ``OWLObjectMaxCardinality``, ``OWLObjectExactCardinality`` →
+             union per-shard Pellet results (CWA counting would over-exclude
+             under OWA).
            * Everything else             → union per-shard Pellet results.
 
         4. **Return** the combined result for the top-level CE.
@@ -1217,14 +1233,33 @@ class ShardEnsembleReasoner(BaseShardReasoner):
                 combined[ce_str] = self._combine_existential_across_shards(
                     ce_obj, combined, shard_results
                 )
-            elif isinstance(ce_obj, (OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality)):
-                # Remaining cardinality restrictions (≥n with n≥2, ≤n, =n r.C):
-                # union per-shard Pellet results to preserve OWA semantics.
-                # Pellet requires owl:AllDifferent to prove distinct role fillers;
-                # without it ≥n (n≥2) yields {} on the full ontology anyway.
-                # Subject-keyed ABox partitioning places all of a subject's
-                # property assertions in exactly one shard, so per-shard Pellet
-                # counts are locally exact and the union is correct.
+            elif isinstance(ce_obj, OWLObjectMinCardinality) and ce_obj.get_cardinality() >= 2:
+                # ≥n r.C (n≥2): cross-shard cardinality resolution.
+                # Per-shard Pellet cannot correctly count qualifying fillers
+                # because the filler type assertions C(o) may reside in
+                # different shards from the subject's property assertions
+                # r(s,o).  We resolve the filler set globally from `combined`,
+                # gather the global property map, and count IRI-distinct
+                # qualifying fillers on the coordinator.
+                #
+                # This assumes UNA (IRI-distinct ⇒ distinct) or that
+                # owl:AllDifferent axioms cover the relevant individuals.
+                combined[ce_str] = self._combine_cardinality_across_shards(
+                    ce_obj, combined, shard_results
+                )
+            elif isinstance(ce_obj, (OWLObjectMaxCardinality, OWLObjectExactCardinality)):
+                # ≤n r.C and =n r.C: union per-shard Pellet results.
+                #
+                # Under OWA, Pellet determines ≤n by checking whether it can
+                # prove MORE than n distinct fillers exist (requires
+                # owl:AllDifferent).  Cross-shard IRI-distinct counting would
+                # over-exclude subjects (treat IRI-distinct as distinct even
+                # when Pellet cannot prove it), breaking OWA semantics.
+                #
+                # Subject-keyed partitioning places all of a subject's property
+                # assertions in one shard.  Per-shard Pellet's upper-bound
+                # evaluation is locally exact w.r.t. what it can see; union
+                # across shards is correct.
                 combined[ce_str] = set()
                 for shard_res in shard_results:
                     if ce_str in shard_res:
@@ -1297,6 +1332,88 @@ class ShardEnsembleReasoner(BaseShardReasoner):
         else:
             return 0
     
+    def _combine_cardinality_across_shards(
+        self,
+        ce,  # OWLObjectMinCardinality (n>=2), OWLObjectMaxCardinality, or OWLObjectExactCardinality
+        combined: Dict[str, Set[str]],
+        shard_results: List[Dict[str, Set[str]]]
+    ) -> Set[str]:
+        """
+        Evaluate a cardinality restriction using cross-shard filler resolution.
+
+        Handles ``OWLObjectMinCardinality`` (n >= 2), ``OWLObjectMaxCardinality``,
+        and ``OWLObjectExactCardinality``.
+
+        Problem
+        -------
+        Per-shard Pellet evaluation of cardinality restrictions is **incomplete**
+        when the filler type assertions live on different shards from the subject.
+        For example, ``r(s, o)`` is in shard ``h(s)`` but ``C(o)`` is in shard
+        ``h(o)``; Pellet on ``h(s)`` cannot confirm ``o`` is of type ``C``, so it
+        under-counts qualifying fillers for ``>=n`` and over-counts for ``<=n``.
+
+        Algorithm
+        ---------
+        1. Retrieve ``filler_iris = combined[str(filler)]`` — the globally resolved
+           filler set, already computed bottom-up.
+        2. Gather the global property map for ``r`` from all shards via
+           ``_gather_property_maps``.  Subject-keyed partitioning guarantees that
+           each subject's property assertions are in exactly one shard, so the
+           merged map is globally complete.
+        3. For each individual in the universe, count qualifying fillers:
+           ``|r(s) ∩ filler_iris|``  (IRI-distinct count).
+        4. Apply the min/max constraint from the CE.
+
+        .. note::
+
+           This method counts IRI-distinct fillers as distinct individuals
+           (Unique Name Assumption).  Under OWA, this is correct when
+           ``owl:AllDifferent`` axioms cover the relevant individuals.  Without
+           such axioms, ``>=n`` (n >= 2) may over-count and ``<=n`` / ``=n`` may
+           under-count compared to single-Pellet OWA reasoning.
+
+        Args:
+            ce:            A cardinality restriction CE.
+            combined:      Bottom-up accumulated results; must already contain an
+                           entry for ``str(ce.get_filler())``.
+            shard_results: Raw per-shard intermediate dicts (unused; filler result
+                           is taken from ``combined``).
+
+        Returns:
+            Set of subject IRI strings meeting the cardinality constraint.
+        """
+        property_expr = ce.get_property()
+        filler = ce.get_filler()
+        filler_str = str(filler)
+        cardinality = ce.get_cardinality()
+
+        # Get globally resolved filler instances (already computed bottom-up)
+        filler_iris = combined.get(filler_str, set())
+
+        # Get global property map from all shards
+        prop_map = self._gather_property_maps(property_expr)
+
+        # Determine min/max based on restriction type
+        if isinstance(ce, OWLObjectMinCardinality):
+            min_count, max_count = cardinality, None
+        elif isinstance(ce, OWLObjectMaxCardinality):
+            min_count, max_count = 0, cardinality
+        else:  # ExactCardinality
+            min_count, max_count = cardinality, cardinality
+
+        # Get full universe (needed for <=n where subjects with 0 fillers qualify)
+        all_iris = self._gather_iris_from_all_shards("get_all_individual_iris")
+
+        # Count qualifying fillers per subject and apply constraint
+        result = set()
+        for subj_iri in all_iris:
+            obj_iris = prop_map.get(subj_iri, set())
+            count = len(obj_iris & filler_iris)
+            if count >= min_count and (max_count is None or count <= max_count):
+                result.add(subj_iri)
+
+        return result
+
     def _combine_existential_across_shards(
         self,
         ce,  # OWLObjectSomeValuesFrom or OWLObjectMinCardinality (n=1)
