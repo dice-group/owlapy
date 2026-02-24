@@ -1,4 +1,5 @@
-"""Class generator converter – port of the Java generateClassQuery / SparqlBuildingVisitor.
+"""Class & property generator converter – port of the Java generateClassQuery /
+generatePropertyQuery / SparqlBuildingVisitor.
 
 This module provides a subclass of :class:`Owl2SparqlConverter` that supports a
 *context position marker*.  When the marker appears in a class expression the
@@ -6,9 +7,13 @@ converter emits ``?variable a ?class .`` instead of a concrete class IRI, which
 makes it possible to generate SPARQL queries that *discover* classes rather
 than retrieving instances of a fixed class.
 
-The top-level helper :func:`owl_expression_to_class_query` mirrors
-:func:`owl_expression_to_sparql` but produces queries of the form produced by
-the Java ``Suggestor.generateClassQuery``.
+For property discovery the same marker triggers ``?variable ?prop [] .``
+(or ``[] ?prop ?variable .`` when inverted), mirroring the Java
+``Suggestor.generatePropertyQuery``.
+
+The top-level helpers :func:`owl_expression_to_class_query` and
+:func:`owl_expression_to_property_query` mirror :func:`owl_expression_to_sparql`
+but produce queries of the form produced by the Java suggestor.
 """
 
 from __future__ import annotations
@@ -79,7 +84,7 @@ def _generate_values_stmt(variable: str, individuals: Iterable[OWLNamedIndividua
 # Converter subclass
 # ---------------------------------------------------------------------------
 
-class ClassGeneratorConverter(Owl2SparqlConverter):
+class QueryGenerator(Owl2SparqlConverter):
     """Extends :class:`Owl2SparqlConverter` with *marker-aware* conversion and
     the ability to generate ``generateClassQuery``-style SPARQL queries that
     discover OWL classes with their positive/negative hit counts.
@@ -93,10 +98,13 @@ class ClassGeneratorConverter(Owl2SparqlConverter):
     added (``?class a owl:Class .``).
     """
 
-    __slots__ = (*Owl2SparqlConverter.__slots__, '_marker_mode', '_inside_filter')
+    __slots__ = (*Owl2SparqlConverter.__slots__, '_marker_mode', '_inside_filter',
+                 '_property_marker_mode', '_inverted')
 
     _marker_mode: bool
     _inside_filter: bool
+    _property_marker_mode: bool
+    _inverted: bool
 
     # -- override convert to reset extra flags --------------------------------
 
@@ -104,13 +112,20 @@ class ClassGeneratorConverter(Owl2SparqlConverter):
                 ce: OWLClassExpression,
                 for_all_de_morgan: bool = True,
                 named_individuals: bool = False,
-                marker_mode: bool = False):
-        """Like the parent ``convert`` but accepts an extra *marker_mode* flag.
+                marker_mode: bool = False,
+                property_marker_mode: bool = False,
+                inverted: bool = False):
+        """Like the parent ``convert`` but accepts extra marker flags.
 
         When *marker_mode* is ``True`` the :data:`CONTEXT_POSITION_MARKER`
-        class is treated specially (see class docstring).
+        class is treated specially – emitting ``?var a ?class .``.
+
+        When *property_marker_mode* is ``True`` the marker emits
+        ``?var ?prop [] .`` (or ``[] ?prop ?var .`` when *inverted* is ``True``).
         """
         self._marker_mode = marker_mode
+        self._property_marker_mode = property_marker_mode
+        self._inverted = inverted
         self._inside_filter = False
         return super().convert(root_variable, ce,
                                for_all_de_morgan=for_all_de_morgan,
@@ -129,9 +144,16 @@ class ClassGeneratorConverter(Owl2SparqlConverter):
 
     @process.register
     def _(self, ce: OWLClass):
-        if self._marker_mode and ce == CONTEXT_POSITION_MARKER:
-            # This is the marked position – emit ``?var a ?class .``
-            self.append(f"{self.current_variable} a ?class . ")
+        if (self._marker_mode or self._property_marker_mode) and ce == CONTEXT_POSITION_MARKER:
+            if self._property_marker_mode:
+                # Property marker – emit ``?var ?prop [] .`` or ``[] ?prop ?var .``
+                if self._inverted:
+                    self.append(f"[] ?prop {self.current_variable} . ")
+                else:
+                    self.append(f"{self.current_variable} ?prop [] . ")
+            else:
+                # Class marker – emit ``?var a ?class .``
+                self.append(f"{self.current_variable} a ?class . ")
         else:
             # Fall back to the base-class logic.
             # Inline the parent implementation because singledispatch doesn't
@@ -157,9 +179,12 @@ class ClassGeneratorConverter(Owl2SparqlConverter):
         self.process(ce.get_operand())
         self.append(" }")
 
-        # If the marker was inside this negation, add type constraint for ?class
-        if self._marker_mode and self._contains_marker(ce.get_operand()):
-            self.append(" ?class a <http://www.w3.org/2002/07/owl#Class> . ")
+        # If the marker was inside this negation, add type constraint
+        if self._contains_marker(ce.get_operand()):
+            if self._marker_mode:
+                self.append(" ?class a <http://www.w3.org/2002/07/owl#Class> . ")
+            elif self._property_marker_mode:
+                self.append(" ?prop a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> . ")
 
         self._inside_filter = old_inside
 
@@ -392,11 +417,11 @@ class ClassGeneratorConverter(Owl2SparqlConverter):
         if isinstance(ce, OWLClass):
             return ce == CONTEXT_POSITION_MARKER
         if isinstance(ce, OWLObjectComplementOf):
-            return ClassGeneratorConverter._contains_marker(ce.get_operand())
+            return QueryGenerator._contains_marker(ce.get_operand())
         if isinstance(ce, (OWLObjectIntersectionOf, OWLObjectUnionOf)):
-            return any(ClassGeneratorConverter._contains_marker(op) for op in ce.operands())
+            return any(QueryGenerator._contains_marker(op) for op in ce.operands())
         if isinstance(ce, (OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom)):
-            return ClassGeneratorConverter._contains_marker(ce.get_filler())
+            return QueryGenerator._contains_marker(ce.get_filler())
         return False
 
     # -- main query builder ---------------------------------------------------
@@ -497,12 +522,113 @@ class ClassGeneratorConverter(Owl2SparqlConverter):
         parseQuery(query)
         return query
 
+    # -- property query builder -----------------------------------------------
+
+    def as_property_query(
+        self,
+        context: OWLClassExpression,
+        positive_examples: Iterable[OWLNamedIndividual],
+        negative_examples: Iterable[OWLNamedIndividual],
+        root_variable_pos: str = "?pos",
+        root_variable_neg: str = "?neg",
+        for_all_de_morgan: bool = True,
+        named_individuals: bool = False,
+        inverted: bool = False,
+        filter_expression: Optional[OWLClassExpression] = None,
+    ) -> str:
+        """Generate a SPARQL query that discovers OWL properties with hit-counts.
+
+        The generated query mirrors the Java ``Suggestor.generatePropertyQuery``
+        (UNION pattern):
+
+        .. code-block:: sparql
+
+            SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {
+                { SELECT ?prop (COUNT(DISTINCT ?pos) AS ?tp) (0 AS ?fp) WHERE {
+                    VALUES ?pos { ... }
+                    <context pattern with ?prop at marker>
+                } GROUP BY ?prop }
+                UNION {
+                    SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT ?neg) AS ?fp) WHERE {
+                        VALUES ?neg { ... }
+                        <same pattern with ?neg>
+                    } GROUP BY ?prop
+                }
+            } GROUP BY ?prop
+
+        Args:
+            context: A class expression containing :data:`CONTEXT_POSITION_MARKER`
+                at the position where ``?var ?prop [] .`` should be injected.
+            positive_examples: Positive example individuals.
+            negative_examples: Negative example individuals.
+            root_variable_pos: Variable name for positive examples (default ``?pos``).
+            root_variable_neg: Variable name for negative examples (default ``?neg``).
+            for_all_de_morgan: Passed through to :meth:`convert`.
+            named_individuals: Passed through to :meth:`convert`.
+            inverted: If ``True``, emits ``[] ?prop ?var .`` instead of
+                ``?var ?prop [] .`` at the marker position.
+            filter_expression: Optional additional class expression for
+                ``FILTER NOT EXISTS`` on the root variable.
+
+        Returns:
+            A valid SPARQL SELECT query string.
+        """
+        # -- 1. Build positive context string ---------------------------------
+        positive_list = list(positive_examples)
+        negative_list = list(negative_examples)
+
+        values_pos = _generate_values_stmt(root_variable_pos, positive_list)
+
+        tp = self.convert(root_variable_pos, context,
+                          for_all_de_morgan=for_all_de_morgan,
+                          named_individuals=named_individuals,
+                          property_marker_mode=True,
+                          inverted=inverted)
+        context_parts = [values_pos]
+
+        if filter_expression is not None:
+            filter_tp = self.convert(root_variable_pos, filter_expression,
+                                     for_all_de_morgan=for_all_de_morgan,
+                                     named_individuals=named_individuals)
+            context_parts.append(f"FILTER NOT EXISTS {{ {''.join(filter_tp)} }} ")
+
+        context_parts.extend(tp)
+        context_string = "".join(context_parts)
+
+        # -- 2. Build negative context string (variable replacement) ----------
+        values_neg = _generate_values_stmt(root_variable_neg, negative_list)
+        neg_context = re.sub(
+            r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
+            values_neg.rstrip(". "),
+            context_string,
+        )
+        neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
+        neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
+
+        # -- 3. Assemble final query (UNION pattern) --------------------------
+        query_parts = [
+            "SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {\n",
+            "  { SELECT ?prop (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) (0 AS ?fp) WHERE {\n    ",
+            context_string,
+            "\n  } GROUP BY ?prop }\n",
+            "  UNION {\n",
+            "    SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT " + root_variable_neg + ") AS ?fp) WHERE {\n    ",
+            neg_context,
+            "\n    } GROUP BY ?prop\n",
+            "  }\n",
+            "} GROUP BY ?prop",
+        ]
+        query = "".join(query_parts)
+
+        parseQuery(query)
+        return query
+
 
 # ---------------------------------------------------------------------------
 # Module-level singleton & convenience function
 # ---------------------------------------------------------------------------
 
-class_generator_converter = ClassGeneratorConverter()
+generator = QueryGenerator()
 
 
 def owl_expression_to_class_query(
@@ -534,7 +660,7 @@ def owl_expression_to_class_query(
     Returns:
         A valid SPARQL SELECT query string.
     """
-    return class_generator_converter.as_class_query(
+    return generator.as_class_query(
         context=context,
         positive_examples=positive_examples,
         negative_examples=negative_examples,
@@ -546,6 +672,45 @@ def owl_expression_to_class_query(
     )
 
 
+def owl_expression_to_property_query(
+    context: OWLClassExpression,
+    positive_examples: Iterable[OWLNamedIndividual],
+    negative_examples: Iterable[OWLNamedIndividual],
+    root_variable_pos: str = "?pos",
+    root_variable_neg: str = "?neg",
+    for_all_de_morgan: bool = True,
+    named_individuals: bool = False,
+    inverted: bool = False,
+    filter_expression: Optional[OWLClassExpression] = None,
+) -> str:
+    """Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`
+    into a SPARQL query that discovers OWL properties and counts how many
+    positive / negative examples each property covers within the given context.
 
+    This is the Python equivalent of the Java ``Suggestor.generatePropertyQuery``.
 
+    Args:
+        context: Class expression containing :data:`CONTEXT_POSITION_MARKER`.
+        positive_examples: Positive example individuals.
+        negative_examples: Negative example individuals.
+        root_variable_pos: SPARQL variable for positives (default ``?pos``).
+        root_variable_neg: SPARQL variable for negatives (default ``?neg``).
+        for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.
+        named_individuals: Restrict to ``owl:NamedIndividual`` instances.
+        inverted: If ``True``, emits ``[] ?prop ?var .`` at the marker.
+        filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).
 
+    Returns:
+        A valid SPARQL SELECT query string.
+    """
+    return generator.as_property_query(
+        context=context,
+        positive_examples=positive_examples,
+        negative_examples=negative_examples,
+        root_variable_pos=root_variable_pos,
+        root_variable_neg=root_variable_neg,
+        for_all_de_morgan=for_all_de_morgan,
+        named_individuals=named_individuals,
+        inverted=inverted,
+        filter_expression=filter_expression,
+    )

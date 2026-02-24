@@ -22,7 +22,7 @@ from owlapy.class_expression import (
     OWLObjectIntersectionOf,
     OWLObjectSomeValuesFrom,
 )
-from owlapy.class_generator_converter import (
+from owlapy.marked_entity_generator_converter import (
     CONTEXT_POSITION_MARKER,
     owl_expression_to_class_query,
 )
