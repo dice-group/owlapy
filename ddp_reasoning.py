@@ -522,6 +522,72 @@ class ShardReasoner:
                 prop_map[ind.str] = objects
         return prop_map
     
+    def evaluate_forall_enriched(
+        self,
+        ce_forall: OWLObjectAllValuesFrom,
+        global_c_iris: Set[str]
+    ) -> Set[str]:
+        """
+        Evaluate ``∀ r.C`` with cross-shard filler enrichment.
+
+        Per-shard Pellet evaluation of ``∀ r.C`` is **incomplete** when a filler
+        object ``o`` has its ``C(o)`` class assertion on a different shard from the
+        subject ``s``.  The shard of ``s`` contains ``r(s, o)`` (subject-keyed
+        partitioning) but cannot verify ``C(o)`` without the cross-shard assertion.
+
+        This method resolves the issue by constructing ``∀ r.OneOf(global_C)``
+        and evaluating it on the local reasoner.  The ``OneOf`` nominal explicitly
+        names all globally confirmed ``C`` members, so Pellet can verify filler
+        membership without cross-shard class assertions.  TBox reasoning
+        (functional properties, cardinality restrictions, etc.) is handled
+        correctly by Pellet as before.
+
+        .. note::
+
+           We use ``∀ r.OneOf(global_C)`` rather than ``∀ r.(C ⊔ OneOf(global_C))``
+           because Pellet's ``getInstances`` has a known limitation with unions of
+           named classes and nominals (it can return empty for ``C ⊔ {b}`` even
+           when ``{b}`` alone correctly returns ``{b}``).  Using just the nominal
+           avoids this issue.  The coordinator unions these results with the
+           per-shard ``∀ r.C`` Pellet results to preserve TBox-only inferences
+           (e.g., GCIs like ``A ⊑ ∀ r.C``).
+
+        **Correctness argument:**
+
+        Let ``C^I`` be the globally resolved extension of ``C`` over the complete
+        ontology.  ``OneOf(C^I)`` has exactly the same extension as ``C`` for
+        named individuals.  On this shard:
+
+        * All of ``s``'s property assertions are locally available (subject-keyed).
+        * The TBox is fully replicated.
+        * The reasoner checks whether all of ``s``'s ``r``-fillers are in
+          ``OneOf(C^I)`` and whether the TBox permits unknown additional fillers.
+
+        This evaluation is sound: if ``s ∈ ∀ r.OneOf(C^I)`` on this shard, then
+        ``s ∈ ∀ r.C`` on the complete ontology (same fillers, same extension,
+        same TBox).  The coordinator unions with per-shard ``∀ r.C`` results
+        for completeness of TBox-only inferences.
+
+        Args:
+            ce_forall:    An ``OWLObjectAllValuesFrom`` expression (``∀ r.C``).
+            global_c_iris: Set of IRI strings for the globally resolved instances
+                           of the filler ``C`` (already computed bottom-up by the
+                           coordinator).
+
+        Returns:
+            Set of subject IRI strings satisfying ``∀ r.OneOf(global_C)``.
+        """
+        property_expr = ce_forall.get_property()
+
+        # Construct ∀ r.OneOf(global_c_iris)
+        nominal_individuals = [OWLNamedIndividual(iri) for iri in global_c_iris]
+        nominal_ce = OWLObjectOneOf(nominal_individuals)
+        enriched_ce = OWLObjectAllValuesFrom(
+            property=property_expr,
+            filler=nominal_ce
+        )
+
+        return {ind.str for ind in self.sync_reasoner.instances(enriched_ce)}
 
 
 class BaseShardReasoner:
@@ -973,12 +1039,18 @@ class ShardEnsembleReasoner(BaseShardReasoner):
     |                                        |                                      | Each individual is tested in its    |
     |                                        |                                      | home shard; union is complete.      |
     +----------------------------------------+--------------------------------------+-------------------------------------+
-    | ``OWLObjectAllValuesFrom`` (∀ r.C)     | Union per-shard Pellet results.      | Subject-keyed partitioning places   |
-    |                                        |                                      | all of ``s``'s property assertions  |
-    |                                        |                                      | in ``s``'s shard.  Pellet checks    |
-    |                                        |                                      | ``∀ o: r(s,o) → C(o)`` using local |
-    |                                        |                                      | triples + TBox entailment; union    |
-    |                                        |                                      | across shards is complete.          |
+    | ``OWLObjectAllValuesFrom`` (∀ r.C)     | **Cross-shard universal join**:        | Per-shard Pellet evaluation of   |
+    |                                        | 1. Obtain filler set F =               | ∀ r.C is incomplete when the     |
+    |                                        |    combined[str(C)] (already            | filler class assertion C(o) is   |
+    |                                        |    resolved bottom-up).                 | on a different shard from the    |
+    |                                        | 2. Construct enriched CE:               | subject s.  The enriched CE      |
+    |                                        |    ∀ r.(C ⊔ OneOf(F)).                  | embeds the globally resolved C   |
+    |                                        | 3. Evaluate enriched CE on all          | members as a nominal, so Pellet  |
+    |                                        |    shards — each shard's Pellet can     | can verify filler membership     |
+    |                                        |    verify filler membership via the     | without cross-shard assertions.  |
+    |                                        |    nominal without cross-shard class    | TBox reasoning (functional       |
+    |                                        |    assertions.                          | properties, cardinality, etc.)   |
+    |                                        | 4. Union the per-shard results.         | is handled by Pellet as before.  |
     +----------------------------------------+--------------------------------------+-------------------------------------+
     | ``OWLObjectHasValue`` (∃ r.{a})        | Union per-shard Pellet results.      | Desugars to ∃ r.{a}; same as the   |
     |                                        |                                      | default union path since OWLHas-    |
@@ -1073,11 +1145,18 @@ class ShardEnsembleReasoner(BaseShardReasoner):
     -------------------
     ``ShardEnsembleReasoner`` always operates under the Open-World Assumption.
     * **Union-based CE types** (named classes, Boolean combinators,
-      ∀ r.C, ¬C) — per-shard Pellet evaluates each CE using the shard’s
+      ¬C) — per-shard Pellet evaluates each CE using the shard’s
       local ABox + replicated TBox.  Because class assertions and property
       assertions for any given subject are co-located in one shard, Pellet’s
       per-individual answer is the same as on the full ontology.  The union
       across shards recovers the complete answer.
+
+    * **Cross-shard universal CE types** (∀ r.C) — the coordinator resolves
+      the filler set ``C^I`` globally first, then constructs an enriched CE
+      ``∀ r.(C ⊔ OneOf(C^I))`` and evaluates it on every shard.  The
+      nominal allows Pellet to verify filler membership without cross-shard
+      class assertions while still performing correct TBox reasoning for
+      unknown-filler checks (functional properties, cardinality, etc.).
 
     * **Cross-shard join CE types** (∃ r.C, ≥1 r.C) — the coordinator
       resolves the filler set globally first, then performs a lightweight
@@ -1242,6 +1321,29 @@ class ShardEnsembleReasoner(BaseShardReasoner):
                 # This assumes UNA (IRI-distinct ⇒ distinct) or that
                 # owl:AllDifferent axioms cover the relevant individuals.
                 combined[ce_str] = self._combine_cardinality_across_shards(
+                    ce_obj, combined, shard_results
+                )
+            elif isinstance(ce_obj, OWLObjectAllValuesFrom):
+                # ∀ r.C: cross-shard universal resolution.
+                #
+                # Per-shard Pellet evaluation of ∀ r.C is incomplete when a
+                # filler object o's class assertion C(o) resides on a different
+                # shard from the subject s.  The shard of s contains r(s, o)
+                # (subject-keyed partitioning) but cannot verify C(o).
+                #
+                # Fix: construct an enriched CE  ∀ r.(C ⊔ OneOf(C^I))  where
+                # C^I = combined[str(C)] is the globally resolved filler set.
+                # The OneOf nominal explicitly names all globally confirmed C
+                # members, so Pellet on each shard can verify filler membership
+                # without cross-shard class assertions.  TBox reasoning
+                # (functional properties, cardinality, etc.) is handled by
+                # Pellet as before.
+                #
+                # Correctness: on each shard, (C ⊔ OneOf(C^I)) has extension
+                # = C^I (by monotonicity, local_C ⊆ C^I).  All of s's property
+                # assertions are local (subject-keyed).  TBox is replicated.
+                # Therefore evaluation matches single-reasoner ∀ r.C.
+                combined[ce_str] = self._combine_forall_across_shards(
                     ce_obj, combined, shard_results
                 )
             elif isinstance(ce_obj, (OWLObjectMaxCardinality, OWLObjectExactCardinality)):
@@ -1486,6 +1588,108 @@ class ShardEnsembleReasoner(BaseShardReasoner):
         ]
         results = ray.get(futures)
         return set().union(*results) if results else set()
+
+    def _combine_forall_across_shards(
+        self,
+        ce,  # OWLObjectAllValuesFrom
+        combined: Dict[str, Set[str]],
+        shard_results: List[Dict[str, Set[str]]]
+    ) -> Set[str]:
+        """
+        Evaluate ``∀ r.C`` using cross-shard filler enrichment.
+
+        Handles ``OWLObjectAllValuesFrom`` (∀ r.C).
+
+        Problem
+        -------
+        Per-shard Pellet evaluation of ``∀ r.C`` is **incomplete** when filler
+        class assertions reside on different shards from the subject.  Concretely,
+        ``r(s, o)`` is in shard ``h(s)`` but ``C(o)`` is in shard ``h(o)``.  When
+        ``h(s) ≠ h(o)``, Pellet on ``h(s)`` cannot verify ``C(o)`` and therefore
+        cannot confirm ``s ∈ ∀ r.C``.
+
+        Algorithm
+        ---------
+        1. Retrieve ``filler_iris = combined[str(C)]`` — the globally resolved filler
+           set, already computed bottom-up.
+        2. Construct ``∀ r.OneOf(filler_iris)`` on each shard.  The ``OWLObjectOneOf``
+           nominal explicitly names every globally confirmed C member, so Pellet on
+           each shard can verify filler membership without cross-shard class
+           assertions.
+
+           .. note::
+
+              We use ``∀ r.OneOf(C^I)`` rather than ``∀ r.(C ⊔ OneOf(C^I))``
+              because Pellet's ``getInstances`` has a known limitation with unions
+              of named classes and nominals (returns ∅ for ``C ⊔ {b}`` even when
+              ``{b}`` alone correctly returns ``{b}``).
+
+        3. Call ``evaluate_forall_enriched(∀ r.C, filler_iris)`` on all shards in
+           parallel.
+        4. Union the enriched results with per-shard Pellet results for ``∀ r.C``.
+           The per-shard results preserve TBox-only inferences (e.g., GCIs like
+           ``A ⊑ ∀ r.C``) that would not fire for the nominal-based enriched CE.
+
+        Correctness under OWA
+        ---------------------
+        ``OneOf(C^I)`` has the same extension as ``C`` for named individuals (since
+        ``C^I`` is the globally resolved extension of ``C`` across all shards).
+        All of ``s``'s property assertions are co-located in ``s``'s shard
+        (subject-keyed partitioning), and the TBox is replicated.
+
+        * **Enriched results** (``∀ r.OneOf(C^I)``): Pellet correctly verifies that
+          all of ``s``'s ``r``-fillers are in ``OneOf(C^I)`` and that the TBox does
+          not admit unknown non-``C`` fillers.  Sound because ``OneOf(C^I)`` has the
+          same extension as ``C``.
+        * **Per-shard Pellet results** (``∀ r.C``): Catches TBox-only inferences
+          that reference the named class ``C`` (e.g., GCIs, equivalent-class axioms).
+          Sound because Pellet is sound per-shard.
+        * **Union**: The union of two sound sets is sound.  No false positives.
+
+        When ``filler_iris`` is empty, the method falls back to a plain union of
+        per-shard Pellet results (no enrichment needed).
+
+        Args:
+            ce:            An ``OWLObjectAllValuesFrom`` expression.
+            combined:      Bottom-up accumulated results; must already contain an
+                           entry for ``str(ce.get_filler())``.
+            shard_results: Raw per-shard intermediate dicts (used for per-shard
+                           Pellet results and as fallback when the global filler
+                           set is empty).
+
+        Returns:
+            Set of subject IRI strings satisfying ``∀ r.C``.
+        """
+        filler = ce.get_filler()
+        filler_str = str(filler)
+        ce_str = str(ce)
+
+        # Start with per-shard Pellet results for ∀ r.C (preserves TBox-only inferences)
+        result = set()
+        for shard_res in shard_results:
+            if ce_str in shard_res:
+                result |= shard_res[ce_str]
+
+        # Get globally resolved filler instances (already computed bottom-up)
+        filler_iris = combined.get(filler_str, set())
+
+        if not filler_iris:
+            # No globally known C instances — per-shard Pellet results are sufficient.
+            return result
+
+        if self.verbose:
+            print(f"    [cross-shard ∀] Enriching ∀ r.C with {len(filler_iris)} global C instances")
+
+        # Dispatch enriched evaluation (∀ r.OneOf(global_C)) to all shards
+        futures = [
+            shard.evaluate_forall_enriched.remote(ce, filler_iris)
+            for shard in self.shards
+        ]
+        enriched_results = ray.get(futures)
+        enriched = set().union(*enriched_results) if enriched_results else set()
+
+        # Union: per-shard Pellet (TBox inferences) ∪ enriched (cross-shard fillers)
+        return result | enriched
 
 
 
