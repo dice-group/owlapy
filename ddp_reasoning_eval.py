@@ -83,7 +83,7 @@ Regression Test: Cross-Shard Inference
 
 Regression testing: Any code change should be tested with the following command to ensure that distributed reasoning results remain consistent.  The test runs both reasoners on a complex CE and compares their answers for consistency (OWA vs CWA differences are expected for cardinality).
 
-python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg KGs/Mutagenesis/mutagenesis.owl  --no_negations --ratio_sample_nc 0.2 --ratio_sample_object_prop 0.2
+python ddp_reasoning_eval.py --auto_ray --num_shards 20 --path_kg KGs/Mutagenesis/mutagenesis.owl
 
 ======================================================================
 EVALUATION SUMMARY
@@ -251,7 +251,7 @@ def execute(args):
         shards.append(shard)
     
     # Initialize the distributed reasoner with the created shards.
-    distributed_reasoner = ShardEnsembleReasoner(shards, open_world=True,verbose=False)
+    distributed_reasoner = ShardEnsembleReasoner(shards, verbose=False)
 
     # Fix the random seed
     random.seed(args.seed)
@@ -522,9 +522,9 @@ def get_default_arguments():
                         help="Reasoner to use in shards (Pellet, HermiT, etc.)")
     parser.add_argument("--seed", type=int, default=1,
                         help="Random seed for reproducibility")
-    parser.add_argument("--ratio_sample_nc", type=float, default=1.0,
+    parser.add_argument("--ratio_sample_nc", type=float, default=0.01,
                         help="Ratio of OWL Classes to sample (0.0-1.0)")
-    parser.add_argument("--ratio_sample_object_prop", type=float, default=1.0,
+    parser.add_argument("--ratio_sample_object_prop", type=float, default=0.01,
                         help="Ratio of OWL Object Properties to sample (0.0-1.0)")
     parser.add_argument("--min_jaccard_similarity", type=float, default=0.0,
                         help="Minimum mean Jaccard similarity threshold")

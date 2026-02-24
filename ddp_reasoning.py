@@ -1103,7 +1103,7 @@ class ShardEnsembleReasoner(BaseShardReasoner):
       entailment is needed, so correctness is trivial.
     """
     
-    def __init__(self, shards: List[ray.actor.ActorHandle], open_world: bool = False, verbose: bool = True):
+    def __init__(self, shards: List[ray.actor.ActorHandle], verbose: bool = True):
         """
         Initialise a ShardEnsembleReasoner.
 
@@ -1116,13 +1116,10 @@ class ShardEnsembleReasoner(BaseShardReasoner):
             shards:     List of ShardReasoner Ray actor handles, one per ontology
                         partition.  Each shard must hold the complete TBox and a
                         disjoint ABox subset.
-            open_world: Forwarded to ``BaseShardReasoner.__init__`` but has
-                        **no effect** on ``ShardEnsembleReasoner.instances``, which
-                        always uses the cross-shard bottom-up path.
             verbose:    If True, print progress messages for each CE component
                         being processed (useful for debugging).
         """
-        super().__init__(shards, open_world=open_world, verbose=verbose)
+        super().__init__(shards, open_world=True, verbose=verbose)
         self.verbose = verbose
         # Propagate verbose flag to all shard actors
         ray.get([s.set_verbose.remote(verbose) for s in shards])
