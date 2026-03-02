@@ -1262,7 +1262,7 @@ class SyncReasoner(AbstractOWLReasoner):
             }  
         }
         ```
-        
+
         Args:
             n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.
             save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.
@@ -1308,12 +1308,11 @@ class SyncReasoner(AbstractOWLReasoner):
             j_explanations = explanation_gen.getExplanations(j_manager.getOWLDataFactory().getOWLThing())
 
         if not j_explanations:
-            print(
+            logger.info(
                 "No justifications found for inconsistency by checking against owl:Thing. Retrying with other class expressions."
             )
             # Retry by getting explanations for any class expression in an axiom (e.g., class assertion)
             from org.semanticweb.owlapi.model.parameters import Imports
-            from org.semanticweb.owlapi.model import OWLClassAssertionAxiom
             # Get the converter too since we might need to convert some axioms into class expressions
             from com.clarkparsia.owlapi.explanation import SatisfiabilityConverter
             j_axioms = j_ontology.getAxioms(Imports.INCLUDED)
@@ -1337,7 +1336,7 @@ class SyncReasoner(AbstractOWLReasoner):
                     j_explanations = [set(j_expl) | {j_axiom} for j_expl in j_explanations]
                     break
         if not j_explanations:
-            print(
+            logger.info(
                 "No justifications found for inconsistency by checking against any class expression in axioms. This might be due to the reasoner not supporting inconsistency justification."
             )
 
