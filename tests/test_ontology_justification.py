@@ -149,6 +149,33 @@ class TestCreateJustifications(unittest.TestCase):
         for justification in justifications:
             self.assertIsInstance(justification, set)
 
+    def test_axiom_justification(self):
+        F1F3_Daughter = OWLClassAssertionAxiom(
+            individual=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F3')),
+            class_expression=OWLClass(IRI('http://www.benchmark.org/family#', 'Daughter')),
+            annotations=[]
+        )
+        F1F3_Child = OWLClassAssertionAxiom(
+            individual=OWLNamedIndividual(IRI('http://www.benchmark.org/family#', 'F1F3')),
+            class_expression=OWLClass(IRI('http://www.benchmark.org/family#', 'Child')),
+            annotations=[]
+        )
+        self.assertNotIn(F1F3_Child, set(self.ontology.get_abox_axioms()), "Axiom already present in ontology needs not be justified.")
+        try:
+            justifications = self.reasoner.create_axiom_justifications(F1F3_Child, None, save=False)
+        except Exception as e:
+            if not isinstance(e, NotImplementedError):
+                raise RuntimeError(f"Unexpected exception during axiom justification: {e}")
+        target_justification = {F1F3_Daughter, OWLSubClassOfAxiom(
+            sub_class=OWLClass(IRI('http://www.benchmark.org/family#', 'Daughter')),
+            super_class=OWLClass(IRI('http://www.benchmark.org/family#', 'Child')),
+            annotations=[])}
+        for i, justification in enumerate(justifications):
+            print(f"Justification {i + 1}:")
+            for axiom in justification:
+                print(f"  {axiom}")
+        # Check that the expected justification is among the generated justifications
+        self.assertIn(target_justification, justifications, "Expected justification not found among generated justifications.")
 
 if __name__ == "__main__":
     unittest.main()
