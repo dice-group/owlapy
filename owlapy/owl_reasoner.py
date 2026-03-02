@@ -1182,7 +1182,7 @@ class SyncReasoner(AbstractOWLReasoner):
         explanation_gen = HSTExplanationGenerator(blackbox_exp)
 
         justifications = []
-        if not n_max_justifications is None and not isinstance(
+        if n_max_justifications is not None and not isinstance(
             n_max_justifications, int
         ):
             raise ValueError(
