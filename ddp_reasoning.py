@@ -522,6 +522,51 @@ class ShardReasoner:
                 prop_map[ind.str] = objects
         return prop_map
     
+    def get_property_chains(self, property_iri: str) -> List[List[str]]:
+        """
+        Return all property chains that derive the given property.
+
+        Reads ``owl:propertyChainAxiom`` (``SubObjectPropertyOf(
+        ObjectPropertyChain(...), p)``) axioms directly from the OWLAPI
+        ontology object.  Because the TBox is replicated on every shard,
+        any shard can answer this query.
+
+        This is used by ``ShardEnsembleReasoner._combine_existential_across_shards``
+        to detect when a cross-shard existential join must be expanded into a
+        cascaded multi-hop join to handle property chains that are fractured
+        across shard boundaries.
+
+        Example: chain axiom  ``r o s → t``  is returned as  ``[["…#r", "…#s"]]``
+        when called with ``property_iri = "…#t"``.
+
+        Args:
+            property_iri: The IRI string of the super-property (derived
+                          property) whose chain axioms are to be retrieved.
+
+        Returns:
+            A list of chains.  Each chain is a list of property IRI strings
+            ``[p1, p2, …, pn]`` such that ``p1 o p2 o … o pn → property_iri``
+            is an axiom in the ontology.  Returns an empty list if no chain
+            axioms exist for the property (or if OWLAPI access fails).
+        """
+        try:
+            from org.semanticweb.owlapi.model import AxiomType
+            j_ontology = self.sync_reasoner._owlapi_ontology
+            j_axioms = j_ontology.getAxioms(AxiomType.SUB_PROPERTY_CHAIN_OF)
+            chains = []
+            for axiom in j_axioms:
+                super_prop = axiom.getSuperProperty()
+                if not super_prop.isAnonymous():
+                    sup_iri = str(super_prop.getIRI())
+                    if sup_iri == property_iri:
+                        chain = [str(pe.getIRI()) for pe in axiom.getPropertyChain()]
+                        chains.append(chain)
+            return chains
+        except Exception as e:
+            if self.verbose:
+                print(f"    [{self.shard_id}] Warning: could not read property chains: {e}")
+            return []
+
     def evaluate_forall_enriched(
         self,
         ce_forall: OWLObjectAllValuesFrom,
@@ -1587,7 +1632,47 @@ class ShardEnsembleReasoner(BaseShardReasoner):
             for shard in self.shards
         ]
         results = ray.get(futures)
-        return set().union(*results) if results else set()
+        direct_result = set().union(*results) if results else set()
+
+        # --- Property-chain expansion ---
+        # A property axiom  p1 o p2 o ... o pn → prop  is a TBox axiom
+        # replicated on every shard.  When the chain steps span multiple shards
+        # (e.g., shard-0 has r(a,b) and shard-1 has s(b,c)), no single shard can
+        # infer the derived property, so the per-shard join above returns {}.
+        #
+        # Fix: read the chains from any shard (TBox is the same everywhere) and
+        # resolve them entirely at the coordinator by doing a cascaded cross-shard
+        # join — one hop per chain step, walking backwards from the filler set.
+        #
+        # For chain [p1, p2, ..., pn] and filler set F:
+        #   F_n   = F
+        #   F_n-1 = cross_shard_join(pn,   F_n)
+        #   F_n-2 = cross_shard_join(p_n-1, F_n-1)
+        #   ...
+        #   F_0   = cross_shard_join(p1,   F_1)   ← these are the final subjects
+        chains_future = self.shards[0].get_property_chains.remote(prop_iri)
+        chains = ray.get(chains_future)
+
+        chain_result: Set[str] = set()
+        for chain in chains:
+            if not chain:
+                continue
+            if self.verbose:
+                print(f"    [chain-expand] Resolving chain {chain} → {prop_iri}")
+            # Walk backwards through the chain, starting from filler_iris
+            current_objects = filler_iris
+            for step_iri in reversed(chain):
+                hop_futures = [
+                    shard.get_object_property_subjects.remote(step_iri, False, current_objects)
+                    for shard in self.shards
+                ]
+                hop_results = ray.get(hop_futures)
+                current_objects = set().union(*hop_results) if hop_results else set()
+                if not current_objects:
+                    break  # No subjects found at this hop; skip remaining steps
+            chain_result |= current_objects
+
+        return direct_result | chain_result
 
     def _combine_forall_across_shards(
         self,

@@ -42,11 +42,22 @@ def shard_ontology(ontology_path: str, num_shards: int, output_dir: str = None):
     print(f"Loading ontology: {source}")
     onto = SyncOntology(str(source))
     
-    # Get TBox and ABox axioms directly
+    # Get all axioms via OWLAPI and classify into ABox vs rest.
+    # We bypass the owlapy mapper here because it cannot represent every axiom
+    # type (e.g. OWLSubPropertyChainOfAxiom / RBox axioms are unsupported), so
+    # calling onto.get_tbox_axioms() silently drops them.
+    j_onto_api = onto.get_owlapi_ontology()
+    j_manager_src = onto.owlapi_manager
+    from org.semanticweb.owlapi.model.parameters import Imports
+    j_abox_set = set(j_onto_api.getABoxAxioms(Imports.INCLUDED))
+    # Non-ABox axioms: TBox + RBox + Declarations (everything that is not ABox)
+    j_non_abox_axioms = [ax for ax in j_onto_api.getAxioms() if ax not in j_abox_set]
+
+    # ABox partitioning at the Python/owlapy level (works fine for all ABox types)
     tbox_axioms = list(onto.get_tbox_axioms())
     abox_axioms = list(onto.get_abox_axioms())
     
-    print(f"TBox axioms: {len(tbox_axioms)}")
+    print(f"TBox axioms: {len(tbox_axioms)} (owlapy-mapped); Non-ABox OWLAPI axioms (copied to all shards): {len(j_non_abox_axioms)}")
     print(f"ABox axioms: {len(abox_axioms)}")
     
     # Get all individuals and partition them
@@ -91,12 +102,16 @@ def shard_ontology(ontology_path: str, num_shards: int, output_dir: str = None):
         from owlapy.iri import IRI
         shard_iri = IRI.create(f"{base_iri}/shard/{i}")
         shard_onto = SyncOntology(shard_iri, load=False)
-        
-        # Add all TBox axioms
-        for axiom in tbox_axioms:
-            shard_onto.add_axiom(axiom)
-        
-        # Add this shard's ABox axioms
+        j_shard_ont = shard_onto.get_owlapi_ontology()
+        j_shard_manager = shard_onto.owlapi_manager
+
+        # Add all non-ABox axioms (TBox + RBox + Declarations) directly via
+        # OWLAPI to avoid axiom-type gaps in the owlapy mapper (e.g. property
+        # chain axioms are in the RBox and are not mapped by owlapy).
+        for j_ax in j_non_abox_axioms:
+            j_shard_manager.addAxiom(j_shard_ont, j_ax)
+
+        # Add this shard's ABox axioms (owlapy mapper handles these fine)
         for axiom in shard_abox[i]:
             shard_onto.add_axiom(axiom)
         
