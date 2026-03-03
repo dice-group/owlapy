@@ -45,8 +45,10 @@ CLI Arguments
                   When not set, the script connects to an existing Ray cluster
                   started via `ray start --head ...`.
   --seed          Random seed for reproducibility (default: 1).
-  --ratio_sample_nc            Ratio of OWL Classes to sample (0.0-1.0).
-  --ratio_sample_object_prop   Ratio of OWL Object Properties to sample (0.0-1.0).
+  --ratio_sample_nc            Ratio of OWL Classes to sample without replacement
+                               (0.0-1.0). None (default) = no sampling.
+  --ratio_sample_object_prop   Ratio of OWL Object Properties to sample without
+                               replacement (0.0-1.0). None (default) = no sampling.
   --min_jaccard_similarity     Minimum mean Jaccard similarity threshold.
   --num_nominals  Number of OWL named individuals to sample for nominals.
   --path_report   Path to save the evaluation results CSV.
@@ -522,10 +524,12 @@ def get_default_arguments():
                         help="Reasoner to use in shards (Pellet, HermiT, etc.)")
     parser.add_argument("--seed", type=int, default=1,
                         help="Random seed for reproducibility")
-    parser.add_argument("--ratio_sample_nc", type=float, default=0.01,
-                        help="Ratio of OWL Classes to sample (0.0-1.0)")
-    parser.add_argument("--ratio_sample_object_prop", type=float, default=0.01,
-                        help="Ratio of OWL Object Properties to sample (0.0-1.0)")
+    parser.add_argument("--ratio_sample_nc", type=float, default=None,
+                        help="Ratio of OWL Classes to sample without replacement (0.0-1.0). "
+                             "None (default) means no sampling — all classes are used.")
+    parser.add_argument("--ratio_sample_object_prop", type=float, default=None,
+                        help="Ratio of OWL Object Properties to sample without replacement (0.0-1.0). "
+                             "None (default) means no sampling — all properties are used.")
     parser.add_argument("--min_jaccard_similarity", type=float, default=0.0,
                         help="Minimum mean Jaccard similarity threshold")
     parser.add_argument("--num_nominals", type=int, default=10,
