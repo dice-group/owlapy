@@ -368,19 +368,21 @@ def execute(args):
         return {i.str for i in retriever_func.instances(c)}, time.time() - start_time
     
     # Collect concepts for evaluation
-    concepts = list(
-        chain(
-            nc,                           # named concepts (C)
-            nnc,                          # negated named concepts (¬C)
-            unions_nc_star,               # NC* UNION NC*
-            intersections_nc_star,        # NC* INTERSECTION NC*
-            exist_nc_star,                # ∃ r.C
-            for_all_nc_star,              # ∀ r.C
-            min_cardinality_nc_star_1, min_cardinality_nc_star_2, min_cardinality_nc_star_3,
-            max_cardinality_nc_star_1, max_cardinality_nc_star_2, max_cardinality_nc_star_3,
-            exist_nominals
-        )
-    )
+    eval_chains = [
+        nc,                           # named concepts (C)
+        nnc,                          # negated named concepts (¬C)
+        unions_nc_star,               # NC* UNION NC*
+        intersections_nc_star,        # NC* INTERSECTION NC*
+        exist_nc_star,                # ∃ r.C
+    ]
+    if not args.no_universal:
+        eval_chains.append(for_all_nc_star)  # ∀ r.C
+    eval_chains.extend([
+        min_cardinality_nc_star_1, min_cardinality_nc_star_2, min_cardinality_nc_star_3,
+        max_cardinality_nc_star_1, max_cardinality_nc_star_2, max_cardinality_nc_star_3,
+        exist_nominals
+    ])
+    concepts = list(chain(*eval_chains))
     
     print("\n")
     print("#" * 50)
@@ -408,18 +410,31 @@ def execute(args):
     # Iterate over OWL Class Expressions
     for expression in (tqdm_bar := tqdm(concepts, position=0, leave=True)):
         try:
+            dl_str = owl_expression_to_dl(expression)
+            
+            if args.verbose:
+                print(f"\n>>> [{type(expression).__name__}] {dl_str}", flush=True)
+                print(f"    GT  ...", end="", flush=True)
+                
             # Retrieve ground truth results
             retrieval_y, runtime_y = concept_retrieval(symbolic_kb, expression)
-
+            
+            if args.verbose:
+                print(f" {len(retrieval_y)} instances in {runtime_y:.3f}s", flush=True)
+                print(f"    DIST...", end="", flush=True)
+                
             # Retrieve distributed reasoner results
             retrieval_distributed_y, runtime_distributed_y = concept_retrieval(distributed_reasoner, expression)
+            
+            if args.verbose:
+                print(f" {len(retrieval_distributed_y)} instances in {runtime_distributed_y:.3f}s", flush=True)
 
             # Compute similarity metrics
             jaccard_sim = jaccard_similarity(retrieval_y, retrieval_distributed_y)
             f1_sim = f1_set_similarity(retrieval_y, retrieval_distributed_y)
 
             data.append({
-                "Expression": owl_expression_to_dl(expression),
+                "Expression": dl_str,
                 "Type": type(expression).__name__,
                 "Jaccard Similarity": jaccard_sim,
                 "F1": f1_sim,
@@ -433,11 +448,11 @@ def execute(args):
 
             # Update progress bar
             tqdm_bar.set_description_str(
-                f"Expression: {owl_expression_to_dl(expression)[:40]}... | Jaccard:{jaccard_sim:.4f} | F1:{f1_sim:.4f} | Speedup:{runtime_y/max(runtime_distributed_y, 1e-6):.2f}x"
+                f"Expression: {dl_str[:40]}... | Jaccard:{jaccard_sim:.4f} | F1:{f1_sim:.4f} | Speedup:{runtime_y/max(runtime_distributed_y, 1e-6):.2f}x"
             )
 
         except Exception as e:
-            print(f"\nError processing expression {owl_expression_to_dl(expression)}: {e}")
+            print(f"\nError processing expression {dl_str}: {e}")
             continue
 
     # Build dataframe from collected results and write CSV once (avoids header/append race)
@@ -538,6 +553,10 @@ def get_default_arguments():
                         help="Path to save the evaluation results CSV")
     parser.add_argument("--no_negations", action="store_true",
                         help="Exclude negation-based expressions (¬C, ∀r.C) from evaluation")
+    parser.add_argument("--no_universal", action="store_true",
+                        help="Exclude universal restrictions (∀r.C) from evaluation")
+    parser.add_argument("--verbose", action="store_true",
+                        help="Print step-by-step progress and timing for each class expression")
     parser.add_argument(
         "--cross_shard", action="store_true", default=False,
         help="Use ShardEnsembleReasoner for open-world distributed reasoning (default: BaseShardReasoner)",
