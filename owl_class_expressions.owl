@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xml:base="https://ontolearn.org/predictions"
+         xmlns="https://ontolearn.org/predictions#">
+
+<owl:Ontology rdf:about="https://ontolearn.org/predictions"/>
+
+<owl:ObjectProperty rdf:about="http://example.com/society#hasChild"/>
+
+<owl:Class rdf:about="#0">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+  <owl:equivalentClass rdf:resource="http://example.com/society#male"/>
+</owl:Class>
+
+<owl:Class rdf:about="http://example.com/society#male">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+  <owl:equivalentClass rdf:resource="#0"/>
+</owl:Class>
+
+<owl:Class rdf:about="#1">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+  <owl:equivalentClass>
+    <owl:Class>
+      <owl:intersectionOf rdf:parseType="Collection">
+        <owl:Restriction>
+          <owl:onProperty rdf:resource="http://example.com/society#hasChild"/>
+          <owl:someValuesFrom rdf:resource="http://example.com/society#male"/>
+        </owl:Restriction>
+        <rdf:Description rdf:about="http://example.com/society#teacher"/>
+      </owl:intersectionOf>
+    </owl:Class>
+  </owl:equivalentClass>
+</owl:Class>
+
+<owl:Class rdf:about="http://example.com/society#teacher">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+
+</rdf:RDF>

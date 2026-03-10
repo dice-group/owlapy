@@ -1923,6 +1923,36 @@ class NeuralOntology(AbstractOWLOntology):
         else:
             topk = len(self.model.entity_to_idx)
 
+        # Filter out unknown relations; return empty list (0 scores) if none remain
+        if r is not None:
+            if isinstance(r, str):
+                if r not in self.model.relation_to_idx:
+                    return []
+            else:
+                r = [ri for ri in r if ri in self.model.relation_to_idx]
+                if not r:
+                    return []
+
+        # Filter out unknown head entities; return empty list (0 scores) if none remain
+        if h is not None:
+            if isinstance(h, str):
+                if h not in self.model.entity_to_idx:
+                    return []
+            else:
+                h = [hi for hi in h if hi in self.model.entity_to_idx]
+                if not h:
+                    return []
+
+        # Filter out unknown tail entities; return empty list (0 scores) if none remain
+        if t is not None:
+            if isinstance(t, str):
+                if t not in self.model.entity_to_idx:
+                    return []
+            else:
+                t = [ti for ti in t if ti in self.model.entity_to_idx]
+                if not t:
+                    return []
+
         return [(top_entity, score) for row in
                 self.model.predict_topk(h=h, r=r, t=t, topk=topk, batch_size=self.batch_size) for top_entity, score in
                 row if score >= self.gamma and is_valid_entity(top_entity)]
