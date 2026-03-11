@@ -72,6 +72,7 @@ Classes
    owlapy.owl_axiom.OWLDataPropertyDomainAxiom
    owlapy.owl_axiom.OWLObjectPropertyRangeAxiom
    owlapy.owl_axiom.OWLDataPropertyRangeAxiom
+   owlapy.owl_axiom.OWLSubPropertyChainAxiom
 
 
 Module Contents
@@ -1448,5 +1449,39 @@ Module Contents
    .. py:attribute:: __slots__
       :value: ()
 
+
+
+.. py:class:: OWLSubPropertyChainAxiom(property_chain: Sequence[owlapy.owl_property.OWLObjectPropertyExpression], super_property: owlapy.owl_property.OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None)
+
+   Bases: :py:obj:`OWLObjectPropertyAxiom`
+
+
+   An object property subproperty chain axiom SubObjectPropertyOf( ObjectPropertyChain( OPE1 ... OPEn ) OPE )
+   states that the object property expression formed by chaining OPE1 to OPEn is a subproperty of the object
+   property expression OPE — that is, if an individual x is connected by OPE1 to an individual y1 that is
+   connected by OPE2 to an individual y2 that is connected by OPE3 to ... that is connected by OPEn to an
+   individual z, then x is also connected by OPE to z.
+
+    (https://www.w3.org/TR/owl2-syntax/#Object_Subproperties)
+
+
+   .. py:attribute:: __slots__
+      :value: ('_property_chain', '_super_property')
+
+
+
+   .. py:method:: get_super_property() -> _P
+
+
+   .. py:method:: get_property_chain() -> Sequence[owlapy.owl_property.OWLObjectPropertyExpression]
+
+
+   .. py:method:: __eq__(other)
+
+
+   .. py:method:: __hash__()
+
+
+   .. py:method:: __repr__()
 
 

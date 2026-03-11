@@ -425,6 +425,15 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLDataPropertyRangeAxiom.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLDataPropertyRangeAxiom.__slots__</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom"><code class="docutils literal notranslate"><span class="pre">OWLSubPropertyChainAxiom</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLSubPropertyChainAxiom.__slots__</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.get_super_property"><code class="docutils literal notranslate"><span class="pre">OWLSubPropertyChainAxiom.get_super_property()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.get_property_chain"><code class="docutils literal notranslate"><span class="pre">OWLSubPropertyChainAxiom.get_property_chain()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLSubPropertyChainAxiom.__eq__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLSubPropertyChainAxiom.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLSubPropertyChainAxiom.__repr__()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -438,10 +447,12 @@
 <li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scripts/index.html">owlapy.scripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
@@ -660,6 +671,9 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLDataPropertyRangeAxiom" title="owlapy.owl_axiom.OWLDataPropertyRangeAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDataPropertyRangeAxiom</span></code></a></p></td>
 <td><p>A data property range axiom DataPropertyRange( DPE DR ) states that the range of the data property</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom" title="owlapy.owl_axiom.OWLSubPropertyChainAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLSubPropertyChainAxiom</span></code></a></p></td>
+<td><p>An object property subproperty chain axiom SubObjectPropertyOf( ObjectPropertyChain( OPE1 ... OPEn ) OPE )</p></td>
 </tr>
 </tbody>
 </table>
@@ -2202,6 +2216,50 @@ the following axiom:  SubClassOf( owl:Thing DataAllValuesFrom( DPE DR ) )</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.owl_axiom.OWLDataPropertyRangeAxiom.__slots__">
 <span class="sig-name descname"><span class="pre">__slots__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></span><a class="headerlink" href="#owlapy.owl_axiom.OWLDataPropertyRangeAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubPropertyChainAxiom">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.owl_axiom.</span></span><span class="sig-name descname"><span class="pre">OWLSubPropertyChainAxiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property_chain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">super_property</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.owl_axiom.OWLAnnotation" title="owlapy.owl_axiom.OWLAnnotation"><span class="pre">OWLAnnotation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubPropertyChainAxiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#owlapy.owl_axiom.OWLObjectPropertyAxiom" title="owlapy.owl_axiom.OWLObjectPropertyAxiom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLObjectPropertyAxiom</span></code></a></p>
+<p>An object property subproperty chain axiom SubObjectPropertyOf( ObjectPropertyChain( OPE1 … OPEn ) OPE )
+states that the object property expression formed by chaining OPE1 to OPEn is a subproperty of the object
+property expression OPE — that is, if an individual x is connected by OPE1 to an individual y1 that is
+connected by OPE2 to an individual y2 that is connected by OPE3 to … that is connected by OPEn to an
+individual z, then x is also connected by OPE to z.</p>
+<blockquote>
+<div><p>(<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Object_Subproperties">https://www.w3.org/TR/owl2-syntax/#Object_Subproperties</a>)</p>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubPropertyChainAxiom.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_property_chain',</span> <span class="pre">'_super_property')</span></span><a class="headerlink" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubPropertyChainAxiom.get_super_property">
+<span class="sig-name descname"><span class="pre">get_super_property</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_P</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubPropertyChainAxiom.get_super_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.get_super_property" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubPropertyChainAxiom.get_property_chain">
+<span class="sig-name descname"><span class="pre">get_property_chain</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubPropertyChainAxiom.get_property_chain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.get_property_chain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubPropertyChainAxiom.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubPropertyChainAxiom.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubPropertyChainAxiom.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubPropertyChainAxiom.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_axiom.OWLSubPropertyChainAxiom.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_axiom.html#OWLSubPropertyChainAxiom.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__repr__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

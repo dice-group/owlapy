@@ -85,7 +85,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">combinations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObject</span><span class="p">,</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">OWLDataRange</span>
@@ -1971,6 +1971,66 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_</span><span class="p">:</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">range_</span><span class="p">:</span> <span class="n">OWLDataRange</span><span class="p">,</span>
                  <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">property_</span><span class="o">=</span><span class="n">property_</span><span class="p">,</span> <span class="n">range_</span><span class="o">=</span><span class="n">range_</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWLSubPropertyChainAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLSubPropertyChainAxiom">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLSubPropertyChainAxiom</span><span class="p">(</span><span class="n">OWLObjectPropertyAxiom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An object property subproperty chain axiom SubObjectPropertyOf( ObjectPropertyChain( OPE1 ... OPEn ) OPE )</span>
+<span class="sd">    states that the object property expression formed by chaining OPE1 to OPEn is a subproperty of the object</span>
+<span class="sd">    property expression OPE — that is, if an individual x is connected by OPE1 to an individual y1 that is</span>
+<span class="sd">    connected by OPE2 to an individual y2 that is connected by OPE3 to ... that is connected by OPEn to an</span>
+<span class="sd">    individual z, then x is also connected by OPE to z.</span>
+
+<span class="sd">     (https://www.w3.org/TR/owl2-syntax/#Object_Subproperties)&quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_property_chain&#39;</span><span class="p">,</span> <span class="s1">&#39;_super_property&#39;</span>
+
+    <span class="n">_property_chain</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]</span>
+    <span class="n">_super_property</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_chain</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">],</span> <span class="n">super_property</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span>
+                 <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;OWLAnnotation&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property_chain</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">property_chain</span><span class="p">)</span>
+        <span class="c1"># self._sub_property = self._property_chain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">=</span> <span class="n">super_property</span>
+
+
+<div class="viewcode-block" id="OWLSubPropertyChainAxiom.get_super_property">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLSubPropertyChainAxiom.get_super_property">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_super_property</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_P</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span></div>
+
+    
+
+<div class="viewcode-block" id="OWLSubPropertyChainAxiom.get_property_chain">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLSubPropertyChainAxiom.get_property_chain">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_property_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">OWLObjectPropertyExpression</span><span class="p">]:</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_chain</span></div>
+
+
+<div class="viewcode-block" id="OWLSubPropertyChainAxiom.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_chain</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_property_chain</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_super_property</span> \
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_annotations</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="OWLSubPropertyChainAxiom.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__hash__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;OWLSubPropertyChainAxiom&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_chain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLSubPropertyChainAxiom.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLSubPropertyChainAxiom.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;OWLSubPropertyChainAxiom(property_chain=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_property_chain</span><span class="si">}</span><span class="s1">,&#39;</span> \
+               <span class="sa">f</span><span class="s1">&#39;super_property=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_super_property</span><span class="si">}</span><span class="s1">,annotations=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_annotations</span><span class="si">}</span><span class="s1">)&#39;</span></div>
+</div>
 
 </pre></div>
 

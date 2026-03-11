@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.owlapi_dlsyntax &mdash; OWLAPY 1.6.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=452006c5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="owlapy.owlapi_mapper" href="../owlapi_mapper/index.html" />
+    <link rel="prev" title="owlapy.owl_reasoner" href="../owl_reasoner/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../agen_kg/index.html">owlapy.agen_kg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.owlapi_dlsyntax</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer"><code class="docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxRenderer</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer.render"><code class="docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxRenderer.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser"><code class="docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxParser</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.namespace"><code class="docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxParser.namespace</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_expression"><code class="docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxParser.parse_expression()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_axiom"><code class="docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxParser.parse_axiom()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_axioms"><code class="docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxParser.parse_axioms()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scripts/index.html">owlapy.scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy</a></li>
+      <li class="breadcrumb-item active">owlapy.owlapi_dlsyntax</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/owlapy/owlapi_dlsyntax/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.owlapi_dlsyntax">
+<span id="owlapy-owlapi-dlsyntax"></span><h1>owlapy.owlapi_dlsyntax<a class="headerlink" href="#module-owlapy.owlapi_dlsyntax" title="Link to this heading"></a></h1>
+<p>OWLAPI-based DL Syntax parser and renderer.</p>
+<p>This module provides DL (Description Logic) syntax parsing and rendering
+using the OWLAPI Java library via JPype. It leverages OWLAPI’s
+<code class="docutils literal notranslate"><span class="pre">DLSyntaxObjectRenderer</span></code> and <code class="docutils literal notranslate"><span class="pre">DLSyntaxParser</span></code> to handle both OWL class
+expressions and OWL axioms in DL notation, and uses <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLAPIMapper</span></code>
+to convert between owlapi Java objects and owlapy Python objects.</p>
+<p>Usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owlapi_dlsyntax</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAPIDLSyntaxParser</span><span class="p">,</span> <span class="n">OWLAPIDLSyntaxRenderer</span>
+
+<span class="n">renderer</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxRenderer</span><span class="p">()</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxParser</span><span class="p">(</span><span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;http://example.org/&quot;</span><span class="p">)</span>
+
+<span class="c1"># Render an owlapy object to DL syntax string</span>
+<span class="n">dl_string</span> <span class="o">=</span> <span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">some_owlapy_class_expression</span><span class="p">)</span>
+<span class="n">dl_axiom_string</span> <span class="o">=</span> <span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">some_owlapy_axiom</span><span class="p">)</span>
+
+<span class="c1"># Parse a DL syntax string to an owlapy object</span>
+<span class="n">ce</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_expression</span><span class="p">(</span><span class="s2">&quot;∃ r.A ⊓ B&quot;</span><span class="p">)</span>
+<span class="n">axiom</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_axiom</span><span class="p">(</span><span class="s2">&quot;A ⊑ ∃ r.B&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer" title="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxRenderer</span></code></a></p></td>
+<td><p>DL Syntax renderer backed by OWLAPI's <code class="docutils literal notranslate"><span class="pre">DLSyntaxObjectRenderer</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser" title="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLAPIDLSyntaxParser</span></code></a></p></td>
+<td><p>DL Syntax parser backed by OWLAPI's <code class="docutils literal notranslate"><span class="pre">DLSyntaxParser</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.owlapi_dlsyntax.</span></span><span class="sig-name descname"><span class="pre">OWLAPIDLSyntaxRenderer</span></span><a class="reference internal" href="../../../_modules/owlapy/owlapi_dlsyntax.html#OWLAPIDLSyntaxRenderer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer" title="Link to this definition"></a></dt>
+<dd><p>DL Syntax renderer backed by OWLAPI’s <code class="docutils literal notranslate"><span class="pre">DLSyntaxObjectRenderer</span></code>.</p>
+<p>Renders owlapy OWL objects (class expressions and axioms) into
+Description Logic syntax strings by first mapping them to OWLAPI Java
+objects, then delegating to the OWLAPI renderer.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owlapi_dlsyntax</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAPIDLSyntaxRenderer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectProperty</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">renderer</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxRenderer</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expr</span> <span class="o">=</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+<span class="go">&#39;∃ r.A&#39;</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><span class="pre">owlapy.owl_object.OWLObject</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owlapi_dlsyntax.html#OWLAPIDLSyntaxRenderer.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer.render" title="Link to this definition"></a></dt>
+<dd><p>Render an owlapy OWL object to a DL syntax string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> – An owlapy OWL object — can be an <code class="docutils literal notranslate"><span class="pre">OWLClassExpression</span></code>,
+<code class="docutils literal notranslate"><span class="pre">OWLAxiom</span></code>, or any other <code class="docutils literal notranslate"><span class="pre">OWLObject</span></code> supported by the
+OWLAPI DL renderer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The DL syntax string representation.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – If the object type is not supported by
+the mapper.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.owlapi_dlsyntax.</span></span><span class="sig-name descname"><span class="pre">OWLAPIDLSyntaxParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owlapi_dlsyntax.html#OWLAPIDLSyntaxParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser" title="Link to this definition"></a></dt>
+<dd><p>DL Syntax parser backed by OWLAPI’s <code class="docutils literal notranslate"><span class="pre">DLSyntaxParser</span></code>.</p>
+<p>Parses DL syntax strings into owlapy OWL objects (class expressions
+and axioms) by delegating to the OWLAPI Java parser, then mapping
+the result back using <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLAPIMapper</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>namespace</strong> – Default namespace for resolving unqualified names.
+For example <code class="docutils literal notranslate"><span class="pre">&quot;http://example.org/&quot;</span></code> will resolve <code class="docutils literal notranslate"><span class="pre">A</span></code> to
+<code class="docutils literal notranslate"><span class="pre">&lt;http://example.org/#A&gt;</span></code>. Note that OWLAPI’s DL parser
+appends <code class="docutils literal notranslate"><span class="pre">#</span></code> between the namespace and local name.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owlapi_dlsyntax</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAPIDLSyntaxParser</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">OWLAPIDLSyntaxParser</span><span class="p">(</span><span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;http://example.org/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ce</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_expression</span><span class="p">(</span><span class="s2">&quot;∃ r.A ⊓ B&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">axiom</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_axiom</span><span class="p">(</span><span class="s2">&quot;A ⊑ ∃ r.B&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.namespace">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">namespace</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.namespace" title="Link to this definition"></a></dt>
+<dd><p>The default namespace used for resolving unqualified names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_expression">
+<span class="sig-name descname"><span class="pre">parse_expression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expression_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owlapi_dlsyntax.html#OWLAPIDLSyntaxParser.parse_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_expression" title="Link to this definition"></a></dt>
+<dd><p>Parse a DL syntax string into an owlapy <code class="docutils literal notranslate"><span class="pre">OWLClassExpression</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>expression_str</strong> – DL syntax string representing a class expression.
+Examples: <code class="docutils literal notranslate"><span class="pre">&quot;A&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;∃</span> <span class="pre">r.A</span> <span class="pre">⊓</span> <span class="pre">B&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;¬A</span> <span class="pre">⊔</span> <span class="pre">(∀</span> <span class="pre">r.B)&quot;</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The corresponding owlapy <code class="docutils literal notranslate"><span class="pre">OWLClassExpression</span></code>.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If the string cannot be parsed as a valid DL class
+expression (wraps OWLAPI’s <code class="docutils literal notranslate"><span class="pre">ParseException</span></code>).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_axiom">
+<span class="sig-name descname"><span class="pre">parse_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owlapi_dlsyntax.html#OWLAPIDLSyntaxParser.parse_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_axiom" title="Link to this definition"></a></dt>
+<dd><p>Parse a DL syntax string into an owlapy <code class="docutils literal notranslate"><span class="pre">OWLAxiom</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axiom_str</strong> – DL syntax string representing an axiom.
+Examples: <code class="docutils literal notranslate"><span class="pre">&quot;A</span> <span class="pre">⊑</span> <span class="pre">∃</span> <span class="pre">r.B&quot;</span></code> (subclass), <code class="docutils literal notranslate"><span class="pre">&quot;A</span> <span class="pre">≡</span> <span class="pre">B</span> <span class="pre">⊓</span> <span class="pre">C&quot;</span></code>
+(equivalent classes).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The corresponding owlapy <code class="docutils literal notranslate"><span class="pre">OWLAxiom</span></code>.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If the string cannot be parsed as a valid DL axiom
+(wraps OWLAPI’s <code class="docutils literal notranslate"><span class="pre">ParseException</span></code>).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_axioms">
+<span class="sig-name descname"><span class="pre">parse_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axioms_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owlapi_dlsyntax.html#OWLAPIDLSyntaxParser.parse_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser.parse_axioms" title="Link to this definition"></a></dt>
+<dd><p>Parse a DL syntax string containing multiple axioms.</p>
+<p>The OWLAPI <code class="docutils literal notranslate"><span class="pre">DLSyntaxParser.parseAxioms()</span></code> expects axioms to be
+newline-separated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axioms_str</strong> – DL syntax string with multiple axioms separated
+by newlines.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of owlapy <code class="docutils literal notranslate"><span class="pre">OWLAxiom</span></code> objects.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If any axiom cannot be parsed (wraps OWLAPI’s
+<code class="docutils literal notranslate"><span class="pre">ParseException</span></code>).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../owl_reasoner/index.html" class="btn btn-neutral float-left" title="owlapy.owl_reasoner" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../owlapi_mapper/index.html" class="btn btn-neutral float-right" title="owlapy.owlapi_mapper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

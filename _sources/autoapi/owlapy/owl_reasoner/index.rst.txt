@@ -427,6 +427,91 @@ Module Contents
 
 
 
+   .. py:method:: create_axiom_justifications(axiom_to_explain: owlapy.owl_axiom.OWLAxiom, n_max_justifications: Optional[int] = 10, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
+
+      Generate multiple justifications for why an axiom is entailed by the ontology.
+      The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java
+      The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator.java# .
+      The supported axiom types are:
+      - OWLClassAssertionAxiom
+      - OWLDataPropertyAssertionAxiom
+      - OWLDataPropertyDomainAxiom
+      - OWLDataPropertyRangeAxiom
+      - OWLDifferentIndividualsAxiom
+      - OWLDisjointClassesAxiom
+      - OWLEquivalentClassesAxiom
+      - OWLNegativeDataPropertyAssertionAxiom
+      - OWLNegativeObjectPropertyAssertionAxiom
+      - OWLObjectPropertyAssertionAxiom
+      - OWLObjectPropertyDomainAxiom
+      - OWLObjectPropertyRangeAxiom
+      - OWLSameIndividualAxiom
+      - OWLSubClassOfAxiom
+
+      For example, some unsupported axiom types (which can still be inferred but not explained) are:
+      - OWLSubObjectPropertyOfAxiom
+      - OWLSubDataPropertyOfAxiom
+
+      :param axiom_to_explain: The axiom to create justifications for.
+      :type axiom_to_explain: OWLAxiom
+      :param n_max_justifications: The maximum number of justifications to generate. Defaults to 10.
+      :type n_max_justifications: Optional[int], optional
+      :param save: If True, saves all justifications in a new ontology as axioms. Defaults to False.
+      :type save: bool, optional
+
+      :raises ValueError: If the axiom is not entailed by the ontology or if n_max_justifications is not an integer or None.
+      :raises NotImplementedError: If the specified reasoner is not supported for axiom justification.
+
+      :returns: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.
+      :rtype: List[Set[OWLAxiom]]
+
+
+
+   .. py:method:: create_inconsistency_justifications(n_max_justifications: Optional[int] = 10, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
+
+      Generate multiple justifications for why the ontology is inconsistent.
+      The explanation is based on the following implementation: https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java
+      In inconistent-explainer-1.0.SNAPSHOT.jar, we simply extend the ReasonerFactory of HermiT into an InconsistentHermiTReasonerFactory.
+      The createHermiTOWLReasoner method of that class overrides the default behavior, by forcing the new configuration's throwInconsistentOntologyException attribute to be False.
+      The entire codebase boils down to this single file:
+
+      ```
+      package com.owlapy;
+
+      import org.semanticweb.HermiT.Configuration;
+      import org.semanticweb.HermiT.Reasoner;
+      import org.semanticweb.HermiT.Reasoner.ReasonerFactory;
+      import org.semanticweb.owlapi.reasoner.OWLReasoner;
+
+      /** Code based on inconsistency explanations for HermiT from https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java
+      *
+      */
+      /* We simply override the createHermiTOWLReasoner method to set the throwInconsistentOntologyException flag to false.
+      This allows us to compute explanations for inconsistent ontologies without HermiT throwing an exception. */
+
+      public class InconsistentHermiTReasonerFactory extends ReasonerFactory {
+          @Override
+          protected OWLReasoner createHermiTOWLReasoner(Configuration configuration, org.semanticweb.owlapi.model.OWLOntology ontology) {
+              // don't throw an exception since otherwise we cannot compute explanations
+              configuration.throwInconsistentOntologyException=false;
+              return new Reasoner(configuration,ontology);
+          }
+      }
+      ```
+
+      :param n_max_justifications: The maximum number of justifications to generate. Defaults to 10.
+      :type n_max_justifications: Optional[int], optional
+      :param save: If True, saves all justifications in a new ontology as axioms. Defaults to False.
+      :type save: bool, optional
+
+      :raises ValueError: If the ontology is consistent or if n_max_justifications is not an integer or None.
+      :raises NotImplementedError: If the specified reasoner is not supported for inconsistency justification.
+
+      :returns: Each item is a justification (set of OWLAxioms) that explains why the ontology is inconsistent.
+      :rtype: List[Set[OWLAxiom]]
+
+
+
    .. py:attribute:: reasoner_name
       :value: 'HermiT'
 

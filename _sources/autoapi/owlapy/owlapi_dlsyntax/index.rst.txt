@@ -1,0 +1,155 @@
+owlapy.owlapi_dlsyntax
+======================
+
+.. py:module:: owlapy.owlapi_dlsyntax
+
+.. autoapi-nested-parse::
+
+   OWLAPI-based DL Syntax parser and renderer.
+
+   This module provides DL (Description Logic) syntax parsing and rendering
+   using the OWLAPI Java library via JPype. It leverages OWLAPI's
+   ``DLSyntaxObjectRenderer`` and ``DLSyntaxParser`` to handle both OWL class
+   expressions and OWL axioms in DL notation, and uses :class:`OWLAPIMapper`
+   to convert between owlapi Java objects and owlapy Python objects.
+
+   Usage example::
+
+       from owlapy.owlapi_dlsyntax import OWLAPIDLSyntaxParser, OWLAPIDLSyntaxRenderer
+
+       renderer = OWLAPIDLSyntaxRenderer()
+       parser = OWLAPIDLSyntaxParser(namespace="http://example.org/")
+
+       # Render an owlapy object to DL syntax string
+       dl_string = renderer.render(some_owlapy_class_expression)
+       dl_axiom_string = renderer.render(some_owlapy_axiom)
+
+       # Parse a DL syntax string to an owlapy object
+       ce = parser.parse_expression("∃ r.A ⊓ B")
+       axiom = parser.parse_axiom("A ⊑ ∃ r.B")
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxRenderer
+   owlapy.owlapi_dlsyntax.OWLAPIDLSyntaxParser
+
+
+Module Contents
+---------------
+
+.. py:class:: OWLAPIDLSyntaxRenderer
+
+   DL Syntax renderer backed by OWLAPI's ``DLSyntaxObjectRenderer``.
+
+   Renders owlapy OWL objects (class expressions and axioms) into
+   Description Logic syntax strings by first mapping them to OWLAPI Java
+   objects, then delegating to the OWLAPI renderer.
+
+   .. rubric:: Examples
+
+   >>> from owlapy.owlapi_dlsyntax import OWLAPIDLSyntaxRenderer
+   >>> from owlapy.class_expression import OWLClass, OWLObjectSomeValuesFrom
+   >>> from owlapy.owl_property import OWLObjectProperty
+   >>> from owlapy.iri import IRI
+   >>> renderer = OWLAPIDLSyntaxRenderer()
+   >>> A = OWLClass(IRI.create("http://example.org/", "A"))
+   >>> r = OWLObjectProperty(IRI.create("http://example.org/", "r"))
+   >>> expr = OWLObjectSomeValuesFrom(r, A)
+   >>> renderer.render(expr)
+   '∃ r.A'
+
+
+   .. py:method:: render(obj: owlapy.owl_object.OWLObject) -> str
+
+      Render an owlapy OWL object to a DL syntax string.
+
+      :param obj: An owlapy OWL object — can be an ``OWLClassExpression``,
+                  ``OWLAxiom``, or any other ``OWLObject`` supported by the
+                  OWLAPI DL renderer.
+
+      :returns: The DL syntax string representation.
+
+      :raises NotImplementedError: If the object type is not supported by
+          the mapper.
+
+
+
+.. py:class:: OWLAPIDLSyntaxParser(namespace: Optional[str] = None)
+
+   DL Syntax parser backed by OWLAPI's ``DLSyntaxParser``.
+
+   Parses DL syntax strings into owlapy OWL objects (class expressions
+   and axioms) by delegating to the OWLAPI Java parser, then mapping
+   the result back using :class:`OWLAPIMapper`.
+
+   :param namespace: Default namespace for resolving unqualified names.
+                     For example ``"http://example.org/"`` will resolve ``A`` to
+                     ``<http://example.org/#A>``. Note that OWLAPI's DL parser
+                     appends ``#`` between the namespace and local name.
+
+   .. rubric:: Examples
+
+   >>> from owlapy.owlapi_dlsyntax import OWLAPIDLSyntaxParser
+   >>> parser = OWLAPIDLSyntaxParser(namespace="http://example.org/")
+   >>> ce = parser.parse_expression("∃ r.A ⊓ B")
+   >>> axiom = parser.parse_axiom("A ⊑ ∃ r.B")
+
+
+   .. py:property:: namespace
+      :type: Optional[str]
+
+
+      The default namespace used for resolving unqualified names.
+
+
+   .. py:method:: parse_expression(expression_str: str) -> owlapy.class_expression.OWLClassExpression
+
+      Parse a DL syntax string into an owlapy ``OWLClassExpression``.
+
+      :param expression_str: DL syntax string representing a class expression.
+                             Examples: ``"A"``, ``"∃ r.A ⊓ B"``, ``"¬A ⊔ (∀ r.B)"``.
+
+      :returns: The corresponding owlapy ``OWLClassExpression``.
+
+      :raises Exception: If the string cannot be parsed as a valid DL class
+          expression (wraps OWLAPI's ``ParseException``).
+
+
+
+   .. py:method:: parse_axiom(axiom_str: str) -> owlapy.owl_axiom.OWLAxiom
+
+      Parse a DL syntax string into an owlapy ``OWLAxiom``.
+
+      :param axiom_str: DL syntax string representing an axiom.
+                        Examples: ``"A ⊑ ∃ r.B"`` (subclass), ``"A ≡ B ⊓ C"``
+                        (equivalent classes).
+
+      :returns: The corresponding owlapy ``OWLAxiom``.
+
+      :raises Exception: If the string cannot be parsed as a valid DL axiom
+          (wraps OWLAPI's ``ParseException``).
+
+
+
+   .. py:method:: parse_axioms(axioms_str: str) -> List[owlapy.owl_axiom.OWLAxiom]
+
+      Parse a DL syntax string containing multiple axioms.
+
+      The OWLAPI ``DLSyntaxParser.parseAxioms()`` expects axioms to be
+      newline-separated.
+
+      :param axioms_str: DL syntax string with multiple axioms separated
+                         by newlines.
+
+      :returns: A list of owlapy ``OWLAxiom`` objects.
+
+      :raises Exception: If any axiom cannot be parsed (wraps OWLAPI's
+          ``ParseException``).
+
+
+

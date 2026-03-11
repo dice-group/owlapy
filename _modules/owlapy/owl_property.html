@@ -393,6 +393,65 @@
         <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;OWLDataProperty&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="p">))</span></div>
 </div>
 
+    
+
+<span class="c1"># class OWLObjectPropertyChain(OWLObjectPropertyExpression):</span>
+<span class="c1">#     &quot;&quot;&quot;Represents a property chain expression. A property chain is a sequence of object properties</span>
+<span class="c1">#     that can be used in the subproperty axioms to specify that the composition of the properties</span>
+<span class="c1">#     in the chain is a subproperty of another property.</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     __slots__ = &#39;_object_property_expressions&#39;</span>
+
+<span class="c1">#     def __init__(</span>
+<span class="c1">#         self,</span>
+<span class="c1">#         object_property_expressions: Sequence[OWLObjectPropertyExpression],</span>
+<span class="c1">#     ):</span>
+<span class="c1">#         super().__init__()</span>
+<span class="c1">#         if len(object_property_expressions) &lt;= 1:</span>
+<span class="c1">#             raise ValueError(&quot;A property chain must have at least 2 property expressions.&quot;)</span>
+<span class="c1">#         self._object_property_expressions = tuple(object_property_expressions)</span>
+
+<span class="c1">#     def get_inverse_property(self) -&gt; &#39;OWLObjectPropertyChain&#39;:</span>
+<span class="c1">#         # documented in parent</span>
+<span class="c1">#         return OWLObjectPropertyChain(</span>
+<span class="c1">#             [</span>
+<span class="c1">#                 ope.get_inverse_property()</span>
+<span class="c1">#                 for ope in reversed(self._object_property_expressions)</span>
+<span class="c1">#             ]</span>
+<span class="c1">#         )</span>
+
+<span class="c1">#     def __repr__(self):</span>
+<span class="c1">#         return f&quot;OWLObjectPropertyChain([{&#39;, &#39;.join([repr(ope) for ope in self._object_property_expressions])}])&quot;</span>
+    
+<span class="c1">#     def __eq__( self, other ):</span>
+<span class="c1">#         if type(other) is type(self):</span>
+<span class="c1">#             if len(self._object_property_expressions) != len(other._object_property_expressions):</span>
+<span class="c1">#                 return False</span>
+<span class="c1">#             for i in range(len(self._object_property_expressions)):</span>
+<span class="c1">#                 if self._object_property_expressions[i] != other._object_property_expressions[i]:</span>
+<span class="c1">#                     return False</span>
+<span class="c1">#             return True</span>
+<span class="c1">#         return False</span>
+    
+<span class="c1">#     def __hash__(self):</span>
+<span class="c1">#         hash_value = hash(</span>
+<span class="c1">#             (&quot;OWLObjectPropertyChain&quot;, tuple(self._object_property_expressions))</span>
+<span class="c1">#         )</span>
+<span class="c1">#         return hash_value</span>
+    
+<span class="c1">#     def property_chain(self) -&gt; Sequence[OWLObjectPropertyExpression]:</span>
+<span class="c1">#         &quot;&quot;&quot;Gets the list of object property expressions in this property chain.</span>
+
+<span class="c1">#         Returns:</span>
+<span class="c1">#             The list of object property expressions in this property chain.</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         return self._object_property_expressions</span>
+    
+<span class="c1">#     def get_named_property(self):</span>
+<span class="c1">#         # I have no idea how to do it because I am not familiar with the implementation.</span>
+<span class="c1">#         raise NotImplementedError(&quot;get_named_property is not implemented for OWLObjectPropertyChain.&quot;)</span>
+    
+
 </pre></div>
 
            </div>
