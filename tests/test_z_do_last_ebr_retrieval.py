@@ -12,6 +12,7 @@ import itertools
 import time
 from typing import Tuple, Set
 from itertools import chain
+from unittest.mock import MagicMock
 
 from owlapy.owl_reasoner import StructuralReasoner, EBR
 from owlapy.owl_ontology import Ontology, NeuralOntology
@@ -281,3 +282,127 @@ class TestEmbeddingBasedReasonerRetrieval:
         print(f"Tested {count} concepts")
         print(f"Average Jaccard Similarity: {avg_jaccard:.4f}")
         print(f"Average F1 Score: {avg_f1:.4f}")
+
+
+class TestNeuralOntologyPredictMissingEmbeddings:
+    """Unit tests for NeuralOntology.predict with missing relations/entities.
+
+    These tests verify that EBR does not throw errors when object/data properties
+    or their inverses are not present in the model vocabulary (i.e., they never
+    appeared as predicates in the training knowledge base). Instead, an empty list
+    (0 scores) must be returned for any such missing entity or relation.
+    """
+
+    def _make_neural_ontology(self):
+        """Create a NeuralOntology instance with a mocked KGE model."""
+        ontology = object.__new__(NeuralOntology)
+        mock_model = MagicMock()
+        mock_model.relation_to_idx = {
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": 0,
+            "http://www.w3.org/2000/01/rdf-schema#subClassOf": 1,
+        }
+        mock_model.entity_to_idx = {
+            "http://example.org/Person": 0,
+            "http://example.org/alice": 1,
+        }
+        mock_model.predict_topk.return_value = []
+        ontology.model = mock_model
+        ontology.gamma = 0.5
+        ontology.batch_size = 1024
+        return ontology
+
+    def test_predict_returns_empty_for_missing_relation(self):
+        """predict() must return [] when the relation is not in the vocabulary."""
+        ontology = self._make_neural_ontology()
+        result = ontology.predict(
+            h="http://example.org/alice",
+            r="http://example.org/hasCovering",  # not in relation_to_idx
+            t=None,
+        )
+        assert result == [], (
+            "Expected empty list when relation is not in model vocabulary"
+        )
+        ontology.model.predict_topk.assert_not_called()
+
+    def test_predict_returns_empty_for_missing_relation_list(self):
+        """predict() must return [] when all relations in a list are missing."""
+        ontology = self._make_neural_ontology()
+        result = ontology.predict(
+            h=None,
+            r=["http://example.org/hasCovering", "http://example.org/habitat"],
+            t="http://example.org/Person",
+        )
+        assert result == [], (
+            "Expected empty list when all relations in the list are missing"
+        )
+        ontology.model.predict_topk.assert_not_called()
+
+    def test_predict_returns_empty_for_missing_head_entity(self):
+        """predict() must return [] when the head entity is not in the vocabulary."""
+        ontology = self._make_neural_ontology()
+        result = ontology.predict(
+            h="http://example.org/unknownEntity",
+            r="http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            t=None,
+        )
+        assert result == [], (
+            "Expected empty list when head entity is not in model vocabulary"
+        )
+        ontology.model.predict_topk.assert_not_called()
+
+    def test_predict_returns_empty_for_missing_tail_entity(self):
+        """predict() must return [] when the tail entity is not in the vocabulary."""
+        ontology = self._make_neural_ontology()
+        result = ontology.predict(
+            h=None,
+            r="http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            t="http://example.org/Platypus",  # not in entity_to_idx
+        )
+        assert result == [], (
+            "Expected empty list when tail entity is not in model vocabulary"
+        )
+        ontology.model.predict_topk.assert_not_called()
+
+    def test_predict_returns_empty_for_missing_tail_list(self):
+        """predict() must return [] when all entities in the tail list are missing."""
+        ontology = self._make_neural_ontology()
+        result = ontology.predict(
+            h=None,
+            r="http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            t=["http://example.org/Platypus", "http://example.org/Boy"],
+        )
+        assert result == [], (
+            "Expected empty list when all tail entities in the list are missing"
+        )
+        ontology.model.predict_topk.assert_not_called()
+
+    def test_predict_calls_model_when_all_present(self):
+        """predict() must call the underlying model when all inputs are in vocabulary."""
+        ontology = self._make_neural_ontology()
+        ontology.model.predict_topk.return_value = []
+        result = ontology.predict(
+            h="http://example.org/alice",
+            r="http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            t=None,
+        )
+        ontology.model.predict_topk.assert_called_once()
+
+    def test_predict_filters_partial_missing_head_list(self):
+        """predict() must filter unknown entries from a head entity list."""
+        ontology = self._make_neural_ontology()
+        ontology.model.predict_topk.return_value = []
+        result = ontology.predict(
+            h=["http://example.org/alice", "http://example.org/unknownEntity"],
+            r="http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            t=None,
+        )
+        # Only "alice" is known; predict_topk should be called with the filtered list
+        call_kwargs = ontology.model.predict_topk.call_args
+        assert call_kwargs is not None
+        filtered_h = call_kwargs.kwargs.get("h", [])
+        assert "http://example.org/alice" in filtered_h, (
+            "Known entity must still be passed to predict_topk after filtering"
+        )
+        assert "http://example.org/unknownEntity" not in filtered_h, (
+            "Unknown entity must be filtered out before calling predict_topk"
+        )
