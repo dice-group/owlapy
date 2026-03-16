@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 project = 'OWLAPY'
 author = 'Ontolearn Team'
-release = '1.6.2'
+release = '1.6.3'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
