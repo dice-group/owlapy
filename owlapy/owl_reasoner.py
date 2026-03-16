@@ -1,4 +1,5 @@
 """OWL Reasoner"""
+import os
 import operator
 import logging
 import owlready2
