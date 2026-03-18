@@ -27,7 +27,7 @@ mapper. They inherit from abstract classes already present in owlapy
 (`AbstractOWLOntology` and `AbstractOWLReasoner` respectively) so
 the usage is the same as other implementors of these abstract classes.
 Additionally, SyncReasoner provides some supplementary methods, such as `infer_axioms`, 
-`create_justifications`, `has_consistent_ontology`, `is_satisfiable`, etc.
+`create_axiom_justifications`, `create_laconic_axiom_justifications`, `create_inconsistency_justifications`, `has_consistent_ontology`, `is_satisfiable`, etc.
 For a comprehensive overview of all available methods and their description, refer to the [API](owlapy.owl_reasoner.SyncReasoner) documentation.
 
 To make this guide self-contained, we will go through a simple example
