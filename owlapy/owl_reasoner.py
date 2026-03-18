@@ -3,6 +3,9 @@ import os
 import operator
 import logging
 import owlready2
+import json
+import subprocess
+import sys
 
 from collections import defaultdict, Counter
 from functools import singledispatchmethod, reduce, cached_property
@@ -1961,6 +1964,7 @@ class SyncReasoner(AbstractOWLReasoner):
 
         return justifications
     
+
     def get_contrastive_explanation(
             self,
             class_expression: "OWLClassExpression",
@@ -1968,37 +1972,16 @@ class SyncReasoner(AbstractOWLReasoner):
             foil: "OWLNamedIndividual",
             conflict_minimal: bool = True,
     ) -> Dict[str, object]:
-        import json
-        import os
-        import subprocess
-        import sys
-
-        try:
-            ManchesterRenderer = JClass(
-                "org.semanticweb.owlapi.manchestersyntax.renderer.ManchesterOWLSyntaxOWLObjectRendererImpl"
-            )
-            renderer = ManchesterRenderer()
-            j_cls_main = self.ontology.mapper.map_(class_expression)
-            class_expr_manchester = str(renderer.render(j_cls_main))
-        except Exception as e:
-            raise RuntimeError(
-                f"Failed to render class expression to Manchester syntax: {e}"
-            ) from e
 
         def _iri_str(ind):
-            try:
-                return ind.str
-            except Exception:
-                pass
-            try:
-                return ind.get_iri().str
-            except Exception:
-                pass
-            try:
-                return ind.iri.str
-            except Exception:
-                pass
-            return str(ind)
+            return ind.str
+
+        ManchesterRenderer = JClass(
+            "org.semanticweb.owlapi.manchestersyntax.renderer.ManchesterOWLSyntaxOWLObjectRendererImpl"
+        )
+        renderer = ManchesterRenderer()
+        j_cls_main = self.ontology.mapper.map_(class_expression)
+        class_expr_manchester = str(renderer.render(j_cls_main))
 
         ontology_path = self.ontology.path.str if hasattr(self.ontology.path, "str") else str(self.ontology.path)
         contr_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "contr_jar")
@@ -2022,120 +2005,79 @@ import jpype.imports
 from jpype import JClass
 
 def _to_str_set(jset):
-    out = set()
-    if jset is not None:
-        for ax in jset:
-            try:
-                out.add(str(ax))
-            except Exception:
-                out.add(repr(ax))
-    return out
+    return {str(ax) for ax in jset} if jset is not None else set()
 
-try:
-    payload = json.load(sys.stdin)
+payload = json.load(sys.stdin)
 
-    contr_dir = payload["contr_dir"]
+jar_name = next(f for f in os.listdir(payload["contr_dir"]) if f.endswith(".jar"))
+jar_file = os.path.join(payload["contr_dir"], jar_name)
 
-    if not os.path.isdir(contr_dir):
-        raise RuntimeError(f"Contrastive jar directory does not exist: {contr_dir}")
+jpype.startJVM(classpath=[jar_file])
 
-    jar_files = sorted(
-        os.path.join(contr_dir, f)
-        for f in os.listdir(contr_dir)
-        if f.endswith(".jar")
-    )
+from java.io import File
+from org.semanticweb.owlapi.apibinding import OWLManager
+from org.semanticweb.owlapi.model import IRI as JIRI
+from org.semanticweb.owlapi.expression import ShortFormEntityChecker
+from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
 
-    if not jar_files:
-        raise RuntimeError(f"No jar files found in contrastive jar directory: {contr_dir}")
+CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
+CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
+ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
+RC = JClass("anonymized.contrastive.config.ReasonerChoice")
 
-    jpype.startJVM(classpath=jar_files)
+manager = OWLManager.createOWLOntologyManager()
+ontology = manager.loadOntologyFromOntologyDocument(File(payload["ontology_path"]))
+data_factory = manager.getOWLDataFactory()
 
-    from java.io import File
-    from org.semanticweb.owlapi.apibinding import OWLManager
-    from org.semanticweb.owlapi.model import IRI as JIRI
-    from org.semanticweb.owlapi.expression import ShortFormEntityChecker
-    from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
+parser = OWLManager.createManchesterParser()
+parser.setDefaultOntology(ontology)
+parser.setStringToParse(payload["class_expression_manchester"])
 
-    CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
-    CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
-    ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
-    RC = JClass("anonymized.contrastive.config.ReasonerChoice")
+short_form_provider = SimpleShortFormProvider()
+bidi = BidirectionalShortFormProviderAdapter(
+    manager,
+    jpype.java.util.Collections.singleton(ontology),
+    short_form_provider
+)
+parser.setOWLEntityChecker(ShortFormEntityChecker(bidi))
+j_cls = parser.parseClassExpression()
 
-    ontology_path = payload["ontology_path"]
-    class_expression_manchester = payload["class_expression_manchester"]
-    fact_iri = payload["fact_iri"]
-    foil_iri = payload["foil_iri"]
-    reasoner_name = payload.get("reasoner_name", "HermiT")
-    conflict_minimal = bool(payload.get("conflict_minimal", True))
+j_fact = data_factory.getOWLNamedIndividual(JIRI.create(payload["fact_iri"]))
+j_foil = data_factory.getOWLNamedIndividual(JIRI.create(payload["foil_iri"]))
 
-    manager = OWLManager.createOWLOntologyManager()
-    ontology = manager.loadOntologyFromOntologyDocument(File(ontology_path))
-    data_factory = manager.getOWLDataFactory()
+j_choice = getattr(RC, payload["reasoner_name"], RC.HermiT)
+j_config = ExplanationConfig(j_choice, payload["conflict_minimal"])
+generator = CEGenerator(manager, j_config)
 
-    parser = OWLManager.createManchesterParser()
-    parser.setDefaultOntology(ontology)
-    parser.setStringToParse(class_expression_manchester)
+problem = CEProblem(ontology, j_cls, j_fact, j_foil)
+j_res = generator.computeExplanation(problem)
 
-    short_form_provider = SimpleShortFormProvider()
-    bidi = BidirectionalShortFormProviderAdapter(
-        manager,
-        jpype.java.util.Collections.singleton(ontology),
-        short_form_provider
-    )
-    parser.setOWLEntityChecker(ShortFormEntityChecker(bidi))
-    j_cls = parser.parseClassExpression()
+if j_res is None:
+    result = {
+        "common": [],
+        "different": [],
+        "conflict": [],
+        "foil_mapping": {},
+    }
+else:
+    py_common = sorted(_to_str_set(j_res.getCommon()))
+    py_diff = sorted(_to_str_set(j_res.getDifferent()))
+    py_conflict = sorted(_to_str_set(j_res.getConflict()))
 
-    j_fact = data_factory.getOWLNamedIndividual(JIRI.create(fact_iri))
-    j_foil = data_factory.getOWLNamedIndividual(JIRI.create(foil_iri))
+    py_mapping = {}
+    j_map = j_res.getFoilMapping()
+    if j_map is not None:
+        for e in j_map.entrySet():
+            py_mapping[str(e.getKey())] = str(e.getValue())
 
-    try:
-        j_choice = getattr(RC, reasoner_name)
-    except AttributeError:
-        j_choice = RC.HermiT
+    result = {
+        "common": py_common,
+        "different": py_diff,
+        "conflict": py_conflict,
+        "foil_mapping": py_mapping,
+    }
 
-    j_config = ExplanationConfig(j_choice, conflict_minimal)
-    generator = CEGenerator(manager, j_config)
-
-    problem = CEProblem(ontology, j_cls, j_fact, j_foil)
-    j_res = generator.computeExplanation(problem)
-
-    if j_res is None:
-        result = {
-            "common": [],
-            "different": [],
-            "conflict": [],
-            "foil_mapping": {},
-        }
-    else:
-        py_common = sorted(_to_str_set(j_res.getCommon()))
-        py_diff = sorted(_to_str_set(j_res.getDifferent()))
-        py_conflict = sorted(_to_str_set(j_res.getConflict()))
-
-        py_mapping = {}
-        j_map = j_res.getFoilMapping()
-        if j_map is not None:
-            try:
-                for e in j_map.entrySet():
-                    py_mapping[str(e.getKey())] = str(e.getValue())
-            except Exception:
-                for k in j_map.keySet():
-                    py_mapping[str(k)] = str(j_map.get(k))
-
-        result = {
-            "common": py_common,
-            "different": py_diff,
-            "conflict": py_conflict,
-            "foil_mapping": py_mapping,
-        }
-
-    print(json.dumps({"ok": True, "result": result}))
-except Exception as e:
-    print(json.dumps({
-        "ok": False,
-        "error_type": e.__class__.__name__,
-        "error": str(e)
-    }))
-    sys.exit(1)
+print(json.dumps(result))
 '''
 
         proc = subprocess.run(
@@ -2143,7 +2085,6 @@ except Exception as e:
             input=json.dumps(payload),
             text=True,
             capture_output=True,
-            check=False,
         )
 
         if proc.returncode != 0:
@@ -2154,113 +2095,21 @@ except Exception as e:
                 f"STDERR: {proc.stderr}"
             )
 
-        try:
-            stdout_lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-            if not stdout_lines:
-                raise RuntimeError(
-                    "Contrastive explanation subprocess produced no output.\n"
-                    f"STDERR: {proc.stderr}"
-                )
-            response = json.loads(stdout_lines[-1])
-        except json.JSONDecodeError as e:
+        stdout_lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        if not stdout_lines:
             raise RuntimeError(
-                "Contrastive explanation subprocess returned invalid JSON.\n"
-                f"STDOUT: {proc.stdout}\n"
-                f"STDERR: {proc.stderr}"
-            ) from e
-
-        if not response.get("ok", False):
-            raise RuntimeError(
-                "Contrastive explanation subprocess returned an error.\n"
-                f"Type: {response.get('error_type')}\n"
-                f"Message: {response.get('error')}\n"
+                "Contrastive explanation subprocess produced no output.\n"
                 f"STDERR: {proc.stderr}"
             )
 
-        result = response.get("result", {})
+        result = json.loads(stdout_lines[-1])
+
         return {
             "common": set(result.get("common", [])),
             "different": set(result.get("different", [])),
             "conflict": set(result.get("conflict", [])),
             "foil_mapping": dict(result.get("foil_mapping", {})),
         }
-    
-
-    # def get_contrastive_explanation(
-    #         self,
-    #         class_expression: "OWLClassExpression",
-    #         fact: "OWLNamedIndividual",
-    #         foil: "OWLNamedIndividual",
-    #         conflict_minimal: bool = True,
-    # ) -> Dict[str, object]:
-    #     # Java types
-    #     CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
-    #     CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
-    #     ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
-    #     RC = JClass("anonymized.contrastive.config.ReasonerChoice")
-
-    #     try:
-    #         j_choice = getattr(RC, self.reasoner_name)
-    #     except AttributeError:
-    #         j_choice = RC.HermiT
-
-    #     # Rebuild the Java generator only if reasoner or conflict flag changed
-    #     cache_key = (self.reasoner_name, bool(conflict_minimal))
-    #     if getattr(self, "_ce_cache_key", None) != cache_key:
-    #         j_config = ExplanationConfig(j_choice, bool(conflict_minimal))
-    #         self._ce_generator = CEGenerator(self.ontology.owlapi_manager, j_config)
-    #         self._ce_cache_key = cache_key
-
-    #     # Map owlapy objects -> Java OWL API objects
-    #     j_cls = self.ontology.mapper.map_(class_expression)
-    #     j_fact = self.ontology.mapper.map_(fact)
-    #     j_foil = self.ontology.mapper.map_(foil)
-
-    #     # Build problem and compute
-    #     problem = CEProblem(self.ontology.owlapi_ontology, j_cls, j_fact, j_foil)
-    #     j_res = self._ce_generator.computeExplanation(problem)
-
-    #     if j_res is None:
-    #         return {
-    #             "common": set(),
-    #             "different": set(),
-    #             "conflict": set(),
-    #             "foil_mapping": {},
-    #         }
-
-    #     # Helper: Java Set<OWLAxiom> -> Python set[str]
-    #     def _to_str_set(jset) -> set:
-    #         out = set()
-    #         if jset is not None:
-    #             for ax in jset:
-    #                 try:
-    #                     out.add(str(ax))
-    #                 except Exception:
-    #                     out.add(repr(ax))
-    #         return out
-
-    #     # Collect results
-    #     py_common = _to_str_set(j_res.getCommon())
-    #     py_diff = _to_str_set(j_res.getDifferent())
-    #     py_conflict = _to_str_set(j_res.getConflict())
-
-    #     # Convert Map<OWLNamedIndividual, OWLNamedIndividual> -> dict[str, str]
-    #     py_mapping: Dict[str, str] = {}
-    #     j_map = j_res.getFoilMapping()
-    #     if j_map is not None:
-    #         try:
-    #             for e in j_map.entrySet():
-    #                 py_mapping[str(e.getKey())] = str(e.getValue())
-    #         except Exception:
-    #             for k in j_map.keySet():
-    #                 py_mapping[str(k)] = str(j_map.get(k))
-
-    #     return {
-    #         "common": py_common,
-    #         "different": py_diff,
-    #         "conflict": py_conflict,
-    #         "foil_mapping": py_mapping,
-    #     }
 
 
 def initialize_reasoner(reasoner: str, owlapi_ontology):
