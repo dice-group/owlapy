@@ -349,6 +349,7 @@ print(len(onto.get_abox_axioms()))
 <details><summary> Click me!</summary>
 
 ```python
+from owlapy.owl_axiom import OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.owl_ontology import SyncOntology
@@ -360,7 +361,8 @@ manchester_expr_str = "hasChild some Female"
 ontology = SyncOntology("../KGs/Family/family-benchmark_rich_background.owl")
 reasoner = SyncReasoner(ontology, reasoner="Pellet")
 target_class = manchester_to_owl_expression(manchester_expr_str, "http://www.benchmark.org/family#")
-justifications = reasoner.create_justifications({individual}, target_class, save=True)
+axiom = OWLClassAssertionAxiom(individual, target_class)
+justifications = reasoner.create_axiom_justifications(axiom)
 [print(justification) for justification in justifications]
 ```
 </details>
