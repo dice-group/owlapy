@@ -467,47 +467,47 @@ Module Contents
 
 
 
-   .. py:method:: create_inconsistency_justifications(n_max_justifications: Optional[int] = 10, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
+   .. py:method:: create_laconic_axiom_justifications(axiom_to_explain: owlapy.owl_axiom.OWLAxiom, n_max_justifications: Optional[int] = 10, timeout: int = 10000, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
 
-      Generate multiple justifications for why the ontology is inconsistent.
-      The explanation is based on the following implementation: https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java
-      In inconistent-explainer-1.0.SNAPSHOT.jar, we simply extend the ReasonerFactory of HermiT into an InconsistentHermiTReasonerFactory.
-      The createHermiTOWLReasoner method of that class overrides the default behavior, by forcing the new configuration's throwInconsistentOntologyException attribute to be False.
-      The entire codebase boils down to this single file:
+      Generate multiple laconic justifications for why an axiom is entailed by the ontology.
+      Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
+      An axiom is considered relevant if it participates in the inference of the axiom to explain, and irrelevant otherwise.
+      Laconic justifications are not necessarily minimal, but they do not contain irrelevant axioms.
+      The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge.
 
-      ```
-      package com.owlapy;
-
-      import org.semanticweb.HermiT.Configuration;
-      import org.semanticweb.HermiT.Reasoner;
-      import org.semanticweb.HermiT.Reasoner.ReasonerFactory;
-      import org.semanticweb.owlapi.reasoner.OWLReasoner;
-
-      /** Code based on inconsistency explanations for HermiT from https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java
-      *
-      */
-      /* We simply override the createHermiTOWLReasoner method to set the throwInconsistentOntologyException flag to false.
-      This allows us to compute explanations for inconsistent ontologies without HermiT throwing an exception. */
-
-      public class InconsistentHermiTReasonerFactory extends ReasonerFactory {
-          @Override
-          protected OWLReasoner createHermiTOWLReasoner(Configuration configuration, org.semanticweb.owlapi.model.OWLOntology ontology) {
-              // don't throw an exception since otherwise we cannot compute explanations
-              configuration.throwInconsistentOntologyException=false;
-              return new Reasoner(configuration,ontology);
-          }
-      }
-      ```
-
-      :param n_max_justifications: The maximum number of justifications to generate. Defaults to 10.
+      :param axiom_to_explain: The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See
+      :type axiom_to_explain: OWLAxiom
+      :param n_max_justifications: The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
       :type n_max_justifications: Optional[int], optional
-      :param save: If True, saves all justifications in a new ontology as axioms. Defaults to False.
+      :param timeout: The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+      :type timeout: int, optional
+      :param save: Whether to save the generated justifications to a file. Defaults to False.
       :type save: bool, optional
 
-      :raises ValueError: If the ontology is consistent or if n_max_justifications is not an integer or None.
+      :raises NotImplementedError: If the specified reasoner is not supported for laconic axiom justification or if the axiom type is not supported for conversion into a class expression.
+      :raises ValueError: If n_max_justifications is not an integer or None.
+
+      :returns: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.
+      :rtype: List[Set[OWLAxiom]]
+
+
+
+   .. py:method:: create_inconsistency_justifications(n_max_justifications: Optional[int] = 10, timeout: int = 10000, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
+
+      Generate multiple justifications for why the ontology is inconsistent.
+      The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge.
+
+      :param n_max_justifications: The maximum number of inconsistency justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
+      :type n_max_justifications: Optional[int], optional
+      :param timeout: The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+      :type timeout: int, optional
+      :param save: Whether to save the generated justifications to a file. Defaults to False.
+      :type save: bool, optional
+
+      :raises ValueError: If the ontology is consistent and no inconsistency justifications can be created.
       :raises NotImplementedError: If the specified reasoner is not supported for inconsistency justification.
 
-      :returns: Each item is a justification (set of OWLAxioms) that explains why the ontology is inconsistent.
+      :returns: A list of sets of OWLAxioms, where each set represents an inconsistency justification.
       :rtype: List[Set[OWLAxiom]]
 
 
