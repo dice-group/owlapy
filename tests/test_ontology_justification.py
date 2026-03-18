@@ -174,8 +174,22 @@ class TestCreateJustifications(unittest.TestCase):
             print(f"Justification {i + 1}:")
             for axiom in justification:
                 print(f"  {axiom}")
+
+        # Do the same but with laconic justifications
+        try:
+            laconic_justifications = self.reasoner.create_laconic_axiom_justifications(F1F3_Child, None, save=False)
+        except Exception as e:
+            if not isinstance(e, NotImplementedError):
+                raise RuntimeError(f"Unexpected exception during laconic axiom justification: {e}")
+        print("\nLaconic Justifications:")
+        for i, justification in enumerate(laconic_justifications):
+            print(f"Laconic Justification {i + 1}:")
+            for axiom in justification:
+                print(f"  {axiom}")
+
         # Check that the expected justification is among the generated justifications
         self.assertIn(target_justification, justifications, "Expected justification not found among generated justifications.")
+        self.assertIn(target_justification, laconic_justifications, "Expected justification not found among generated laconic justifications.")
 
 
     def test_inconsistency_check(self):
@@ -296,6 +310,12 @@ class TestCreateJustifications(unittest.TestCase):
             for ax in just:
                 print(f"  {ax}")
 
+            # Verify that each justification is a subset of axioms that form an inconsistent ontology
+            test_ont = SyncOntology(path=IRI.create(default_ns), load=False)
+            for ax in just:
+                test_ont.add_axiom(ax)
+            test_reasoner = SyncReasoner(test_ont)
+            self.assertFalse(test_reasoner.has_consistent_ontology(), "Justification should lead to an inconsistent ontology.")
 
 
 if __name__ == "__main__":
