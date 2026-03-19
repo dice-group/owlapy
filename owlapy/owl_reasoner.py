@@ -1,8 +1,11 @@
 """OWL Reasoner"""
+import os
 import operator
 import logging
 import owlready2
-import os
+import json
+import subprocess
+import sys
 
 from collections import defaultdict, Counter
 from functools import singledispatchmethod, reduce, cached_property
@@ -31,6 +34,7 @@ from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObject
     OWLTopDataProperty
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from jpype import JClass
 
 
 logger = logging.getLogger(__name__)
