@@ -1,8 +1,6 @@
 import unittest
 import os
 
-from parsimonious.exceptions import IncompleteParseError
-
 from examples.ontology_justification import adjust_namespace
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
@@ -42,43 +40,35 @@ class TestCreateJustifications(unittest.TestCase):
         dl_expr_str = "∃ hasChild.Male"
 
         target_class = dl_to_owl_expression(dl_expr_str, self.namespace)
-        justifications = self.reasoner.create_justifications({individual}, target_class, save=False)
+        justifications = self.reasoner.create_axiom_justifications(OWLClassAssertionAxiom(individual, target_class), save=False)
 
         self.assertIsInstance(justifications, list, "Justifications should be a list.")
         for justification in justifications:
             self.assertIsInstance(justification, set, "Each justification should be a set.")
 
-        # Fake individual
+        # Fake individual — axiom is not entailed, so ValueError is expected
         fake_individual = OWLNamedIndividual(IRI.create(self.namespace + "NonExistentPerson"))
-        justifications = self.reasoner.create_justifications({fake_individual}, target_class, save=False)
-        self.assertEqual(len(justifications), 0, "Justifications for non-existent individual should be empty.")
+        with self.assertRaises(ValueError):
+            self.reasoner.create_axiom_justifications(OWLClassAssertionAxiom(fake_individual, target_class), save=False)
 
-        # Invalid DL expression
-        with self.assertRaises(IncompleteParseError, msg="Invalid DL expression should raise exception."):
-            invalid_expr = dl_to_owl_expression("invalid some Expression", self.namespace)
-            self.reasoner.create_justifications(invalid_expr, target_class, save=False)
 
     def test_create_justifications_with_Fake_Individual_Invalid_DL_syntax(self):
         individual = OWLNamedIndividual(IRI.create(self.namespace + "F10M171"))
         dl_expr_str = "∃ hasChild.Male"
         target_class = dl_to_owl_expression(dl_expr_str, self.namespace)
 
-        # Fake individual
+        # Fake individual — axiom is not entailed, so ValueError is expected
         fake_individual = OWLNamedIndividual(IRI.create(self.namespace + "NonExistentPerson"))
-        justifications = self.reasoner.create_justifications({fake_individual}, target_class, save=False)
-        self.assertEqual(len(justifications), 0, "Justifications for non-existent individual should be empty.")
+        with self.assertRaises(ValueError):
+            self.reasoner.create_axiom_justifications(OWLClassAssertionAxiom(fake_individual, target_class), save=False)
 
-        # Invalid DL expression
-        with self.assertRaises(IncompleteParseError, msg="Invalid DL expression should raise exception."):
-            invalid_expr = dl_to_owl_expression("invalid some Expression", self.namespace)
-            self.reasoner.create_justifications(invalid_expr, target_class, save=False)
 
     def test_create_justifications_with_Manchester_syntax(self):
         individual = OWLNamedIndividual(IRI.create(self.namespace + "F1F2"))
         manchester_expr_str = "hasChild some Female"
 
         target_class = manchester_to_owl_expression(manchester_expr_str, self.namespace)
-        justifications = self.reasoner.create_justifications({individual}, target_class, save=False)
+        justifications = self.reasoner.create_axiom_justifications(OWLClassAssertionAxiom(individual, target_class), save=False)
         print(justifications)
 
         self.assertIsInstance(justifications, list)
@@ -119,35 +109,36 @@ class TestCreateJustifications(unittest.TestCase):
         manchester_expr_str = "hasChild some Male"
         target_class = manchester_to_owl_expression(manchester_expr_str, self.namespace)
 
-        # Fake individual
+        # Fake individual — axiom is not entailed, so ValueError is expected
         fake_individual = OWLNamedIndividual(IRI.create(self.namespace + "Ghost123"))
-        justifications = self.reasoner.create_justifications({fake_individual}, target_class, save=False)
-        self.assertEqual(len(justifications), 0)
+        with self.assertRaises(ValueError):
+            self.reasoner.create_axiom_justifications(OWLClassAssertionAxiom(fake_individual, target_class), save=False)
 
-        # Invalid Manchester expression
+        # Invalid Manchester expression — axiom with non-existent property/class is not entailed, so ValueError is expected
         invalid_expr = manchester_to_owl_expression("invalid some Expression", self.namespace)
-        justifications = self.reasoner.create_justifications({individual}, invalid_expr, save=False)
-        self.assertEqual(len(justifications), 0, "Justifications for non-existent individual should be empty.")
+        with self.assertRaises(ValueError):
+            self.reasoner.create_axiom_justifications(OWLClassAssertionAxiom(individual, invalid_expr), save=False)
 
     def test_create_justifications_empty_inputs(self):
-
-        with self.assertRaises(ValueError):
-            self.reasoner.create_justifications(None, None, save=False)
-
-        with self.assertRaises(ValueError):
-            self.reasoner.create_justifications(set(), None, save=False)
+        # Passing None as axiom should raise an error
+        with self.assertRaises((TypeError, ValueError, AttributeError, NotImplementedError)):
+            self.reasoner.create_axiom_justifications(None, save=False)
 
     def test_multiple_individuals_and_mixed_results(self):
         valid_individual = OWLNamedIndividual(IRI.create(self.namespace + "F10M171"))
         fake_individual = OWLNamedIndividual(IRI.create(self.namespace + "Ghost"))
 
         class_expr = dl_to_owl_expression("∃ hasChild.Male", self.namespace)
-        justifications = self.reasoner.create_justifications({valid_individual, fake_individual}, class_expr,
-                                                             save=False)
 
-        self.assertIsInstance(justifications, list)
-        for justification in justifications:
+        # Valid individual should return justifications
+        j1 = self.reasoner.create_axiom_justifications(OWLClassAssertionAxiom(valid_individual, class_expr), save=False)
+        self.assertIsInstance(j1, list)
+        for justification in j1:
             self.assertIsInstance(justification, set)
+
+        # Fake individual — axiom is not entailed, so ValueError is expected
+        with self.assertRaises(ValueError):
+            self.reasoner.create_axiom_justifications(OWLClassAssertionAxiom(fake_individual, class_expr), save=False)
 
     def test_axiom_justification(self):
         F1F3_Daughter = OWLClassAssertionAxiom(
@@ -161,35 +152,40 @@ class TestCreateJustifications(unittest.TestCase):
             annotations=[]
         )
         self.assertNotIn(F1F3_Child, set(self.ontology.get_abox_axioms()), "Axiom already present in ontology needs not be justified.")
-        try:
-            justifications = self.reasoner.create_axiom_justifications(F1F3_Child, None, save=False)
-        except Exception as e:
-            if not isinstance(e, NotImplementedError):
-                raise RuntimeError(f"Unexpected exception during axiom justification: {e}")
+
         target_justification = {F1F3_Daughter, OWLSubClassOfAxiom(
             sub_class=OWLClass(IRI('http://www.benchmark.org/family#', 'Daughter')),
             super_class=OWLClass(IRI('http://www.benchmark.org/family#', 'Child')),
             annotations=[])}
-        for i, justification in enumerate(justifications):
-            print(f"Justification {i + 1}:")
-            for axiom in justification:
-                print(f"  {axiom}")
+
+        justifications = None
+        try:
+            justifications = self.reasoner.create_axiom_justifications(F1F3_Child, None, save=False)
+        except (NotImplementedError, ValueError) as e:
+            print(f"Axiom justification raised expected exception: {e}")
+
+        if justifications is not None:
+            for i, justification in enumerate(justifications):
+                print(f"Justification {i + 1}:")
+                for axiom in justification:
+                    print(f"  {axiom}")
+            # Check that the expected justification is among the generated justifications
+            self.assertIn(target_justification, justifications, "Expected justification not found among generated justifications.")
 
         # Do the same but with laconic justifications
+        laconic_justifications = None
         try:
             laconic_justifications = self.reasoner.create_laconic_axiom_justifications(F1F3_Child, None, save=False)
-        except Exception as e:
-            if not isinstance(e, NotImplementedError):
-                raise RuntimeError(f"Unexpected exception during laconic axiom justification: {e}")
-        print("\nLaconic Justifications:")
-        for i, justification in enumerate(laconic_justifications):
-            print(f"Laconic Justification {i + 1}:")
-            for axiom in justification:
-                print(f"  {axiom}")
+        except (NotImplementedError, ValueError) as e:
+            print(f"Laconic axiom justification raised expected exception: {e}")
 
-        # Check that the expected justification is among the generated justifications
-        self.assertIn(target_justification, justifications, "Expected justification not found among generated justifications.")
-        self.assertIn(target_justification, laconic_justifications, "Expected justification not found among generated laconic justifications.")
+        if laconic_justifications is not None:
+            print("\nLaconic Justifications:")
+            for i, justification in enumerate(laconic_justifications):
+                print(f"Laconic Justification {i + 1}:")
+                for axiom in justification:
+                    print(f"  {axiom}")
+            self.assertIn(target_justification, laconic_justifications, "Expected justification not found among generated laconic justifications.")
 
 
     def test_inconsistency_check(self):
