@@ -1168,73 +1168,199 @@ class SyncReasoner(AbstractOWLReasoner):
 
         return justifications
     
-    def create_inconsistency_justifications(self,
+    # def create_inconsistency_justifications(self,
+    #                                         n_max_justifications: Optional[int] = 10,
+    #                                         save: bool = False) -> List[Set[OWLAxiom]]:
+    #     """
+    #     Generate multiple justifications for why the ontology is inconsistent.
+    #     The explanation is based on the following implementation: https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java
+    #     In inconistent-explainer-1.0.SNAPSHOT.jar, we simply extend the ReasonerFactory of HermiT into an InconsistentHermiTReasonerFactory.
+    #     The createHermiTOWLReasoner method of that class overrides the default behavior, by forcing the new configuration's throwInconsistentOntologyException attribute to be False.
+    #     The entire codebase boils down to this single file:
+
+    #     ```
+    #     package com.owlapy;
+
+    #     import org.semanticweb.HermiT.Configuration;
+    #     import org.semanticweb.HermiT.Reasoner;
+    #     import org.semanticweb.HermiT.Reasoner.ReasonerFactory;
+    #     import org.semanticweb.owlapi.reasoner.OWLReasoner;
+
+    #     /** Code based on inconsistency explanations for HermiT from https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java
+    #     * 
+    #     */
+    #     /* We simply override the createHermiTOWLReasoner method to set the throwInconsistentOntologyException flag to false.
+    #     This allows us to compute explanations for inconsistent ontologies without HermiT throwing an exception. */
+
+    #     public class InconsistentHermiTReasonerFactory extends ReasonerFactory {
+    #         @Override
+    #         protected OWLReasoner createHermiTOWLReasoner(Configuration configuration, org.semanticweb.owlapi.model.OWLOntology ontology) {
+    #             // don't throw an exception since otherwise we cannot compute explanations 
+    #             configuration.throwInconsistentOntologyException=false;
+    #             return new Reasoner(configuration,ontology);
+    #         }  
+    #     }
+    #     ```
+
+    #     Args:
+    #         n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.
+    #         save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.
+
+    #     Raises:
+    #         ValueError: If the ontology is consistent or if n_max_justifications is not an integer or None.
+    #         NotImplementedError: If the specified reasoner is not supported for inconsistency justification.
+
+    #     Returns:
+    #         List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the ontology is inconsistent.
+    #     """
+    #     if self.has_consistent_ontology():
+    #         raise ValueError("The ontology is consistent. No inconsistency justifications to create.")
+        
+    #     import jpype
+    #     from com.clarkparsia.owlapi.explanation import (
+    #         BlackBoxExplanation, HSTExplanationGenerator
+    #     )
+    #     from org.semanticweb.HermiT import Configuration
+    #     InconsistentHermiTReasonerFactory = jpype.JClass(
+    #         "com.owlapy.InconsistentHermiTReasonerFactory"
+    #     )
+
+    #     j_reasoner_factory = InconsistentHermiTReasonerFactory()
+    #     j_manager = self._owlapi_manager
+    #     j_ontology = self._owlapi_ontology
+    #     j_configuration = Configuration()
+    #     # We want to get justifications even if the ontology is inconsistent
+    #     j_configuration.throwInconsistentOntologyException = False  
+    #     j_reasoner = j_reasoner_factory.createReasoner(j_ontology, j_configuration)
+    #     blackbox_exp = BlackBoxExplanation(j_ontology, j_reasoner_factory, j_reasoner)
+    #     explanation_gen = HSTExplanationGenerator(blackbox_exp)
+    #     justifications = []
+    #     if n_max_justifications is not None and not isinstance(
+    #         n_max_justifications, int
+    #     ):
+    #         raise ValueError(
+    #             f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
+    #         )
+    #     if n_max_justifications is not None and n_max_justifications > 0:
+    #         j_explanations = explanation_gen.getExplanations(j_manager.getOWLDataFactory().getOWLThing(), n_max_justifications)
+    #     else:
+    #         j_explanations = explanation_gen.getExplanations(j_manager.getOWLDataFactory().getOWLThing())
+
+    #     if not j_explanations:
+    #         logger.info(
+    #             "No justifications found for inconsistency by checking against owl:Thing. Retrying with other class expressions."
+    #         )
+    #         # Retry by getting explanations for any class expression in an axiom (e.g., class assertion)
+    #         from org.semanticweb.owlapi.model.parameters import Imports
+    #         # Get the converter too since we might need to convert some axioms into class expressions
+    #         from com.clarkparsia.owlapi.explanation import SatisfiabilityConverter
+    #         j_axioms = j_ontology.getAxioms(Imports.INCLUDED)
+    #         if not j_axioms:
+    #             raise ValueError("No justifications found for inconsistency, even though the ontology is inconsistent. This might be due to the reasoner not supporting inconsistency justification.")
+    #         converter = SatisfiabilityConverter(j_manager.getOWLDataFactory())
+    #         for j_axiom in j_axioms:
+    #             try:
+    #                 j_ce = converter.convert(j_axiom)
+    #             except Exception as e:
+    #                 if "not implemented" in str(e).lower():
+    #                     # If the axiom cannot be converted into a class expression, skip it
+    #                     continue
+    #                 raise e
+    #             if n_max_justifications is not None and n_max_justifications > 0:
+    #                 j_explanations = explanation_gen.getExplanations(j_ce, n_max_justifications)
+    #             else:
+    #                 j_explanations = explanation_gen.getExplanations(j_ce)
+    #             if j_explanations:
+    #                 # Add j_axiom itself to the justifications since it is part of the inconsistency
+    #                 j_explanations = [set(j_expl) | {j_axiom} for j_expl in j_explanations]
+    #                 break
+    #     if not j_explanations:
+    #         logger.info(
+    #             "No justifications found for inconsistency by checking against any class expression in axioms. This might be due to the reasoner not supporting inconsistency justification."
+    #         )
+
+    #     for j_expl in j_explanations:
+    #         py_axioms = {self.mapper.map_(ax) for ax in j_expl}
+    #         justifications.append(py_axioms)
+
+    #     # Save to justifications.owl if requested
+    #     if save:
+    #         from owlapy.owl_ontology import SyncOntology
+    #         from owlapy.iri import IRI
+
+    #         # Create a new in-memory ontology to store justifications
+    #         just_iri = IRI.create("http://example.org/inconsistency_justifications")
+    #         just_ontology = SyncOntology(path=just_iri, load=False)
+
+    #         for axiom_set in justifications:
+    #             for axiom in axiom_set:
+    #                 just_ontology.add_axiom(axiom)
+
+    #         # Save to file
+    #         save_path = "inconsistency_justifications.owl"
+    #         just_ontology.save(save_path)
+    #         print(f"Inconsistency justifications saved to {os.path.abspath(save_path)}")
+
+    #     return justifications
+
+    def create_laconic_axiom_justifications(self,
+                                            axiom_to_explain: OWLAxiom,
                                             n_max_justifications: Optional[int] = 10,
+                                            timeout: int = 10_000,
                                             save: bool = False) -> List[Set[OWLAxiom]]:
-        """
-        Generate multiple justifications for why the ontology is inconsistent.
-        The explanation is based on the following implementation: https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java
-        In inconistent-explainer-1.0.SNAPSHOT.jar, we simply extend the ReasonerFactory of HermiT into an InconsistentHermiTReasonerFactory.
-        The createHermiTOWLReasoner method of that class overrides the default behavior, by forcing the new configuration's throwInconsistentOntologyException attribute to be False.
-        The entire codebase boils down to this single file:
-
-        ```
-        package com.owlapy;
-
-        import org.semanticweb.HermiT.Configuration;
-        import org.semanticweb.HermiT.Reasoner;
-        import org.semanticweb.HermiT.Reasoner.ReasonerFactory;
-        import org.semanticweb.owlapi.reasoner.OWLReasoner;
-
-        /** Code based on inconsistency explanations for HermiT from https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java
-        * 
-        */
-        /* We simply override the createHermiTOWLReasoner method to set the throwInconsistentOntologyException flag to false.
-        This allows us to compute explanations for inconsistent ontologies without HermiT throwing an exception. */
-
-        public class InconsistentHermiTReasonerFactory extends ReasonerFactory {
-            @Override
-            protected OWLReasoner createHermiTOWLReasoner(Configuration configuration, org.semanticweb.owlapi.model.OWLOntology ontology) {
-                // don't throw an exception since otherwise we cannot compute explanations 
-                configuration.throwInconsistentOntologyException=false;
-                return new Reasoner(configuration,ontology);
-            }  
-        }
-        ```
+        """Generate multiple laconic justifications for why an axiom is entailed by the ontology.
+        Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
+        An axiom is considered relevant if it participates in the inference of the axiom to explain, and irrelevant otherwise.
+        Laconic justifications are not necessarily minimal, but they do not contain irrelevant axioms.
+        The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge.
 
         Args:
-            n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.
-            save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.
+            axiom_to_explain (OWLAxiom): The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See
+            n_max_justifications (Optional[int], optional): The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
+            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.
 
         Raises:
-            ValueError: If the ontology is consistent or if n_max_justifications is not an integer or None.
-            NotImplementedError: If the specified reasoner is not supported for inconsistency justification.
+            NotImplementedError: If the specified reasoner is not supported for laconic axiom justification or if the axiom type is not supported for conversion into a class expression.
+            ValueError: If n_max_justifications is not an integer or None.
 
         Returns:
-            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the ontology is inconsistent.
+            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.
         """
-        if self.has_consistent_ontology():
-            raise ValueError("The ontology is consistent. No inconsistency justifications to create.")
         
-        import jpype
-        from com.clarkparsia.owlapi.explanation import (
-            BlackBoxExplanation, HSTExplanationGenerator
-        )
-        from org.semanticweb.HermiT import Configuration
-        InconsistentHermiTReasonerFactory = jpype.JClass(
-            "com.owlapy.InconsistentHermiTReasonerFactory"
-        )
+        from org.semanticweb.owl.explanation.api import ExplanationManager
+        from org.semanticweb.owl.explanation.impl.laconic import LaconicExplanationGeneratorFactory
 
-        j_reasoner_factory = InconsistentHermiTReasonerFactory()
-        j_manager = self._owlapi_manager
+        # Get a hold of the reasoner factory and the ontology
+        if self.reasoner_name == "Pellet":
+            from openllet.owlapi import PelletReasonerFactory
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+            j_reasoner_factory = ReasonerFactory()
+        elif self.reasoner_name == "ELK":
+            from org.semanticweb.elk.owlapi import ElkReasonerFactory
+            j_reasoner_factory = ElkReasonerFactory()
+        elif self.reasoner_name == "JFact":
+            from uk.ac.manchester.cs.jfact import JFactFactory
+            j_reasoner_factory = JFactFactory()
+        elif self.reasoner_name == "Openllet":
+            from openllet.owlapi import PelletReasonerFactory
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "Structural":
+            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
+            j_reasoner_factory = StructuralReasonerFactory()
+        else:
+            raise NotImplementedError(f"Reasoner '{self.reasoner_name}' is not supported for laconic axiom justification.")
+        
         j_ontology = self._owlapi_ontology
-        j_configuration = Configuration()
-        # We want to get justifications even if the ontology is inconsistent
-        j_configuration.throwInconsistentOntologyException = False  
-        j_reasoner = j_reasoner_factory.createReasoner(j_ontology, j_configuration)
-        blackbox_exp = BlackBoxExplanation(j_ontology, j_reasoner_factory, j_reasoner)
-        explanation_gen = HSTExplanationGenerator(blackbox_exp)
-        justifications = []
+
+        j_gen_fac = ExplanationManager.createExplanationGeneratorFactory(j_reasoner_factory)
+        j_laconic_gen_fac = LaconicExplanationGeneratorFactory(j_gen_fac)
+
+        j_gen = j_laconic_gen_fac.createExplanationGenerator(j_ontology)
+
+        j_axiom = self.mapper.map_(axiom_to_explain)
         if n_max_justifications is not None and not isinstance(
             n_max_justifications, int
         ):
@@ -1242,47 +1368,98 @@ class SyncReasoner(AbstractOWLReasoner):
                 f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
             )
         if n_max_justifications is not None and n_max_justifications > 0:
-            j_explanations = explanation_gen.getExplanations(j_manager.getOWLDataFactory().getOWLThing(), n_max_justifications)
+            j_explanations = j_gen.getExplanations(j_axiom, n_max_justifications)
         else:
-            j_explanations = explanation_gen.getExplanations(j_manager.getOWLDataFactory().getOWLThing())
-
-        if not j_explanations:
-            logger.info(
-                "No justifications found for inconsistency by checking against owl:Thing. Retrying with other class expressions."
-            )
-            # Retry by getting explanations for any class expression in an axiom (e.g., class assertion)
-            from org.semanticweb.owlapi.model.parameters import Imports
-            # Get the converter too since we might need to convert some axioms into class expressions
-            from com.clarkparsia.owlapi.explanation import SatisfiabilityConverter
-            j_axioms = j_ontology.getAxioms(Imports.INCLUDED)
-            if not j_axioms:
-                raise ValueError("No justifications found for inconsistency, even though the ontology is inconsistent. This might be due to the reasoner not supporting inconsistency justification.")
-            converter = SatisfiabilityConverter(j_manager.getOWLDataFactory())
-            for j_axiom in j_axioms:
-                try:
-                    j_ce = converter.convert(j_axiom)
-                except Exception as e:
-                    if "not implemented" in str(e).lower():
-                        # If the axiom cannot be converted into a class expression, skip it
-                        continue
-                    raise e
-                if n_max_justifications is not None and n_max_justifications > 0:
-                    j_explanations = explanation_gen.getExplanations(j_ce, n_max_justifications)
-                else:
-                    j_explanations = explanation_gen.getExplanations(j_ce)
-                if j_explanations:
-                    # Add j_axiom itself to the justifications since it is part of the inconsistency
-                    j_explanations = [set(j_expl) | {j_axiom} for j_expl in j_explanations]
-                    break
-        if not j_explanations:
-            logger.info(
-                "No justifications found for inconsistency by checking against any class expression in axioms. This might be due to the reasoner not supporting inconsistency justification."
-            )
-
+            j_explanations = j_gen.getExplanations(j_axiom)
+        justifications = []
         for j_expl in j_explanations:
-            py_axioms = {self.mapper.map_(ax) for ax in j_expl}
+            py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
             justifications.append(py_axioms)
+        
+        # Save to justifications.owl if requested
+        if save:
+            from owlapy.owl_ontology import SyncOntology
+            from owlapy.iri import IRI
 
+            # Create a new in-memory ontology to store justifications
+            just_iri = IRI.create("http://example.org/laconic_axiom_justifications")
+            just_ontology = SyncOntology(path=just_iri, load=False)
+
+            for axiom_set in justifications:
+                for axiom in axiom_set:
+                    just_ontology.add_axiom(axiom)
+
+            # Save to file
+            save_path = "laconic_axiom_justifications.owl"
+            just_ontology.save(save_path)
+            print(f"Laconic axiom justifications saved to {os.path.abspath(save_path)}")
+        return justifications
+
+
+    def create_inconsistency_justifications(self,
+                                            n_max_justifications: Optional[int] = 10,
+                                            timeout: int = 10_000,
+                                            save: bool = False) -> List[Set[OWLAxiom]]:
+        """Generate multiple justifications for why the ontology is inconsistent.
+        The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge. 
+
+        Args:
+            n_max_justifications (Optional[int], optional): The maximum number of inconsistency justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
+            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.
+
+        Raises:
+            ValueError: If the ontology is consistent and no inconsistency justifications can be created.
+            NotImplementedError: If the specified reasoner is not supported for inconsistency justification.
+
+        Returns:
+            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents an inconsistency justification.
+        """
+        # Version based on owlexplainer
+        if self.has_consistent_ontology():
+            raise ValueError("The ontology is consistent. No inconsistency justifications to create.")
+        
+        from org.semanticweb.owl.explanation.impl.blackbox.checker import InconsistentOntologyExplanationGeneratorFactory
+    
+        # Get the reasoner factory
+        if self.reasoner_name == "Pellet":
+            from openllet.owlapi import PelletReasonerFactory
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+            j_reasoner_factory = ReasonerFactory()
+        elif self.reasoner_name == "ELK":
+            from org.semanticweb.elk.owlapi import ElkReasonerFactory
+            j_reasoner_factory = ElkReasonerFactory()
+        elif self.reasoner_name == "JFact":
+            from uk.ac.manchester.cs.jfact import JFactFactory
+            j_reasoner_factory = JFactFactory()
+        elif self.reasoner_name == "Openllet":
+            from openllet.owlapi import PelletReasonerFactory
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "Structural":
+            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
+            j_reasoner_factory = StructuralReasonerFactory()
+        else:
+            raise NotImplementedError(f"Reasoner '{self.reasoner_name}' is not supported for inconsistency justification.")
+        
+        j_exp_generator_factory = InconsistentOntologyExplanationGeneratorFactory(j_reasoner_factory, timeout)
+        j_ontology = self._owlapi_ontology
+        j_exp_generator = j_exp_generator_factory.createExplanationGenerator(j_ontology)
+
+        # Ask for explanations for owl:Thing being unsatisfiable, which is the case if the ontology is inconsistent
+        j_owl_manager = self._owlapi_manager
+        j_entailment = j_owl_manager.getOWLDataFactory().getOWLSubClassOfAxiom(
+            j_owl_manager.getOWLDataFactory().getOWLThing(),
+            j_owl_manager.getOWLDataFactory().getOWLNothing()
+        )
+
+        # Get the explanations
+        j_explanations = j_exp_generator.getExplanations(j_entailment, n_max_justifications)
+        justifications = []
+        for j_expl in j_explanations:
+            py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
+            justifications.append(py_axioms)
         # Save to justifications.owl if requested
         if save:
             from owlapy.owl_ontology import SyncOntology
@@ -1300,7 +1477,6 @@ class SyncReasoner(AbstractOWLReasoner):
             save_path = "inconsistency_justifications.owl"
             just_ontology.save(save_path)
             print(f"Inconsistency justifications saved to {os.path.abspath(save_path)}")
-
         return justifications
 
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
