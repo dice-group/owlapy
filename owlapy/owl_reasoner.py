@@ -1955,88 +1955,88 @@ class SyncReasoner(AbstractOWLReasoner):
         }
 
         worker_code = r'''
-        import json
-        import os
-        import sys
-        import jpype
-        import jpype.imports
-        from jpype import JClass
-        
-        def _to_str_set(jset):
-            return {str(ax) for ax in jset} if jset is not None else set()
-        
-        payload = json.load(sys.stdin)
-        
-        jar_name = next(f for f in os.listdir(payload["contr_dir"]) if f.endswith(".jar"))
-        jar_file = os.path.join(payload["contr_dir"], jar_name)
-        
-        jpype.startJVM(classpath=[jar_file])
-        
-        from java.io import File
-        from org.semanticweb.owlapi.apibinding import OWLManager
-        from org.semanticweb.owlapi.model import IRI as JIRI
-        from org.semanticweb.owlapi.expression import ShortFormEntityChecker
-        from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
-        
-        CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
-        CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
-        ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
-        RC = JClass("anonymized.contrastive.config.ReasonerChoice")
-        
-        manager = OWLManager.createOWLOntologyManager()
-        ontology = manager.loadOntologyFromOntologyDocument(File(payload["ontology_path"]))
-        data_factory = manager.getOWLDataFactory()
-        
-        parser = OWLManager.createManchesterParser()
-        parser.setDefaultOntology(ontology)
-        parser.setStringToParse(payload["class_expression_manchester"])
-        
-        short_form_provider = SimpleShortFormProvider()
-        bidi = BidirectionalShortFormProviderAdapter(
-            manager,
-            jpype.java.util.Collections.singleton(ontology),
-            short_form_provider
-        )
-        parser.setOWLEntityChecker(ShortFormEntityChecker(bidi))
-        j_cls = parser.parseClassExpression()
-        
-        j_fact = data_factory.getOWLNamedIndividual(JIRI.create(payload["fact_iri"]))
-        j_foil = data_factory.getOWLNamedIndividual(JIRI.create(payload["foil_iri"]))
-        
-        j_choice = getattr(RC, payload["reasoner_name"], RC.HermiT)
-        j_config = ExplanationConfig(j_choice, payload["conflict_minimal"])
-        generator = CEGenerator(manager, j_config)
-        
-        problem = CEProblem(ontology, j_cls, j_fact, j_foil)
-        j_res = generator.computeExplanation(problem)
-        
-        if j_res is None:
-            result = {
-                "common": [],
-                "different": [],
-                "conflict": [],
-                "foil_mapping": {},
-            }
-        else:
-            py_common = sorted(_to_str_set(j_res.getCommon()))
-            py_diff = sorted(_to_str_set(j_res.getDifferent()))
-            py_conflict = sorted(_to_str_set(j_res.getConflict()))
-        
-            py_mapping = {}
-            j_map = j_res.getFoilMapping()
-            if j_map is not None:
-                for e in j_map.entrySet():
-                    py_mapping[str(e.getKey())] = str(e.getValue())
-        
-            result = {
-                "common": py_common,
-                "different": py_diff,
-                "conflict": py_conflict,
-                "foil_mapping": py_mapping,
-            }
-        
-        print(json.dumps(result))
-        '''
+import json
+import os
+import sys
+import jpype
+import jpype.imports
+from jpype import JClass
+
+def _to_str_set(jset):
+    return {str(ax) for ax in jset} if jset is not None else set()
+
+payload = json.load(sys.stdin)
+
+jar_name = next(f for f in os.listdir(payload["contr_dir"]) if f.endswith(".jar"))
+jar_file = os.path.join(payload["contr_dir"], jar_name)
+
+jpype.startJVM(classpath=[jar_file])
+
+from java.io import File
+from org.semanticweb.owlapi.apibinding import OWLManager
+from org.semanticweb.owlapi.model import IRI as JIRI
+from org.semanticweb.owlapi.expression import ShortFormEntityChecker
+from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
+
+CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
+CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
+ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
+RC = JClass("anonymized.contrastive.config.ReasonerChoice")
+
+manager = OWLManager.createOWLOntologyManager()
+ontology = manager.loadOntologyFromOntologyDocument(File(payload["ontology_path"]))
+data_factory = manager.getOWLDataFactory()
+
+parser = OWLManager.createManchesterParser()
+parser.setDefaultOntology(ontology)
+parser.setStringToParse(payload["class_expression_manchester"])
+
+short_form_provider = SimpleShortFormProvider()
+bidi = BidirectionalShortFormProviderAdapter(
+    manager,
+    jpype.java.util.Collections.singleton(ontology),
+    short_form_provider
+)
+parser.setOWLEntityChecker(ShortFormEntityChecker(bidi))
+j_cls = parser.parseClassExpression()
+
+j_fact = data_factory.getOWLNamedIndividual(JIRI.create(payload["fact_iri"]))
+j_foil = data_factory.getOWLNamedIndividual(JIRI.create(payload["foil_iri"]))
+
+j_choice = getattr(RC, payload["reasoner_name"], RC.HermiT)
+j_config = ExplanationConfig(j_choice, payload["conflict_minimal"])
+generator = CEGenerator(manager, j_config)
+
+problem = CEProblem(ontology, j_cls, j_fact, j_foil)
+j_res = generator.computeExplanation(problem)
+
+if j_res is None:
+    result = {
+        "common": [],
+        "different": [],
+        "conflict": [],
+        "foil_mapping": {},
+    }
+else:
+    py_common = sorted(_to_str_set(j_res.getCommon()))
+    py_diff = sorted(_to_str_set(j_res.getDifferent()))
+    py_conflict = sorted(_to_str_set(j_res.getConflict()))
+
+    py_mapping = {}
+    j_map = j_res.getFoilMapping()
+    if j_map is not None:
+        for e in j_map.entrySet():
+            py_mapping[str(e.getKey())] = str(e.getValue())
+
+    result = {
+        "common": py_common,
+        "different": py_diff,
+        "conflict": py_conflict,
+        "foil_mapping": py_mapping,
+    }
+
+print(json.dumps(result))
+'''
 
         proc = subprocess.run(
             [sys.executable, "-c", worker_code],
