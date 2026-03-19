@@ -411,22 +411,6 @@ Module Contents
    a particular ontology - the "root" ontology.
 
 
-   .. py:method:: create_justifications(owl_individuals: Set[owlapy.owl_individual.OWLNamedIndividual] = None, owl_class_expression: owlapy.class_expression.OWLClassExpression = None, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
-
-      Generate multiple justifications for why the given individual(s) are inferred to be instances of the specified class.
-
-      :param owl_individuals: Set of individuals to explain.
-      :type owl_individuals: Set[OWLNamedIndividual]
-      :param owl_class_expression: Class expression to justify.
-      :type owl_class_expression: OWLClassExpression
-      :param save: If True, saves all justifications in a new ontology as axioms.
-      :type save: bool
-
-      :returns: Each item is a justification (set of OWLAxioms).
-      :rtype: List[Set[OWLAxiom]]
-
-
-
    .. py:method:: create_axiom_justifications(axiom_to_explain: owlapy.owl_axiom.OWLAxiom, n_max_justifications: Optional[int] = 10, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
 
       Generate multiple justifications for why an axiom is entailed by the ontology.
@@ -941,6 +925,26 @@ Module Contents
       Gets the "root" ontology that is loaded into this reasoner. The reasoner takes into account the axioms in
       this ontology and its import's closure.
 
+
+
+   .. py:method:: create_justifications(owl_individuals: Set[owlapy.owl_individual.OWLNamedIndividual] = None, owl_class_expression: owlapy.class_expression.OWLClassExpression = None, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
+
+      Generate multiple justifications for why the given individual(s) are inferred
+      to be instances of the specified class.
+
+      :param owl_individuals: Set of individuals to explain.
+      :type owl_individuals: Set[OWLNamedIndividual]
+      :param owl_class_expression: Class expression to justify.
+      :type owl_class_expression: OWLClassExpression
+      :param save: If True, saves all justifications in a new ontology as axioms.
+      :type save: bool
+
+      :returns: Each item is a justification (set of OWLAxioms).
+      :rtype: List[Set[OWLAxiom]]
+
+
+
+   .. py:method:: get_contrastive_explanation(class_expression: owlapy.class_expression.OWLClassExpression, fact: owlapy.owl_individual.OWLNamedIndividual, foil: owlapy.owl_individual.OWLNamedIndividual, conflict_minimal: bool = True) -> Dict[str, object]
 
 
 .. py:function:: initialize_reasoner(reasoner: str, owlapi_ontology)
