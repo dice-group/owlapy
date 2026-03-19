@@ -1,8 +1,11 @@
 """OWL Reasoner"""
+import os
 import operator
 import logging
 import owlready2
-import os
+import json
+import subprocess
+import sys
 
 from collections import defaultdict, Counter
 from functools import singledispatchmethod, reduce, cached_property
@@ -31,6 +34,7 @@ from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObject
     OWLTopDataProperty
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from jpype import JClass
 
 
 logger = logging.getLogger(__name__)
@@ -1022,72 +1026,7 @@ class StructuralReasoner(AbstractOWLReasoner):
         self.reset()
 
 
-class SyncReasoner(AbstractOWLReasoner):
-
-    def create_justifications(self, owl_individuals: Set[OWLNamedIndividual] = None,
-                              owl_class_expression: OWLClassExpression = None,
-                              save: bool = False) -> List[Set[OWLAxiom]]:
-        """
-        Generate multiple justifications for why the given individual(s) are inferred to be instances of the specified class.
-
-        Args:
-            owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.
-            owl_class_expression (OWLClassExpression): Class expression to justify.
-            save (bool): If True, saves all justifications in a new ontology as axioms.
-
-        Returns:
-            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms).
-        """
-        if owl_individuals is None or owl_class_expression is None:
-            raise ValueError("Both owl_individuals and owl_class_expression are required.")
-
-        from com.clarkparsia.owlapi.explanation import (
-            BlackBoxExplanation, HSTExplanationGenerator, SatisfiabilityConverter
-        )
-        from openllet.owlapi import PelletReasonerFactory
-
-        j_class_expr = self.mapper.map_(owl_class_expression)
-        j_ontology = self._owlapi_ontology
-        j_reasoner = self._owlapi_reasoner
-        j_data_factory = self._owlapi_manager.getOWLDataFactory()
-
-        reasoner_factory = PelletReasonerFactory.getInstance()
-        blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
-        explanation_gen = HSTExplanationGenerator(blackbox_exp)
-        converter = SatisfiabilityConverter(j_data_factory)
-
-        justifications = []
-
-        for ind in owl_individuals:
-            j_individual = self.mapper.map_(ind)
-            class_assertion_axiom = j_data_factory.getOWLClassAssertionAxiom(j_class_expr, j_individual)
-            unsat_class = converter.convert(class_assertion_axiom)
-
-            j_explanations = explanation_gen.getExplanations(unsat_class)
-
-            for j_expl in j_explanations:
-                py_axioms = {self.mapper.map_(ax) for ax in j_expl}
-                justifications.append(py_axioms)
-
-        # Save to justifications.owl if requested
-        if save:
-            from owlapy.owl_ontology import SyncOntology
-            from owlapy.iri import IRI
-
-            # Create a new in-memory ontology to store justifications
-            just_iri = IRI.create("http://example.org/justifications")
-            just_ontology = SyncOntology(path=just_iri, load=False)
-
-            for axiom_set in justifications:
-                for axiom in axiom_set:
-                    just_ontology.add_axiom(axiom)
-
-            # Save to file
-            save_path = "justifications.owl"
-            just_ontology.save(save_path)
-            print(f"Justifications saved to {os.path.abspath(save_path)}")
-
-        return justifications
+class SyncReasoner(AbstractOWLReasoner):    
 
     def create_axiom_justifications(self,
                                     axiom_to_explain: OWLAxiom,
@@ -1572,6 +1511,7 @@ class SyncReasoner(AbstractOWLReasoner):
         self.mapper = self.ontology.mapper
         self.inference_types_mapping = import_and_include_axioms_generators()
         self._owlapi_reasoner = initialize_reasoner(reasoner, self._owlapi_ontology)
+
 
     def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
@@ -2119,6 +2059,233 @@ class SyncReasoner(AbstractOWLReasoner):
 
     def get_root_ontology(self) -> AbstractOWLOntology:
         return self.ontology
+    
+    
+    def create_justifications(
+            self,
+            owl_individuals: Set[OWLNamedIndividual] = None,
+            owl_class_expression: OWLClassExpression = None,
+            save: bool = False
+    ) -> List[Set[OWLAxiom]]:
+        """
+        Generate multiple justifications for why the given individual(s) are inferred
+        to be instances of the specified class.
+
+        Args:
+            owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.
+            owl_class_expression (OWLClassExpression): Class expression to justify.
+            save (bool): If True, saves all justifications in a new ontology as axioms.
+
+        Returns:
+            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms).
+        """
+        if owl_individuals is None or owl_class_expression is None:
+            raise ValueError(
+                "Both owl_individuals and owl_class_expression are required."
+            )
+
+        from com.clarkparsia.owlapi.explanation import (
+            BlackBoxExplanation,
+            HSTExplanationGenerator,
+            SatisfiabilityConverter,
+        )
+        from openllet.owlapi import PelletReasonerFactory
+
+        j_class_expr = self.mapper.map_(owl_class_expression)
+        j_ontology = self._owlapi_ontology
+        j_reasoner = self._owlapi_reasoner
+        j_data_factory = self._owlapi_manager.getOWLDataFactory()
+
+        reasoner_factory = PelletReasonerFactory.getInstance()
+        blackbox_exp = BlackBoxExplanation(
+            j_ontology,
+            reasoner_factory,
+            j_reasoner,
+        )
+        explanation_gen = HSTExplanationGenerator(blackbox_exp)
+        converter = SatisfiabilityConverter(j_data_factory)
+
+        justifications: List[Set[OWLAxiom]] = []
+
+        for ind in owl_individuals:
+            j_individual = self.mapper.map_(ind)
+            class_assertion_axiom = j_data_factory.getOWLClassAssertionAxiom(
+                j_class_expr,
+                j_individual,
+            )
+            unsat_class = converter.convert(class_assertion_axiom)
+
+            j_explanations = explanation_gen.getExplanations(unsat_class)
+
+            for j_expl in j_explanations:
+                py_axioms = {self.mapper.map_(ax) for ax in j_expl}
+                justifications.append(py_axioms)
+
+        # Save to justifications.owl if requested
+        if save:
+            from owlapy.owl_ontology import SyncOntology
+            from owlapy.iri import IRI
+            import os
+
+            just_iri = IRI.create("http://example.org/justifications")
+            just_ontology = SyncOntology(path=just_iri, load=False)
+
+            for axiom_set in justifications:
+                for axiom in axiom_set:
+                    just_ontology.add_axiom(axiom)
+
+            save_path = "justifications.owl"
+            just_ontology.save(save_path)
+            print(f"Justifications saved to {os.path.abspath(save_path)}")
+
+        return justifications
+    
+
+    def get_contrastive_explanation(
+            self,
+            class_expression: "OWLClassExpression",
+            fact: "OWLNamedIndividual",
+            foil: "OWLNamedIndividual",
+            conflict_minimal: bool = True,
+    ) -> Dict[str, object]:
+
+        def _iri_str(ind):
+            return ind.str
+
+        ManchesterRenderer = JClass(
+            "org.semanticweb.owlapi.manchestersyntax.renderer.ManchesterOWLSyntaxOWLObjectRendererImpl"
+        )
+        renderer = ManchesterRenderer()
+        j_cls_main = self.ontology.mapper.map_(class_expression)
+        class_expr_manchester = str(renderer.render(j_cls_main))
+
+        ontology_path = self.ontology.path.str if hasattr(self.ontology.path, "str") else str(self.ontology.path)
+        contr_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "contr_jar")
+
+        payload = {
+            "ontology_path": ontology_path,
+            "class_expression_manchester": class_expr_manchester,
+            "fact_iri": _iri_str(fact),
+            "foil_iri": _iri_str(foil),
+            "reasoner_name": self.reasoner_name,
+            "conflict_minimal": bool(conflict_minimal),
+            "contr_dir": contr_dir,
+        }
+
+        worker_code = r'''
+import json
+import os
+import sys
+import jpype
+import jpype.imports
+from jpype import JClass
+
+def _to_str_set(jset):
+    return {str(ax) for ax in jset} if jset is not None else set()
+
+payload = json.load(sys.stdin)
+
+jar_name = next(f for f in os.listdir(payload["contr_dir"]) if f.endswith(".jar"))
+jar_file = os.path.join(payload["contr_dir"], jar_name)
+
+jpype.startJVM(classpath=[jar_file])
+
+from java.io import File
+from org.semanticweb.owlapi.apibinding import OWLManager
+from org.semanticweb.owlapi.model import IRI as JIRI
+from org.semanticweb.owlapi.expression import ShortFormEntityChecker
+from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
+
+CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
+CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
+ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
+RC = JClass("anonymized.contrastive.config.ReasonerChoice")
+
+manager = OWLManager.createOWLOntologyManager()
+ontology = manager.loadOntologyFromOntologyDocument(File(payload["ontology_path"]))
+data_factory = manager.getOWLDataFactory()
+
+parser = OWLManager.createManchesterParser()
+parser.setDefaultOntology(ontology)
+parser.setStringToParse(payload["class_expression_manchester"])
+
+short_form_provider = SimpleShortFormProvider()
+bidi = BidirectionalShortFormProviderAdapter(
+    manager,
+    jpype.java.util.Collections.singleton(ontology),
+    short_form_provider
+)
+parser.setOWLEntityChecker(ShortFormEntityChecker(bidi))
+j_cls = parser.parseClassExpression()
+
+j_fact = data_factory.getOWLNamedIndividual(JIRI.create(payload["fact_iri"]))
+j_foil = data_factory.getOWLNamedIndividual(JIRI.create(payload["foil_iri"]))
+
+j_choice = getattr(RC, payload["reasoner_name"], RC.HermiT)
+j_config = ExplanationConfig(j_choice, payload["conflict_minimal"])
+generator = CEGenerator(manager, j_config)
+
+problem = CEProblem(ontology, j_cls, j_fact, j_foil)
+j_res = generator.computeExplanation(problem)
+
+if j_res is None:
+    result = {
+        "common": [],
+        "different": [],
+        "conflict": [],
+        "foil_mapping": {},
+    }
+else:
+    py_common = sorted(_to_str_set(j_res.getCommon()))
+    py_diff = sorted(_to_str_set(j_res.getDifferent()))
+    py_conflict = sorted(_to_str_set(j_res.getConflict()))
+
+    py_mapping = {}
+    j_map = j_res.getFoilMapping()
+    if j_map is not None:
+        for e in j_map.entrySet():
+            py_mapping[str(e.getKey())] = str(e.getValue())
+
+    result = {
+        "common": py_common,
+        "different": py_diff,
+        "conflict": py_conflict,
+        "foil_mapping": py_mapping,
+    }
+
+print(json.dumps(result))
+'''
+
+        proc = subprocess.run(
+            [sys.executable, "-c", worker_code],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+        )
+
+        if proc.returncode != 0:
+            raise RuntimeError(
+                "Contrastive explanation subprocess failed.\n"
+                f"Return code: {proc.returncode}\n"
+                f"STDOUT: {proc.stdout}\n"
+                f"STDERR: {proc.stderr}"
+            )
+
+        stdout_lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        if not stdout_lines:
+            raise RuntimeError(
+                "Contrastive explanation subprocess produced no output.\n"
+                f"STDERR: {proc.stderr}"
+            )
+
+        result = json.loads(stdout_lines[-1])
+
+        return {
+            "common": set(result.get("common", [])),
+            "different": set(result.get("different", [])),
+            "conflict": set(result.get("conflict", [])),
+            "foil_mapping": dict(result.get("foil_mapping", {})),
+        }
 
 
 def initialize_reasoner(reasoner: str, owlapi_ontology):
@@ -2176,7 +2343,6 @@ def import_and_include_axioms_generators():
             "InferredSubObjectPropertyAxiomGenerator": InferredSubObjectPropertyAxiomGenerator(),
             "InferredDataPropertyCharacteristicAxiomGenerator": InferredDataPropertyCharacteristicAxiomGenerator(),
             "InferredObjectPropertyCharacteristicAxiomGenerator": InferredObjectPropertyCharacteristicAxiomGenerator()}
-
 
 class EBR(AbstractOWLReasoner): # pragma: no cover
     """The Embedding-Based Reasoner uses neural embeddings to retrieve concept instances from knowledge bases. """

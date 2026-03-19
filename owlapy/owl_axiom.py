@@ -612,7 +612,7 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
         return hash((self._cls, *self._class_expressions, *self._annotations))
 
     def __repr__(self):
-        return f'OWLDisjointUnionAxiom(class={self._cls},class_expressions={self._class_expressions},' \
+        return f'OWLDisjointUnionAxiom(_cls={self._cls},class_expressions={self._class_expressions},' \
                f'annotations={self._annotations})'
 
 
