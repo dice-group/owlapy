@@ -114,9 +114,6 @@
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner"><code class="docutils literal notranslate"><span class="pre">SyncReasoner</span></code></a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.create_axiom_justifications()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.create_laconic_axiom_justifications()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.create_inconsistency_justifications"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.create_inconsistency_justifications()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.reasoner_name"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.reasoner_name</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.mapper"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.mapper</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.inference_types_mapping"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.inference_types_mapping</span></code></a></li>
@@ -148,9 +145,11 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.is_entailed"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.is_entailed()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.is_satisfiable"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.is_satisfiable()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.unsatisfiable_classes()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.get_root_ontology"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.get_root_ontology()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.create_justifications"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.create_justifications()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.create_axiom_justifications()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.create_laconic_axiom_justifications()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.create_inconsistency_justifications"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.create_inconsistency_justifications()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.get_contrastive_explanation"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.get_contrastive_explanation()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.get_root_ontology"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.get_root_ontology()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner.initialize_reasoner"><code class="docutils literal notranslate"><span class="pre">initialize_reasoner()</span></code></a></li>
@@ -800,113 +799,6 @@ this ontology and its import’s closure.</p>
 <dd><p>Bases: <a class="reference internal" href="../abstracts/abstract_owl_reasoner/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner" title="owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner</span></code></a></p>
 <p>An OWLReasoner reasons over a set of axioms (the set of reasoner axioms) that is based on the imports closure of
 a particular ontology - the “root” ontology.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications">
-<span class="sig-name descname"><span class="pre">create_axiom_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_to_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_axiom_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications" title="Link to this definition"></a></dt>
-<dd><p>Generate multiple justifications for why an axiom is entailed by the ontology.
-The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: <a class="reference external" href="https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java">https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java</a>
-The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see <a class="reference external" href="https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator">https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator</a>.java# .
-The supported axiom types are:
-- OWLClassAssertionAxiom
-- OWLDataPropertyAssertionAxiom
-- OWLDataPropertyDomainAxiom
-- OWLDataPropertyRangeAxiom
-- OWLDifferentIndividualsAxiom
-- OWLDisjointClassesAxiom
-- OWLEquivalentClassesAxiom
-- OWLNegativeDataPropertyAssertionAxiom
-- OWLNegativeObjectPropertyAssertionAxiom
-- OWLObjectPropertyAssertionAxiom
-- OWLObjectPropertyDomainAxiom
-- OWLObjectPropertyRangeAxiom
-- OWLSameIndividualAxiom
-- OWLSubClassOfAxiom</p>
-<p>For example, some unsupported axiom types (which can still be inferred but not explained) are:
-- OWLSubObjectPropertyOfAxiom
-- OWLSubDataPropertyOfAxiom</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>axiom_to_explain</strong> (<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><em>OWLAxiom</em></a>) – The axiom to create justifications for.</p></li>
-<li><p><strong>n_max_justifications</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The maximum number of justifications to generate. Defaults to 10.</p></li>
-<li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, saves all justifications in a new ontology as axioms. Defaults to False.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>ValueError</strong> – If the axiom is not entailed by the ontology or if n_max_justifications is not an integer or None.</p></li>
-<li><p><strong>NotImplementedError</strong> – If the specified reasoner is not supported for axiom justification.</p></li>
-</ul>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>List[Set[<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom">OWLAxiom</a>]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications">
-<span class="sig-name descname"><span class="pre">create_laconic_axiom_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_to_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_laconic_axiom_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications" title="Link to this definition"></a></dt>
-<dd><p>Generate multiple laconic justifications for why an axiom is entailed by the ontology.
-Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
-An axiom is considered relevant if it participates in the inference of the axiom to explain, and irrelevant otherwise.
-Laconic justifications are not necessarily minimal, but they do not contain irrelevant axioms.
-The implementation uses <cite>owlexplanation</cite> under the hood (which also depends on <cite>owlapi</cite> and <cite>telemetry-2.0.0</cite>), by Matthew Horridge.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>axiom_to_explain</strong> (<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><em>OWLAxiom</em></a>) – The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See</p></li>
-<li><p><strong>n_max_justifications</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</p></li>
-<li><p><strong>timeout</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</p></li>
-<li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to save the generated justifications to a file. Defaults to False.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>NotImplementedError</strong> – If the specified reasoner is not supported for laconic axiom justification or if the axiom type is not supported for conversion into a class expression.</p></li>
-<li><p><strong>ValueError</strong> – If n_max_justifications is not an integer or None.</p></li>
-</ul>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>List[Set[<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom">OWLAxiom</a>]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_inconsistency_justifications">
-<span class="sig-name descname"><span class="pre">create_inconsistency_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_inconsistency_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_inconsistency_justifications" title="Link to this definition"></a></dt>
-<dd><p>Generate multiple justifications for why the ontology is inconsistent.
-The implementation uses <cite>owlexplanation</cite> under the hood (which also depends on <cite>owlapi</cite> and <cite>telemetry-2.0.0</cite>), by Matthew Horridge.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>n_max_justifications</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The maximum number of inconsistency justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</p></li>
-<li><p><strong>timeout</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</p></li>
-<li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to save the generated justifications to a file. Defaults to False.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>ValueError</strong> – If the ontology is consistent and no inconsistency justifications can be created.</p></li>
-<li><p><strong>NotImplementedError</strong> – If the specified reasoner is not supported for inconsistency justification.</p></li>
-</ul>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A list of sets of OWLAxioms, where each set represents an inconsistency justification.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>List[Set[<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom">OWLAxiom</a>]]</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.reasoner_name">
 <span class="sig-name descname"><span class="pre">reasoner_name</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HermiT'</span></span><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.reasoner_name" title="Link to this definition"></a></dt>
@@ -1482,30 +1374,108 @@ unsatisfiable.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.get_root_ontology">
-<span class="sig-name descname"><span class="pre">get_root_ontology</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.get_root_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.get_root_ontology" title="Link to this definition"></a></dt>
-<dd><p>Gets the “root” ontology that is loaded into this reasoner. The reasoner takes into account the axioms in
-this ontology and its import’s closure.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_justifications">
-<span class="sig-name descname"><span class="pre">create_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">owl_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owl_class_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_justifications" title="Link to this definition"></a></dt>
-<dd><p>Generate multiple justifications for why the given individual(s) are inferred
-to be instances of the specified class.</p>
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications">
+<span class="sig-name descname"><span class="pre">create_axiom_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_to_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_axiom_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications" title="Link to this definition"></a></dt>
+<dd><p>Generate multiple justifications for why an axiom is entailed by the ontology.
+The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: <a class="reference external" href="https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java">https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java</a>
+The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see <a class="reference external" href="https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator">https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator</a>.java# .
+The supported axiom types are:
+- OWLClassAssertionAxiom
+- OWLDataPropertyAssertionAxiom
+- OWLDataPropertyDomainAxiom
+- OWLDataPropertyRangeAxiom
+- OWLDifferentIndividualsAxiom
+- OWLDisjointClassesAxiom
+- OWLEquivalentClassesAxiom
+- OWLNegativeDataPropertyAssertionAxiom
+- OWLNegativeObjectPropertyAssertionAxiom
+- OWLObjectPropertyAssertionAxiom
+- OWLObjectPropertyDomainAxiom
+- OWLObjectPropertyRangeAxiom
+- OWLSameIndividualAxiom
+- OWLSubClassOfAxiom</p>
+<p>For example, some unsupported axiom types (which can still be inferred but not explained) are:
+- OWLSubObjectPropertyOfAxiom
+- OWLSubDataPropertyOfAxiom</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>owl_individuals</strong> (<em>Set</em><em>[</em><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><em>OWLNamedIndividual</em></a><em>]</em>) – Set of individuals to explain.</p></li>
-<li><p><strong>owl_class_expression</strong> (<a class="reference internal" href="../class_expression/class_expression/index.html#owlapy.class_expression.class_expression.OWLClassExpression" title="owlapy.class_expression.class_expression.OWLClassExpression"><em>OWLClassExpression</em></a>) – Class expression to justify.</p></li>
-<li><p><strong>save</strong> (<em>bool</em>) – If True, saves all justifications in a new ontology as axioms.</p></li>
+<li><p><strong>axiom_to_explain</strong> (<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><em>OWLAxiom</em></a>) – The axiom to create justifications for.</p></li>
+<li><p><strong>n_max_justifications</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The maximum number of justifications to generate. Defaults to 10.</p></li>
+<li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, saves all justifications in a new ontology as axioms. Defaults to False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Each item is a justification (set of OWLAxioms).</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the axiom is not entailed by the ontology or if n_max_justifications is not an integer or None.</p></li>
+<li><p><strong>NotImplementedError</strong> – If the specified reasoner is not supported for axiom justification.</p></li>
+</ul>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[Set[<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom">OWLAxiom</a>]]</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[Set[<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom">OWLAxiom</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications">
+<span class="sig-name descname"><span class="pre">create_laconic_axiom_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_to_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_laconic_axiom_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications" title="Link to this definition"></a></dt>
+<dd><p>Generate multiple laconic justifications for why an axiom is entailed by the ontology.
+Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
+An axiom is considered relevant if it participates in the inference of the axiom to explain, and irrelevant otherwise.
+Laconic justifications are not necessarily minimal, but they do not contain irrelevant axioms.
+The implementation uses <cite>owlexplanation</cite> under the hood (which also depends on <cite>owlapi</cite> and <cite>telemetry-2.0.0</cite>), by Matthew Horridge.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axiom_to_explain</strong> (<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><em>OWLAxiom</em></a>) – The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See</p></li>
+<li><p><strong>n_max_justifications</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</p></li>
+<li><p><strong>timeout</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</p></li>
+<li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to save the generated justifications to a file. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>NotImplementedError</strong> – If the specified reasoner is not supported for laconic axiom justification or if the axiom type is not supported for conversion into a class expression.</p></li>
+<li><p><strong>ValueError</strong> – If n_max_justifications is not an integer or None.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[Set[<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom">OWLAxiom</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_inconsistency_justifications">
+<span class="sig-name descname"><span class="pre">create_inconsistency_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_inconsistency_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_inconsistency_justifications" title="Link to this definition"></a></dt>
+<dd><p>Generate multiple justifications for why the ontology is inconsistent.
+The implementation uses <cite>owlexplanation</cite> under the hood (which also depends on <cite>owlapi</cite> and <cite>telemetry-2.0.0</cite>), by Matthew Horridge.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_max_justifications</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The maximum number of inconsistency justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</p></li>
+<li><p><strong>timeout</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</p></li>
+<li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to save the generated justifications to a file. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the ontology is consistent and no inconsistency justifications can be created.</p></li>
+<li><p><strong>NotImplementedError</strong> – If the specified reasoner is not supported for inconsistency justification.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of sets of OWLAxioms, where each set represents an inconsistency justification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[Set[<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom">OWLAxiom</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1514,6 +1484,13 @@ to be instances of the specified class.</p>
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.get_contrastive_explanation">
 <span class="sig-name descname"><span class="pre">get_contrastive_explanation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fact</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">foil</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflict_minimal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.get_contrastive_explanation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.get_contrastive_explanation" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.get_root_ontology">
+<span class="sig-name descname"><span class="pre">get_root_ontology</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.get_root_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.get_root_ontology" title="Link to this definition"></a></dt>
+<dd><p>Gets the “root” ontology that is loaded into this reasoner. The reasoner takes into account the axioms in
+this ontology and its import’s closure.</p>
+</dd></dl>
 
 </dd></dl>
 

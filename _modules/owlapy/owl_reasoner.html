@@ -1195,467 +1195,7 @@
 
 <div class="viewcode-block" id="SyncReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SyncReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>    
-
-<div class="viewcode-block" id="SyncReasoner.create_axiom_justifications">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_axiom_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                    <span class="n">axiom_to_explain</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">,</span>
-                                    <span class="n">n_max_justifications</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-                                    <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate multiple justifications for why an axiom is entailed by the ontology.</span>
-<span class="sd">        The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java</span>
-<span class="sd">        The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator.java# .</span>
-<span class="sd">        The supported axiom types are:</span>
-<span class="sd">        - OWLClassAssertionAxiom</span>
-<span class="sd">        - OWLDataPropertyAssertionAxiom</span>
-<span class="sd">        - OWLDataPropertyDomainAxiom</span>
-<span class="sd">        - OWLDataPropertyRangeAxiom</span>
-<span class="sd">        - OWLDifferentIndividualsAxiom</span>
-<span class="sd">        - OWLDisjointClassesAxiom</span>
-<span class="sd">        - OWLEquivalentClassesAxiom</span>
-<span class="sd">        - OWLNegativeDataPropertyAssertionAxiom</span>
-<span class="sd">        - OWLNegativeObjectPropertyAssertionAxiom</span>
-<span class="sd">        - OWLObjectPropertyAssertionAxiom</span>
-<span class="sd">        - OWLObjectPropertyDomainAxiom</span>
-<span class="sd">        - OWLObjectPropertyRangeAxiom</span>
-<span class="sd">        - OWLSameIndividualAxiom</span>
-<span class="sd">        - OWLSubClassOfAxiom</span>
-
-<span class="sd">        For example, some unsupported axiom types (which can still be inferred but not explained) are:</span>
-<span class="sd">        - OWLSubObjectPropertyOfAxiom</span>
-<span class="sd">        - OWLSubDataPropertyOfAxiom</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            axiom_to_explain (OWLAxiom): The axiom to create justifications for.</span>
-<span class="sd">            n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.</span>
-<span class="sd">            save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If the axiom is not entailed by the ontology or if n_max_justifications is not an integer or None.</span>
-<span class="sd">            NotImplementedError: If the specified reasoner is not supported for axiom justification.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># First verify that the axiom is even entailed</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_entailed</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;The axiom </span><span class="si">{</span><span class="n">axiom_to_explain</span><span class="si">}</span><span class="s2"> is not entailed by the ontology. No justifications to create.&quot;</span>
-            <span class="p">)</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">com.clarkparsia.owlapi.explanation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-            <span class="n">BlackBoxExplanation</span><span class="p">,</span>
-            <span class="n">HSTExplanationGenerator</span><span class="p">,</span>
-            <span class="n">SatisfiabilityConverter</span>
-        <span class="p">)</span>
-
-        <span class="n">j_axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span>
-        <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
-        <span class="n">j_reasoner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span>
-        <span class="n">j_data_factory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.HermiT</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.elk.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElkReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">uk.ac.manchester.cs.jfact</span><span class="w"> </span><span class="kn">import</span> <span class="n">JFactFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.reasoner.structural</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reasoner &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">&#39; is not supported for axiom justification.&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Following the internal implementation of DefaultExplanationGenerator to circumvent the need for a progress monitor</span>
-
-        <span class="n">converter</span> <span class="o">=</span> <span class="n">SatisfiabilityConverter</span><span class="p">(</span><span class="n">j_data_factory</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">j_axiom_ce</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s2">&quot;not implemented&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Failed to convert the axiom </span><span class="si">{</span><span class="n">axiom_to_explain</span><span class="si">}</span><span class="s2"> into a class expression. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;This most likely means that the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-            <span class="k">raise</span> <span class="n">e</span>
-        <span class="n">blackbox_exp</span> <span class="o">=</span> <span class="n">BlackBoxExplanation</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">,</span> <span class="n">reasoner_factory</span><span class="p">,</span> <span class="n">j_reasoner</span><span class="p">)</span>
-        <span class="n">explanation_gen</span> <span class="o">=</span> <span class="n">HSTExplanationGenerator</span><span class="p">(</span><span class="n">blackbox_exp</span><span class="p">)</span>
-
-        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="n">n_max_justifications</span><span class="p">,</span> <span class="nb">int</span>
-        <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;n_max_justifications must be an integer or None, but got </span><span class="si">{</span><span class="n">n_max_justifications</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_max_justifications</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">explanation_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span>
-                    <span class="n">j_axiom_ce</span><span class="p">,</span> <span class="n">n_max_justifications</span>
-                <span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Justification failed most likely because the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">explanation_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom_ce</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Justification failed most likely because the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
-            <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="p">}</span>
-            <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
-
-        <span class="c1"># Save to justifications.owl if requested</span>
-        <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-
-            <span class="c1"># Create a new in-memory ontology to store justifications</span>
-            <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/justifications&quot;</span><span class="p">)</span>
-            <span class="n">just_ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">just_iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">axiom_set</span> <span class="ow">in</span> <span class="n">justifications</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axiom_set</span><span class="p">:</span>
-                    <span class="n">just_ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
-
-            <span class="c1"># Save to file</span>
-            <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;justifications.owl&quot;</span>
-            <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">justifications</span></div>
-
-    
-    <span class="c1"># def create_inconsistency_justifications(self,</span>
-    <span class="c1">#                                         n_max_justifications: Optional[int] = 10,</span>
-    <span class="c1">#                                         save: bool = False) -&gt; List[Set[OWLAxiom]]:</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Generate multiple justifications for why the ontology is inconsistent.</span>
-    <span class="c1">#     The explanation is based on the following implementation: https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java</span>
-    <span class="c1">#     In inconistent-explainer-1.0.SNAPSHOT.jar, we simply extend the ReasonerFactory of HermiT into an InconsistentHermiTReasonerFactory.</span>
-    <span class="c1">#     The createHermiTOWLReasoner method of that class overrides the default behavior, by forcing the new configuration&#39;s throwInconsistentOntologyException attribute to be False.</span>
-    <span class="c1">#     The entire codebase boils down to this single file:</span>
-
-    <span class="c1">#     ```</span>
-    <span class="c1">#     package com.owlapy;</span>
-
-    <span class="c1">#     import org.semanticweb.HermiT.Configuration;</span>
-    <span class="c1">#     import org.semanticweb.HermiT.Reasoner;</span>
-    <span class="c1">#     import org.semanticweb.HermiT.Reasoner.ReasonerFactory;</span>
-    <span class="c1">#     import org.semanticweb.owlapi.reasoner.OWLReasoner;</span>
-
-    <span class="c1">#     /** Code based on inconsistency explanations for HermiT from https://github.com/phillord/hermit-reasoner/blob/master/examples/org/semanticweb/HermiT/examples/Explanations.java</span>
-    <span class="c1">#     * </span>
-    <span class="c1">#     */</span>
-    <span class="c1">#     /* We simply override the createHermiTOWLReasoner method to set the throwInconsistentOntologyException flag to false.</span>
-    <span class="c1">#     This allows us to compute explanations for inconsistent ontologies without HermiT throwing an exception. */</span>
-
-    <span class="c1">#     public class InconsistentHermiTReasonerFactory extends ReasonerFactory {</span>
-    <span class="c1">#         @Override</span>
-    <span class="c1">#         protected OWLReasoner createHermiTOWLReasoner(Configuration configuration, org.semanticweb.owlapi.model.OWLOntology ontology) {</span>
-    <span class="c1">#             // don&#39;t throw an exception since otherwise we cannot compute explanations </span>
-    <span class="c1">#             configuration.throwInconsistentOntologyException=false;</span>
-    <span class="c1">#             return new Reasoner(configuration,ontology);</span>
-    <span class="c1">#         }  </span>
-    <span class="c1">#     }</span>
-    <span class="c1">#     ```</span>
-
-    <span class="c1">#     Args:</span>
-    <span class="c1">#         n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.</span>
-    <span class="c1">#         save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.</span>
-
-    <span class="c1">#     Raises:</span>
-    <span class="c1">#         ValueError: If the ontology is consistent or if n_max_justifications is not an integer or None.</span>
-    <span class="c1">#         NotImplementedError: If the specified reasoner is not supported for inconsistency justification.</span>
-
-    <span class="c1">#     Returns:</span>
-    <span class="c1">#         List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the ontology is inconsistent.</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     if self.has_consistent_ontology():</span>
-    <span class="c1">#         raise ValueError(&quot;The ontology is consistent. No inconsistency justifications to create.&quot;)</span>
-        
-    <span class="c1">#     import jpype</span>
-    <span class="c1">#     from com.clarkparsia.owlapi.explanation import (</span>
-    <span class="c1">#         BlackBoxExplanation, HSTExplanationGenerator</span>
-    <span class="c1">#     )</span>
-    <span class="c1">#     from org.semanticweb.HermiT import Configuration</span>
-    <span class="c1">#     InconsistentHermiTReasonerFactory = jpype.JClass(</span>
-    <span class="c1">#         &quot;com.owlapy.InconsistentHermiTReasonerFactory&quot;</span>
-    <span class="c1">#     )</span>
-
-    <span class="c1">#     j_reasoner_factory = InconsistentHermiTReasonerFactory()</span>
-    <span class="c1">#     j_manager = self._owlapi_manager</span>
-    <span class="c1">#     j_ontology = self._owlapi_ontology</span>
-    <span class="c1">#     j_configuration = Configuration()</span>
-    <span class="c1">#     # We want to get justifications even if the ontology is inconsistent</span>
-    <span class="c1">#     j_configuration.throwInconsistentOntologyException = False  </span>
-    <span class="c1">#     j_reasoner = j_reasoner_factory.createReasoner(j_ontology, j_configuration)</span>
-    <span class="c1">#     blackbox_exp = BlackBoxExplanation(j_ontology, j_reasoner_factory, j_reasoner)</span>
-    <span class="c1">#     explanation_gen = HSTExplanationGenerator(blackbox_exp)</span>
-    <span class="c1">#     justifications = []</span>
-    <span class="c1">#     if n_max_justifications is not None and not isinstance(</span>
-    <span class="c1">#         n_max_justifications, int</span>
-    <span class="c1">#     ):</span>
-    <span class="c1">#         raise ValueError(</span>
-    <span class="c1">#             f&quot;n_max_justifications must be an integer or None, but got {n_max_justifications}&quot;</span>
-    <span class="c1">#         )</span>
-    <span class="c1">#     if n_max_justifications is not None and n_max_justifications &gt; 0:</span>
-    <span class="c1">#         j_explanations = explanation_gen.getExplanations(j_manager.getOWLDataFactory().getOWLThing(), n_max_justifications)</span>
-    <span class="c1">#     else:</span>
-    <span class="c1">#         j_explanations = explanation_gen.getExplanations(j_manager.getOWLDataFactory().getOWLThing())</span>
-
-    <span class="c1">#     if not j_explanations:</span>
-    <span class="c1">#         logger.info(</span>
-    <span class="c1">#             &quot;No justifications found for inconsistency by checking against owl:Thing. Retrying with other class expressions.&quot;</span>
-    <span class="c1">#         )</span>
-    <span class="c1">#         # Retry by getting explanations for any class expression in an axiom (e.g., class assertion)</span>
-    <span class="c1">#         from org.semanticweb.owlapi.model.parameters import Imports</span>
-    <span class="c1">#         # Get the converter too since we might need to convert some axioms into class expressions</span>
-    <span class="c1">#         from com.clarkparsia.owlapi.explanation import SatisfiabilityConverter</span>
-    <span class="c1">#         j_axioms = j_ontology.getAxioms(Imports.INCLUDED)</span>
-    <span class="c1">#         if not j_axioms:</span>
-    <span class="c1">#             raise ValueError(&quot;No justifications found for inconsistency, even though the ontology is inconsistent. This might be due to the reasoner not supporting inconsistency justification.&quot;)</span>
-    <span class="c1">#         converter = SatisfiabilityConverter(j_manager.getOWLDataFactory())</span>
-    <span class="c1">#         for j_axiom in j_axioms:</span>
-    <span class="c1">#             try:</span>
-    <span class="c1">#                 j_ce = converter.convert(j_axiom)</span>
-    <span class="c1">#             except Exception as e:</span>
-    <span class="c1">#                 if &quot;not implemented&quot; in str(e).lower():</span>
-    <span class="c1">#                     # If the axiom cannot be converted into a class expression, skip it</span>
-    <span class="c1">#                     continue</span>
-    <span class="c1">#                 raise e</span>
-    <span class="c1">#             if n_max_justifications is not None and n_max_justifications &gt; 0:</span>
-    <span class="c1">#                 j_explanations = explanation_gen.getExplanations(j_ce, n_max_justifications)</span>
-    <span class="c1">#             else:</span>
-    <span class="c1">#                 j_explanations = explanation_gen.getExplanations(j_ce)</span>
-    <span class="c1">#             if j_explanations:</span>
-    <span class="c1">#                 # Add j_axiom itself to the justifications since it is part of the inconsistency</span>
-    <span class="c1">#                 j_explanations = [set(j_expl) | {j_axiom} for j_expl in j_explanations]</span>
-    <span class="c1">#                 break</span>
-    <span class="c1">#     if not j_explanations:</span>
-    <span class="c1">#         logger.info(</span>
-    <span class="c1">#             &quot;No justifications found for inconsistency by checking against any class expression in axioms. This might be due to the reasoner not supporting inconsistency justification.&quot;</span>
-    <span class="c1">#         )</span>
-
-    <span class="c1">#     for j_expl in j_explanations:</span>
-    <span class="c1">#         py_axioms = {self.mapper.map_(ax) for ax in j_expl}</span>
-    <span class="c1">#         justifications.append(py_axioms)</span>
-
-    <span class="c1">#     # Save to justifications.owl if requested</span>
-    <span class="c1">#     if save:</span>
-    <span class="c1">#         from owlapy.owl_ontology import SyncOntology</span>
-    <span class="c1">#         from owlapy.iri import IRI</span>
-
-    <span class="c1">#         # Create a new in-memory ontology to store justifications</span>
-    <span class="c1">#         just_iri = IRI.create(&quot;http://example.org/inconsistency_justifications&quot;)</span>
-    <span class="c1">#         just_ontology = SyncOntology(path=just_iri, load=False)</span>
-
-    <span class="c1">#         for axiom_set in justifications:</span>
-    <span class="c1">#             for axiom in axiom_set:</span>
-    <span class="c1">#                 just_ontology.add_axiom(axiom)</span>
-
-    <span class="c1">#         # Save to file</span>
-    <span class="c1">#         save_path = &quot;inconsistency_justifications.owl&quot;</span>
-    <span class="c1">#         just_ontology.save(save_path)</span>
-    <span class="c1">#         print(f&quot;Inconsistency justifications saved to {os.path.abspath(save_path)}&quot;)</span>
-
-    <span class="c1">#     return justifications</span>
-
-<div class="viewcode-block" id="SyncReasoner.create_laconic_axiom_justifications">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_laconic_axiom_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                            <span class="n">axiom_to_explain</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">,</span>
-                                            <span class="n">n_max_justifications</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-                                            <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10_000</span><span class="p">,</span>
-                                            <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate multiple laconic justifications for why an axiom is entailed by the ontology.</span>
-<span class="sd">        Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.</span>
-<span class="sd">        An axiom is considered relevant if it participates in the inference of the axiom to explain, and irrelevant otherwise.</span>
-<span class="sd">        Laconic justifications are not necessarily minimal, but they do not contain irrelevant axioms.</span>
-<span class="sd">        The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            axiom_to_explain (OWLAxiom): The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See</span>
-<span class="sd">            n_max_justifications (Optional[int], optional): The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</span>
-<span class="sd">            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</span>
-<span class="sd">            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: If the specified reasoner is not supported for laconic axiom justification or if the axiom type is not supported for conversion into a class expression.</span>
-<span class="sd">            ValueError: If n_max_justifications is not an integer or None.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        
-        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExplanationManager</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.laconic</span><span class="w"> </span><span class="kn">import</span> <span class="n">LaconicExplanationGeneratorFactory</span>
-
-        <span class="c1"># Get a hold of the reasoner factory and the ontology</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.HermiT</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.elk.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElkReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">uk.ac.manchester.cs.jfact</span><span class="w"> </span><span class="kn">import</span> <span class="n">JFactFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.reasoner.structural</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reasoner &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">&#39; is not supported for laconic axiom justification.&quot;</span><span class="p">)</span>
-        
-        <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
-
-        <span class="n">j_gen_fac</span> <span class="o">=</span> <span class="n">ExplanationManager</span><span class="o">.</span><span class="n">createExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_reasoner_factory</span><span class="p">)</span>
-        <span class="n">j_laconic_gen_fac</span> <span class="o">=</span> <span class="n">LaconicExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_gen_fac</span><span class="p">)</span>
-
-        <span class="n">j_gen</span> <span class="o">=</span> <span class="n">j_laconic_gen_fac</span><span class="o">.</span><span class="n">createExplanationGenerator</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">)</span>
-
-        <span class="n">j_axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="n">n_max_justifications</span><span class="p">,</span> <span class="nb">int</span>
-        <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;n_max_justifications must be an integer or None, but got </span><span class="si">{</span><span class="n">n_max_justifications</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_max_justifications</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">,</span> <span class="n">n_max_justifications</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">)</span>
-        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
-            <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="o">.</span><span class="n">getAxioms</span><span class="p">()}</span>
-            <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
-        
-        <span class="c1"># Save to justifications.owl if requested</span>
-        <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-
-            <span class="c1"># Create a new in-memory ontology to store justifications</span>
-            <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/laconic_axiom_justifications&quot;</span><span class="p">)</span>
-            <span class="n">just_ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">just_iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">axiom_set</span> <span class="ow">in</span> <span class="n">justifications</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axiom_set</span><span class="p">:</span>
-                    <span class="n">just_ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
-
-            <span class="c1"># Save to file</span>
-            <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;laconic_axiom_justifications.owl&quot;</span>
-            <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Laconic axiom justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">justifications</span></div>
-
-
-
-<div class="viewcode-block" id="SyncReasoner.create_inconsistency_justifications">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.create_inconsistency_justifications">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_inconsistency_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                            <span class="n">n_max_justifications</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-                                            <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10_000</span><span class="p">,</span>
-                                            <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate multiple justifications for why the ontology is inconsistent.</span>
-<span class="sd">        The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge. </span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            n_max_justifications (Optional[int], optional): The maximum number of inconsistency justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</span>
-<span class="sd">            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</span>
-<span class="sd">            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If the ontology is consistent and no inconsistency justifications can be created.</span>
-<span class="sd">            NotImplementedError: If the specified reasoner is not supported for inconsistency justification.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents an inconsistency justification.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Version based on owlexplainer</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_consistent_ontology</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The ontology is consistent. No inconsistency justifications to create.&quot;</span><span class="p">)</span>
-        
-        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.blackbox.checker</span><span class="w"> </span><span class="kn">import</span> <span class="n">InconsistentOntologyExplanationGeneratorFactory</span>
-    
-        <span class="c1"># Get the reasoner factory</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.HermiT</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.elk.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElkReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">uk.ac.manchester.cs.jfact</span><span class="w"> </span><span class="kn">import</span> <span class="n">JFactFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.reasoner.structural</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
-            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reasoner &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">&#39; is not supported for inconsistency justification.&quot;</span><span class="p">)</span>
-        
-        <span class="n">j_exp_generator_factory</span> <span class="o">=</span> <span class="n">InconsistentOntologyExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_reasoner_factory</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
-        <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
-        <span class="n">j_exp_generator</span> <span class="o">=</span> <span class="n">j_exp_generator_factory</span><span class="o">.</span><span class="n">createExplanationGenerator</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">)</span>
-
-        <span class="c1"># Ask for explanations for owl:Thing being unsatisfiable, which is the case if the ontology is inconsistent</span>
-        <span class="n">j_owl_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span>
-        <span class="n">j_entailment</span> <span class="o">=</span> <span class="n">j_owl_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getOWLSubClassOfAxiom</span><span class="p">(</span>
-            <span class="n">j_owl_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getOWLThing</span><span class="p">(),</span>
-            <span class="n">j_owl_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getOWLNothing</span><span class="p">()</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Get the explanations</span>
-        <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">j_exp_generator</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_entailment</span><span class="p">,</span> <span class="n">n_max_justifications</span><span class="p">)</span>
-        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
-            <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="o">.</span><span class="n">getAxioms</span><span class="p">()}</span>
-            <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
-        <span class="c1"># Save to justifications.owl if requested</span>
-        <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-
-            <span class="c1"># Create a new in-memory ontology to store justifications</span>
-            <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/inconsistency_justifications&quot;</span><span class="p">)</span>
-            <span class="n">just_ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">just_iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">axiom_set</span> <span class="ow">in</span> <span class="n">justifications</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axiom_set</span><span class="p">:</span>
-                    <span class="n">just_ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
-
-            <span class="c1"># Save to file</span>
-            <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;inconsistency_justifications.owl&quot;</span>
-            <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistency justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">justifications</span></div>
-
+<span class="k">class</span><span class="w"> </span><span class="nc">SyncReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SyncOntology</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">reasoner</span><span class="o">=</span><span class="s2">&quot;HermiT&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1689,7 +1229,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">mapper</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inference_types_mapping</span> <span class="o">=</span> <span class="n">import_and_include_axioms_generators</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
-
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2319,81 +1858,134 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">unsatisfiableClasses</span><span class="p">())</span></div>
 
 
-<div class="viewcode-block" id="SyncReasoner.get_root_ontology">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.get_root_ontology">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span></div>
-
-    
-    
-<div class="viewcode-block" id="SyncReasoner.create_justifications">
-<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.create_justifications">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_justifications</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">owl_individuals</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">owl_class_expression</span><span class="p">:</span> <span class="n">OWLClassExpression</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<div class="viewcode-block" id="SyncReasoner.create_axiom_justifications">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_axiom_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">axiom_to_explain</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">,</span>
+                                    <span class="n">n_max_justifications</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                                    <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generate multiple justifications for why the given individual(s) are inferred</span>
-<span class="sd">        to be instances of the specified class.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate multiple justifications for why an axiom is entailed by the ontology.</span>
+<span class="sd">        The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java</span>
+<span class="sd">        The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator.java# .</span>
+<span class="sd">        The supported axiom types are:</span>
+<span class="sd">        - OWLClassAssertionAxiom</span>
+<span class="sd">        - OWLDataPropertyAssertionAxiom</span>
+<span class="sd">        - OWLDataPropertyDomainAxiom</span>
+<span class="sd">        - OWLDataPropertyRangeAxiom</span>
+<span class="sd">        - OWLDifferentIndividualsAxiom</span>
+<span class="sd">        - OWLDisjointClassesAxiom</span>
+<span class="sd">        - OWLEquivalentClassesAxiom</span>
+<span class="sd">        - OWLNegativeDataPropertyAssertionAxiom</span>
+<span class="sd">        - OWLNegativeObjectPropertyAssertionAxiom</span>
+<span class="sd">        - OWLObjectPropertyAssertionAxiom</span>
+<span class="sd">        - OWLObjectPropertyDomainAxiom</span>
+<span class="sd">        - OWLObjectPropertyRangeAxiom</span>
+<span class="sd">        - OWLSameIndividualAxiom</span>
+<span class="sd">        - OWLSubClassOfAxiom</span>
+
+<span class="sd">        For example, some unsupported axiom types (which can still be inferred but not explained) are:</span>
+<span class="sd">        - OWLSubObjectPropertyOfAxiom</span>
+<span class="sd">        - OWLSubDataPropertyOfAxiom</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.</span>
-<span class="sd">            owl_class_expression (OWLClassExpression): Class expression to justify.</span>
-<span class="sd">            save (bool): If True, saves all justifications in a new ontology as axioms.</span>
+<span class="sd">            axiom_to_explain (OWLAxiom): The axiom to create justifications for.</span>
+<span class="sd">            n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.</span>
+<span class="sd">            save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the axiom is not entailed by the ontology or if n_max_justifications is not an integer or None.</span>
+<span class="sd">            NotImplementedError: If the specified reasoner is not supported for axiom justification.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms).</span>
+<span class="sd">            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">owl_individuals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">owl_class_expression</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># First verify that the axiom is even entailed</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_entailed</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Both owl_individuals and owl_class_expression are required.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;The axiom </span><span class="si">{</span><span class="n">axiom_to_explain</span><span class="si">}</span><span class="s2"> is not entailed by the ontology. No justifications to create.&quot;</span>
             <span class="p">)</span>
-
         <span class="kn">from</span><span class="w"> </span><span class="nn">com.clarkparsia.owlapi.explanation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
             <span class="n">BlackBoxExplanation</span><span class="p">,</span>
             <span class="n">HSTExplanationGenerator</span><span class="p">,</span>
-            <span class="n">SatisfiabilityConverter</span><span class="p">,</span>
+            <span class="n">SatisfiabilityConverter</span>
         <span class="p">)</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
 
-        <span class="n">j_class_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">owl_class_expression</span><span class="p">)</span>
+        <span class="n">j_axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span>
         <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
         <span class="n">j_reasoner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span>
         <span class="n">j_data_factory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span>
 
-        <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
-        <span class="n">blackbox_exp</span> <span class="o">=</span> <span class="n">BlackBoxExplanation</span><span class="p">(</span>
-            <span class="n">j_ontology</span><span class="p">,</span>
-            <span class="n">reasoner_factory</span><span class="p">,</span>
-            <span class="n">j_reasoner</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">explanation_gen</span> <span class="o">=</span> <span class="n">HSTExplanationGenerator</span><span class="p">(</span><span class="n">blackbox_exp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.HermiT</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasonerFactory</span>
+            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.elk.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElkReasonerFactory</span>
+            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">uk.ac.manchester.cs.jfact</span><span class="w"> </span><span class="kn">import</span> <span class="n">JFactFactory</span>
+            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.reasoner.structural</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
+            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reasoner &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">&#39; is not supported for axiom justification.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Following the internal implementation of DefaultExplanationGenerator to circumvent the need for a progress monitor</span>
+
         <span class="n">converter</span> <span class="o">=</span> <span class="n">SatisfiabilityConverter</span><span class="p">(</span><span class="n">j_data_factory</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">j_axiom_ce</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;not implemented&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Failed to convert the axiom </span><span class="si">{</span><span class="n">axiom_to_explain</span><span class="si">}</span><span class="s2"> into a class expression. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;This most likely means that the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="n">blackbox_exp</span> <span class="o">=</span> <span class="n">BlackBoxExplanation</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">,</span> <span class="n">reasoner_factory</span><span class="p">,</span> <span class="n">j_reasoner</span><span class="p">)</span>
+        <span class="n">explanation_gen</span> <span class="o">=</span> <span class="n">HSTExplanationGenerator</span><span class="p">(</span><span class="n">blackbox_exp</span><span class="p">)</span>
 
-        <span class="n">justifications</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-
-        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">owl_individuals</span><span class="p">:</span>
-            <span class="n">j_individual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
-            <span class="n">class_assertion_axiom</span> <span class="o">=</span> <span class="n">j_data_factory</span><span class="o">.</span><span class="n">getOWLClassAssertionAxiom</span><span class="p">(</span>
-                <span class="n">j_class_expr</span><span class="p">,</span>
-                <span class="n">j_individual</span><span class="p">,</span>
+        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">n_max_justifications</span><span class="p">,</span> <span class="nb">int</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;n_max_justifications must be an integer or None, but got </span><span class="si">{</span><span class="n">n_max_justifications</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-            <span class="n">unsat_class</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">class_assertion_axiom</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_max_justifications</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">explanation_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span>
+                    <span class="n">j_axiom_ce</span><span class="p">,</span> <span class="n">n_max_justifications</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Justification failed most likely because the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">explanation_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom_ce</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Justification failed most likely because the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
 
-            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">explanation_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">unsat_class</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
-                <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="p">}</span>
-                <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
+            <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="p">}</span>
+            <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
 
         <span class="c1"># Save to justifications.owl if requested</span>
         <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-            <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
+            <span class="c1"># Create a new in-memory ontology to store justifications</span>
             <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/justifications&quot;</span><span class="p">)</span>
             <span class="n">just_ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">just_iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -2401,13 +1993,197 @@
                 <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axiom_set</span><span class="p">:</span>
                     <span class="n">just_ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
 
+            <span class="c1"># Save to file</span>
             <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;justifications.owl&quot;</span>
             <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">justifications</span></div>
 
-    
+
+<div class="viewcode-block" id="SyncReasoner.create_laconic_axiom_justifications">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_laconic_axiom_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                            <span class="n">axiom_to_explain</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">,</span>
+                                            <span class="n">n_max_justifications</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                                            <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10_000</span><span class="p">,</span>
+                                            <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate multiple laconic justifications for why an axiom is entailed by the ontology.</span>
+<span class="sd">        Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.</span>
+<span class="sd">        An axiom is considered relevant if it participates in the inference of the axiom to explain, and irrelevant otherwise.</span>
+<span class="sd">        Laconic justifications are not necessarily minimal, but they do not contain irrelevant axioms.</span>
+<span class="sd">        The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            axiom_to_explain (OWLAxiom): The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See</span>
+<span class="sd">            n_max_justifications (Optional[int], optional): The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</span>
+<span class="sd">            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</span>
+<span class="sd">            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: If the specified reasoner is not supported for laconic axiom justification or if the axiom type is not supported for conversion into a class expression.</span>
+<span class="sd">            ValueError: If n_max_justifications is not an integer or None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExplanationManager</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.laconic</span><span class="w"> </span><span class="kn">import</span> <span class="n">LaconicExplanationGeneratorFactory</span>
+
+        <span class="c1"># Get a hold of the reasoner factory and the ontology</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.HermiT</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.elk.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElkReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">uk.ac.manchester.cs.jfact</span><span class="w"> </span><span class="kn">import</span> <span class="n">JFactFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.reasoner.structural</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Reasoner &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">&#39; is not supported for laconic axiom justification.&quot;</span><span class="p">)</span>
+
+        <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
+
+        <span class="n">j_gen_fac</span> <span class="o">=</span> <span class="n">ExplanationManager</span><span class="o">.</span><span class="n">createExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_reasoner_factory</span><span class="p">)</span>
+        <span class="n">j_laconic_gen_fac</span> <span class="o">=</span> <span class="n">LaconicExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_gen_fac</span><span class="p">)</span>
+
+        <span class="n">j_gen</span> <span class="o">=</span> <span class="n">j_laconic_gen_fac</span><span class="o">.</span><span class="n">createExplanationGenerator</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">)</span>
+
+        <span class="n">j_axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">n_max_justifications</span><span class="p">,</span> <span class="nb">int</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;n_max_justifications must be an integer or None, but got </span><span class="si">{</span><span class="n">n_max_justifications</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_max_justifications</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">,</span> <span class="n">n_max_justifications</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">)</span>
+        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
+            <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="o">.</span><span class="n">getAxioms</span><span class="p">()}</span>
+            <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
+
+        <span class="c1"># Save to justifications.owl if requested</span>
+        <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+
+            <span class="c1"># Create a new in-memory ontology to store justifications</span>
+            <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/laconic_axiom_justifications&quot;</span><span class="p">)</span>
+            <span class="n">just_ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">just_iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">axiom_set</span> <span class="ow">in</span> <span class="n">justifications</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axiom_set</span><span class="p">:</span>
+                    <span class="n">just_ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
+
+            <span class="c1"># Save to file</span>
+            <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;laconic_axiom_justifications.owl&quot;</span>
+            <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Laconic axiom justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">justifications</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.create_inconsistency_justifications">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.create_inconsistency_justifications">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_inconsistency_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                            <span class="n">n_max_justifications</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                                            <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10_000</span><span class="p">,</span>
+                                            <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate multiple justifications for why the ontology is inconsistent.</span>
+<span class="sd">        The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_max_justifications (Optional[int], optional): The maximum number of inconsistency justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</span>
+<span class="sd">            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</span>
+<span class="sd">            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the ontology is consistent and no inconsistency justifications can be created.</span>
+<span class="sd">            NotImplementedError: If the specified reasoner is not supported for inconsistency justification.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents an inconsistency justification.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Version based on owlexplainer</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_consistent_ontology</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The ontology is consistent. No inconsistency justifications to create.&quot;</span><span class="p">)</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.blackbox.checker</span><span class="w"> </span><span class="kn">import</span> \
+            <span class="n">InconsistentOntologyExplanationGeneratorFactory</span>
+
+        <span class="c1"># Get the reasoner factory</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.HermiT</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.elk.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElkReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">uk.ac.manchester.cs.jfact</span><span class="w"> </span><span class="kn">import</span> <span class="n">JFactFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.reasoner.structural</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Reasoner &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">&#39; is not supported for inconsistency justification.&quot;</span><span class="p">)</span>
+
+        <span class="n">j_exp_generator_factory</span> <span class="o">=</span> <span class="n">InconsistentOntologyExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_reasoner_factory</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
+        <span class="n">j_exp_generator</span> <span class="o">=</span> <span class="n">j_exp_generator_factory</span><span class="o">.</span><span class="n">createExplanationGenerator</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">)</span>
+
+        <span class="c1"># Ask for explanations for owl:Thing being unsatisfiable, which is the case if the ontology is inconsistent</span>
+        <span class="n">j_owl_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span>
+        <span class="n">j_entailment</span> <span class="o">=</span> <span class="n">j_owl_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getOWLSubClassOfAxiom</span><span class="p">(</span>
+            <span class="n">j_owl_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getOWLThing</span><span class="p">(),</span>
+            <span class="n">j_owl_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span><span class="o">.</span><span class="n">getOWLNothing</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get the explanations</span>
+        <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">j_exp_generator</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_entailment</span><span class="p">,</span> <span class="n">n_max_justifications</span><span class="p">)</span>
+        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
+            <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="o">.</span><span class="n">getAxioms</span><span class="p">()}</span>
+            <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
+        <span class="c1"># Save to justifications.owl if requested</span>
+        <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+
+            <span class="c1"># Create a new in-memory ontology to store justifications</span>
+            <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/inconsistency_justifications&quot;</span><span class="p">)</span>
+            <span class="n">just_ontology</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">just_iri</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">axiom_set</span> <span class="ow">in</span> <span class="n">justifications</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">axiom_set</span><span class="p">:</span>
+                    <span class="n">just_ontology</span><span class="o">.</span><span class="n">add_axiom</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
+
+            <span class="c1"># Save to file</span>
+            <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;inconsistency_justifications.owl&quot;</span>
+            <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistency justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">justifications</span></div>
+
 
 <div class="viewcode-block" id="SyncReasoner.get_contrastive_explanation">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.get_contrastive_explanation">[docs]</a>
@@ -2556,6 +2332,12 @@
             <span class="s2">&quot;conflict&quot;</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;conflict&quot;</span><span class="p">,</span> <span class="p">[])),</span>
             <span class="s2">&quot;foil_mapping&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;foil_mapping&quot;</span><span class="p">,</span> <span class="p">{})),</span>
         <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.get_root_ontology">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.get_root_ontology">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_root_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractOWLOntology</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span></div>
 </div>
 
 
@@ -2620,6 +2402,7 @@
             <span class="s2">&quot;InferredSubObjectPropertyAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">(),</span>
             <span class="s2">&quot;InferredDataPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">(),</span>
             <span class="s2">&quot;InferredObjectPropertyCharacteristicAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">()}</span></div>
+
 
 
 <div class="viewcode-block" id="EBR">
