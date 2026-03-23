@@ -634,6 +634,27 @@ class ShardReasoner:
 
         return {ind.str for ind in self.sync_reasoner.instances(enriched_ce)}
 
+    def evaluate_mincardinality_enriched(
+        self,
+        ce_mincard: OWLObjectMinCardinality,
+        global_c_iris: Set[str]
+    ) -> Set[str]:
+        """
+        Evaluate ``>=n r.C`` with cross-shard filler enrichment.
+        """
+        property_expr = ce_mincard.get_property()
+        cardinality = ce_mincard.get_cardinality()
+
+        nominal_individuals = [OWLNamedIndividual(iri) for iri in global_c_iris]
+        nominal_ce = OWLObjectOneOf(nominal_individuals)
+        enriched_ce = OWLObjectMinCardinality(
+            cardinality=cardinality,
+            property=property_expr,
+            filler=nominal_ce
+        )
+
+        return {ind.str for ind in self.sync_reasoner.instances(enriched_ce)}
+
 
 class BaseShardReasoner:
     """
@@ -1478,15 +1499,12 @@ class ShardEnsembleReasoner(BaseShardReasoner):
     
     def _combine_cardinality_across_shards(
         self,
-        ce,  # OWLObjectMinCardinality (n>=2), OWLObjectMaxCardinality, or OWLObjectExactCardinality
+        ce,  # OWLObjectMinCardinality (n>=2)
         combined: Dict[str, Set[str]],
         shard_results: List[Dict[str, Set[str]]]
     ) -> Set[str]:
         """
-        Evaluate a cardinality restriction using cross-shard filler resolution.
-
-        Handles ``OWLObjectMinCardinality`` (n >= 2), ``OWLObjectMaxCardinality``,
-        and ``OWLObjectExactCardinality``.
+        Evaluate a MinCardinality (n>=2) restriction using cross-shard filler resolution.
 
         Problem
         -------
@@ -1494,69 +1512,37 @@ class ShardEnsembleReasoner(BaseShardReasoner):
         when the filler type assertions live on different shards from the subject.
         For example, ``r(s, o)`` is in shard ``h(s)`` but ``C(o)`` is in shard
         ``h(o)``; Pellet on ``h(s)`` cannot confirm ``o`` is of type ``C``, so it
-        under-counts qualifying fillers for ``>=n`` and over-counts for ``<=n``.
+        under-counts qualifying fillers for ``>=n``.
 
         Algorithm
         ---------
-        1. Retrieve ``filler_iris = combined[str(filler)]`` — the globally resolved
-           filler set, already computed bottom-up.
-        2. Gather the global property map for ``r`` from all shards via
-           ``_gather_property_maps``.  Subject-keyed partitioning guarantees that
-           each subject's property assertions are in exactly one shard, so the
-           merged map is globally complete.
-        3. For each individual in the universe, count qualifying fillers:
-           ``|r(s) ∩ filler_iris|``  (IRI-distinct count).
-        4. Apply the min/max constraint from the CE.
-
-        .. note::
-
-           This method counts IRI-distinct fillers as distinct individuals
-           (Unique Name Assumption).  Under OWA, this is correct when
-           ``owl:AllDifferent`` axioms cover the relevant individuals.  Without
-           such axioms, ``>=n`` (n >= 2) may over-count and ``<=n`` / ``=n`` may
-           under-count compared to single-Pellet OWA reasoning.
+        We resolve the filler set F globally, construct >=n r.OneOf(F), and evaluate
+        it locally on each shard to properly respect OWA semantics.
 
         Args:
             ce:            A cardinality restriction CE.
             combined:      Bottom-up accumulated results; must already contain an
                            entry for ``str(ce.get_filler())``.
-            shard_results: Raw per-shard intermediate dicts (unused; filler result
-                           is taken from ``combined``).
+            shard_results: Raw per-shard intermediate dicts (unused).
 
         Returns:
             Set of subject IRI strings meeting the cardinality constraint.
         """
-        property_expr = ce.get_property()
         filler = ce.get_filler()
         filler_str = str(filler)
-        cardinality = ce.get_cardinality()
 
         # Get globally resolved filler instances (already computed bottom-up)
         filler_iris = combined.get(filler_str, set())
 
-        # Get global property map from all shards
-        prop_map = self._gather_property_maps(property_expr)
+        if ce.get_cardinality() > 0 and not filler_iris:
+            return set()
 
-        # Determine min/max based on restriction type
-        if isinstance(ce, OWLObjectMinCardinality):
-            min_count, max_count = cardinality, None
-        elif isinstance(ce, OWLObjectMaxCardinality):
-            min_count, max_count = 0, cardinality
-        else:  # ExactCardinality
-            min_count, max_count = cardinality, cardinality
-
-        # Get full universe (needed for <=n where subjects with 0 fillers qualify)
-        all_iris = self._gather_iris_from_all_shards("get_all_individual_iris")
-
-        # Count qualifying fillers per subject and apply constraint
-        result = set()
-        for subj_iri in all_iris:
-            obj_iris = prop_map.get(subj_iri, set())
-            count = len(obj_iris & filler_iris)
-            if count >= min_count and (max_count is None or count <= max_count):
-                result.add(subj_iri)
-
-        return result
+        futures = [
+            shard.evaluate_mincardinality_enriched.remote(ce, filler_iris)
+            for shard in self.shards
+        ]
+        results = ray.get(futures)
+        return set().union(*results) if results else set()
 
     def _combine_existential_across_shards(
         self,
