@@ -199,6 +199,10 @@ def concept_reducer_properties(concepts, properties, cls, cardinality=None):
 
 
 def execute(args):
+    # Suppress noisy Ray worker error traces for exceptions we catch in the driver
+    # (e.g., Openllet ArrayIndexOutOfBoundsException propagated via RayTaskError)
+    os.environ.setdefault("RAY_IGNORE_UNHANDLED_ERRORS", "1")
+
     # (1) Initialize Ray
     if not ray.is_initialized():
         if args.auto_ray:
@@ -406,26 +410,27 @@ def execute(args):
     random.shuffle(concepts)
     
     data = []
+    skipped_expressions = []  # CEs skipped due to reasoner bugs
 
     # Iterate over OWL Class Expressions
     for expression in (tqdm_bar := tqdm(concepts, position=0, leave=True)):
         try:
             dl_str = owl_expression_to_dl(expression)
-            
+
             if args.verbose:
                 print(f"\n>>> [{type(expression).__name__}] {dl_str}", flush=True)
                 print(f"    GT  ...", end="", flush=True)
-                
+
             # Retrieve ground truth results
             retrieval_y, runtime_y = concept_retrieval(symbolic_kb, expression)
-            
+
             if args.verbose:
                 print(f" {len(retrieval_y)} instances in {runtime_y:.3f}s", flush=True)
                 print(f"    DIST...", end="", flush=True)
-                
+
             # Retrieve distributed reasoner results
             retrieval_distributed_y, runtime_distributed_y = concept_retrieval(distributed_reasoner, expression)
-            
+
             if args.verbose:
                 print(f" {len(retrieval_distributed_y)} instances in {runtime_distributed_y:.3f}s", flush=True)
 
@@ -452,7 +457,18 @@ def execute(args):
             )
 
         except Exception as e:
-            print(f"\nError processing expression {dl_str}: {e}")
+            err_str = str(e)
+            # Detect Openllet ArrayIndexOutOfBoundsException bug
+            # (known issue: https://github.com/Galigator/openllet/issues/57)
+            if "ArrayIndexOutOfBoundsException" in err_str:
+                skipped_expressions.append({
+                    "Expression": dl_str,
+                    "Type": type(expression).__name__,
+                    "Error": err_str.strip(),
+                })
+                tqdm_bar.write(f"[SKIPPED] Openllet bug (ArrayIndexOutOfBounds) for: {dl_str}")
+            else:
+                print(f"\nError processing expression {dl_str}: {e}")
             continue
 
     # Build dataframe from collected results and write CSV once (avoids header/append race)
@@ -499,12 +515,17 @@ def execute(args):
     latex_table_str.append(r"\begin{table}[htbp]")
     latex_table_str.append(r"\centering")
     latex_table_str.append(r"\small")
-    latex_table_str.append(r"\begin{tabular}{l r r r r}")
+    latex_table_str.append(r"\begin{tabular}{l r r r r r r}")
     latex_table_str.append(r"\toprule")
-    latex_table_str.append(r"\textbf{Type} & \textbf{Count} & \textbf{Jaccard} & \textbf{F1} & \textbf{RT Benefits} \\")
+    latex_table_str.append(r"\textbf{Type} & \textbf{Count} & \textbf{Jaccard} & \textbf{F1} & \textbf{RT GT (s)} & \textbf{RT Dist (s)} & \textbf{Speedup} \\")
     latex_table_str.append(r"\midrule")
     for idx, row in latex_df.iterrows():
-        latex_table_str.append(f"{idx:<23} & {int(row['Count']):<3} & {row['Jaccard']:.4f} & {row['F1']:.4f} & {row['RT Benefits']:.4f} \\\\")
+        rt_gt = row['Runtime Ground Truth']
+        rt_dist = row['Runtime Distributed']
+        speedup = rt_gt / max(rt_dist, 1e-6)
+        latex_table_str.append(
+            f"{idx:<23} & {int(row['Count']):<3} & {row['Jaccard']:.4f} & {row['F1']:.4f} & {rt_gt:.4f} & {rt_dist:.4f} & {speedup:.2f}$\\times$ \\\\"
+        )
     latex_table_str.append(r"\bottomrule")
     latex_table_str.append(r"\end{tabular}")
     latex_table_str.append(r"\caption{Comparison of OWL Runtime Metrics}")
@@ -519,13 +540,31 @@ def execute(args):
         f.write(latex_output)
     print(f"\nLaTeX table saved to {latex_filename}")
     
+    # Report skipped expressions due to reasoner bugs
+    if skipped_expressions:
+        print("\n" + "=" * 70)
+        print(f"SKIPPED EXPRESSIONS (Openllet bug): {len(skipped_expressions)}")
+        print("=" * 70)
+        skipped_df = pd.DataFrame(skipped_expressions)
+        print(f"\nBy Type:")
+        print(skipped_df["Type"].value_counts().to_string())
+        print(f"\nAll skipped CEs:")
+        for entry in skipped_expressions:
+            print(f"  [{entry['Type']}] {entry['Expression']}")
+        # Save skipped expressions alongside the main report
+        skipped_path = args.path_report.replace(".csv", "_skipped.csv")
+        skipped_df.to_csv(skipped_path, index=False)
+        print(f"\nSkipped expressions saved to {skipped_path}")
+    else:
+        print("\nNo expressions were skipped due to reasoner bugs.")
+
     # Assert correctness threshold
     mean_jaccard = df["Jaccard Similarity"].mean()
     if mean_jaccard >= args.min_jaccard_similarity:
         print(f"\n✓ Correctness check PASSED: Mean Jaccard ({mean_jaccard:.4f}) >= threshold ({args.min_jaccard_similarity})")
     else:
         print(f"\n✗ Correctness check FAILED: Mean Jaccard ({mean_jaccard:.4f}) < threshold ({args.min_jaccard_similarity})")
-    
+
     return mean_jaccard, df["F1"].mean()
 
 
