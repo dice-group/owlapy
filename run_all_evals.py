@@ -14,16 +14,22 @@ Usage
 
 Output structure
 ----------------
-  results/YYYY-MM-DD_HH-MM-SS/
-    ├── summary.csv                          # aggregated metrics across all KGs
-    ├── summary.tex                          # LaTeX table for the paper
-    ├── Biopax/
-    │   ├── eval_results.csv
-    │   ├── eval_results_skipped.csv         # (if any CEs were skipped)
-    │   └── eval.log
-    ├── Carcinogenesis/
+  results/YYYY-MM-DD_HH-MM-SS_s8_Pellet_HermiT/
+    ├── config.json                          # full run config for reproducibility
+    ├── Pellet/
+    │   ├── summary.csv                      # aggregated metrics for Pellet
+    │   ├── summary.tex                      # LaTeX table for Pellet
+    │   ├── Biopax/
+    │   │   ├── eval_results.csv
+    │   │   ├── eval_results_skipped.csv     # (if any CEs were skipped)
+    │   │   └── eval.log
     │   └── ...
-    └── ...
+    ├── HermiT/
+    │   ├── summary.csv
+    │   ├── summary.tex
+    │   ├── Biopax/
+    │   │   └── ...
+    │   └── ...
 """
 
 import os
@@ -178,65 +184,31 @@ def generate_summary(results: list, output_dir: str, args):
     return summary_df
 
 
-def main():
-    parser = ArgumentParser(description="Run DDP reasoning eval on all ontologies in KGs/")
-    parser.add_argument("--kg_dir", type=str, default="KGs",
-                        help="Root directory containing ontology subdirectories")
-    parser.add_argument("--output_dir", type=str, default=None,
-                        help="Output directory (default: results/<timestamp>)")
-    parser.add_argument("--num_shards", type=int, default=8)
-    parser.add_argument("--reasoner", type=str, default="Pellet")
-    parser.add_argument("--seed", type=int, default=1)
-    parser.add_argument("--num_nominals", type=int, default=10)
-    parser.add_argument("--auto_ray", action="store_true", default=False)
-    parser.add_argument("--no_negations", action="store_true")
-    parser.add_argument("--no_universal", action="store_true")
-    parser.add_argument("--ratio_sample_nc", type=float, default=None)
-    parser.add_argument("--ratio_sample_object_prop", type=float, default=None)
-    parser.add_argument("--verbose", action="store_true")
-    args = parser.parse_args()
+def run_eval_for_reasoner(ontologies, reasoner, output_dir, args):
+    """Run evaluation on all ontologies for a single reasoner."""
+    reasoner_dir = os.path.join(output_dir, reasoner)
+    os.makedirs(reasoner_dir, exist_ok=True)
 
-    # Discover ontologies
-    ontologies = discover_ontologies(args.kg_dir)
-    if not ontologies:
-        print(f"No .owl files found in {args.kg_dir}")
-        sys.exit(1)
+    # Override reasoner in args for command building
+    args_copy = type(args)()  # shallow namespace copy
+    for k, v in vars(args).items():
+        setattr(args_copy, k, v)
+    args_copy.reasoner = reasoner
 
-    print(f"Found {len(ontologies)} ontologies (sorted by size, ascending):")
-    for owl in ontologies:
-        size_kb = os.path.getsize(owl) / 1024
-        print(f"  - {ontology_label(owl):30s} {size_kb:>8.1f} KB  ({owl})")
-
-    # Create output directory
-    if args.output_dir is None:
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        output_dir = os.path.join("results", f"{timestamp}_s{args.num_shards}_{args.reasoner}")
-    else:
-        output_dir = args.output_dir
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Save run configuration for reproducibility
-    config = vars(args).copy()
-    config["ontologies"] = ontologies
-    config["timestamp"] = datetime.now().isoformat()
-    with open(os.path.join(output_dir, "config.json"), "w") as f:
-        json.dump(config, f, indent=2)
-
-    # Run evaluations sequentially
     results = []
     for i, owl_path in enumerate(ontologies):
         label = ontology_label(owl_path)
-        onto_dir = os.path.join(output_dir, label)
+        onto_dir = os.path.join(reasoner_dir, label)
         os.makedirs(onto_dir, exist_ok=True)
 
         csv_path = os.path.join(onto_dir, "eval_results.csv")
         log_path = os.path.join(onto_dir, "eval.log")
 
         print(f"\n{'='*80}")
-        print(f"[{i+1}/{len(ontologies)}] {label}  ({owl_path})")
+        print(f"[{reasoner}] [{i+1}/{len(ontologies)}] {label}  ({owl_path})")
         print(f"{'='*80}")
 
-        cmd = build_eval_command(owl_path, args, csv_path)
+        cmd = build_eval_command(owl_path, args_copy, csv_path)
         print(f"Command: {' '.join(cmd)}")
 
         start = time.time()
@@ -277,8 +249,68 @@ def main():
 
         print(f"  Status: {status}  |  Runtime: {elapsed:.1f}s  |  Skipped: {num_skipped}")
 
-    # Generate aggregated summary
-    generate_summary(results, output_dir, args)
+    # Per-reasoner summary
+    args_copy.reasoner = reasoner
+    generate_summary(results, reasoner_dir, args_copy)
+
+    return results
+
+
+def main():
+    parser = ArgumentParser(description="Run DDP reasoning eval on all ontologies in KGs/")
+    parser.add_argument("--kg_dir", type=str, default="KGs",
+                        help="Root directory containing ontology subdirectories")
+    parser.add_argument("--output_dir", type=str, default=None,
+                        help="Output directory (default: results/<timestamp>)")
+    parser.add_argument("--num_shards", type=int, default=8)
+    parser.add_argument("--reasoners", type=str, nargs="+", default=["Pellet", "HermiT"],
+                        help="Reasoners to evaluate, in order (default: Pellet HermiT)")
+    parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--num_nominals", type=int, default=10)
+    parser.add_argument("--auto_ray", action="store_true", default=False)
+    parser.add_argument("--no_negations", action="store_true")
+    parser.add_argument("--no_universal", action="store_true")
+    parser.add_argument("--ratio_sample_nc", type=float, default=None)
+    parser.add_argument("--ratio_sample_object_prop", type=float, default=None)
+    parser.add_argument("--verbose", action="store_true")
+    args = parser.parse_args()
+
+    # Discover ontologies
+    ontologies = discover_ontologies(args.kg_dir)
+    if not ontologies:
+        print(f"No .owl files found in {args.kg_dir}")
+        sys.exit(1)
+
+    print(f"Found {len(ontologies)} ontologies (sorted by size, ascending):")
+    for owl in ontologies:
+        size_kb = os.path.getsize(owl) / 1024
+        print(f"  - {ontology_label(owl):30s} {size_kb:>8.1f} KB  ({owl})")
+
+    print(f"\nReasoners to evaluate (in order): {args.reasoners}")
+
+    # Create output directory
+    if args.output_dir is None:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        reasoner_tag = "_".join(args.reasoners)
+        output_dir = os.path.join("results", f"{timestamp}_s{args.num_shards}_{reasoner_tag}")
+    else:
+        output_dir = args.output_dir
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Save run configuration for reproducibility
+    config = vars(args).copy()
+    config["ontologies"] = ontologies
+    config["timestamp"] = datetime.now().isoformat()
+    with open(os.path.join(output_dir, "config.json"), "w") as f:
+        json.dump(config, f, indent=2)
+
+    # Run evaluations: all ontologies per reasoner, reasoners in order
+    all_results = {}
+    for reasoner in args.reasoners:
+        print(f"\n{'#'*80}")
+        print(f"# REASONER: {reasoner}")
+        print(f"{'#'*80}")
+        all_results[reasoner] = run_eval_for_reasoner(ontologies, reasoner, output_dir, args)
 
     print(f"\nAll results saved to: {output_dir}/")
 
