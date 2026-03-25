@@ -450,8 +450,9 @@ class QueryGenerator(Owl2SparqlConverter):
 
         When a UNION involves the marker variable (``?class``), the standard
         sub-query approach does not work because ``?class`` is only bound
-        inside one branch of the UNION.  In this case the query must use
-        ``?anything a ?class .`` to bind ``?class`` independently.
+        inside one branch of the UNION.  In this case the query must
+        pre-enumerate ``?class`` via a selective ``SELECT DISTINCT ?class``
+        subquery scoped to the example individuals.
         """
         if isinstance(ce, OWLClass):
             return False
@@ -552,13 +553,24 @@ class QueryGenerator(Owl2SparqlConverter):
 
         # -- 3. Assemble final query ------------------------------------------
         # When the context contains a UNION involving the marker, we need
-        # a different structure: bind ?class independently first with
-        # ``?anything a ?class .`` so that it is visible across UNION branches.
+        # a different structure: pre-enumerate ?class with a selective
+        # ``SELECT DISTINCT ?class`` subquery scoped to the example
+        # individuals so that ?class is visible across UNION branches.
         if self._contains_union_with_marker(context):
+            # Use a selective subquery to pre-enumerate only ?class values
+            # that appear among the example individuals, avoiding a full
+            # graph scan that ``?anything a ?class .`` would cause.
+            binding_subquery = (
+                "  { SELECT DISTINCT ?class WHERE {\n"
+                "      { " + context_string + " }\n"
+                "      UNION\n"
+                "      { " + neg_context + " }\n"
+                "  } }\n"
+            )
             query_parts = [
                 "SELECT ?class (COUNT(DISTINCT " + root_variable_pos + ") AS ?posHits) "
                 "(COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
-                "  ?anything a ?class .\n",
+                binding_subquery,
                 "  {\n    ",
                 context_string,
                 "\n  }\n",
@@ -773,13 +785,24 @@ class QueryGenerator(Owl2SparqlConverter):
 
         # -- 3. Assemble final query -------------------------------------------
         # When the context contains a UNION involving the marker, we need
-        # a different structure: bind ?prop independently first with
-        # ``?anything ?prop [] .`` so that it is visible across UNION branches.
+        # a different structure: pre-enumerate ?prop with a selective
+        # ``SELECT DISTINCT ?prop`` subquery scoped to the example
+        # individuals so that ?prop is visible across UNION branches.
         if self._contains_union_with_marker(context):
+            # Use a selective subquery to pre-enumerate only ?prop values
+            # that appear among the example individuals, avoiding a full
+            # graph scan that ``?anything ?prop [] .`` would cause.
+            binding_subquery = (
+                "  { SELECT DISTINCT ?prop WHERE {\n"
+                "      { " + context_string + " }\n"
+                "      UNION\n"
+                "      { " + neg_context + " }\n"
+                "  } }\n"
+            )
             query_parts = [
                 "SELECT ?prop (COUNT(DISTINCT " + root_variable_pos + ") AS ?posHits) "
                 "(COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
-                "  ?anything ?prop [] .\n",
+                binding_subquery,
                 "  {\n    ",
                 context_string,
                 "\n  }\n",
