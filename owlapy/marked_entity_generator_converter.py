@@ -443,6 +443,32 @@ class QueryGenerator(Owl2SparqlConverter):
             return QueryGenerator._contains_marker(ce.get_filler())
         return False
 
+    @staticmethod
+    def _contains_union_with_marker(ce: OWLClassExpression) -> bool:
+        """Return ``True`` if *ce* contains an ``OWLObjectUnionOf`` that has
+        the :data:`CONTEXT_POSITION_MARKER` as a descendant.
+
+        When a UNION involves the marker variable (``?class``), the standard
+        sub-query approach does not work because ``?class`` is only bound
+        inside one branch of the UNION.  In this case the query must use
+        ``?anything a ?class .`` to bind ``?class`` independently.
+        """
+        if isinstance(ce, OWLClass):
+            return False
+        if isinstance(ce, OWLObjectComplementOf):
+            return QueryGenerator._contains_union_with_marker(ce.get_operand())
+        if isinstance(ce, OWLObjectUnionOf):
+            # This IS a union – check if the marker is anywhere inside it
+            if QueryGenerator._contains_marker(ce):
+                return True
+            # Also recurse into operands to find nested unions-with-marker
+            return any(QueryGenerator._contains_union_with_marker(op) for op in ce.operands())
+        if isinstance(ce, OWLObjectIntersectionOf):
+            return any(QueryGenerator._contains_union_with_marker(op) for op in ce.operands())
+        if isinstance(ce, (OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom)):
+            return QueryGenerator._contains_union_with_marker(ce.get_filler())
+        return False
+
     # -- main query builder ---------------------------------------------------
 
     def as_class_query(
@@ -525,16 +551,33 @@ class QueryGenerator(Owl2SparqlConverter):
         neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
 
         # -- 3. Assemble final query ------------------------------------------
-        query_parts = [
-            "SELECT ?class (MAX(?tp) AS ?posHits) (COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
-            "  { SELECT ?class (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) WHERE {\n    ",
-            context_string,
-            "\n  } GROUP BY ?class }\n",
-            "  OPTIONAL {\n    ",
-            neg_context,
-            "\n  }\n",
-            "} GROUP BY ?class",
-        ]
+        # When the context contains a UNION involving the marker, we need
+        # a different structure: bind ?class independently first with
+        # ``?anything a ?class .`` so that it is visible across UNION branches.
+        if self._contains_union_with_marker(context):
+            query_parts = [
+                "SELECT ?class (COUNT(DISTINCT " + root_variable_pos + ") AS ?posHits) "
+                "(COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
+                "  ?anything a ?class .\n",
+                "  {\n    ",
+                context_string,
+                "\n  }\n",
+                "  OPTIONAL {\n    ",
+                neg_context,
+                "\n  }\n",
+                "} GROUP BY ?class",
+            ]
+        else:
+            query_parts = [
+                "SELECT ?class (MAX(?tp) AS ?posHits) (COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
+                "  { SELECT ?class (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) WHERE {\n    ",
+                context_string,
+                "\n  } GROUP BY ?class }\n",
+                "  OPTIONAL {\n    ",
+                neg_context,
+                "\n  }\n",
+                "} GROUP BY ?class",
+            ]
         query = "".join(query_parts)
 
         # Validate

@@ -21,6 +21,7 @@ from owlapy.class_expression import (
     OWLObjectComplementOf,
     OWLObjectIntersectionOf,
     OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
 )
 from owlapy.marked_entity_generator_converter import (
     CONTEXT_POSITION_MARKER,
@@ -73,7 +74,7 @@ query1 = owl_expression_to_class_query(
 )
 print(query1)
 
-exit(1)
+
 
 # ---------------------------------------------------------------------------
 # Example 2 – existential restriction context
@@ -152,4 +153,28 @@ query5 = owl_expression_to_class_query(
     filter_expression=Male,
 )
 print(query5)
+
+# ---------------------------------------------------------------------------
+# Example 6 – union context
+#
+# Context CE:  Person ⊔ MARKER
+# Find all classes ?class such that the positive examples are either a Person
+# OR an instance of ?class.  Because the marker appears inside a UNION, the
+# query uses a special structure that first binds ?class independently with
+#     ?anything a ?class .
+# and then checks both branches of the UNION:
+#     { ?pos a <Person> . } UNION { ?pos a ?class . }
+# This ensures that ?class is correctly scoped across both UNION branches.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Example 6 – Person ⊔ MARKER (union: Person or discovered class)")
+print("=" * 60)
+
+context6 = OWLObjectUnionOf([Person, CONTEXT_POSITION_MARKER])
+query6 = owl_expression_to_class_query(
+    context=context6,
+    positive_examples=positives,
+    negative_examples=negatives,
+)
+print(query6)
 
