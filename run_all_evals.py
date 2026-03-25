@@ -219,7 +219,7 @@ def run_eval_for_reasoner(ontologies, reasoner, output_dir, args):
                     stdout=log_f,
                     stderr=subprocess.STDOUT,
                     cwd=os.path.dirname(os.path.abspath(__file__)),
-                    timeout=7200,  # 2 hour timeout per ontology
+                    timeout=None,  # no timeout — let each ontology run to completion
                 )
             elapsed = time.time() - start
             status = "success" if proc.returncode == 0 else f"failed (rc={proc.returncode})"
