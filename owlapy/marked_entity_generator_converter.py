@@ -771,19 +771,36 @@ class QueryGenerator(Owl2SparqlConverter):
         neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
         neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
 
-        # -- 3. Assemble final query (UNION pattern) --------------------------
-        query_parts = [
-            "SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {\n",
-            "  { SELECT ?prop (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) (0 AS ?fp) WHERE {\n    ",
-            context_string,
-            "\n  } GROUP BY ?prop }\n",
-            "  UNION {\n",
-            "    SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT " + root_variable_neg + ") AS ?fp) WHERE {\n    ",
-            neg_context,
-            "\n    } GROUP BY ?prop\n",
-            "  }\n",
-            "} GROUP BY ?prop",
-        ]
+        # -- 3. Assemble final query -------------------------------------------
+        # When the context contains a UNION involving the marker, we need
+        # a different structure: bind ?prop independently first with
+        # ``?anything ?prop [] .`` so that it is visible across UNION branches.
+        if self._contains_union_with_marker(context):
+            query_parts = [
+                "SELECT ?prop (COUNT(DISTINCT " + root_variable_pos + ") AS ?posHits) "
+                "(COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
+                "  ?anything ?prop [] .\n",
+                "  {\n    ",
+                context_string,
+                "\n  }\n",
+                "  OPTIONAL {\n    ",
+                neg_context,
+                "\n  }\n",
+                "} GROUP BY ?prop",
+            ]
+        else:
+            query_parts = [
+                "SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {\n",
+                "  { SELECT ?prop (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) (0 AS ?fp) WHERE {\n    ",
+                context_string,
+                "\n  } GROUP BY ?prop }\n",
+                "  UNION {\n",
+                "    SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT " + root_variable_neg + ") AS ?fp) WHERE {\n    ",
+                neg_context,
+                "\n    } GROUP BY ?prop\n",
+                "  }\n",
+                "} GROUP BY ?prop",
+            ]
         query = "".join(query_parts)
 
         parseQuery(query)
