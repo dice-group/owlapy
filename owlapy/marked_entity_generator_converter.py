@@ -117,7 +117,8 @@ class QueryGenerator(Owl2SparqlConverter):
                 marker_mode: bool = False,
                 property_marker_mode: bool = False,
                 inverted: bool = False,
-                negated_class_marker_mode: bool = False):
+                negated_class_marker_mode: bool = False,
+                _preserve_mapping: bool = False):
         """Like the parent ``convert`` but accepts extra marker flags.
 
         When *marker_mode* is ``True`` the :data:`CONTEXT_POSITION_MARKER`
@@ -130,15 +131,48 @@ class QueryGenerator(Owl2SparqlConverter):
 
         When *property_marker_mode* is ``True`` the marker emits
         ``?var ?prop [] .`` (or ``[] ?prop ?var .`` when *inverted* is ``True``).
+
+        When *_preserve_mapping* is ``True``, the existing
+        :class:`VariablesMapping` counters are preserved so that a
+        subsequent conversion produces fresh intermediate variable names
+        (e.g. ``?s_3`` instead of ``?s_1``).  This is essential when the
+        positive and negative blocks appear in the same outer query scope.
         """
         self._marker_mode = marker_mode
         self._property_marker_mode = property_marker_mode
         self._negated_class_marker_mode = negated_class_marker_mode
         self._inverted = inverted
         self._inside_filter = False
-        return super().convert(root_variable, ce,
-                               for_all_de_morgan=for_all_de_morgan,
-                               named_individuals=named_individuals)
+        if _preserve_mapping and hasattr(self, 'mapping') and self.mapping is not None:
+            # Inline the parent's convert() logic but keep the existing
+            # VariablesMapping so intermediate variable names continue from
+            # where the previous conversion left off.
+            from collections import defaultdict
+            self.ce = ce
+            self.sparql = []
+            self.variables = []
+            self.parent = []
+            self.parent_var = []
+            self.properties = defaultdict(list)
+            self.variable_entities = set()
+            self._intersection = defaultdict(bool)
+            self.cnt = 0
+            # Do NOT reset self.mapping – keep the existing counters so that
+            # new intermediate variables get fresh names.  But clear the
+            # entity-to-variable dict to avoid stale assignments.
+            self.mapping.dict = dict()
+            self.grouping_vars = defaultdict(set)
+            self.having_conditions = defaultdict(set)
+            self.for_all_de_morgan = for_all_de_morgan
+            self.named_individuals = named_individuals
+            with self.stack_variable(root_variable):
+                with self.stack_parent(ce):
+                    self.process(ce)
+            return self.sparql
+        else:
+            return super().convert(root_variable, ce,
+                                   for_all_de_morgan=for_all_de_morgan,
+                                   named_individuals=named_individuals)
 
     # -- process overloads ----------------------------------------------------
     # We need to re-register the singledispatchmethod overloads because
@@ -540,26 +574,49 @@ class QueryGenerator(Owl2SparqlConverter):
         context_parts.extend(tp)
         context_string = "".join(context_parts)
 
-        # -- 2. Build negative context string (variable replacement) ----------
+        # -- 2. Build negative context string ---------------------------------
         values_neg = _generate_values_stmt(root_variable_neg, negative_list)
-        neg_context = re.sub(
-            r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
-            values_neg.rstrip(". "),
-            context_string,
-        )
-        # Replace remaining occurrences of the positive variable
-        neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
-        neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
+
+        has_union_marker = self._contains_union_with_marker(context)
+
+        if has_union_marker:
+            # When a UNION involves the marker, we must do a fresh conversion
+            # for the negative context so that intermediate variables (e.g.
+            # ?s_1, ?s_2) are independent between the positive and negative
+            # blocks.  We use _preserve_mapping=True so that the variable
+            # counter continues from where the positive conversion left off,
+            # producing distinct variable names (e.g. ?s_3, ?s_4).
+            neg_tp = self.convert(root_variable_neg, context,
+                                  for_all_de_morgan=for_all_de_morgan,
+                                  named_individuals=named_individuals,
+                                  marker_mode=True,
+                                  _preserve_mapping=True)
+            neg_context_parts = [values_neg]
+            if filter_expression is not None:
+                neg_filter_tp = self.convert(root_variable_neg, filter_expression,
+                                             for_all_de_morgan=for_all_de_morgan,
+                                             named_individuals=named_individuals,
+                                             marker_mode=False,
+                                             _preserve_mapping=True)
+                neg_context_parts.append(f"FILTER NOT EXISTS {{ {''.join(neg_filter_tp)} }} ")
+            neg_context_parts.extend(neg_tp)
+            neg_context = "".join(neg_context_parts)
+        else:
+            neg_context = re.sub(
+                r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
+                values_neg.rstrip(". "),
+                context_string,
+            )
+            # Replace remaining occurrences of the positive variable
+            neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
+            neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
 
         # -- 3. Assemble final query ------------------------------------------
         # When the context contains a UNION involving the marker, we need
         # a different structure: pre-enumerate ?class with a selective
         # ``SELECT DISTINCT ?class`` subquery scoped to the example
         # individuals so that ?class is visible across UNION branches.
-        if self._contains_union_with_marker(context):
-            # Use a selective subquery to pre-enumerate only ?class values
-            # that appear among the example individuals, avoiding a full
-            # graph scan that ``?anything a ?class .`` would cause.
+        if has_union_marker:
             binding_subquery = (
                 "  { SELECT DISTINCT ?class WHERE {\n"
                 "      { " + context_string + " }\n"
@@ -773,22 +830,47 @@ class QueryGenerator(Owl2SparqlConverter):
         context_parts.extend(tp)
         context_string = "".join(context_parts)
 
-        # -- 2. Build negative context string (variable replacement) ----------
+        # -- 2. Build negative context string ---------------------------------
         values_neg = _generate_values_stmt(root_variable_neg, negative_list)
-        neg_context = re.sub(
-            r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
-            values_neg.rstrip(". "),
-            context_string,
-        )
-        neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
-        neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
+
+        has_union_marker = self._contains_union_with_marker(context)
+
+        if has_union_marker:
+            # When a UNION involves the marker, we must do a fresh conversion
+            # for the negative context so that intermediate variables (e.g.
+            # ?s_1, ?s_2) are independent between the positive and negative
+            # blocks.  We use _preserve_mapping=True so that the variable
+            # counter continues from where the positive conversion left off.
+            neg_tp = self.convert(root_variable_neg, context,
+                                  for_all_de_morgan=for_all_de_morgan,
+                                  named_individuals=named_individuals,
+                                  property_marker_mode=True,
+                                  inverted=inverted,
+                                  _preserve_mapping=True)
+            neg_context_parts = [values_neg]
+            if filter_expression is not None:
+                neg_filter_tp = self.convert(root_variable_neg, filter_expression,
+                                             for_all_de_morgan=for_all_de_morgan,
+                                             named_individuals=named_individuals,
+                                             _preserve_mapping=True)
+                neg_context_parts.append(f"FILTER NOT EXISTS {{ {''.join(neg_filter_tp)} }} ")
+            neg_context_parts.extend(neg_tp)
+            neg_context = "".join(neg_context_parts)
+        else:
+            neg_context = re.sub(
+                r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
+                values_neg.rstrip(". "),
+                context_string,
+            )
+            neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
+            neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
 
         # -- 3. Assemble final query -------------------------------------------
         # When the context contains a UNION involving the marker, we need
         # a different structure: pre-enumerate ?prop with a selective
         # ``SELECT DISTINCT ?prop`` subquery scoped to the example
         # individuals so that ?prop is visible across UNION branches.
-        if self._contains_union_with_marker(context):
+        if has_union_marker:
             # Use a selective subquery to pre-enumerate only ?prop values
             # that appear among the example individuals, avoiding a full
             # graph scan that ``?anything ?prop [] .`` would cause.

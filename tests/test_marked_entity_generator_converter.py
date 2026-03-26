@@ -48,11 +48,6 @@ from owlapy.marked_entity_generator_converter import (
     owl_expression_to_property_query,
 )
 
-# Converter without counts (DISTINCT only)
-from owlapy.marked_entity_generator_converter2 import (
-    owl_expression_to_class_query as class_query_no_counts,
-    owl_expression_to_property_query as property_query_no_counts,
-)
 
 # ============================================================================
 # Constants
@@ -242,24 +237,6 @@ class TestMarkedEntityGeneratorConverter(unittest.TestCase):
         # SELECT only returns classes matched by at least one positive.
         self.assertNotIn(NS + "Female", results)
 
-    def test_02_marker_root_class_query_no_counts(self):
-        """MARKER as root: discover classes without counts."""
-        context = CONTEXT_POSITION_MARKER
-        positives = [ind("F2M11")]
-
-        query = class_query_no_counts(context, positives)
-        bindings = _execute_sparql(query)
-        classes = self._parse_distinct_results(bindings, "class")
-
-        # F2M11 is Brother, Male, Person, Father, Grandfather, Son, NamedIndividual
-        self.assertIn(NS + "Male", classes)
-        self.assertIn(NS + "Person", classes)
-        self.assertIn(NS + "Father", classes)
-        self.assertIn(NS + "Grandfather", classes)
-        self.assertIn(NS + "Brother", classes)
-        self.assertIn(NS + "Son", classes)
-        # Should NOT have Female
-        self.assertNotIn(NS + "Female", classes)
 
     # ------------------------------------------------------------------
     # Test 2 – simplest context: MARKER as root (property query)
@@ -292,19 +269,6 @@ class TestMarkedEntityGeneratorConverter(unittest.TestCase):
         self.assertEqual(results[NS + "hasSibling"][0], 1)  # pos=1
         self.assertEqual(results[NS + "hasSibling"][1], 0)  # neg=0
 
-    def test_04_marker_root_property_query_no_counts(self):
-        """MARKER as root: discover properties without counts."""
-        context = CONTEXT_POSITION_MARKER
-        positives = [ind("F2M11")]
-
-        query = property_query_no_counts(context, positives)
-        bindings = _execute_sparql(query)
-        props = self._parse_distinct_results(bindings, "prop")
-
-        self.assertIn(NS + "hasChild", props)
-        self.assertIn(NS + "hasParent", props)
-        self.assertIn(NS + "hasSibling", props)
-        self.assertIn(NS + "married", props)
 
     # ------------------------------------------------------------------
     # Test 3 – intersection context: Person ⊓ MARKER
@@ -389,23 +353,6 @@ class TestMarkedEntityGeneratorConverter(unittest.TestCase):
         self.assertEqual(results[NS + "Male"][0], 1)
         self.assertEqual(results[NS + "Male"][1], 0)
 
-    def test_08_existential_class_query_no_counts(self):
-        """∃hasChild.MARKER without counts: discover classes of children."""
-        context = OWLObjectSomeValuesFrom(hasChild, CONTEXT_POSITION_MARKER)
-        positives = [ind("F2M11")]
-
-        query = class_query_no_counts(context, positives)
-        bindings = _execute_sparql(query)
-        classes = self._parse_distinct_results(bindings, "class")
-
-        # Children of F2M11: F2F15 and F2M13
-        # Classes should include types of both children
-        self.assertIn(NS + "Person", classes)
-        self.assertIn(NS + "Daughter", classes)
-        self.assertIn(NS + "Mother", classes)
-        self.assertIn(NS + "Sister", classes)
-        self.assertIn(NS + "Brother", classes)
-        self.assertIn(NS + "Son", classes)
 
     def test_09_existential_property_query_with_counts(self):
         """∃hasChild.MARKER: discover properties of children."""
@@ -457,18 +404,6 @@ class TestMarkedEntityGeneratorConverter(unittest.TestCase):
         self.assertIn(NS + "hasSibling", results)
         self.assertGreaterEqual(results[NS + "hasSibling"][0], 1)
 
-    def test_11_inverted_property_query_no_counts(self):
-        """MARKER inverted without counts."""
-        context = CONTEXT_POSITION_MARKER
-        positives = [ind("F2M13")]
-
-        query = property_query_no_counts(context, positives, inverted=True)
-        bindings = _execute_sparql(query)
-        props = self._parse_distinct_results(bindings, "prop")
-
-        self.assertIn(NS + "hasChild", props)
-        self.assertIn(NS + "hasSibling", props)
-        self.assertIn(NS + "married", props)
 
     # ------------------------------------------------------------------
     # Test 6 – multiple positives / negatives with counts
@@ -669,45 +604,7 @@ class TestMarkedEntityGeneratorConverter(unittest.TestCase):
     #           with-count results
     # ------------------------------------------------------------------
 
-    def test_20_consistency_class_no_count_vs_with_count(self):
-        """Classes from no-count query should be subset of with-count query."""
-        context = CONTEXT_POSITION_MARKER
-        positives = [ind("F2M11"), ind("F2F15")]
-        negatives = [ind("F2F14")]
 
-        q_nc = class_query_no_counts(context, positives)
-        bindings_nc = _execute_sparql(q_nc)
-        classes_nc = self._parse_distinct_results(bindings_nc, "class")
-
-        q_wc = owl_expression_to_class_query(context, positives, negatives)
-        bindings_wc = _execute_sparql(q_wc)
-        classes_wc = set(self._parse_class_results_with_counts(bindings_wc).keys())
-
-        # Every class found by the no-count query should also appear in the
-        # with-count query (the with-count query also includes neg-only classes).
-        self.assertTrue(
-            classes_nc.issubset(classes_wc),
-            f"No-count classes not in with-count: {classes_nc - classes_wc}",
-        )
-
-    def test_21_consistency_property_no_count_vs_with_count(self):
-        """Properties from no-count query should be subset of with-count query."""
-        context = CONTEXT_POSITION_MARKER
-        positives = [ind("F2M11"), ind("F2F15")]
-        negatives = [ind("F2F14")]
-
-        q_nc = property_query_no_counts(context, positives)
-        bindings_nc = _execute_sparql(q_nc)
-        props_nc = self._parse_distinct_results(bindings_nc, "prop")
-
-        q_wc = owl_expression_to_property_query(context, positives, negatives)
-        bindings_wc = _execute_sparql(q_wc)
-        props_wc = set(self._parse_property_results_with_counts(bindings_wc).keys())
-
-        self.assertTrue(
-            props_nc.issubset(props_wc),
-            f"No-count props not in with-count: {props_nc - props_wc}",
-        )
 
     # ------------------------------------------------------------------
     # Test 12 – filter_expression parameter

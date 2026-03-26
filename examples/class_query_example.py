@@ -15,7 +15,7 @@ Run with::
 
     python examples/class_query_example.py
 """
-
+from owlapy import dl_to_owl_expression, owl_expression_to_dl
 from owlapy.class_expression import (
     OWLClass,
     OWLObjectComplementOf,
@@ -171,10 +171,85 @@ print("Example 6 – Person ⊔ MARKER (union: Person or discovered class)")
 print("=" * 60)
 
 context6 = OWLObjectUnionOf([Person, CONTEXT_POSITION_MARKER])
+
+pos6 = [
+    OWLNamedIndividual(IRI(NS, "F9F164")),
+    OWLNamedIndividual(IRI(NS, "F10M188")),
+    OWLNamedIndividual(IRI(NS, "F9M159")),
+    OWLNamedIndividual(IRI(NS, "F10M176")),
+]
+
+neg6 = [
+    OWLNamedIndividual(IRI(NS, "F6F96")),
+    OWLNamedIndividual(IRI(NS, "F10M173")),
+    OWLNamedIndividual(IRI(NS, "F6F70")),
+    OWLNamedIndividual(IRI(NS, "F8F133")),
+]
+
 query6 = owl_expression_to_class_query(
     context=context6,
-    positive_examples=positives,
-    negative_examples=negatives,
+    positive_examples=pos6,
+    negative_examples=neg6,
 )
 print(query6)
 
+# Query the SPARQL endpoint to verify results
+import requests
+
+SPARQL_ENDPOINT = "http://localhost:3030/family/sparql"
+
+print("\nQuerying SPARQL endpoint for Person ⊔ MARKER results:")
+try:
+    response = requests.post(SPARQL_ENDPOINT, data={"query": query6}, timeout=10)
+    response.raise_for_status()
+    results = response.json()
+    for row in results["results"]["bindings"]:
+        cls = row["class"]["value"]
+        pos_hits = row["posHits"]["value"]
+        neg_hits = row["negHits"]["value"]
+        print(f"  ?class = <{cls}>,  posHits = {pos_hits},  negHits = {neg_hits}")
+except Exception as e:
+    print(f"  (Could not reach endpoint: {e})")
+
+# ---------------------------------------------------------------------------
+# Example 7 – nested union: ∃ hasParent.((∃ hasSibling.⊤) ⊔ MARKER)
+#
+# A more complex scenario where the union with the marker is nested inside
+# an existential restriction.  This tests that intermediate variables are
+# independent between the positive and negative blocks.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Example 7 – ∃ hasParent.((∃ hasSibling.⊤) ⊔ MARKER)")
+print("=" * 60)
+
+hasParent = OWLObjectProperty(IRI(NS, "hasParent"))
+hasSibling = OWLObjectProperty(IRI(NS, "hasSibling"))
+
+context7 = OWLObjectSomeValuesFrom(
+    hasParent,
+    OWLObjectUnionOf([
+        OWLObjectSomeValuesFrom(hasSibling, OWLClass(IRI("http://www.w3.org/2002/07/owl#", "Thing"))),
+        CONTEXT_POSITION_MARKER,
+    ]),
+)
+print(f"Context DL: {owl_expression_to_dl(context7)}")
+
+query7 = owl_expression_to_class_query(
+    context=context7,
+    positive_examples=pos6,
+    negative_examples=neg6,
+)
+print(query7)
+
+print("\nQuerying SPARQL endpoint for ∃ hasParent.((∃ hasSibling.⊤) ⊔ MARKER) results:")
+try:
+    response = requests.post(SPARQL_ENDPOINT, data={"query": query7}, timeout=10)
+    response.raise_for_status()
+    results = response.json()
+    for row in results["results"]["bindings"]:
+        cls = row["class"]["value"]
+        pos_hits = row["posHits"]["value"]
+        neg_hits = row["negHits"]["value"]
+        print(f"  ?class = <{cls}>,  posHits = {pos_hits},  negHits = {neg_hits}")
+except Exception as e:
+    print(f"  (Could not reach endpoint: {e})")
