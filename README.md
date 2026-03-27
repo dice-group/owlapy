@@ -185,6 +185,26 @@ Our latest feature employees a combination of state-of-the-art approaches to ext
 text using Large Language Models (LLMs). The algorithm consist of an agentic pipeline called AGen-KG (stands for agent-generated KG)
 which can scale to large documents through chunking and merging strategies.
 
+#### Installation
+
+Before using this feature, install the required extra dependencies for LLM-based 
+ontology generation:
+
+```shell
+pip install owlapy[agentic]  # or: pip install owlapy[all]
+```
+
+If you already have the minimum version of OWLAPY installed, you can install DSPy directly:
+
+```shell
+pip install dspy
+```
+
+> **Note:** DSPy is updated frequently and compatibility with the latest versions is not guaranteed. The last verified compatible version is **3.1.3**.
+
+
+#### Example
+
 ```python
 from owlapy.agen_kg import AGenKG
 from owlapy.owl_ontology import SyncOntology
