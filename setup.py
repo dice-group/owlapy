@@ -16,7 +16,7 @@ _deps = [
     "uvicorn>=0.32.1",
     "dicee==0.3.2",
     "litserve>=0.2.0",
-    "dspy==3.0.3",
+    "dspy>=3.0.3",
     "ruff>=0.7.2",
     "pytest>=8.1.1",
 ]
@@ -44,7 +44,9 @@ extras["min"] = deps_list(
     "dspy",
 )
 
-extras["dev"] = (extras["min"] + deps_list("pytest", "ruff", "dicee"))
+extras["dev"] = (extras["min"] + deps_list("pytest", "ruff"))
+extras["agentic"] = (extras["min"] + deps_list("dspy"))
+extras["all"] = (extras["dev"] + deps_list("dspy", "dicee"))
 install_requires = [extras["min"]]
 
 with open('README.md', 'r') as fh:
@@ -52,7 +54,7 @@ with open('README.md', 'r') as fh:
 setup(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
-    version="1.6.3",
+    version="1.6.4",
     packages=find_packages(),
     include_package_data=True,
     package_data={'owlapy': ['jar_dependencies/*.jar'],},

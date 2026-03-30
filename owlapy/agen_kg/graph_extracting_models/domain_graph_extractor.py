@@ -1,6 +1,9 @@
 from typing import List, Union, Optional
 import os
-import dspy
+try:
+    import dspy
+except ImportError:
+    raise ImportError("dspy is required for DomainGraphExtractor. Please install it using 'pip install dspy'")
 import uuid
 from pathlib import Path
 

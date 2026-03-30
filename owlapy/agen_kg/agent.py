@@ -1,4 +1,8 @@
-import dspy
+
+try:
+    import dspy
+except ImportError:
+    raise ImportError("dspy is required for AGenKG. Please install it using 'pip install dspy'")
 from owlapy.agen_kg.graph_extracting_models import (OpenGraphExtractor, DomainGraphExtractor)
 
 class AGenKG:

@@ -2,8 +2,8 @@
 [![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
 [![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
 [![Coverage](https://img.shields.io/badge/coverage-82%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.6.3-blue)](https://pypi.org/project/owlapy/1.6.3/)
-[![Docs](https://img.shields.io/badge/documentation-1.6.3-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Pypi](https://img.shields.io/badge/pypi-1.6.4-blue)](https://pypi.org/project/owlapy/1.6.4/)
+[![Docs](https://img.shields.io/badge/documentation-1.6.4-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dice-group/owlapy)
 ![GitHub License](https://img.shields.io/github/license/dice-group/owlapy)
 
@@ -185,6 +185,26 @@ Our latest feature employees a combination of state-of-the-art approaches to ext
 text using Large Language Models (LLMs). The algorithm consist of an agentic pipeline called AGen-KG (stands for agent-generated KG)
 which can scale to large documents through chunking and merging strategies.
 
+#### Installation
+
+Before using this feature, install the required extra dependencies for LLM-based 
+ontology generation:
+
+```shell
+pip install owlapy[agentic]  # or: pip install owlapy[all]
+```
+
+If you already have the minimum version of OWLAPY installed, you can install DSPy directly:
+
+```shell
+pip install dspy
+```
+
+> **Note:** DSPy is updated frequently and compatibility with the latest versions is not guaranteed. The last verified compatible version is **3.1.3**.
+
+
+#### Example
+
 ```python
 from owlapy.agen_kg import AGenKG
 from owlapy.owl_ontology import SyncOntology
@@ -349,6 +369,7 @@ print(len(onto.get_abox_axioms()))
 <details><summary> Click me!</summary>
 
 ```python
+from owlapy.owl_axiom import OWLClassAssertionAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_reasoner import SyncReasoner
 from owlapy.owl_ontology import SyncOntology
@@ -360,7 +381,8 @@ manchester_expr_str = "hasChild some Female"
 ontology = SyncOntology("../KGs/Family/family-benchmark_rich_background.owl")
 reasoner = SyncReasoner(ontology, reasoner="Pellet")
 target_class = manchester_to_owl_expression(manchester_expr_str, "http://www.benchmark.org/family#")
-justifications = reasoner.create_justifications({individual}, target_class, save=True)
+axiom = OWLClassAssertionAxiom(individual, target_class)
+justifications = reasoner.create_axiom_justifications(axiom)
 [print(justification) for justification in justifications]
 ```
 </details>

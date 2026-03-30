@@ -39,7 +39,7 @@ from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassO
     OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom, \
     OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom, OWLClassAxiom, \
-    OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom
+    OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, OWLSubPropertyChainAxiom
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
 import os
@@ -258,6 +258,28 @@ def _(axiom: OWLSubClassOfAxiom, ontology: AbstractOWLOntology, world: owlready2
             # add the super_class_x to its is_a attribute
             sub_class_x = GeneralClassAxiom(sub_class_x)
         sub_class_x.is_a.append(super_class_x)
+
+
+@_add_axiom.register
+def _(axiom: OWLSubPropertyChainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+    conv = ToOwlready2(world)
+    ont_x: owlready2.Ontology = conv.map_object(ontology)
+
+    super_property = axiom.get_super_property()
+    property_chain = list(axiom.get_property_chain())
+
+    # Ensure all properties in the chain and the super property are declared
+    _add_axiom(OWLDeclarationAxiom(super_property), ontology, world)
+    for prop in property_chain:
+        if isinstance(prop, OWLObjectInverseOf):
+            _add_axiom(OWLDeclarationAxiom(prop.get_named_property()), ontology, world)
+        else:
+            _add_axiom(OWLDeclarationAxiom(prop), ontology, world)
+
+    with ont_x:
+        super_property_x = conv._to_owlready2_property(super_property)
+        property_chain_x = [conv._to_owlready2_property(prop) for prop in property_chain]
+        super_property_x.property_chain.append(owlready2.PropertyChain(property_chain_x))
 
 
 # TODO: Update as soon as owlready2 adds support for EquivalentClasses general class axioms
@@ -676,6 +698,30 @@ def _(axiom: OWLSubPropertyAxiom, ontology: AbstractOWLOntology, world: owlready
             sub_property_x.is_a.remove(super_property_x)
         else:
             ont_x._del_obj_triple_spo(sub_property_x.storid, owlready2.rdfs_subpropertyof, super_property_x.storid)
+
+
+@_remove_axiom.register
+def _(axiom: OWLSubPropertyChainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+    conv = ToOwlready2(world)
+    ont_x: owlready2.Ontology = conv.map_object(ontology)
+
+    super_property = axiom.get_super_property()
+    property_chain = list(axiom.get_property_chain())
+
+    with ont_x:
+        super_property_x = conv._to_owlready2_property(super_property)
+        if super_property_x is None:
+            return
+
+        property_chain_x = [conv._to_owlready2_property(prop) for prop in property_chain]
+        if not all(property_chain_x):
+            return
+
+        # Find and remove the matching property chain
+        for pc in super_property_x.property_chain:
+            if list(pc.properties) == property_chain_x:
+                super_property_x.property_chain.remove(pc)
+                break
 
 
 @_remove_axiom.register
@@ -1103,6 +1149,17 @@ class SyncOntology(AbstractOWLOntology):
             TBox axioms.
         """
         return self.mapper.map_(self.owlapi_ontology.getTBoxAxioms(self._get_imports_enum(include_imports_closure)))
+    
+    def get_rbox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
+        """Get all RBox axioms.
+
+        Args:
+            include_imports_closure: Whether to include/exclude imports from searches.
+
+        Returns:
+            RBox axioms.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getRBoxAxioms(self._get_imports_enum(include_imports_closure)))
 
     def get_owlapi_ontology(self):
         return self.owlapi_ontology
@@ -1865,6 +1922,36 @@ class NeuralOntology(AbstractOWLOntology):
             topk = len(self.model.relation_to_idx)
         else:
             topk = len(self.model.entity_to_idx)
+
+        # Filter out unknown relations; return empty list (0 scores) if none remain
+        if r is not None:
+            if isinstance(r, str):
+                if r not in self.model.relation_to_idx:
+                    return []
+            else:
+                r = [ri for ri in r if ri in self.model.relation_to_idx]
+                if not r:
+                    return []
+
+        # Filter out unknown head entities; return empty list (0 scores) if none remain
+        if h is not None:
+            if isinstance(h, str):
+                if h not in self.model.entity_to_idx:
+                    return []
+            else:
+                h = [hi for hi in h if hi in self.model.entity_to_idx]
+                if not h:
+                    return []
+
+        # Filter out unknown tail entities; return empty list (0 scores) if none remain
+        if t is not None:
+            if isinstance(t, str):
+                if t not in self.model.entity_to_idx:
+                    return []
+            else:
+                t = [ti for ti in t if ti in self.model.entity_to_idx]
+                if not t:
+                    return []
 
         return [(top_entity, score) for row in
                 self.model.predict_topk(h=h, r=r, t=t, topk=topk, batch_size=self.batch_size) for top_entity, score in
