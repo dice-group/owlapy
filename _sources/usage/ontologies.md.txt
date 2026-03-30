@@ -190,10 +190,32 @@ created in the same directory as the file you are running this code.
 
 
 ## Generate Ontology From Text
-In OWLAPY, you’ll find a module named agen_kg (short for "agent-generated knowledge graph") that enables you to 
-extract ontologies from unstructured text using Large Language Models (LLMs).
-This functionality is built on using [DSPy](https://dspy.ai/). To use it, you need to create an instance of the `AGenKG` class, 
-where you can configure general LLM settings. Once initialized, the instance can be used as a callable object to generate an ontology, as shown below:
+
+OWLAPY includes a module named `agen_kg` (short for **"agent-generated knowledge graph"**) 
+that enables ontology extraction from unstructured text using **Large Language Models (LLMs)**. 
+This functionality is powered by [DSPy](https://dspy.ai/).
+
+To use it, create an instance of the `AGenKG` class, where you can configure your LLM 
+settings. Once initialized, the instance can be invoked as a callable to generate an ontology.
+
+### Installation
+
+Before using this feature, install the required extra dependencies for LLM-based 
+ontology generation:
+
+```shell
+pip install owlapy[agentic]  # or: pip install owlapy[all]
+```
+
+If you already have the minimum version of OWLAPY installed, you can install DSPy directly:
+
+```shell
+pip install dspy
+```
+
+> **Note:** DSPy is updated frequently and compatibility with the latest versions is not guaranteed. The last verified compatible version is **3.1.3**.
+
+### Example
 
 ```python
 from owlapy.agen_kg import AGenKG
@@ -256,7 +278,6 @@ However, you can still load an ontology to a specific world using the method `lo
 
 It is essential to associate an ontology with a reasoner, which enables the inference of new knowledge through ontology
 reasoning. In the next guide, we will explore how to use a reasoner in Owlapy.
-
 
 
 

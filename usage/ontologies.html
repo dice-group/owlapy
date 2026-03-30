@@ -63,6 +63,8 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#save-an-ontology">Save an Ontology</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#generate-ontology-from-text">Generate Ontology From Text</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
 </ul>
 </li>
@@ -267,10 +269,28 @@ created in the same directory as the file you are running this code.</p>
 </section>
 <section id="generate-ontology-from-text">
 <h2>Generate Ontology From Text<a class="headerlink" href="#generate-ontology-from-text" title="Link to this heading"></a></h2>
-<p>In OWLAPY, you’ll find a module named agen_kg (short for “agent-generated knowledge graph”) that enables you to
-extract ontologies from unstructured text using Large Language Models (LLMs).
-This functionality is built on using <a class="reference external" href="https://dspy.ai/">DSPy</a>. To use it, you need to create an instance of the <code class="docutils literal notranslate"><span class="pre">AGenKG</span></code> class,
-where you can configure general LLM settings. Once initialized, the instance can be used as a callable object to generate an ontology, as shown below:</p>
+<p>OWLAPY includes a module named <code class="docutils literal notranslate"><span class="pre">agen_kg</span></code> (short for <strong>“agent-generated knowledge graph”</strong>)
+that enables ontology extraction from unstructured text using <strong>Large Language Models (LLMs)</strong>.
+This functionality is powered by <a class="reference external" href="https://dspy.ai/">DSPy</a>.</p>
+<p>To use it, create an instance of the <code class="docutils literal notranslate"><span class="pre">AGenKG</span></code> class, where you can configure your LLM
+settings. Once initialized, the instance can be invoked as a callable to generate an ontology.</p>
+<section id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h3>
+<p>Before using this feature, install the required extra dependencies for LLM-based
+ontology generation:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>owlapy<span class="o">[</span>agentic<span class="o">]</span><span class="w">  </span><span class="c1"># or: pip install owlapy[all]</span>
+</pre></div>
+</div>
+<p>If you already have the minimum version of OWLAPY installed, you can install DSPy directly:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>dspy
+</pre></div>
+</div>
+<blockquote>
+<div><p><strong>Note:</strong> DSPy is updated frequently and compatibility with the latest versions is not guaranteed. The last verified compatible version is <strong>3.1.3</strong>.</p>
+</div></blockquote>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg</span><span class="w"> </span><span class="kn">import</span> <span class="n">AGenKG</span>
 
 <span class="n">agent</span> <span class="o">=</span> <span class="n">AGenKG</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;openai/gpt-4o&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;ENTER_API_KEY&gt;&quot;</span><span class="p">,</span> <span class="n">api_base</span><span class="o">=</span><span class="s2">&quot;&lt;YOUR_API_ENDPOINT_IF_APPLICABLE&gt;&quot;</span><span class="p">,</span>
@@ -278,6 +298,7 @@ where you can configure general LLM settings. Once initialized, the instance can
 <span class="n">agent</span><span class="o">.</span><span class="n">generate_ontology</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Text to be used for ontology generation&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
 <section id="configuration">
 <h3>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
 <ul class="simple">
