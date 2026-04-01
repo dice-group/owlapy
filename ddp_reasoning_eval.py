@@ -367,8 +367,10 @@ def execute(args):
     # EVALUATION
     ###################################################################
     
-    def concept_retrieval(retriever_func, c) -> Tuple[Set[str], float]:
+    def concept_retrieval(retriever_func, c, timeout=None) -> Tuple[Set[str], float]:
         start_time = time.time()
+        if timeout is not None:
+            return {i.str for i in retriever_func.instances(c, timeout=timeout)}, time.time() - start_time
         return {i.str for i in retriever_func.instances(c)}, time.time() - start_time
     
     # Collect concepts for evaluation
@@ -411,6 +413,7 @@ def execute(args):
     
     data = []
     skipped_expressions = []  # CEs skipped due to reasoner bugs
+    timeout_expressions = []  # CEs skipped due to timeout
 
     # Iterate over OWL Class Expressions
     for expression in (tqdm_bar := tqdm(concepts, position=0, leave=True)):
@@ -421,8 +424,20 @@ def execute(args):
                 print(f"\n>>> [{type(expression).__name__}] {dl_str}", flush=True)
                 print(f"    GT  ...", end="", flush=True)
 
-            # Retrieve ground truth results
-            retrieval_y, runtime_y = concept_retrieval(symbolic_kb, expression)
+            # Retrieve ground truth results (with timeout)
+            retrieval_y, runtime_y = concept_retrieval(symbolic_kb, expression, timeout=args.timeout)
+
+            # Detect timeout: if runtime >= timeout, the reasoner likely timed out
+            if runtime_y >= args.timeout * 0.95:
+                timeout_expressions.append({
+                    "Expression": dl_str,
+                    "Type": type(expression).__name__,
+                    "Runtime": runtime_y,
+                })
+                tqdm_bar.write(f"[TIMEOUT] GT reasoner timed out after {runtime_y:.1f}s for: {dl_str}")
+                # Reinitialize GT reasoner to clear zombie threads from the timed-out call
+                symbolic_kb = SyncReasoner(ontology=args.path_kg, reasoner=args.reasoner)
+                continue
 
             if args.verbose:
                 print(f" {len(retrieval_y)} instances in {runtime_y:.3f}s", flush=True)
@@ -540,6 +555,24 @@ def execute(args):
         f.write(latex_output)
     print(f"\nLaTeX table saved to {latex_filename}")
     
+    # Report timed-out expressions
+    if timeout_expressions:
+        print("\n" + "=" * 70)
+        print(f"TIMED OUT EXPRESSIONS (>{args.timeout}s): {len(timeout_expressions)}")
+        print("=" * 70)
+        timeout_df = pd.DataFrame(timeout_expressions)
+        print(f"\nBy Type:")
+        print(timeout_df["Type"].value_counts().to_string())
+        print(f"\nAll timed-out CEs:")
+        for entry in timeout_expressions:
+            print(f"  [{entry['Type']}] {entry['Expression']} ({entry['Runtime']:.1f}s)")
+        # Save timed-out expressions alongside the main report
+        timeout_path = args.path_report.replace(".csv", "_timeout.csv")
+        timeout_df.to_csv(timeout_path, index=False)
+        print(f"\nTimed-out expressions saved to {timeout_path}")
+    else:
+        print("\nNo expressions timed out.")
+
     # Report skipped expressions due to reasoner bugs
     if skipped_expressions:
         print("\n" + "=" * 70)
@@ -586,6 +619,9 @@ def get_default_arguments():
                              "None (default) means no sampling — all properties are used.")
     parser.add_argument("--min_jaccard_similarity", type=float, default=0.0,
                         help="Minimum mean Jaccard similarity threshold")
+    parser.add_argument("--timeout", type=float, default=10,
+                        help="Timeout in seconds for the ground truth reasoner per expression. "
+                             "Expressions that exceed this are skipped for both GT and DDP (default: 10).")
     parser.add_argument("--num_nominals", type=int, default=10,
                         help="Number of OWL named individuals to sample for nominals")
     parser.add_argument("--path_report", type=str, default="DDP_Reasoning_Eval_Results.csv",

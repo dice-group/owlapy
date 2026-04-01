@@ -74,13 +74,15 @@ def f1_set_similarity(set1, set2) -> float:
     return 2 * (precision * recall) / (precision + recall)
 
 def run_with_timeout(func, timeout, args=(), **kwargs):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(func, *args, **kwargs)
-        try:
-            result = future.result(timeout=timeout)
-            return result
-        except concurrent.futures.TimeoutError:
-            return set()
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(func, *args, **kwargs)
+    try:
+        result = future.result(timeout=timeout)
+        executor.shutdown(wait=False)
+        return result
+    except concurrent.futures.TimeoutError:
+        executor.shutdown(wait=False)
+        return set()
 
 
 def concept_reducer(concepts:Iterable, opt:Callable):
