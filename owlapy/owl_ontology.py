@@ -1239,6 +1239,15 @@ class SyncOntology(AbstractOWLOntology):
         """
         return self.mapper.map_(self.owlapi_ontology.getABoxAxioms(self._get_imports_enum(include_imports_closure)))
 
+    def get_rbox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
+        """Get all RBox axioms.
+        Args:
+            include_imports_closure: Whether to include/exclude imports from searches.
+        Returns:
+            RBox axioms.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getRBoxAxioms(self._get_imports_enum(include_imports_closure)))
+
     def get_tbox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
         """Get all TBox axioms.
 
