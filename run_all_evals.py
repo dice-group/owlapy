@@ -78,6 +78,8 @@ def build_eval_command(owl_path: str, args, output_csv: str) -> list:
         cmd.extend(["--ratio_sample_object_prop", str(args.ratio_sample_object_prop)])
     if args.verbose:
         cmd.append("--verbose")
+    if args.timeout is not None:
+        cmd.extend(["--timeout", str(args.timeout)])
     return cmd
 
 
@@ -208,6 +210,26 @@ def run_eval_for_reasoner(ontologies, reasoner, output_dir, args):
         print(f"[{reasoner}] [{i+1}/{len(ontologies)}] {label}  ({owl_path})")
         print(f"{'='*80}")
 
+        # Skip if results already exist
+        if args.skip_existing and os.path.isfile(csv_path):
+            print(f"  [SKIP] Results already exist: {csv_path}")
+            # Still collect results for the summary
+            skipped_csv = csv_path.replace(".csv", "_skipped.csv")
+            num_skipped = 0
+            if os.path.isfile(skipped_csv):
+                import pandas as pd
+                num_skipped = len(pd.read_csv(skipped_csv))
+            results.append({
+                "label": label,
+                "owl_path": owl_path,
+                "status": "success",
+                "runtime_s": 0.0,
+                "csv_path": csv_path,
+                "log_path": log_path if os.path.isfile(log_path) else None,
+                "num_skipped": num_skipped,
+            })
+            continue
+
         cmd = build_eval_command(owl_path, args_copy, csv_path)
         print(f"Command: {' '.join(cmd)}")
 
@@ -273,6 +295,10 @@ def main():
     parser.add_argument("--ratio_sample_nc", type=float, default=None)
     parser.add_argument("--ratio_sample_object_prop", type=float, default=None)
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--timeout", type=float, default=10,
+                        help="Timeout in seconds per CE for the GT reasoner (default: 10)")
+    parser.add_argument("--skip_existing", action="store_true",
+                        help="Skip ontologies that already have eval_results.csv in the output directory")
     args = parser.parse_args()
 
     # Discover ontologies
