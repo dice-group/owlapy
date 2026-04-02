@@ -33,7 +33,7 @@ class TestRunningExamples:
         save_owl_class_expressions(expressions=expressions,
                                    namespace="https://ontolearn.org/predictions#",
                                    path="owl_class_expressions.owl",
-                                   rdf_format= 'rdfxml')
+                                   document_format= 'rdfxml')
         g=rdflib.Graph().parse("owl_class_expressions.owl")
         assert len(g)==22
 
@@ -491,7 +491,7 @@ class TestAssertions(unittest.TestCase):
             save_owl_class_expressions(
                 person,
                 path="test.owl",
-                rdf_format="turtle",  # Only rdfxml is supported
+                document_format="turtle",
                 namespace=ns
             )
 
