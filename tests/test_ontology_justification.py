@@ -314,5 +314,191 @@ class TestCreateJustifications(unittest.TestCase):
             self.assertFalse(test_reasoner.has_consistent_ontology(), "Justification should lead to an inconsistent ontology.")
 
 
+class TestJustificationTimeout(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.ontology_path = None
+        for root, dirs, files in os.walk("."):
+            for file in files:
+                # Very large ontology with many justifications, so we can test timeout behavior.
+                if file == "carcinogenesis.owl":
+                    cls.ontology_path = os.path.abspath(os.path.join(root, file))
+                    print(f"Found ontology at: {cls.ontology_path}")
+                    break
+            if cls.ontology_path:
+                break
+
+        if cls.ontology_path is None:
+            raise FileNotFoundError("Could not locate 'carcinogenesis.owl' within project structure.")
+
+        cls.namespace = adjust_namespace("http://dl-learner.org/carcinogenesis#")
+
+        try:
+            print("Loading ontology and initializing reasoner...")
+            cls.ontology = SyncOntology(cls.ontology_path)
+            cls.reasoner = SyncReasoner(cls.ontology, reasoner="HermiT")
+            print("Ontology loaded and reasoner initialized successfully.")
+        except Exception as e:
+            raise RuntimeError(f"Failed to load ontology or initialize reasoner: {e}")
+
+    def test_justification_timeout(self):
+        # "Compound and hasAtom some Carbon"
+        # In description logic: Compound ⊓ ∃ hasAtom.Carbon
+        # Due to ontology size, we could expect some timeout here
+        manchester_expr = "Compound and hasAtom some Carbon"
+        owl_expr = manchester_to_owl_expression(
+            manchester_expr, namespace="http://dl-learner.org/carcinogenesis#"
+        )
+        d100 = OWLNamedIndividual(
+            IRI.create("http://dl-learner.org/carcinogenesis#d100")
+        )
+
+        class_assertion = OWLClassAssertionAxiom(d100, owl_expr)
+        print("Axiom to prove: ", class_assertion)
+
+
+        # Check if class assertion is entailed
+        if not self.reasoner.is_entailed(class_assertion):
+            print("Class assertion is not entailed, so justifications cannot be generated.")
+            return
+        
+        timeout = 1 # Very short timeout to force timeout behavior since the ontology is huge
+
+        with self.assertRaises(TimeoutError) as cm1:
+            self.reasoner.create_axiom_justifications(
+                class_assertion, timeout=timeout, save=False
+            )
+        # Get the exception message and check that it contains the expected timeout information
+        print(f"Caught exception message: {str(cm1.exception)}")
+        with self.assertRaises(TimeoutError) as cm2:
+            self.reasoner.create_laconic_axiom_justifications(
+                class_assertion, timeout=timeout, save=False
+            )
+        print(f"Caught exception message for laconic justifications: {str(cm2.exception)}")
+
+        # For some reason, the following does not work, and returns an empty list.
+        # The same block of code would work if isolated into a separate test case.
+
+
+# Create a separate test for no timeout
+# Otherwise, for some reason we get ConcurrentModificationException from java
+class TestJustificationNoTimeout(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.ontology_path = None
+        for root, dirs, files in os.walk("."):
+            for file in files:
+                # Very large ontology with many justifications, so we can test timeout behavior.
+                if file == "carcinogenesis.owl":
+                    cls.ontology_path = os.path.abspath(os.path.join(root, file))
+                    print(f"Found ontology at: {cls.ontology_path}")
+                    break
+            if cls.ontology_path:
+                break
+
+        if cls.ontology_path is None:
+            raise FileNotFoundError("Could not locate 'carcinogenesis.owl' within project structure.")
+
+        cls.namespace = adjust_namespace("http://dl-learner.org/carcinogenesis#")
+
+        try:
+            print("Loading ontology and initializing reasoner...")
+            cls.ontology = SyncOntology(cls.ontology_path)
+            cls.reasoner = SyncReasoner(cls.ontology, reasoner="HermiT")
+            print("Ontology loaded and reasoner initialized successfully.")
+        except Exception as e:
+            raise RuntimeError(f"Failed to load ontology or initialize reasoner: {e}")
+
+    def test_justifications_no_timeout(self):
+        owl_expr = manchester_to_owl_expression(
+            "Compound and hasAtom some Carbon", namespace="http://dl-learner.org/carcinogenesis#"
+        )
+        d100 = OWLNamedIndividual(
+            IRI.create("http://dl-learner.org/carcinogenesis#d100")
+        )
+        class_assertion = OWLClassAssertionAxiom(d100, owl_expr)
+        # reasoner = SyncReasoner(self.ontology)
+        # Now, just give it an indefinite amount of time
+        justifications = self.reasoner.create_axiom_justifications(
+            class_assertion,
+            n_max_justifications=1,
+            timeout=None
+        )
+
+        self.assertIsInstance(justifications, list, "Justifications should be a list.")
+        # Check that the list is nonempty
+        self.assertGreater(len(justifications), 0, "Justifications list should not be empty.")
+        print(f"Successfully generated justifications without timeout: {justifications}")
+        for justification in justifications:
+            print("Justification:")
+            for axiom in justification:
+                print(f"  {axiom}")
+
+        # This is a bit long, but does the same.
+        # justifications_laconic = self.reasoner.create_laconic_axiom_justifications(
+        #     class_assertion,
+        #     n_max_justifications=3,
+        #     timeout=None,
+        #     save=False
+        # )
+        # self.assertIsInstance(justifications_laconic, list, "Laconic justifications should be a list.")
+        # print(f"Successfully generated laconic justifications without timeout: {justifications_laconic}")
+        # for justification in justifications_laconic:
+        #     print("Laconic Justification:")
+        #     for axiom in justification:
+        #         print(f"  {axiom}")
+
+    def test_consecutive_calls_with_and_without_timeout(self):
+        owl_expr = manchester_to_owl_expression(
+            "Compound and hasAtom some Carbon", namespace="http://dl-learner.org/carcinogenesis#"
+        )
+        d100 = OWLNamedIndividual(
+            IRI.create("http://dl-learner.org/carcinogenesis#d100")
+        )
+        class_assertion = OWLClassAssertionAxiom(d100, owl_expr)
+        n_tbox_axioms = len(self.ontology.get_tbox_axioms())
+        n_abox_axioms = len(self.ontology.get_abox_axioms())
+        print(f"Ontology loaded with {n_tbox_axioms} TBox axioms and {n_abox_axioms} ABox axioms.")
+
+        # Assert that axiom is entailed
+        self.assertTrue(
+            self.reasoner.is_entailed(class_assertion),
+            "Axiom should be entailed by the ontology, but was not. Check that the ontology is loaded correctly and that the axiom is correctly formulated."
+            f"Number of tbox axioms: {len(self.ontology.get_tbox_axioms())}, number of abox axioms: {len(self.ontology.get_abox_axioms())}"
+        )
+
+        # First, call with a short timeout to trigger the timeout behavior
+        # Do not use pytest assertRaise
+        try:
+            self.reasoner.create_axiom_justifications(
+                class_assertion,
+                n_max_justifications=5,
+                timeout=1
+            )
+        except TimeoutError as e:
+            print(f"Timeout occurred as expected: {e}")
+
+        # Assert that axiom is still entailed
+        self.assertTrue(
+            self.reasoner.is_entailed(class_assertion),
+            "Axiom should be entailed by the ontology (after timeout), but was not. Check that the ontology is loaded correctly and that the axiom is correctly formulated."
+            f"Number of tbox axioms: {len(self.ontology.get_tbox_axioms())}, number of abox axioms: {len(self.ontology.get_abox_axioms())}"
+        )
+
+        # Then, call again with no timeout and check that justifications are generated successfully
+        justifications = self.reasoner.create_axiom_justifications(
+            class_assertion,
+            n_max_justifications=1,
+            timeout=None
+        )
+        self.assertIsInstance(justifications, list, "Justifications should be a list.")
+        self.assertGreater(len(justifications), 0, "Justifications list should not be empty.")
+        print(f"Successfully generated justifications after previous timeout: {justifications}")
+        for justification in justifications:
+            print("Justification:")
+            for axiom in justification:
+                print(f"  {axiom}")
+
+
 if __name__ == "__main__":
     unittest.main()

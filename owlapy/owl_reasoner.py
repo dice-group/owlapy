@@ -2,6 +2,7 @@
 import os
 import operator
 import logging
+from time import time
 import owlready2
 import json
 import subprocess
@@ -1059,7 +1060,10 @@ class SyncReasoner(AbstractOWLReasoner):
         self._owlapi_ontology = self.ontology.get_owlapi_ontology()
         self.mapper = self.ontology.mapper
         self.inference_types_mapping = import_and_include_axioms_generators()
-        self._owlapi_reasoner = initialize_reasoner(reasoner, self._owlapi_ontology)
+        self._owlapi_reasoner, self._reasoner_factory = initialize_reasoner(reasoner, self._owlapi_ontology)
+    
+    def dispose(self):
+        self._owlapi_reasoner.dispose()
 
     def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
@@ -1608,6 +1612,7 @@ class SyncReasoner(AbstractOWLReasoner):
     def create_axiom_justifications(self,
                                     axiom_to_explain: OWLAxiom,
                                     n_max_justifications: Optional[int] = 10,
+                                    timeout: Optional[int] = 1000,
                                     save: bool = False,
     ) -> List[Set[OWLAxiom]]:
         """Generate multiple justifications for why an axiom is entailed by the ontology.
@@ -1636,6 +1641,7 @@ class SyncReasoner(AbstractOWLReasoner):
         Args:
             axiom_to_explain (OWLAxiom): The axiom to create justifications for.
             n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.
+            timeout (Optional[int], optional): The maximum time (in seconds) to allow for justification generation before raising a TimeoutError. Defaults to 1000 seconds.
             save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.
 
         Raises:
@@ -1655,32 +1661,27 @@ class SyncReasoner(AbstractOWLReasoner):
             HSTExplanationGenerator,
             SatisfiabilityConverter
         )
-
-        j_axiom = self.mapper.map_(axiom_to_explain)
-        j_ontology = self._owlapi_ontology
-        j_reasoner = self._owlapi_reasoner
-        j_data_factory = self._owlapi_manager.getOWLDataFactory()
-
-        if self.reasoner_name == "Pellet":
-            from openllet.owlapi import PelletReasonerFactory
-            reasoner_factory = PelletReasonerFactory.getInstance()
-        elif self.reasoner_name == "HermiT":
-            from org.semanticweb.HermiT import ReasonerFactory
-            reasoner_factory = ReasonerFactory()
-        elif self.reasoner_name == "ELK":
-            from org.semanticweb.elk.owlapi import ElkReasonerFactory
-            reasoner_factory = ElkReasonerFactory()
-        elif self.reasoner_name == "JFact":
-            from uk.ac.manchester.cs.jfact import JFactFactory
-            reasoner_factory = JFactFactory()
-        elif self.reasoner_name == "Openllet":
-            from openllet.owlapi import PelletReasonerFactory
-            reasoner_factory = PelletReasonerFactory.getInstance()
-        elif self.reasoner_name == "Structural":
-            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
-            reasoner_factory = StructuralReasonerFactory()
+        from java.util.concurrent import CompletableFuture, TimeUnit, TimeoutException
+        if timeout:
+            from org.semanticweb.owlapi.apibinding import OWLManager
+            from org.semanticweb.owlapi.model.parameters import OntologyCopy
+            j_manager = OWLManager.createOWLOntologyManager()
+            # Make ontology manager
+            # Load the same ontology into the new manager by deep copy
+            j_ontology = j_manager.copyOntology(self._owlapi_ontology, OntologyCopy.DEEP)
+            # Create a new reasoner for the new ontology
+            j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
+            j_reasoner_factory = self._reasoner_factory
         else:
-            raise NotImplementedError(f"Reasoner '{self.reasoner_name}' is not supported for axiom justification.")
+            j_ontology = self._owlapi_ontology
+            j_reasoner = self._owlapi_reasoner
+            j_data_factory = self._owlapi_manager.getOWLDataFactory()
+            j_reasoner_factory = self._reasoner_factory
+            j_reasoner = self._owlapi_reasoner
+            j_manager = self._owlapi_manager
+            
+        j_axiom = self.mapper.map_(axiom_to_explain)
+        j_data_factory = j_manager.getOWLDataFactory()
 
         # Following the internal implementation of DefaultExplanationGenerator to circumvent the need for a progress monitor
 
@@ -1694,7 +1695,7 @@ class SyncReasoner(AbstractOWLReasoner):
                     f"This most likely means that the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
                 )
             raise e
-        blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
+        blackbox_exp = BlackBoxExplanation(j_ontology, j_reasoner_factory, j_reasoner)
         explanation_gen = HSTExplanationGenerator(blackbox_exp)
 
         justifications = []
@@ -1704,22 +1705,71 @@ class SyncReasoner(AbstractOWLReasoner):
             raise ValueError(
                 f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
             )
+    
         if n_max_justifications is not None and n_max_justifications > 0:
+            time_start = time()
             try:
-                j_explanations = explanation_gen.getExplanations(
-                    j_axiom_ce, n_max_justifications
-                )
+                if timeout is None:
+                    j_explanations = explanation_gen.getExplanations(
+                        j_axiom_ce, n_max_justifications
+                    )
+                else:
+                    future = CompletableFuture.supplyAsync(
+                        lambda: explanation_gen.getExplanations(j_axiom_ce, n_max_justifications)
+                    )
+                    j_explanations = future.get(timeout, TimeUnit.SECONDS)
             except Exception as e:
-                raise ValueError(
-                    f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
-                )
+                time_end = time()
+                if isinstance(e, TimeoutException) and (timeout is not None):
+                    future.cancel(True)  # Attempt to cancel the task if it's still running
+                    # Reset the reasoner and the reasoner factory
+                    j_reasoner.dispose()
+                    # Wipe the ontology from the manager to free up memory
+                    j_manager.removeOntology(j_ontology)
+                    # Wipe the manager too
+                    j_manager.clearOntologies()
+                    del j_manager
+                    raise TimeoutError(
+                        f"Justification generation exceeded the timeout of {timeout} seconds. (Elapsed time: {time_end - time_start:.2f} seconds). "
+                        f"Consider increasing the timeout or reducing the number of justifications to generate."
+                    )
+                if "not implemented" in str(e).lower():
+                    raise ValueError(
+                        f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
+                    )
+                raise e
         else:
+            time_start = time()
             try:
-                j_explanations = explanation_gen.getExplanations(j_axiom_ce)
+                if timeout is None:
+                    j_explanations = explanation_gen.getExplanations(j_axiom_ce)
+                else:
+                    future = CompletableFuture.supplyAsync(
+                        lambda: explanation_gen.getExplanations(j_axiom_ce)
+                    )
+                    j_explanations = future.get(timeout, TimeUnit.SECONDS)
+                    
             except Exception as e:
-                raise ValueError(
-                    f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
-                )
+                time_end = time()
+                if isinstance(e, TimeoutException) and (timeout is not None):
+                    future.cancel(True)  # Attempt to cancel the task if it's still running
+                    # Reset the reasoner and the reasoner factory
+                    j_reasoner.dispose()
+                    # Wipe the ontology from the manager to free up memory
+                    j_manager.removeOntology(j_ontology)
+                    # Wipe the manager too
+                    j_manager.clearOntologies()
+                    del j_manager
+                    raise TimeoutError(
+                        f"Justification generation exceeded the timeout of {timeout} seconds (elapsed: {time_end - time_start:.2f} seconds). "
+                        f"Consider increasing the timeout or reducing the number of justifications to generate."
+                    )
+                if "not implemented" in str(e).lower():
+                    raise ValueError(
+                        f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
+                    )
+                raise e
+            
 
         for j_expl in j_explanations:
             py_axioms = {self.mapper.map_(ax) for ax in j_expl}
@@ -1748,7 +1798,7 @@ class SyncReasoner(AbstractOWLReasoner):
     def create_laconic_axiom_justifications(self,
                                             axiom_to_explain: OWLAxiom,
                                             n_max_justifications: Optional[int] = 10,
-                                            timeout: int = 10_000,
+                                            timeout: Optional[int] = 1000,
                                             save: bool = False) -> List[Set[OWLAxiom]]:
         """Generate multiple laconic justifications for why an axiom is entailed by the ontology.
         Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
@@ -1759,7 +1809,7 @@ class SyncReasoner(AbstractOWLReasoner):
         Args:
             axiom_to_explain (OWLAxiom): The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See
             n_max_justifications (Optional[int], optional): The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
-            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+            timeout (Optional[int], optional): The maximum time (in seconds) to wait for justifications. Defaults to 1000.
             save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.
 
         Raises:
@@ -1769,34 +1819,23 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.
         """
-
         from org.semanticweb.owl.explanation.api import ExplanationManager
         from org.semanticweb.owl.explanation.impl.laconic import LaconicExplanationGeneratorFactory
+        from java.util.concurrent import CompletableFuture, TimeUnit, TimeoutException
 
         # Get a hold of the reasoner factory and the ontology
-        if self.reasoner_name == "Pellet":
-            from openllet.owlapi import PelletReasonerFactory
-            j_reasoner_factory = PelletReasonerFactory.getInstance()
-        elif self.reasoner_name == "HermiT":
-            from org.semanticweb.HermiT import ReasonerFactory
-            j_reasoner_factory = ReasonerFactory()
-        elif self.reasoner_name == "ELK":
-            from org.semanticweb.elk.owlapi import ElkReasonerFactory
-            j_reasoner_factory = ElkReasonerFactory()
-        elif self.reasoner_name == "JFact":
-            from uk.ac.manchester.cs.jfact import JFactFactory
-            j_reasoner_factory = JFactFactory()
-        elif self.reasoner_name == "Openllet":
-            from openllet.owlapi import PelletReasonerFactory
-            j_reasoner_factory = PelletReasonerFactory.getInstance()
-        elif self.reasoner_name == "Structural":
-            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
-            j_reasoner_factory = StructuralReasonerFactory()
+        if timeout:
+            # Import org.semanticweb.owlapi.model.OWLOntologyManager and org.semanticweb.owlapi.model.parameters.OntologyCopy
+            from org.semanticweb.owlapi.apibinding import OWLManager
+            from org.semanticweb.owlapi.model.parameters import OntologyCopy
+            # Because ontology reasoning can be a destructive operation (axiom addition/removal)
+            # we have to operate on a deep copy of the ontology.
+            j_manager = OWLManager.createOWLOntologyManager()
+            j_ontology = j_manager.copyOntology(self._owlapi_ontology, OntologyCopy.DEEP)
+            j_reasoner_factory = initialize_reasoner_factory(self.reasoner_name)
         else:
-            raise NotImplementedError(
-                f"Reasoner '{self.reasoner_name}' is not supported for laconic axiom justification.")
-
-        j_ontology = self._owlapi_ontology
+            j_ontology = self._owlapi_ontology
+            j_reasoner_factory = self._reasoner_factory
 
         j_gen_fac = ExplanationManager.createExplanationGeneratorFactory(j_reasoner_factory)
         j_laconic_gen_fac = LaconicExplanationGeneratorFactory(j_gen_fac)
@@ -1810,10 +1849,42 @@ class SyncReasoner(AbstractOWLReasoner):
             raise ValueError(
                 f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
             )
-        if n_max_justifications is not None and n_max_justifications > 0:
-            j_explanations = j_gen.getExplanations(j_axiom, n_max_justifications)
+        if timeout is None:
+            try:
+                if n_max_justifications is not None and n_max_justifications > 0:
+                    j_explanations = j_gen.getExplanations(j_axiom, n_max_justifications)
+                else:
+                    j_explanations = j_gen.getExplanations(j_axiom)
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to get laconic justifications: {str(e)}"
+                )
         else:
-            j_explanations = j_gen.getExplanations(j_axiom)
+            try:
+                if n_max_justifications is not None and n_max_justifications > 0:
+                    future = CompletableFuture.supplyAsync(
+                        lambda: j_gen.getExplanations(j_axiom, n_max_justifications)
+                    )
+                else:
+                    future = CompletableFuture.supplyAsync(
+                        lambda: j_gen.getExplanations(j_axiom)
+                    )
+                j_explanations = future.get(timeout, TimeUnit.SECONDS)
+            except Exception as e:
+                if isinstance(e, TimeoutException) and (timeout is not None):
+                    future.cancel(True)  # Attempt to cancel the task if it's still running
+                    # Wipe the ontology
+                    j_manager.removeOntology(j_ontology)
+                    # Wipe the manager
+                    j_manager.clearOntologies()
+                    del j_manager
+                    raise TimeoutError(
+                        f"Laconic justification generation exceeded the timeout of {timeout} seconds. Consider increasing the timeout or reducing the number of justifications to generate."
+                    )
+                raise ValueError(
+                    f"Failed to get laconic justifications: {str(e)}"
+                )
+            
         justifications = []
         for j_expl in j_explanations:
             py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
@@ -2073,35 +2144,37 @@ print(json.dumps(result))
         return self.ontology
 
 
-def initialize_reasoner(reasoner: str, owlapi_ontology):
-    # () Create a reasoner using the ontology
+def initialize_reasoner_factory(reasoner: str):
     if reasoner == "HermiT":
         # noinspection PyUnresolvedReferences
         from org.semanticweb.HermiT import ReasonerFactory
-        owlapi_reasoner = ReasonerFactory().createReasoner(owlapi_ontology)
-        assert owlapi_reasoner.getReasonerName() == "HermiT"
+        return ReasonerFactory()
     elif reasoner == "ELK":
         from org.semanticweb.elk.owlapi import ElkReasonerFactory
-        owlapi_reasoner = ElkReasonerFactory().createReasoner(owlapi_ontology)
+        return ElkReasonerFactory()
     elif reasoner == "JFact":
         # noinspection PyUnresolvedReferences
         from uk.ac.manchester.cs.jfact import JFactFactory
-        owlapi_reasoner = JFactFactory().createReasoner(owlapi_ontology)
+        return JFactFactory()
     elif reasoner == "Pellet":
         # noinspection PyUnresolvedReferences
         from openllet.owlapi import PelletReasonerFactory
-        owlapi_reasoner = PelletReasonerFactory().createReasoner(owlapi_ontology)
+        return PelletReasonerFactory.getInstance()
     elif reasoner == "Openllet":
         # noinspection PyUnresolvedReferences
         from openllet.owlapi import OpenlletReasonerFactory
-        owlapi_reasoner = OpenlletReasonerFactory().getInstance().createReasoner(owlapi_ontology)
+        return OpenlletReasonerFactory().getInstance()
     elif reasoner == "Structural":
         # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
-        owlapi_reasoner = StructuralReasonerFactory().createReasoner(owlapi_ontology)
+        return StructuralReasonerFactory()
     else:
         raise NotImplementedError("Not implemented")
-    return owlapi_reasoner
+
+def initialize_reasoner(reasoner: str, owlapi_ontology):
+    reasoner_factory = initialize_reasoner_factory(reasoner)
+    owlapi_reasoner = reasoner_factory.createReasoner(owlapi_ontology)
+    return owlapi_reasoner, reasoner_factory
 
 
 def import_and_include_axioms_generators():
