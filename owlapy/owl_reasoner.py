@@ -1454,14 +1454,45 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(ind) for ind in
                     self._owlapi_reasoner.getTypes(self.mapper.map_(individual), direct).getFlattened()]
 
-    def has_consistent_ontology(self) -> bool:
+    def has_consistent_ontology(self, timeout: Optional[int] = None) -> bool:
         """
         Check if the used ontology is consistent.
+
+        Args:
+            timeout: Optional timeout in seconds for the consistency check.
 
         Returns:
             bool: True if the ontology used by this reasoner is consistent, False otherwise.
         """
-        return self._owlapi_reasoner.isConsistent()
+        if timeout is None:
+            return self._owlapi_reasoner.isConsistent()
+        # We run the consistency check in a separate thread to allow for a timeout
+        # Since reasoning can be destructive (i.e., it can modify the ontology),
+        # we need to make sure that the reasoner operates on a deep copy of the ontology
+        # to prevent any unintended side effects on the original ontology.
+        # If timeout is specified, we need a Java-based timeout logic
+        if not isinstance(timeout, int) or timeout < 0:
+            raise ValueError(f"Timeout value must be a non-negative integer. Provided value: {timeout}")
+        from java.util.concurrent import CompletableFuture, TimeUnit, TimeoutException
+        from org.semanticweb.owlapi.apibinding import OWLManager
+        from org.semanticweb.owlapi.model.parameters import OntologyCopy
+        j_manager = OWLManager.createOWLOntologyManager()
+        # Load the same ontology into the new manager by deep copy
+        j_ontology = j_manager.copyOntology(self._owlapi_ontology, OntologyCopy.DEEP)
+        # Create a new reasoner for the new ontology
+        j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
+        future = CompletableFuture.supplyAsync(lambda: j_reasoner.isConsistent())
+        try:
+            return future.get(timeout, TimeUnit.SECONDS)
+        except TimeoutException:
+            future.cancel(True)
+            # Dispose of the reasoner
+            j_reasoner.dispose()
+            # Dispose of the ontology and the manager
+            j_manager.clearOntologies()
+            del j_manager
+            raise TimeoutError(f"Consistency check took longer than {timeout} seconds and was cancelled.")
+
 
     def infer_axioms(self, inference_types: list[str]) -> Iterable[OWLAxiom]:
         """
@@ -1580,16 +1611,41 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         self.infer_axioms_and_save(output, output_format, ["InferredClassAssertionAxiomGenerator"])
 
-    def is_entailed(self, axiom: OWLAxiom) -> bool:
+    def is_entailed(self, axiom: OWLAxiom, timeout: Optional[int] = None) -> bool:
         """A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.
 
         Args:
             axiom: The axiom to check for entailment.
+            timeout: The maximum time in seconds to wait for the entailment check. If None, no timeout is applied.
 
         Return:
             True if the axiom is entailed by the reasoner axioms and False otherwise.
         """
-        return bool(self._owlapi_reasoner.isEntailed(self.mapper.map_(axiom)))
+        if timeout is None:
+            return bool(self._owlapi_reasoner.isEntailed(self.mapper.map_(axiom)))
+        # If timeout is specified, we need a Java-based timeout logic
+        if not isinstance(timeout, int) or timeout < 0:
+            raise ValueError(f"Timeout value must be a non-negative integer. Provided value: {timeout}")
+        from java.util.concurrent import CompletableFuture, TimeUnit, TimeoutException
+        from org.semanticweb.owlapi.apibinding import OWLManager
+        from org.semanticweb.owlapi.model.parameters import OntologyCopy
+        j_manager = OWLManager.createOWLOntologyManager()
+        # Load the same ontology into the new manager by deep copy
+        j_ontology = j_manager.copyOntology(self._owlapi_ontology, OntologyCopy.DEEP)
+        # Create a new reasoner for the new ontology
+        j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
+        future = CompletableFuture.supplyAsync(lambda: bool(j_reasoner.isEntailed(self.mapper.map_(axiom))))
+        try:
+            return future.get(timeout, TimeUnit.SECONDS)
+        except TimeoutException:
+            future.cancel(True)
+            # Dispose of the reasoner
+            j_reasoner.dispose()
+            # Dispose of the ontology and the manager
+            j_manager.clearOntologies()
+            del j_manager
+            raise TimeoutError(f"Entailment check took longer than {timeout} seconds and was cancelled.")
+        
 
     def is_satisfiable(self, ce: OWLClassExpression) -> bool:
         """A convenience method that determines if the specified class expression is satisfiable with respect
@@ -1604,10 +1660,34 @@ class SyncReasoner(AbstractOWLReasoner):
 
         return bool(self._owlapi_reasoner.isSatisfiable(self.mapper.map_(ce)))
 
-    def unsatisfiable_classes(self):
+    def unsatisfiable_classes(self, timeout: Optional[int] = None) -> Set[OWLClass]:
         """A convenience method that obtains the classes in the signature of the root ontology that are
         unsatisfiable."""
-        return self.mapper.map_(self._owlapi_reasoner.unsatisfiableClasses())
+        if timeout is None:
+            return self.mapper.map_(self._owlapi_reasoner.unsatisfiableClasses())
+        # If timeout is specified, we need a Java-based timeout logic
+        # Check that time timeout is indeed a non-negative integer
+        if not isinstance(timeout, int) or timeout < 0:
+            raise ValueError(f"Timeout value must be a non-negative integer. Provided value: {timeout}")
+        from java.util.concurrent import CompletableFuture, TimeUnit, TimeoutException
+        from org.semanticweb.owlapi.apibinding import OWLManager
+        from org.semanticweb.owlapi.model.parameters import OntologyCopy
+        j_manager = OWLManager.createOWLOntologyManager()
+        # Load the same ontology into the new manager by deep copy
+        j_ontology = j_manager.copyOntology(self._owlapi_ontology, OntologyCopy.DEEP)
+        # Create a new reasoner for the new ontology
+        j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
+        future = CompletableFuture.supplyAsync(lambda: self.mapper.map_(j_reasoner.unsatisfiableClasses()))
+        try:
+            return future.get(timeout, TimeUnit.SECONDS)
+        except TimeoutException:
+            future.cancel(True)
+            # Dispose of the reasoner
+            j_reasoner.dispose()
+            # Dispose of the ontology and the manager
+            j_manager.clearOntologies()
+            del j_manager
+            raise TimeoutError(f"Obtaining unsatisfiable classes took longer than {timeout} seconds and was cancelled.")
 
     def create_axiom_justifications(self,
                                     axiom_to_explain: OWLAxiom,
