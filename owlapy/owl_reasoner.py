@@ -1483,7 +1483,7 @@ class SyncReasoner(AbstractOWLReasoner):
         j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
         future = CompletableFuture.supplyAsync(lambda: j_reasoner.isConsistent())
         try:
-            return future.get(timeout, TimeUnit.SECONDS)
+            j_is_consistent = future.get(timeout, TimeUnit.SECONDS)
         except TimeoutException:
             future.cancel(True)
             # Dispose of the reasoner
@@ -1492,7 +1492,11 @@ class SyncReasoner(AbstractOWLReasoner):
             j_manager.clearOntologies()
             del j_manager
             raise TimeoutError(f"Consistency check took longer than {timeout} seconds and was cancelled.")
-
+        # Dispose of the reasoner
+        j_reasoner.dispose()
+        # Dispose of the ontology and the manager        j_manager.clearOntologies()
+        del j_manager
+        return bool(j_is_consistent)
 
     def infer_axioms(self, inference_types: list[str]) -> Iterable[OWLAxiom]:
         """
@@ -1635,7 +1639,7 @@ class SyncReasoner(AbstractOWLReasoner):
         # Create a new reasoner for the new ontology
         j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
         j_axiom = self.mapper.map_(axiom)
-        future = CompletableFuture.supplyAsync(lambda: bool(j_reasoner.isEntailed(j_axiom)))
+        future = CompletableFuture.supplyAsync(lambda: j_reasoner.isEntailed(j_axiom))
         try:
             j_is_entailed = future.get(timeout, TimeUnit.SECONDS)
         except TimeoutException:
@@ -1646,6 +1650,9 @@ class SyncReasoner(AbstractOWLReasoner):
             j_manager.clearOntologies()
             del j_manager
             raise TimeoutError(f"Entailment check took longer than {timeout} seconds and was cancelled.")
+        j_reasoner.dispose()
+        j_manager.clearOntologies()
+        del j_manager
         return bool(j_is_entailed)
 
     def is_satisfiable(self, ce: OWLClassExpression) -> bool:
@@ -1678,7 +1685,7 @@ class SyncReasoner(AbstractOWLReasoner):
         j_ontology = j_manager.copyOntology(self._owlapi_ontology, OntologyCopy.DEEP)
         # Create a new reasoner for the new ontology
         j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
-        future = CompletableFuture.supplyAsync(lambda: self.mapper.map_(j_reasoner.unsatisfiableClasses()))
+        future = CompletableFuture.supplyAsync(lambda: j_reasoner.unsatisfiableClasses())
         try:
             j_unsatisfiable_classes = future.get(timeout, TimeUnit.SECONDS)
         except TimeoutException:
@@ -1689,6 +1696,11 @@ class SyncReasoner(AbstractOWLReasoner):
             j_manager.clearOntologies()
             del j_manager
             raise TimeoutError(f"Obtaining unsatisfiable classes took longer than {timeout} seconds and was cancelled.")
+        
+        j_reasoner.dispose()
+        j_manager.clearOntologies()
+        del j_manager
+
         return self.mapper.map_(j_unsatisfiable_classes)
 
     def create_axiom_justifications(self,
