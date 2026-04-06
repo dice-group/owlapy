@@ -1634,9 +1634,10 @@ class SyncReasoner(AbstractOWLReasoner):
         j_ontology = j_manager.copyOntology(self._owlapi_ontology, OntologyCopy.DEEP)
         # Create a new reasoner for the new ontology
         j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
-        future = CompletableFuture.supplyAsync(lambda: bool(j_reasoner.isEntailed(self.mapper.map_(axiom))))
+        j_axiom = self.mapper.map_(axiom)
+        future = CompletableFuture.supplyAsync(lambda: bool(j_reasoner.isEntailed(j_axiom)))
         try:
-            return future.get(timeout, TimeUnit.SECONDS)
+            j_is_entailed = future.get(timeout, TimeUnit.SECONDS)
         except TimeoutException:
             future.cancel(True)
             # Dispose of the reasoner
@@ -1645,7 +1646,7 @@ class SyncReasoner(AbstractOWLReasoner):
             j_manager.clearOntologies()
             del j_manager
             raise TimeoutError(f"Entailment check took longer than {timeout} seconds and was cancelled.")
-        
+        return bool(j_is_entailed)
 
     def is_satisfiable(self, ce: OWLClassExpression) -> bool:
         """A convenience method that determines if the specified class expression is satisfiable with respect
@@ -1679,7 +1680,7 @@ class SyncReasoner(AbstractOWLReasoner):
         j_reasoner = self._reasoner_factory.createReasoner(j_ontology)
         future = CompletableFuture.supplyAsync(lambda: self.mapper.map_(j_reasoner.unsatisfiableClasses()))
         try:
-            return future.get(timeout, TimeUnit.SECONDS)
+            j_unsatisfiable_classes = future.get(timeout, TimeUnit.SECONDS)
         except TimeoutException:
             future.cancel(True)
             # Dispose of the reasoner
@@ -1688,6 +1689,7 @@ class SyncReasoner(AbstractOWLReasoner):
             j_manager.clearOntologies()
             del j_manager
             raise TimeoutError(f"Obtaining unsatisfiable classes took longer than {timeout} seconds and was cancelled.")
+        return self.mapper.map_(j_unsatisfiable_classes)
 
     def create_axiom_justifications(self,
                                     axiom_to_explain: OWLAxiom,
