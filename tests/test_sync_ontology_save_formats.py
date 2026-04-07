@@ -22,7 +22,6 @@ import unittest
 from owlapy.owl_ontology import SyncOntology
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-FATHER_OWL = os.path.join(_HERE, "KGs", "Family", "father.owl")
 
 # All saved files land here – created automatically by _out().
 OUTPUT_DIR = os.path.join(_HERE, "saved_formats")
@@ -54,7 +53,7 @@ class TestSyncOntologySaveFormats(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.makedirs(OUTPUT_DIR, exist_ok=True)
-        cls.source = SyncOntology(FATHER_OWL)
+        cls.source = SyncOntology("KGs/Family/father.owl")
         cls.expected_abox, cls.expected_tbox = _axiom_counts(cls.source)
 
     # ------------------------------------------------------------------
