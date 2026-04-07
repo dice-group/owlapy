@@ -26,6 +26,7 @@ jobs:
         run: |
           wget https://files.dice-research.org/projects/Ontolearn/KGs.zip
           unzip KGs.zip
+          export JAVA_TOOL_OPTIONS="-Dorg.slf4j.simpleLogger.defaultLogLevel=off"
           pip install coverage
           coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x && coverage report -m
 
