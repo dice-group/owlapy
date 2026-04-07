@@ -1494,7 +1494,8 @@ class SyncReasoner(AbstractOWLReasoner):
             raise TimeoutError(f"Consistency check took longer than {timeout} seconds and was cancelled.")
         # Dispose of the reasoner
         j_reasoner.dispose()
-        # Dispose of the ontology and the manager        j_manager.clearOntologies()
+        # Dispose of the ontology and the manager
+        j_manager.clearOntologies()
         del j_manager
         return bool(j_is_consistent)
 
