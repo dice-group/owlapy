@@ -388,6 +388,41 @@ justifications = reasoner.create_axiom_justifications(axiom)
 </details>
 
 
+### Get Contrastive Explanations
+
+<details><summary> Click me!</summary>
+
+```python
+from owlapy import manchester_to_owl_expression
+from owlapy.iri import IRI
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_reasoner import SyncReasoner
+
+# --- Load ontology and reasoner ---
+ontology = SyncOntology("../KGs/Family/family.owl")
+reasoner = SyncReasoner(ontology, reasoner="HermiT")
+
+# --- Define class expression ---
+class_expr = manchester_to_owl_expression(
+    "Sister and (hasSibling some (married some (hasChild some Grandchild)))",
+    "http://www.benchmark.org/family#"
+)
+
+# --- Define individuals ---
+fact = OWLNamedIndividual(IRI.create("http://www.benchmark.org/family#F9F143"))
+foil = OWLNamedIndividual(IRI.create("http://www.benchmark.org/family#F9M161"))
+
+# --- Get contrastive explanation ---
+result = reasoner.get_contrastive_explanation(class_expr, fact, foil)
+
+# --- Print results ---
+for k in ["common", "different", "conflict"]:
+    print(f"{k.capitalize()} axioms: {result[k]}")
+```
+</details>
+
+
 ### Class expression simplification
 
 <details><summary> Click me!</summary>
