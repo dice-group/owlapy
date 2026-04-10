@@ -2036,7 +2036,7 @@ class SyncReasoner(AbstractOWLReasoner):
     def create_laconic_axiom_justifications(self,
                                             axiom_to_explain: OWLAxiom,
                                             n_max_justifications: Optional[int] = 10,
-                                            timeout: int = 10_000,
+                                            timeout: int = 1000,
                                             save: bool = False) -> List[Set[OWLAxiom]]:
         """Generate multiple laconic justifications for why an axiom is entailed by the ontology.
         Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
@@ -2047,7 +2047,7 @@ class SyncReasoner(AbstractOWLReasoner):
         Args:
             axiom_to_explain (OWLAxiom): The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See
             n_max_justifications (Optional[int], optional): The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
-            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+            timeout (int, optional): The maximum time (in seconds) to wait for justification generation. Defaults to 1000.
             save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.
 
         Raises:
@@ -2057,9 +2057,17 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.
         """
+        import time as _time
 
-        from org.semanticweb.owl.explanation.api import ExplanationManager
+        from org.semanticweb.owl.explanation.impl.blackbox.checker import (
+            SatisfiabilityEntailmentCheckerFactory,
+            BlackBoxExplanationGeneratorFactory,
+        )
+        from org.semanticweb.owl.explanation.impl.blackbox import Configuration
         from org.semanticweb.owl.explanation.impl.laconic import LaconicExplanationGeneratorFactory
+
+        TimeUnit = JClass("java.util.concurrent.TimeUnit")
+        Thread = JClass("java.lang.Thread")
 
         # Get a hold of the reasoner factory and the ontology
         if self.reasoner_name == "Pellet":
@@ -2086,10 +2094,45 @@ class SyncReasoner(AbstractOWLReasoner):
 
         j_ontology = self._owlapi_ontology
 
-        j_gen_fac = ExplanationManager.createExplanationGeneratorFactory(j_reasoner_factory)
+        # Convert timeout from seconds to milliseconds for the Java-level
+        # SatisfiabilityEntailmentCheckerFactory (cooperative timeout inside
+        # the explanation library).
+        timeout_ms = timeout * 1000
+
+        # Build the chain manually so that the timeout is forwarded to the
+        # SatisfiabilityEntailmentCheckerFactory (ExplanationManager does not
+        # pass a timeout).
+        # Explicitly use JLong to disambiguate the (OWLReasonerFactory, long)
+        # constructor from the (OWLReasonerFactory, boolean) overload.
+        j_checker_factory = SatisfiabilityEntailmentCheckerFactory(
+            j_reasoner_factory, jpype.JLong(timeout_ms)
+        )
+        j_config = Configuration(j_checker_factory)
+        j_gen_fac = BlackBoxExplanationGeneratorFactory(j_config)
         j_laconic_gen_fac = LaconicExplanationGeneratorFactory(j_gen_fac)
 
-        j_gen = j_laconic_gen_fac.createExplanationGenerator(j_ontology)
+        # Create a progress monitor that collects partial results and supports
+        # cooperative cancellation via both a wall-clock deadline and Java
+        # thread interruption (set by future.cancel(True) on hard timeout).
+        @jpype.JImplements("org.semanticweb.owl.explanation.api.ExplanationProgressMonitor")
+        class _TimeoutProgressMonitor:
+            def __init__(self_, deadline):
+                self_._found = []
+                self_._deadline = deadline
+
+            @jpype.JOverride
+            def foundExplanation(self_, generator, explanation, allExplanations):
+                self_._found.append(explanation)
+
+            @jpype.JOverride
+            def isCancelled(self_):
+                return (_time.time() >= self_._deadline
+                        or Thread.currentThread().isInterrupted())
+
+        deadline = _time.time() + timeout
+        monitor = _TimeoutProgressMonitor(deadline)
+
+        j_gen = j_laconic_gen_fac.createExplanationGenerator(j_ontology, monitor)
 
         j_axiom = self.mapper.map_(axiom_to_explain)
         if n_max_justifications is not None and not isinstance(
@@ -2098,14 +2141,65 @@ class SyncReasoner(AbstractOWLReasoner):
             raise ValueError(
                 f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
             )
-        if n_max_justifications is not None and n_max_justifications > 0:
-            j_explanations = j_gen.getExplanations(j_axiom, n_max_justifications)
-        else:
-            j_explanations = j_gen.getExplanations(j_axiom)
+
+        # Submit the justification task to the shared single-threaded executor
+        # so that Future.get(timeout) provides a hard, enforceable timeout and
+        # future.cancel(True) can interrupt the Java reasoning thread.
+        n_max = n_max_justifications  # capture for closure
+
+        @jpype.JImplements("java.util.concurrent.Callable")
+        class _JustificationCallable:
+            @jpype.JOverride
+            def call(self_):
+                if n_max is not None and n_max > 0:
+                    return j_gen.getExplanations(j_axiom, n_max)
+                else:
+                    return j_gen.getExplanations(j_axiom)
+
+        future = self._reasoning_executor.submit(_JustificationCallable())
+        timed_out = False
+        try:
+            j_explanations = future.get(timeout, TimeUnit.SECONDS)
+        except jpype.JException as e:
+            if "TimeoutException" in type(e).__name__:
+                future.cancel(True)  # Interrupt the Java reasoning thread
+                timed_out = True
+                logger.warning(
+                    "Laconic justification generation timed out after %d seconds. "
+                    "Returning %d partial justification(s) found before timeout.",
+                    timeout, len(monitor._found)
+                )
+                j_explanations = monitor._found
+            elif "ExecutionException" in type(e).__name__:
+                if monitor._found:
+                    logger.warning(
+                        "Laconic justification generation was interrupted. "
+                        "Returning %d partial justification(s) found so far.",
+                        len(monitor._found)
+                    )
+                    j_explanations = monitor._found
+                else:
+                    cause = e.getCause()
+                    raise ValueError(
+                        f"Laconic justification failed most likely because the axiom type "
+                        f"{type(axiom_to_explain)} is not supported for justification "
+                        f"generation.\n{cause}"
+                    ) from None
+            else:
+                raise
+
         justifications = []
         for j_expl in j_explanations:
             py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
             justifications.append(py_axioms)
+
+        # If the normal result set was empty but the monitor collected partial
+        # results (e.g. timeout fired between getExplanations completing and
+        # result mapping), fall back to the monitor's collection.
+        if not justifications and monitor._found and not timed_out:
+            for j_expl in monitor._found:
+                py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
+                justifications.append(py_axioms)
 
         # Save to justifications.owl if requested
         if save:
