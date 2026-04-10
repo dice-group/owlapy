@@ -6,6 +6,7 @@ import owlready2
 import json
 import subprocess
 import sys
+import jpype
 
 from collections import defaultdict, Counter
 from functools import singledispatchmethod, reduce, cached_property
@@ -1237,10 +1238,68 @@ class SyncReasoner(AbstractOWLReasoner):
         self.mapper = self.ontology.mapper
         self.inference_types_mapping = import_and_include_axioms_generators()
         self._owlapi_reasoner = initialize_reasoner(reasoner, self._owlapi_ontology)
+        # A single-threaded Java executor shared across all instances() calls.
+        # Using one reusable executor ensures that reasoning tasks are serialized,
+        # preventing "ExtensionManager is not reentrant" errors that occur when
+        # two Java threads concurrently access a non-thread-safe reasoner (e.g. HermiT).
+        # We use a daemon-thread factory so that lingering reasoning threads
+        # (e.g. ones that ignored an interrupt after a timeout) do not prevent
+        # the JVM / Python process from exiting.
+        Executors = JClass("java.util.concurrent.Executors")
+        ThreadFactory = JClass("java.util.concurrent.ThreadFactory")
+
+        @jpype.JImplements(ThreadFactory)
+        class _DaemonThreadFactory:
+            @jpype.JOverride
+            def newThread(self_, r):
+                t = jpype.JClass("java.lang.Thread")(r)
+                t.setDaemon(True)
+                t.setName("owlapy-reasoner-worker")
+                return t
+
+        self._reasoning_executor = Executors.newSingleThreadExecutor(_DaemonThreadFactory())
+
+    def __del__(self):
+        """Shut down the shared Java executor and dispose the reasoner when garbage-collected."""
+        try:
+            self.close()
+        except Exception:
+            pass
+
+    def close(self):
+        """Explicitly shut down the reasoner and the shared Java executor.
+
+        Call this when done with the reasoner to release all Java resources
+        and allow the process to exit cleanly.
+        """
+        # 1. Dispose the OWL API reasoner (releases internal threads & caches).
+        if hasattr(self, "_owlapi_reasoner") and self._owlapi_reasoner is not None:
+            try:
+                self._owlapi_reasoner.dispose()
+            except Exception:
+                pass
+            self._owlapi_reasoner = None
+
+        # 2. Shut down the executor and wait briefly for its thread to finish.
+        if hasattr(self, "_reasoning_executor") and self._reasoning_executor is not None:
+            self._reasoning_executor.shutdownNow()
+            try:
+                TimeUnit = JClass("java.util.concurrent.TimeUnit")
+                self._reasoning_executor.awaitTermination(5, TimeUnit.SECONDS)
+            except Exception:
+                pass
+            self._reasoning_executor = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
 
     def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
-        Get the instances for a given class expression using HermiT.
+        Get the instances for a given class expression.
 
         Args:
             ce (OWLClassExpression): The class expression in OWLAPY format.
@@ -1256,7 +1315,59 @@ class SyncReasoner(AbstractOWLReasoner):
         return {self.mapper.map_(ind) for ind in flattened_instances}
 
     def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
-        return run_with_timeout(self._instances, timeout, (ce, direct))
+        """
+        Get the instances for a given class expression with a Java-level timeout.
+
+        Uses Java's ExecutorService to run the reasoning task in a separate Java thread,
+        enabling proper timeout and interruption of the underlying Java reasoner (e.g. HermiT,
+        Pellet). This overcomes the limitation of Python's threading which cannot interrupt
+        JPype Java calls.
+
+        Args:
+            ce (OWLClassExpression): The class expression in OWLAPY format.
+            direct (bool): Whether to get direct instances or not. Defaults to False.
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
+
+        Returns:
+            set: A set of individuals classified by the given class expression.
+                 Returns an empty set if the timeout is exceeded.
+        """
+        mapped_ce = self.mapper.map_(ce)
+
+        TimeUnit = JClass("java.util.concurrent.TimeUnit")
+
+        # Submit the reasoning task to the shared single-threaded executor.
+        # Using a shared executor (created once in __init__) ensures that all
+        # instances() calls are serialized on one Java thread, preventing the
+        # "ExtensionManager is not reentrant" error that arises when a new
+        # executor is created per call and two threads overlap during shutdown.
+        owlapi_reasoner = self._owlapi_reasoner
+
+        @jpype.JImplements("java.util.concurrent.Callable")
+        class _ReasonerCallable:
+            @jpype.JOverride
+            def call(self_):
+                return owlapi_reasoner.getInstances(mapped_ce, direct)
+
+        future = self._reasoning_executor.submit(_ReasonerCallable())
+        try:
+            instances = future.get(timeout, TimeUnit.SECONDS)
+            flattened_instances = instances.getFlattened()
+            return {self.mapper.map_(ind) for ind in flattened_instances}
+        except jpype.JException as e:
+            # java.util.concurrent.TimeoutException when reasoning exceeds the timeout
+            if "TimeoutException" in type(e).__name__:
+                future.cancel(True)  # Interrupt the Java reasoning thread
+                logger.warning(f"Reasoner timed out after {timeout} seconds for instances query on: {ce}")
+                return set()
+            # java.util.concurrent.ExecutionException wraps exceptions from the Callable
+            elif "ExecutionException" in type(e).__name__:
+                cause = e.getCause()
+                raise RuntimeError(
+                    f"Reasoning failed for class expression '{ce}': {cause}"
+                ) from None
+            else:
+                raise
 
     def equivalent_classes(self, ce: OWLClassExpression):
         """
