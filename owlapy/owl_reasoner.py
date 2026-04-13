@@ -1896,11 +1896,16 @@ class SyncReasoner(AbstractOWLReasoner):
     def create_axiom_justifications(self,
                                     axiom_to_explain: OWLAxiom,
                                     n_max_justifications: Optional[int] = 10,
+                                    timeout: int = 1000,
                                     save: bool = False,
     ) -> List[Set[OWLAxiom]]:
         """Generate multiple justifications for why an axiom is entailed by the ontology.
-        The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java
-        The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator.java# .
+        The implementation uses the ``owlexplanation`` library (which also depends on ``owlapi``
+        and ``telemetry-2.0.0``), by Matthew Horridge.  Internally an
+        ``ExplanationProgressMonitor`` is used so that (a) the generator can be
+        cooperatively cancelled when the *timeout* is reached and (b) any
+        justifications that were already found before the timeout are still returned.
+
         The supported axiom types are:
         - OWLClassAssertionAxiom
         - OWLDataPropertyAssertionAxiom
@@ -1924,6 +1929,7 @@ class SyncReasoner(AbstractOWLReasoner):
         Args:
             axiom_to_explain (OWLAxiom): The axiom to create justifications for.
             n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.
+            timeout (int, optional): The maximum time (in seconds) to wait for justification generation. Defaults to 1000.
             save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.
 
         Raises:
@@ -1931,87 +1937,154 @@ class SyncReasoner(AbstractOWLReasoner):
             NotImplementedError: If the specified reasoner is not supported for axiom justification.
 
         Returns:
-            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.
+            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed
+                by the ontology. If the timeout is reached, the justifications found so far are returned (which may be
+                an empty list).
         """
+        import time as _time
+
         # First verify that the axiom is even entailed
         if not self.is_entailed(axiom_to_explain):
             raise ValueError(
                 f"The axiom {axiom_to_explain} is not entailed by the ontology. No justifications to create."
             )
-        from com.clarkparsia.owlapi.explanation import (
-            BlackBoxExplanation,
-            HSTExplanationGenerator,
-            SatisfiabilityConverter
+
+        from org.semanticweb.owl.explanation.impl.blackbox.checker import (
+            SatisfiabilityEntailmentCheckerFactory,
+            BlackBoxExplanationGeneratorFactory,
         )
+        from org.semanticweb.owl.explanation.impl.blackbox import Configuration
 
-        j_axiom = self.mapper.map_(axiom_to_explain)
-        j_ontology = self._owlapi_ontology
-        j_reasoner = self._owlapi_reasoner
-        j_data_factory = self._owlapi_manager.getOWLDataFactory()
+        TimeUnit = JClass("java.util.concurrent.TimeUnit")
+        Thread = JClass("java.lang.Thread")
 
+        # Get a hold of the reasoner factory
         if self.reasoner_name == "Pellet":
             from openllet.owlapi import PelletReasonerFactory
-            reasoner_factory = PelletReasonerFactory.getInstance()
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
         elif self.reasoner_name == "HermiT":
             from org.semanticweb.HermiT import ReasonerFactory
-            reasoner_factory = ReasonerFactory()
+            j_reasoner_factory = ReasonerFactory()
         elif self.reasoner_name == "ELK":
             from org.semanticweb.elk.owlapi import ElkReasonerFactory
-            reasoner_factory = ElkReasonerFactory()
+            j_reasoner_factory = ElkReasonerFactory()
         elif self.reasoner_name == "JFact":
             from uk.ac.manchester.cs.jfact import JFactFactory
-            reasoner_factory = JFactFactory()
+            j_reasoner_factory = JFactFactory()
         elif self.reasoner_name == "Openllet":
             from openllet.owlapi import PelletReasonerFactory
-            reasoner_factory = PelletReasonerFactory.getInstance()
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
         elif self.reasoner_name == "Structural":
             from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
-            reasoner_factory = StructuralReasonerFactory()
+            j_reasoner_factory = StructuralReasonerFactory()
         else:
             raise NotImplementedError(f"Reasoner '{self.reasoner_name}' is not supported for axiom justification.")
 
-        # Following the internal implementation of DefaultExplanationGenerator to circumvent the need for a progress monitor
+        j_ontology = self._owlapi_ontology
 
-        converter = SatisfiabilityConverter(j_data_factory)
-        try:
-            j_axiom_ce = converter.convert(j_axiom)
-        except Exception as e:
-            if "not implemented" in str(e).lower():
-                raise NotImplementedError(
-                    f"Failed to convert the axiom {axiom_to_explain} into a class expression. "
-                    f"This most likely means that the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
-                )
-            raise e
-        blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
-        explanation_gen = HSTExplanationGenerator(blackbox_exp)
+        # Convert timeout from seconds to milliseconds for the Java-level
+        # SatisfiabilityEntailmentCheckerFactory (cooperative timeout inside
+        # the explanation library).
+        timeout_ms = timeout * 1000
 
-        justifications = []
+        # Build the owlexplanation generator chain with timeout support.
+        # Explicitly use JLong to disambiguate the (OWLReasonerFactory, long)
+        # constructor from the (OWLReasonerFactory, boolean) overload.
+        j_checker_factory = SatisfiabilityEntailmentCheckerFactory(
+            j_reasoner_factory, jpype.JLong(timeout_ms)
+        )
+        j_config = Configuration(j_checker_factory)
+        j_gen_fac = BlackBoxExplanationGeneratorFactory(j_config)
+
+        # Create a progress monitor that collects partial results and supports
+        # cooperative cancellation via both a wall-clock deadline and Java
+        # thread interruption (set by future.cancel(True) on hard timeout).
+        @jpype.JImplements("org.semanticweb.owl.explanation.api.ExplanationProgressMonitor")
+        class _TimeoutProgressMonitor:
+            def __init__(self_, deadline):
+                self_._found = []
+                self_._deadline = deadline
+
+            @jpype.JOverride
+            def foundExplanation(self_, generator, explanation, allExplanations):
+                self_._found.append(explanation)
+
+            @jpype.JOverride
+            def isCancelled(self_):
+                return (_time.time() >= self_._deadline
+                        or Thread.currentThread().isInterrupted())
+
+        deadline = _time.time() + timeout
+        monitor = _TimeoutProgressMonitor(deadline)
+
+        j_gen = j_gen_fac.createExplanationGenerator(j_ontology, monitor)
+
+        j_axiom = self.mapper.map_(axiom_to_explain)
         if n_max_justifications is not None and not isinstance(
             n_max_justifications, int
         ):
             raise ValueError(
                 f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
             )
-        if n_max_justifications is not None and n_max_justifications > 0:
-            try:
-                j_explanations = explanation_gen.getExplanations(
-                    j_axiom_ce, n_max_justifications
-                )
-            except Exception as e:
-                raise ValueError(
-                    f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
-                )
-        else:
-            try:
-                j_explanations = explanation_gen.getExplanations(j_axiom_ce)
-            except Exception as e:
-                raise ValueError(
-                    f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
-                )
 
+        # Submit the justification task to the shared single-threaded executor
+        # so that Future.get(timeout) provides a hard, enforceable timeout and
+        # future.cancel(True) can interrupt the Java reasoning thread.
+        n_max = n_max_justifications  # capture for closure
+
+        @jpype.JImplements("java.util.concurrent.Callable")
+        class _JustificationCallable:
+            @jpype.JOverride
+            def call(self_):
+                if n_max is not None and n_max > 0:
+                    return j_gen.getExplanations(j_axiom, n_max)
+                else:
+                    return j_gen.getExplanations(j_axiom)
+
+        future = self._reasoning_executor.submit(_JustificationCallable())
+        timed_out = False
+        try:
+            j_explanations = future.get(timeout, TimeUnit.SECONDS)
+        except jpype.JException as e:
+            if "TimeoutException" in type(e).__name__:
+                future.cancel(True)  # Interrupt the Java reasoning thread
+                timed_out = True
+                logger.warning(
+                    "Justification generation timed out after %d seconds. "
+                    "Returning %d partial justification(s) found before timeout.",
+                    timeout, len(monitor._found)
+                )
+                j_explanations = monitor._found
+            elif "ExecutionException" in type(e).__name__:
+                if monitor._found:
+                    logger.warning(
+                        "Justification generation was interrupted. "
+                        "Returning %d partial justification(s) found so far.",
+                        len(monitor._found)
+                    )
+                    j_explanations = monitor._found
+                else:
+                    cause = e.getCause()
+                    raise ValueError(
+                        f"Justification failed most likely because the axiom type "
+                        f"{type(axiom_to_explain)} is not supported for justification "
+                        f"generation.\n{cause}"
+                    ) from None
+            else:
+                raise
+
+        justifications = []
         for j_expl in j_explanations:
-            py_axioms = {self.mapper.map_(ax) for ax in j_expl}
+            py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
             justifications.append(py_axioms)
+
+        # If the normal result set was empty but the monitor collected partial
+        # results (e.g. timeout fired between getExplanations completing and
+        # result mapping), fall back to the monitor's collection.
+        if not justifications and monitor._found and not timed_out:
+            for j_expl in monitor._found:
+                py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
+                justifications.append(py_axioms)
 
         # Save to justifications.owl if requested
         if save:
