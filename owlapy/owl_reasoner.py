@@ -1297,6 +1297,56 @@ class SyncReasoner(AbstractOWLReasoner):
         self.close()
         return False
 
+    def _execute_with_java_timeout(self, java_callable_fn, timeout: int, task_description: str = "Reasoning task"):
+        """Execute a Java-level callable on the shared reasoning executor with a timeout.
+
+        This helper encapsulates the common boilerplate of:
+        1. Creating a ``java.util.concurrent.Callable`` from *java_callable_fn*.
+        2. Submitting it to ``self._reasoning_executor``.
+        3. Waiting up to *timeout* seconds for the result.
+        4. Handling ``TimeoutException`` and ``ExecutionException``.
+
+        Args:
+            java_callable_fn: A **no-arg** Python callable that performs the
+                actual Java work.  It will be executed on the executor thread.
+            timeout (int): Maximum time in seconds to wait for the result.
+            task_description (str): Human-readable label used in error / log
+                messages (e.g. ``"Consistency check"``).
+
+        Returns:
+            Whatever *java_callable_fn* returns (already a Python / JPype object).
+
+        Raises:
+            TimeoutError: If the task exceeds *timeout* seconds.
+            RuntimeError: If the callable raises an exception.
+        """
+        TimeUnit = JClass("java.util.concurrent.TimeUnit")
+
+        fn = java_callable_fn  # capture for the inner class
+
+        @jpype.JImplements("java.util.concurrent.Callable")
+        class _Callable:
+            @jpype.JOverride
+            def call(self_):
+                return fn()
+
+        future = self._reasoning_executor.submit(_Callable())
+        try:
+            return future.get(timeout, TimeUnit.MILLISECONDS)
+        except jpype.JException as e:
+            if "TimeoutException" in type(e).__name__:
+                future.cancel(True)
+                raise TimeoutError(
+                    f"{task_description} timed out after {timeout} seconds."
+                ) from None
+            elif "ExecutionException" in type(e).__name__:
+                cause = e.getCause()
+                raise RuntimeError(
+                    f"{task_description} failed: {cause}"
+                ) from None
+            else:
+                raise
+
     def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
         Get the instances for a given class expression.
@@ -1738,14 +1788,25 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(ind) for ind in
                     self._owlapi_reasoner.getTypes(self.mapper.map_(individual), direct).getFlattened()]
 
-    def has_consistent_ontology(self) -> bool:
+    def has_consistent_ontology(self, timeout: int = 1000) -> bool:
         """
         Check if the used ontology is consistent.
 
+        Args:
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
+
         Returns:
             bool: True if the ontology used by this reasoner is consistent, False otherwise.
+
+        Raises:
+            TimeoutError: If the reasoning task exceeds the timeout.
+            RuntimeError: If the reasoning task fails for another reason.
         """
-        return self._owlapi_reasoner.isConsistent()
+        return bool(self._execute_with_java_timeout(
+            lambda: self._owlapi_reasoner.isConsistent(),
+            timeout,
+            "Consistency check",
+        ))
 
     def infer_axioms(self, inference_types: list[str]) -> Iterable[OWLAxiom]:
         """
@@ -1864,34 +1925,69 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         self.infer_axioms_and_save(output, output_format, ["InferredClassAssertionAxiomGenerator"])
 
-    def is_entailed(self, axiom: OWLAxiom) -> bool:
+    def is_entailed(self, axiom: OWLAxiom, timeout: int = 1000) -> bool:
         """A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.
 
         Args:
             axiom: The axiom to check for entailment.
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
 
         Return:
             True if the axiom is entailed by the reasoner axioms and False otherwise.
-        """
-        return bool(self._owlapi_reasoner.isEntailed(self.mapper.map_(axiom)))
 
-    def is_satisfiable(self, ce: OWLClassExpression) -> bool:
+        Raises:
+            TimeoutError: If the reasoning task exceeds the timeout.
+            RuntimeError: If the reasoning task fails for another reason.
+        """
+        j_axiom = self.mapper.map_(axiom)
+        return bool(self._execute_with_java_timeout(
+            lambda: self._owlapi_reasoner.isEntailed(j_axiom),
+            timeout,
+            f"Entailment check for axiom: {axiom}",
+        ))
+
+    def is_satisfiable(self, ce: OWLClassExpression, timeout: int = 1000) -> bool:
         """A convenience method that determines if the specified class expression is satisfiable with respect
         to the reasoner axioms.
 
         Args:
             ce: The class expression to check for satisfiability.
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
 
         Return:
             True if the class expression is satisfiable by the reasoner axioms and False otherwise.
+
+        Raises:
+            TimeoutError: If the reasoning task exceeds the timeout.
+            RuntimeError: If the reasoning task fails for another reason.
         """
+        j_ce = self.mapper.map_(ce)
+        return bool(self._execute_with_java_timeout(
+            lambda: self._owlapi_reasoner.isSatisfiable(j_ce),
+            timeout,
+            f"Satisfiability check for: {ce}",
+        ))
 
-        return bool(self._owlapi_reasoner.isSatisfiable(self.mapper.map_(ce)))
-
-    def unsatisfiable_classes(self):
+    def unsatisfiable_classes(self, timeout: int = 1000):
         """A convenience method that obtains the classes in the signature of the root ontology that are
-        unsatisfiable."""
-        return self.mapper.map_(self._owlapi_reasoner.unsatisfiableClasses())
+        unsatisfiable.
+
+        Args:
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
+
+        Returns:
+            The unsatisfiable classes.
+
+        Raises:
+            TimeoutError: If the reasoning task exceeds the timeout.
+            RuntimeError: If the reasoning task fails for another reason.
+        """
+        result = self._execute_with_java_timeout(
+            lambda: self._owlapi_reasoner.unsatisfiableClasses(),
+            timeout,
+            "Unsatisfiable classes retrieval",
+        )
+        return self.mapper.map_(result)
 
     def create_axiom_justifications(self,
                                     axiom_to_explain: OWLAxiom,
@@ -2065,10 +2161,8 @@ class SyncReasoner(AbstractOWLReasoner):
                     j_explanations = monitor._found
                 else:
                     cause = e.getCause()
-                    raise ValueError(
-                        f"Justification failed most likely because the axiom type "
-                        f"{type(axiom_to_explain)} is not supported for justification "
-                        f"generation.\n{cause}"
+                    raise RuntimeError(
+                        f"Justification failed for class expression '{ce}': {cause}"
                     ) from None
             else:
                 raise
