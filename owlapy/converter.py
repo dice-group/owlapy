@@ -270,11 +270,7 @@ class Owl2SparqlConverter:
         # the exclusion of "?x ?p ?o" results in the group graph pattern to just return true or false (not bindings)
         # as a result, we need to comment out the if-clause of the following line
         # if not self.in_intersection and self.modal_depth == 1:
-        # if namedIndividual is set to True, do not use variables --> restrict the subject to instances of NamedIndividual
-        if self.named_individuals:
-            self.append_triple(subject, "a", f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
-        else:
-            self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
+        self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
 
         self.append("FILTER NOT EXISTS { ")
         # process the concept after the ¬
@@ -627,6 +623,8 @@ class Owl2SparqlConverter:
                 q.append(f"<{x.to_string_id()}>")
             q.append("} . ")
             qs.extend(q)
+        if named_individuals:
+            qs.append(f"{root_variable} a <{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}> . ")
         qs.extend(tp)
         qs.append(" }")
 
@@ -643,10 +641,12 @@ class Owl2SparqlConverter:
                                   for_all_de_morgan: bool = True,
                                   named_individuals: bool = False) -> str:
         # get the graph pattern corresponding to the provided class expression (ce)
-        graph_pattern_str = "".join(self.convert(root_variable,
-                                                 ce,
-                                                 for_all_de_morgan=for_all_de_morgan,
-                                                 named_individuals=named_individuals))
+        tp = self.convert(root_variable, ce, for_all_de_morgan=for_all_de_morgan, named_individuals=named_individuals)
+        if named_individuals:
+            named_individual_triple = f"{root_variable} a <{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}> . "
+            graph_pattern_str = named_individual_triple + "".join(tp)
+        else:
+            graph_pattern_str = "".join(tp)
         # preparation for the final query
 
         # required to compute false negatives
