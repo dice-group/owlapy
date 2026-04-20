@@ -132,8 +132,8 @@ class Owl2SparqlConverter:
         self.for_all_de_morgan = for_all_de_morgan
         self.named_individuals = named_individuals
         # # if named_individuals is True, we return only entities that are instances of owl:NamedIndividual
-        # if named_individuals:
-        #     self.append_triple(root_variable, 'a', f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
+        if named_individuals:
+            self.append_triple(root_variable, 'a', f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
         with self.stack_variable(root_variable):
             with self.stack_parent(ce):
                 self.process(ce)
