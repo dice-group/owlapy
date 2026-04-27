@@ -553,7 +553,9 @@ class Owl2SparqlConverter:
     @process.register
     def _(self, node: OWLDatatype):
         if node != TopOWLDatatype:
-            self.append(f" FILTER ( DATATYPE ( {self.current_variable} = <{node.to_string_id()}> ) ) ")
+            self.append(f" FILTER ( DATATYPE ( {self.current_variable} ) = <{node.to_string_id()}> ) ")
+        else:
+            self.append(f" FILTER ( isLiteral ( {self.current_variable} ) ")
 
     @process.register
     def _(self, node: OWLDataOneOf):
