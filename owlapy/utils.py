@@ -952,28 +952,32 @@ class CESimplifier:
                                  filler=self._simplify(restriction.get_filler()))
 
     def _process_cardinality_restriction(self, restriction, nary_ce = None):
-        # Check for card restrictions that have the share the same cardinality and property.
-        # They can be simplified into a single card restriction with a merged filler.
-        # E.g.:
-        # (> 1 r.A) ⊔ (> 1 r.B) ≡ > 1 r.(A ⊔ B)
-        # (< 2 r.xsd:boolean) ⊔ (< 2 r.xsd:integer) ≡ < 2 r.(xsd:boolean ⊔ xsd:integer)
+        # Check for card restrictions that share the same cardinality and property.
+        # They can be simplified into a single card restriction with a merged filler,
+        # but only for scenarios where the equivalence actually holds:
+        #
+        # For OWLObjectMinCardinality / OWLDataMinCardinality with cardinality = 1 in a union:
+        #   (≥ 1 r.A) ⊔ (≥ 1 r.B) ≡ ≥ 1 r.(A ⊔ B)   ← valid (equivalent to ∃r)
         if isinstance(nary_ce, OWLObjectUnionOf):
-            operands = set(nary_ce.operands())
-            same_root = []
-            for op in operands:
-                if (isinstance(op, type(restriction))
-                        and op.get_cardinality() == restriction.get_cardinality()
-                        and op.get_property() == restriction.get_property()):
-                    same_root.append(op)
-            if not len(same_root) == 1:
-                fillers = _sort_by_ordered_owl_object([p.get_filler() for p in same_root])
-                if isinstance(list(fillers)[0],OWLDataRange):
+            # Only apply filler merging for min-cardinality restrictions with cardinality == 1
+            if (isinstance(restriction, (OWLObjectMinCardinality, OWLDataMinCardinality))
+                    and restriction.get_cardinality() == 1):
+                operands = set(nary_ce.operands())
+                same_root = []
+                for op in operands:
+                    if (isinstance(op, type(restriction))
+                            and op.get_cardinality() == restriction.get_cardinality()
+                            and op.get_property() == restriction.get_property()):
+                        same_root.append(op)
+                if not len(same_root) == 1:
+                    fillers = _sort_by_ordered_owl_object([p.get_filler() for p in same_root])
+                    if isinstance(list(fillers)[0], OWLDataRange):
+                        return type(restriction)(cardinality=restriction.get_cardinality(),
+                                                 property=restriction.get_property(),
+                                                 filler=self._simplify(OWLDataUnionOf(fillers)))
                     return type(restriction)(cardinality=restriction.get_cardinality(),
                                              property=restriction.get_property(),
-                                             filler=self._simplify(OWLDataUnionOf(fillers)))
-                return type(restriction)(cardinality=restriction.get_cardinality(),
-                                           property=restriction.get_property(),
-                                           filler=self._simplify(OWLObjectUnionOf(fillers)))
+                                             filler=self._simplify(OWLObjectUnionOf(fillers)))
         return type(restriction)(cardinality=restriction.get_cardinality(),
                                  property=restriction.get_property(),
                                  filler=self._simplify(restriction.get_filler(), None))
