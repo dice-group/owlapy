@@ -1,8 +1,11 @@
 """OWL Reasoner"""
+import os
 import operator
 import logging
 import owlready2
-import os
+import json
+import subprocess
+import sys
 
 from collections import defaultdict, Counter
 from functools import singledispatchmethod, reduce, cached_property
@@ -15,7 +18,7 @@ from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom,
     OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
     OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
     OWLDataSomeValuesFrom, OWLDataOneOf, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataHasValue, \
-    OWLDataAllValuesFrom, OWLNothing, OWLThing
+    OWLDataAllValuesFrom, OWLNothing, OWLThing, OWLDataMinCardinality, OWLDataMaxCardinality, OWLDataExactCardinality
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
@@ -31,6 +34,7 @@ from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObject
     OWLTopDataProperty
 from owlapy.utils import run_with_timeout
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from jpype import JClass
 
 
 logger = logging.getLogger(__name__)
@@ -985,6 +989,183 @@ class StructuralReasoner(AbstractOWLReasoner):
         temp = self.get_instances_from_owl_class(c)
         self._cls_to_ind[c] = frozenset(temp)
 
+    @_find_instances.register
+    def _(self, ce: OWLDataMinCardinality):
+        return self._get_instances_data_card_restriction(ce)
+
+    @_find_instances.register
+    def _(self, ce: OWLDataMaxCardinality):
+        all_ = frozenset(self._ontology.individuals_in_signature())
+        min_ind = self._get_instances_data_card_restriction(
+            OWLDataMinCardinality(cardinality=ce.get_cardinality() + 1,
+                                  property=ce.get_property(),
+                                  filler=ce.get_filler()))
+        return all_ ^ min_ind
+
+    @_find_instances.register
+    def _(self, ce: OWLDataExactCardinality):
+        return self._get_instances_data_card_restriction(ce)
+
+    def _get_instances_data_card_restriction(self, ce) -> FrozenSet[OWLNamedIndividual]:
+        """Get instances for OWLDataMinCardinality or OWLDataExactCardinality restrictions."""
+        pe = ce.get_property()
+        filler = ce.get_filler()
+        assert isinstance(pe, OWLDataProperty)
+
+        if isinstance(ce, OWLDataMinCardinality):
+            min_count = ce.get_cardinality()
+            max_count = None
+        elif isinstance(ce, OWLDataExactCardinality):
+            min_count = max_count = ce.get_cardinality()
+        else:
+            raise NotImplementedError
+
+        assert min_count >= 0
+        assert max_count is None or max_count >= 0
+
+        if self._ontology.is_modified and (self.class_cache or self._property_cache):
+            self.reset_and_disable_cache()
+        property_cache = self._property_cache
+
+        if property_cache:
+            self._lazy_cache_data_prop(pe)
+            dps = self._data_prop[pe]
+        else:
+            subs = self._some_values_subject_index(pe)
+
+        ind = set()
+
+        if isinstance(filler, OWLDatatype):
+            if property_cache:
+                for s, literals in dps.items():
+                    count = sum(1 for lit in literals if lit.get_datatype() == filler)
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe) if lit.get_datatype() == filler)
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDataOneOf):
+            values = set(filler.values())
+            if property_cache:
+                for s, literals in dps.items():
+                    count = len(literals & values)
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe) if lit in values)
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDatatypeRestriction):
+            def res_to_callable(res: OWLFacetRestriction):
+                op = res.get_facet().operator
+                v = res.get_facet_value()
+
+                def inner(lv: OWLLiteral):
+                    return op(lv, v)
+
+                return inner
+
+            apply = FunctionType.__call__
+            facet_restrictions = tuple(map(res_to_callable, filler.get_facet_restrictions()))
+
+            def include(lv: OWLLiteral):
+                return lv.get_datatype() == filler.get_datatype() and \
+                    all(map(apply, facet_restrictions, repeat(lv)))
+
+            if property_cache:
+                for s, literals in dps.items():
+                    count = sum(1 for lit in literals if include(lit))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe) if include(lit))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDataComplementOf):
+            # Count values NOT matching the inner data range
+            inner_filler = filler.get_data_range()
+            # some_inner = OWLDataSomeValuesFrom(property=pe, filler=inner_filler)
+            # We need to count per-individual, so we iterate
+            if property_cache:
+                for s, literals in dps.items():
+                    # Count literals that match the complement (i.e., do NOT match the inner filler)
+                    match_inner = self._count_data_filler_matches(literals, inner_filler)
+                    count = len(literals) - match_inner
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    all_lits = set(self.data_property_values(s, pe))
+                    match_inner = self._count_data_filler_matches(all_lits, inner_filler)
+                    count = len(all_lits) - match_inner
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDataUnionOf):
+            if property_cache:
+                for s, literals in dps.items():
+                    count = sum(1 for lit in literals
+                                if any(self._literal_matches_data_range(lit, op)
+                                       for op in filler.operands()))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe)
+                                if any(self._literal_matches_data_range(lit, op)
+                                       for op in filler.operands()))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDataIntersectionOf):
+            if property_cache:
+                for s, literals in dps.items():
+                    count = sum(1 for lit in literals
+                                if all(self._literal_matches_data_range(lit, op)
+                                       for op in filler.operands()))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe)
+                                if all(self._literal_matches_data_range(lit, op)
+                                       for op in filler.operands()))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        else:
+            raise ValueError
+
+        return frozenset(ind)
+
+    def _literal_matches_data_range(self, lit: OWLLiteral, dr) -> bool:
+        """Check if a single literal matches a data range."""
+        if isinstance(dr, OWLDatatype):
+            return lit.get_datatype() == dr
+        elif isinstance(dr, OWLDataOneOf):
+            return lit in set(dr.values())
+        elif isinstance(dr, OWLDatatypeRestriction):
+            if lit.get_datatype() != dr.get_datatype():
+                return False
+            for res in dr.get_facet_restrictions():
+                op = res.get_facet().operator
+                if not op(lit, res.get_facet_value()):
+                    return False
+            return True
+        elif isinstance(dr, OWLDataComplementOf):
+            return not self._literal_matches_data_range(lit, dr.get_data_range())
+        elif isinstance(dr, OWLDataUnionOf):
+            return any(self._literal_matches_data_range(lit, op) for op in dr.operands())
+        elif isinstance(dr, OWLDataIntersectionOf):
+            return all(self._literal_matches_data_range(lit, op) for op in dr.operands())
+        else:
+            raise ValueError(f"Unsupported data range type: {type(dr)}")
+
+    def _count_data_filler_matches(self, literals: Set[OWLLiteral], dr) -> int:
+        """Count how many literals in the set match the given data range."""
+        return sum(1 for lit in literals if self._literal_matches_data_range(lit, dr))
+
     def get_instances_from_owl_class(self, c: OWLClass):
         if c.is_owl_thing():
             yield from self._ontology.individuals_in_signature()
@@ -1023,71 +1204,6 @@ class StructuralReasoner(AbstractOWLReasoner):
 
 
 class SyncReasoner(AbstractOWLReasoner):
-
-    def create_justifications(self, owl_individuals: Set[OWLNamedIndividual] = None,
-                              owl_class_expression: OWLClassExpression = None,
-                              save: bool = False) -> List[Set[OWLAxiom]]:
-        """
-        Generate multiple justifications for why the given individual(s) are inferred to be instances of the specified class.
-
-        Args:
-            owl_individuals (Set[OWLNamedIndividual]): Set of individuals to explain.
-            owl_class_expression (OWLClassExpression): Class expression to justify.
-            save (bool): If True, saves all justifications in a new ontology as axioms.
-
-        Returns:
-            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms).
-        """
-        if owl_individuals is None or owl_class_expression is None:
-            raise ValueError("Both owl_individuals and owl_class_expression are required.")
-
-        from com.clarkparsia.owlapi.explanation import (
-            BlackBoxExplanation, HSTExplanationGenerator, SatisfiabilityConverter
-        )
-        from openllet.owlapi import PelletReasonerFactory
-
-        j_class_expr = self.mapper.map_(owl_class_expression)
-        j_ontology = self._owlapi_ontology
-        j_reasoner = self._owlapi_reasoner
-        j_data_factory = self._owlapi_manager.getOWLDataFactory()
-
-        reasoner_factory = PelletReasonerFactory.getInstance()
-        blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
-        explanation_gen = HSTExplanationGenerator(blackbox_exp)
-        converter = SatisfiabilityConverter(j_data_factory)
-
-        justifications = []
-
-        for ind in owl_individuals:
-            j_individual = self.mapper.map_(ind)
-            class_assertion_axiom = j_data_factory.getOWLClassAssertionAxiom(j_class_expr, j_individual)
-            unsat_class = converter.convert(class_assertion_axiom)
-
-            j_explanations = explanation_gen.getExplanations(unsat_class)
-
-            for j_expl in j_explanations:
-                py_axioms = {self.mapper.map_(ax) for ax in j_expl}
-                justifications.append(py_axioms)
-
-        # Save to justifications.owl if requested
-        if save:
-            from owlapy.owl_ontology import SyncOntology
-            from owlapy.iri import IRI
-
-            # Create a new in-memory ontology to store justifications
-            just_iri = IRI.create("http://example.org/justifications")
-            just_ontology = SyncOntology(path=just_iri, load=False)
-
-            for axiom_set in justifications:
-                for axiom in axiom_set:
-                    just_ontology.add_axiom(axiom)
-
-            # Save to file
-            save_path = "justifications.owl"
-            just_ontology.save(save_path)
-            print(f"Justifications saved to {os.path.abspath(save_path)}")
-
-        return justifications
 
     def __init__(self, ontology: Union[SyncOntology, str], reasoner="HermiT"):
         """
@@ -1665,6 +1781,470 @@ class SyncReasoner(AbstractOWLReasoner):
         """A convenience method that obtains the classes in the signature of the root ontology that are
         unsatisfiable."""
         return self.mapper.map_(self._owlapi_reasoner.unsatisfiableClasses())
+
+    def create_axiom_justifications(self,
+                                    axiom_to_explain: OWLAxiom,
+                                    n_max_justifications: Optional[int] = 10,
+                                    save: bool = False,
+    ) -> List[Set[OWLAxiom]]:
+        """Generate multiple justifications for why an axiom is entailed by the ontology.
+        The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java
+        The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator.java# .
+        The supported axiom types are:
+        - OWLClassAssertionAxiom
+        - OWLDataPropertyAssertionAxiom
+        - OWLDataPropertyDomainAxiom
+        - OWLDataPropertyRangeAxiom
+        - OWLDifferentIndividualsAxiom
+        - OWLDisjointClassesAxiom
+        - OWLEquivalentClassesAxiom
+        - OWLNegativeDataPropertyAssertionAxiom
+        - OWLNegativeObjectPropertyAssertionAxiom
+        - OWLObjectPropertyAssertionAxiom
+        - OWLObjectPropertyDomainAxiom
+        - OWLObjectPropertyRangeAxiom
+        - OWLSameIndividualAxiom
+        - OWLSubClassOfAxiom
+
+        For example, some unsupported axiom types (which can still be inferred but not explained) are:
+        - OWLSubObjectPropertyOfAxiom
+        - OWLSubDataPropertyOfAxiom
+
+        Args:
+            axiom_to_explain (OWLAxiom): The axiom to create justifications for.
+            n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.
+            save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.
+
+        Raises:
+            ValueError: If the axiom is not entailed by the ontology or if n_max_justifications is not an integer or None.
+            NotImplementedError: If the specified reasoner is not supported for axiom justification.
+
+        Returns:
+            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.
+        """
+        # First verify that the axiom is even entailed
+        if not self.is_entailed(axiom_to_explain):
+            raise ValueError(
+                f"The axiom {axiom_to_explain} is not entailed by the ontology. No justifications to create."
+            )
+        from com.clarkparsia.owlapi.explanation import (
+            BlackBoxExplanation,
+            HSTExplanationGenerator,
+            SatisfiabilityConverter
+        )
+
+        j_axiom = self.mapper.map_(axiom_to_explain)
+        j_ontology = self._owlapi_ontology
+        j_reasoner = self._owlapi_reasoner
+        j_data_factory = self._owlapi_manager.getOWLDataFactory()
+
+        if self.reasoner_name == "Pellet":
+            from openllet.owlapi import PelletReasonerFactory
+            reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+            reasoner_factory = ReasonerFactory()
+        elif self.reasoner_name == "ELK":
+            from org.semanticweb.elk.owlapi import ElkReasonerFactory
+            reasoner_factory = ElkReasonerFactory()
+        elif self.reasoner_name == "JFact":
+            from uk.ac.manchester.cs.jfact import JFactFactory
+            reasoner_factory = JFactFactory()
+        elif self.reasoner_name == "Openllet":
+            from openllet.owlapi import PelletReasonerFactory
+            reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "Structural":
+            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
+            reasoner_factory = StructuralReasonerFactory()
+        else:
+            raise NotImplementedError(f"Reasoner '{self.reasoner_name}' is not supported for axiom justification.")
+
+        # Following the internal implementation of DefaultExplanationGenerator to circumvent the need for a progress monitor
+
+        converter = SatisfiabilityConverter(j_data_factory)
+        try:
+            j_axiom_ce = converter.convert(j_axiom)
+        except Exception as e:
+            if "not implemented" in str(e).lower():
+                raise NotImplementedError(
+                    f"Failed to convert the axiom {axiom_to_explain} into a class expression. "
+                    f"This most likely means that the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
+                )
+            raise e
+        blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
+        explanation_gen = HSTExplanationGenerator(blackbox_exp)
+
+        justifications = []
+        if n_max_justifications is not None and not isinstance(
+            n_max_justifications, int
+        ):
+            raise ValueError(
+                f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
+            )
+        if n_max_justifications is not None and n_max_justifications > 0:
+            try:
+                j_explanations = explanation_gen.getExplanations(
+                    j_axiom_ce, n_max_justifications
+                )
+            except Exception as e:
+                raise ValueError(
+                    f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
+                )
+        else:
+            try:
+                j_explanations = explanation_gen.getExplanations(j_axiom_ce)
+            except Exception as e:
+                raise ValueError(
+                    f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
+                )
+
+        for j_expl in j_explanations:
+            py_axioms = {self.mapper.map_(ax) for ax in j_expl}
+            justifications.append(py_axioms)
+
+        # Save to justifications.owl if requested
+        if save:
+            from owlapy.owl_ontology import SyncOntology
+            from owlapy.iri import IRI
+
+            # Create a new in-memory ontology to store justifications
+            just_iri = IRI.create("http://example.org/justifications")
+            just_ontology = SyncOntology(path=just_iri, load=False)
+
+            for axiom_set in justifications:
+                for axiom in axiom_set:
+                    just_ontology.add_axiom(axiom)
+
+            # Save to file
+            save_path = "justifications.owl"
+            just_ontology.save(save_path)
+            print(f"Justifications saved to {os.path.abspath(save_path)}")
+
+        return justifications
+
+    def create_laconic_axiom_justifications(self,
+                                            axiom_to_explain: OWLAxiom,
+                                            n_max_justifications: Optional[int] = 10,
+                                            timeout: int = 10_000,
+                                            save: bool = False) -> List[Set[OWLAxiom]]:
+        """Generate multiple laconic justifications for why an axiom is entailed by the ontology.
+        Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
+        An axiom is considered relevant if it participates in the inference of the axiom to explain, and irrelevant otherwise.
+        Laconic justifications are not necessarily minimal, but they do not contain irrelevant axioms.
+        The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge.
+
+        Args:
+            axiom_to_explain (OWLAxiom): The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See
+            n_max_justifications (Optional[int], optional): The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
+            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.
+
+        Raises:
+            NotImplementedError: If the specified reasoner is not supported for laconic axiom justification or if the axiom type is not supported for conversion into a class expression.
+            ValueError: If n_max_justifications is not an integer or None.
+
+        Returns:
+            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.
+        """
+
+        from org.semanticweb.owl.explanation.api import ExplanationManager
+        from org.semanticweb.owl.explanation.impl.laconic import LaconicExplanationGeneratorFactory
+
+        # Get a hold of the reasoner factory and the ontology
+        if self.reasoner_name == "Pellet":
+            from openllet.owlapi import PelletReasonerFactory
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+            j_reasoner_factory = ReasonerFactory()
+        elif self.reasoner_name == "ELK":
+            from org.semanticweb.elk.owlapi import ElkReasonerFactory
+            j_reasoner_factory = ElkReasonerFactory()
+        elif self.reasoner_name == "JFact":
+            from uk.ac.manchester.cs.jfact import JFactFactory
+            j_reasoner_factory = JFactFactory()
+        elif self.reasoner_name == "Openllet":
+            from openllet.owlapi import PelletReasonerFactory
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "Structural":
+            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
+            j_reasoner_factory = StructuralReasonerFactory()
+        else:
+            raise NotImplementedError(
+                f"Reasoner '{self.reasoner_name}' is not supported for laconic axiom justification.")
+
+        j_ontology = self._owlapi_ontology
+
+        j_gen_fac = ExplanationManager.createExplanationGeneratorFactory(j_reasoner_factory)
+        j_laconic_gen_fac = LaconicExplanationGeneratorFactory(j_gen_fac)
+
+        j_gen = j_laconic_gen_fac.createExplanationGenerator(j_ontology)
+
+        j_axiom = self.mapper.map_(axiom_to_explain)
+        if n_max_justifications is not None and not isinstance(
+                n_max_justifications, int
+        ):
+            raise ValueError(
+                f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
+            )
+        if n_max_justifications is not None and n_max_justifications > 0:
+            j_explanations = j_gen.getExplanations(j_axiom, n_max_justifications)
+        else:
+            j_explanations = j_gen.getExplanations(j_axiom)
+        justifications = []
+        for j_expl in j_explanations:
+            py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
+            justifications.append(py_axioms)
+
+        # Save to justifications.owl if requested
+        if save:
+            from owlapy.owl_ontology import SyncOntology
+            from owlapy.iri import IRI
+
+            # Create a new in-memory ontology to store justifications
+            just_iri = IRI.create("http://example.org/laconic_axiom_justifications")
+            just_ontology = SyncOntology(path=just_iri, load=False)
+
+            for axiom_set in justifications:
+                for axiom in axiom_set:
+                    just_ontology.add_axiom(axiom)
+
+            # Save to file
+            save_path = "laconic_axiom_justifications.owl"
+            just_ontology.save(save_path)
+            print(f"Laconic axiom justifications saved to {os.path.abspath(save_path)}")
+        return justifications
+
+    def create_inconsistency_justifications(self,
+                                            n_max_justifications: Optional[int] = 10,
+                                            timeout: int = 10_000,
+                                            save: bool = False) -> List[Set[OWLAxiom]]:
+        """Generate multiple justifications for why the ontology is inconsistent.
+        The implementation uses `owlexplanation` under the hood (which also depends on `owlapi` and `telemetry-2.0.0`), by Matthew Horridge.
+
+        Args:
+            n_max_justifications (Optional[int], optional): The maximum number of inconsistency justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
+            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.
+
+        Raises:
+            ValueError: If the ontology is consistent and no inconsistency justifications can be created.
+            NotImplementedError: If the specified reasoner is not supported for inconsistency justification.
+
+        Returns:
+            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents an inconsistency justification.
+        """
+        # Version based on owlexplainer
+        if self.has_consistent_ontology():
+            raise ValueError("The ontology is consistent. No inconsistency justifications to create.")
+
+        from org.semanticweb.owl.explanation.impl.blackbox.checker import \
+            InconsistentOntologyExplanationGeneratorFactory
+
+        # Get the reasoner factory
+        if self.reasoner_name == "Pellet":
+            from openllet.owlapi import PelletReasonerFactory
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "HermiT":
+            from org.semanticweb.HermiT import ReasonerFactory
+            j_reasoner_factory = ReasonerFactory()
+        elif self.reasoner_name == "ELK":
+            from org.semanticweb.elk.owlapi import ElkReasonerFactory
+            j_reasoner_factory = ElkReasonerFactory()
+        elif self.reasoner_name == "JFact":
+            from uk.ac.manchester.cs.jfact import JFactFactory
+            j_reasoner_factory = JFactFactory()
+        elif self.reasoner_name == "Openllet":
+            from openllet.owlapi import PelletReasonerFactory
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
+        elif self.reasoner_name == "Structural":
+            from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
+            j_reasoner_factory = StructuralReasonerFactory()
+        else:
+            raise NotImplementedError(
+                f"Reasoner '{self.reasoner_name}' is not supported for inconsistency justification.")
+
+        j_exp_generator_factory = InconsistentOntologyExplanationGeneratorFactory(j_reasoner_factory, timeout)
+        j_ontology = self._owlapi_ontology
+        j_exp_generator = j_exp_generator_factory.createExplanationGenerator(j_ontology)
+
+        # Ask for explanations for owl:Thing being unsatisfiable, which is the case if the ontology is inconsistent
+        j_owl_manager = self._owlapi_manager
+        j_entailment = j_owl_manager.getOWLDataFactory().getOWLSubClassOfAxiom(
+            j_owl_manager.getOWLDataFactory().getOWLThing(),
+            j_owl_manager.getOWLDataFactory().getOWLNothing()
+        )
+
+        # Get the explanations
+        j_explanations = j_exp_generator.getExplanations(j_entailment, n_max_justifications)
+        justifications = []
+        for j_expl in j_explanations:
+            py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
+            justifications.append(py_axioms)
+        # Save to justifications.owl if requested
+        if save:
+            from owlapy.owl_ontology import SyncOntology
+            from owlapy.iri import IRI
+
+            # Create a new in-memory ontology to store justifications
+            just_iri = IRI.create("http://example.org/inconsistency_justifications")
+            just_ontology = SyncOntology(path=just_iri, load=False)
+
+            for axiom_set in justifications:
+                for axiom in axiom_set:
+                    just_ontology.add_axiom(axiom)
+
+            # Save to file
+            save_path = "inconsistency_justifications.owl"
+            just_ontology.save(save_path)
+            print(f"Inconsistency justifications saved to {os.path.abspath(save_path)}")
+        return justifications
+
+    def get_contrastive_explanation(
+            self,
+            class_expression: "OWLClassExpression",
+            fact: "OWLNamedIndividual",
+            foil: "OWLNamedIndividual",
+            conflict_minimal: bool = True,
+    ) -> Dict[str, object]:
+
+        def _iri_str(ind):
+            return ind.str
+
+        ManchesterRenderer = JClass(
+            "org.semanticweb.owlapi.manchestersyntax.renderer.ManchesterOWLSyntaxOWLObjectRendererImpl"
+        )
+        renderer = ManchesterRenderer()
+        j_cls_main = self.ontology.mapper.map_(class_expression)
+        class_expr_manchester = str(renderer.render(j_cls_main))
+
+        ontology_path = self.ontology.path.str if hasattr(self.ontology.path, "str") else str(self.ontology.path)
+        contr_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "contr_jar")
+
+        payload = {
+            "ontology_path": ontology_path,
+            "class_expression_manchester": class_expr_manchester,
+            "fact_iri": _iri_str(fact),
+            "foil_iri": _iri_str(foil),
+            "reasoner_name": self.reasoner_name,
+            "conflict_minimal": bool(conflict_minimal),
+            "contr_dir": contr_dir,
+        }
+
+        worker_code = r'''
+import json
+import os
+import sys
+import jpype
+import jpype.imports
+from jpype import JClass
+
+def _to_str_set(jset):
+    return {str(ax) for ax in jset} if jset is not None else set()
+
+payload = json.load(sys.stdin)
+
+jar_name = next(f for f in os.listdir(payload["contr_dir"]) if f.endswith(".jar"))
+jar_file = os.path.join(payload["contr_dir"], jar_name)
+
+jpype.startJVM(classpath=[jar_file])
+
+from java.io import File
+from org.semanticweb.owlapi.apibinding import OWLManager
+from org.semanticweb.owlapi.model import IRI as JIRI
+from org.semanticweb.owlapi.expression import ShortFormEntityChecker
+from org.semanticweb.owlapi.util import BidirectionalShortFormProviderAdapter, SimpleShortFormProvider
+
+CEProblem = JClass("anonymized.contrastive.ContrastiveExplanationProblem")
+CEGenerator = JClass("anonymized.contrastive.ContrastiveExplanationGenerator")
+ExplanationConfig = JClass("anonymized.contrastive.config.ExplanationConfig")
+RC = JClass("anonymized.contrastive.config.ReasonerChoice")
+
+manager = OWLManager.createOWLOntologyManager()
+ontology = manager.loadOntologyFromOntologyDocument(File(payload["ontology_path"]))
+data_factory = manager.getOWLDataFactory()
+
+parser = OWLManager.createManchesterParser()
+parser.setDefaultOntology(ontology)
+parser.setStringToParse(payload["class_expression_manchester"])
+
+short_form_provider = SimpleShortFormProvider()
+bidi = BidirectionalShortFormProviderAdapter(
+    manager,
+    jpype.java.util.Collections.singleton(ontology),
+    short_form_provider
+)
+parser.setOWLEntityChecker(ShortFormEntityChecker(bidi))
+j_cls = parser.parseClassExpression()
+
+j_fact = data_factory.getOWLNamedIndividual(JIRI.create(payload["fact_iri"]))
+j_foil = data_factory.getOWLNamedIndividual(JIRI.create(payload["foil_iri"]))
+
+j_choice = getattr(RC, payload["reasoner_name"], RC.HermiT)
+j_config = ExplanationConfig(j_choice, payload["conflict_minimal"])
+generator = CEGenerator(manager, j_config)
+
+problem = CEProblem(ontology, j_cls, j_fact, j_foil)
+j_res = generator.computeExplanation(problem)
+
+if j_res is None:
+    result = {
+        "common": [],
+        "different": [],
+        "conflict": [],
+        "foil_mapping": {},
+    }
+else:
+    py_common = sorted(_to_str_set(j_res.getCommon()))
+    py_diff = sorted(_to_str_set(j_res.getDifferent()))
+    py_conflict = sorted(_to_str_set(j_res.getConflict()))
+
+    py_mapping = {}
+    j_map = j_res.getFoilMapping()
+    if j_map is not None:
+        for e in j_map.entrySet():
+            py_mapping[str(e.getKey())] = str(e.getValue())
+
+    result = {
+        "common": py_common,
+        "different": py_diff,
+        "conflict": py_conflict,
+        "foil_mapping": py_mapping,
+    }
+
+print(json.dumps(result))
+'''
+
+        proc = subprocess.run(
+            [sys.executable, "-c", worker_code],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+        )
+
+        if proc.returncode != 0:
+            raise RuntimeError(
+                "Contrastive explanation subprocess failed.\n"
+                f"Return code: {proc.returncode}\n"
+                f"STDOUT: {proc.stdout}\n"
+                f"STDERR: {proc.stderr}"
+            )
+
+        stdout_lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        if not stdout_lines:
+            raise RuntimeError(
+                "Contrastive explanation subprocess produced no output.\n"
+                f"STDERR: {proc.stderr}"
+            )
+
+        result = json.loads(stdout_lines[-1])
+
+        return {
+            "common": set(result.get("common", [])),
+            "different": set(result.get("different", [])),
+            "conflict": set(result.get("conflict", [])),
+            "foil_mapping": dict(result.get("foil_mapping", {})),
+        }
 
     def get_root_ontology(self) -> AbstractOWLOntology:
         return self.ontology

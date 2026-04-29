@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from itertools import combinations
 
-from typing import TypeVar, List, Optional, Iterable, Generic, Union
+from typing import TypeVar, List, Optional, Iterable, Generic, Union, Sequence
 from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
 from .owl_object import OWLObject, OWLEntity
 from .owl_datatype import OWLDatatype, OWLDataRange
@@ -612,7 +612,7 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
         return hash((self._cls, *self._class_expressions, *self._annotations))
 
     def __repr__(self):
-        return f'OWLDisjointUnionAxiom(class={self._cls},class_expressions={self._class_expressions},' \
+        return f'OWLDisjointUnionAxiom(_cls={self._cls},class_expressions={self._class_expressions},' \
                f'annotations={self._annotations})'
 
 
@@ -1367,3 +1367,45 @@ class OWLDataPropertyRangeAxiom(OWLPropertyRangeAxiom[OWLDataPropertyExpression,
     def __init__(self, property_: OWLDataPropertyExpression, range_: OWLDataRange,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
         super().__init__(property_=property_, range_=range_, annotations=annotations)
+
+
+class OWLSubPropertyChainAxiom(OWLObjectPropertyAxiom):
+    """An object property subproperty chain axiom SubObjectPropertyOf( ObjectPropertyChain( OPE1 ... OPEn ) OPE )
+    states that the object property expression formed by chaining OPE1 to OPEn is a subproperty of the object
+    property expression OPE — that is, if an individual x is connected by OPE1 to an individual y1 that is
+    connected by OPE2 to an individual y2 that is connected by OPE3 to ... that is connected by OPEn to an
+    individual z, then x is also connected by OPE to z.
+
+     (https://www.w3.org/TR/owl2-syntax/#Object_Subproperties)"""
+    __slots__ = '_property_chain', '_super_property'
+
+    _property_chain: Sequence[OWLObjectPropertyExpression]
+    _super_property: OWLObjectPropertyExpression
+
+    def __init__(self, property_chain: Sequence[OWLObjectPropertyExpression], super_property: OWLObjectPropertyExpression,
+                 annotations: Optional[Iterable['OWLAnnotation']] = None):
+        super().__init__(annotations=annotations)
+        self._property_chain = tuple(property_chain)
+        # self._sub_property = self._property_chain
+        self._super_property = super_property
+
+
+    def get_super_property(self) -> _P:
+        return self._super_property
+    
+
+    def get_property_chain(self) -> Sequence[OWLObjectPropertyExpression]:
+        yield from self._property_chain
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._property_chain == other._property_chain and self._super_property == other._super_property \
+                and self._annotations == other._annotations
+        return False
+
+    def __hash__(self):
+        return hash(("OWLSubPropertyChainAxiom", self._property_chain, self._super_property, *self._annotations))
+
+    def __repr__(self):
+        return f'OWLSubPropertyChainAxiom(property_chain={self._property_chain},' \
+               f'super_property={self._super_property},annotations={self._annotations})'

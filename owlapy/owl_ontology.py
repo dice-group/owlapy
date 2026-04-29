@@ -39,16 +39,12 @@ from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassO
     OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom, \
     OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
     OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom, OWLClassAxiom, \
-    OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom
+    OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, OWLSubPropertyChainAxiom
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
 import os
 import json
 from pathlib import Path
-from dicee.knowledge_graph_embeddings import KGE
-from dicee.executer import Execute
-from dicee.config import Namespace
-import torch
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +60,49 @@ _Datatype_map: Final = MappingProxyType({
 
 
 _VERSION_IRI: Final = IRI.create(namespaces.OWL, "versionIRI")
+
+# Mapping of format string identifiers to OWL API document format class names.
+# All formats are from org.semanticweb.owlapi.formats.
+_DOCUMENT_FORMATS: Final = MappingProxyType({
+    "rdf/xml": "RDFXMLDocumentFormat",
+    "rdfxml": "RDFXMLDocumentFormat",
+    "owl/xml": "OWLXMLDocumentFormat",
+    "owlxml": "OWLXMLDocumentFormat",
+    "turtle": "TurtleDocumentFormat",
+    "ttl": "TurtleDocumentFormat",
+    "functional": "FunctionalSyntaxDocumentFormat",
+    "fss": "FunctionalSyntaxDocumentFormat",
+    "manchester": "ManchesterSyntaxDocumentFormat",
+    "ms": "ManchesterSyntaxDocumentFormat",
+    "latex": "LatexDocumentFormat",
+    "dlsyntax": "DLSyntaxDocumentFormat",
+    "dl": "DLSyntaxDocumentFormat",
+    "krss2": "KRSS2DocumentFormat",
+    "obo": "OBODocumentFormat",
+})
+
+# Formats handled by rdflib (not natively supported by the bundled OWL API).
+# Keys are the user-facing format strings; values are the rdflib format names
+# passed to ``rdflib.Graph.serialize(format=...)``.
+# Formats that need a ConjunctiveGraph (context-aware store) are listed in
+# _RDFLIB_CONJUNCTIVE_FORMATS.
+_RDFLIB_FORMATS: Final = MappingProxyType({
+    "turtle2":  "turtle",   # rdflib's Turtle serializer (alias for clarity)
+    "json-ld":  "json-ld",  # JSON-LD  (requires rdflib[jsonld] or jsonld pkg)
+    "jsonld":   "json-ld",
+    "ntriples": "ntriples",
+    "nt":       "ntriples",
+    "nt11":     "nt11",     # N-Triples 1.1
+    "n3":       "n3",       # Notation3
+    "trig":     "trig",     # TriG
+    "trix":     "trix",     # TriX  (requires ConjunctiveGraph)
+    "nquads":   "nquads",   # N-Quads (requires ConjunctiveGraph)
+    "nq":       "nquads",
+})
+
+# rdflib formats that require a ConjunctiveGraph (context-aware store)
+# instead of a plain Graph.
+_RDFLIB_CONJUNCTIVE_FORMATS: Final = frozenset({"trix", "nquads"})
 
 
 class OWLOntologyID:
@@ -472,6 +511,27 @@ def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology: AbstractOWLOntology
 
 
 @_add_axiom.register
+def _(axiom: OWLSubPropertyChainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+    conv = ToOwlready2(world)
+    ont_x: owlready2.Ontology = conv.map_object(ontology)
+
+    super_property = axiom.get_super_property()
+    property_chain = list(axiom.get_property_chain())
+
+    # Ensure all properties in the chain and the super property are declared
+    _add_axiom(OWLDeclarationAxiom(super_property), ontology, world)
+    for prop in property_chain:
+        if isinstance(prop, OWLObjectInverseOf):
+            _add_axiom(OWLDeclarationAxiom(prop.get_named_property()), ontology, world)
+        else:
+            _add_axiom(OWLDeclarationAxiom(prop), ontology, world)
+
+    with ont_x:
+        super_property_x = conv._to_owlready2_property(super_property)
+        property_chain_x = [conv._to_owlready2_property(prop) for prop in property_chain]
+        super_property_x.property_chain.append(owlready2.PropertyChain(property_chain_x))
+
+@_add_axiom.register
 def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
     ont_x: owlready2.Ontology = conv.map_object(ontology)
@@ -781,6 +841,28 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology: AbstractOWLOntology, 
                 and owlready2.FunctionalProperty in property_x.is_a:
             property_x.is_a.remove(owlready2.FunctionalProperty)
 
+@_remove_axiom.register
+def _(axiom: OWLSubPropertyChainAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
+    conv = ToOwlready2(world)
+    ont_x: owlready2.Ontology = conv.map_object(ontology)
+
+    super_property = axiom.get_super_property()
+    property_chain = list(axiom.get_property_chain())
+
+    with ont_x:
+        super_property_x = conv._to_owlready2_property(super_property)
+        if super_property_x is None:
+            return
+
+        property_chain_x = [conv._to_owlready2_property(prop) for prop in property_chain]
+        if not all(property_chain_x):
+            return
+
+        # Find and remove the matching property chain
+        for pc in super_property_x.property_chain:
+            if list(pc.properties) == property_chain_x:
+                super_property_x.property_chain.remove(pc)
+                break
 
 class Ontology(AbstractOWLOntology):
     __slots__ = '_iri', '_world', '_onto', 'is_modified'
@@ -947,27 +1029,130 @@ class Ontology(AbstractOWLOntology):
             for ax in axiom:
                 _remove_axiom(ax, self, self._world)
 
-    def save(self, path: Union[str, IRI] = None, inplace: bool = False, rdf_format="rdfxml"):
+    def save(self, path: Union[str, IRI] = None, inplace: bool = False, document_format: Optional[str] = None):
+        """Save the ontology to a file, optionally in a different serialisation format.
+
+        owlready2 natively supports ``"rdfxml"`` and ``"ntriples"``.  Any other
+        format is handled by loading the RDF/XML output into rdflib and
+        re-serialising there.
+
+        **owlready2-native formats:**
+
+        ========================  ==========================================
+        Format string(s)          Serialisation
+        ========================  ==========================================
+        ``"rdfxml"``              RDF/XML  *(default)*
+        ``"ntriples"`` / ``"nt"`` N-Triples
+        ========================  ==========================================
+
+        **rdflib-backed formats** – saved as RDF/XML first, then converted:
+
+        =============================  ==========================================
+        Format string(s)               Serialisation
+        =============================  ==========================================
+        ``"turtle"`` / ``"ttl"``       Turtle
+        ``"json-ld"`` / ``"jsonld"``   JSON-LD
+        ``"nt11"``                     N-Triples 1.1
+        ``"n3"``                       Notation3
+        ``"trig"``                     TriG
+        ``"trix"``                     TriX
+        ``"nquads"`` / ``"nq"``        N-Quads
+        =============================  ==========================================
+
+        Args:
+            path: File path where the ontology will be saved.
+            inplace: If ``True``, overwrite the file the ontology was loaded from.
+            document_format: Desired serialisation format (see tables above).
+                             Defaults to ``"rdfxml"`` when not specified.
+
+        Raises:
+            ValueError: If an unsupported format string is provided.
+        """
         # convert it into str.
         if isinstance(path, IRI):
             path = path.as_str()
         # Sanity checking
         if inplace is False:
-            assert isinstance(path,str), f"path must be string if inplace is set to False. Current path is {type(path)}"
+            assert isinstance(path, str), (
+                f"path must be string if inplace is set to False. "
+                f"Current path is {type(path)}"
+            )
+
+        fmt_key = document_format.strip().lower() if document_format is not None else "rdfxml"
+
+        # Owlready2-native formats
+        _OWLREADY2_NATIVE = {"rdfxml": "rdfxml", "ntriples": "ntriples", "nt": "ntriples"}
+        owlready2_fmt = _OWLREADY2_NATIVE.get(fmt_key)
+
         # Get the current ontology defined in the world.
         ont_x: owlready2.namespace.Ontology
         ont_x = self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str())
 
         if inplace:
-            if os.path.exists(self._iri.as_str()):
-                print(f"Saving {self} inplace...")
-                ont_x.save(file=self._iri.as_str(), format=rdf_format)
+            save_path = self._iri.as_str() if os.path.exists(self._iri.as_str()) else "demo.owl"
+            print(f"Saving {self} inplace to {save_path}...")
+            if owlready2_fmt is not None:
+                ont_x.save(file=save_path, format=owlready2_fmt)
             else:
-                print(f"Saving {self} inplace with name of demo.owl...")
-                self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(file="demo.owl")
+                self._save_via_rdflib_owlready2(ont_x, save_path, fmt_key)
         else:
             print(f"Saving {path}..")
-            ont_x.save(file=path, format=rdf_format)
+            if owlready2_fmt is not None:
+                ont_x.save(file=path, format=owlready2_fmt)
+            else:
+                self._save_via_rdflib_owlready2(ont_x, path, fmt_key)
+
+    def _save_via_rdflib_owlready2(self, ont_x: "owlready2.namespace.Ontology", path: str, fmt_key: str) -> None:
+        """Save *ont_x* (an owlready2 Ontology) to *path* using rdflib.
+
+        Strategy:
+          1. Dump to a temporary RDF/XML file via owlready2.
+          2. Parse with rdflib.
+          3. Re-serialise in the requested format to *path*.
+          4. Delete the temporary file.
+
+        Args:
+            ont_x: The owlready2 ontology to save.
+            path: Destination file path.
+            fmt_key: Normalised (lower-case) format key from ``_RDFLIB_FORMATS``.
+
+        Raises:
+            ValueError: If *fmt_key* is not in ``_RDFLIB_FORMATS``.
+        """
+        import tempfile
+
+        rdflib_format = _RDFLIB_FORMATS.get(fmt_key)
+        if rdflib_format is None:
+            all_supported = sorted(
+                {"rdfxml", "ntriples", "nt"} | set(_RDFLIB_FORMATS.keys())
+            )
+            raise ValueError(
+                f"Unsupported document format '{fmt_key}'. "
+                f"Supported formats: {', '.join(all_supported)}"
+            )
+
+        # Ensure parent directory exists
+        parent = os.path.dirname(os.path.abspath(path))
+        os.makedirs(parent, exist_ok=True)
+
+        # Step 1 – dump to a temp RDF/XML file
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix=".owl", prefix="_owlapy_tmp_")
+        os.close(tmp_fd)
+        try:
+            print(f"  (converting to '{rdflib_format}' via rdflib)")
+            ont_x.save(file=tmp_path, format="rdfxml")
+            # Step 2 – parse into the appropriate graph type
+            if rdflib_format in _RDFLIB_CONJUNCTIVE_FORMATS:
+                g = rdflib.ConjunctiveGraph()
+            else:
+                g = rdflib.Graph()
+            g.parse(tmp_path, format="xml")
+            # Step 3 – re-serialise
+            g.serialize(destination=path, format=rdflib_format)
+        finally:
+            # Step 4 – always remove the temp file
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
 
     def get_original_iri(self):
         """Get the IRI argument that was used to create this ontology."""
@@ -1097,6 +1282,15 @@ class SyncOntology(AbstractOWLOntology):
         """
         return self.mapper.map_(self.owlapi_ontology.getABoxAxioms(self._get_imports_enum(include_imports_closure)))
 
+    def get_rbox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
+        """Get all RBox axioms.
+        Args:
+            include_imports_closure: Whether to include/exclude imports from searches.
+        Returns:
+            RBox axioms.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getRBoxAxioms(self._get_imports_enum(include_imports_closure)))
+
     def get_tbox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
         """Get all TBox axioms.
 
@@ -1126,25 +1320,141 @@ class SyncOntology(AbstractOWLOntology):
         else:
             self.owlapi_ontology.removeAxioms(self.mapper.map_(axiom))
 
-    def save(self, path: str = None, document_iri: Optional[IRI] = None):
-        """
-        https://github.com/phillord/owl-api/blob/b2a5bfb9a0c6730c8ff950776af8f9bf19c78eac/
-                contract/src/test/java/org/coode/owlapi/examples/Examples.java#L206
+    def save(self, path: str = None, document_iri: Optional[IRI] = None,
+             document_format: Optional[str] = None):
+        """Save the ontology to a file, optionally specifying the output format.
+
+        **OWL API–backed formats** (case-insensitive):
+
+        =========================  ==========================================
+        Format string(s)           Serialisation
+        =========================  ==========================================
+        ``"rdf/xml"`` / ``"rdfxml"``        RDF/XML
+        ``"owl/xml"`` / ``"owlxml"``        OWL/XML
+        ``"turtle"``  / ``"ttl"``           Turtle (OWL API)
+        ``"functional"`` / ``"fss"``        OWL Functional Syntax
+        ``"manchester"`` / ``"ms"``         Manchester OWL Syntax
+        ``"latex"``                         LaTeX
+        ``"dlsyntax"`` / ``"dl"``           DL Syntax
+        ``"krss2"``                         KRSS2
+        ``"obo"``                           OBO
+        =========================  ==========================================
+
+        **rdflib-backed formats** – the ontology is first saved as RDF/XML by
+        OWL API to a temporary file, loaded by rdflib, re-serialised in the
+        requested format, then the temporary file is deleted:
+
+        =============================  ==========================================
+        Format string(s)               Serialisation
+        =============================  ==========================================
+        ``"turtle2"``                  Turtle (rdflib)
+        ``"json-ld"`` / ``"jsonld"``   JSON-LD
+        ``"ntriples"`` / ``"nt"``      N-Triples
+        ``"nt11"``                     N-Triples 1.1
+        ``"n3"``                       Notation3
+        ``"trig"``                     TriG
+        ``"trix"``                     TriX
+        ``"nquads"`` / ``"nq"``        N-Quads
+        =============================  ==========================================
+
+        If *document_format* is ``None`` the ontology's current format is kept.
+
+        Args:
+            path: File path where the ontology will be saved.
+            document_iri: Reserved for future use; must be ``None``.
+            document_format: Desired serialisation format (see tables above).
+
+        Raises:
+            ValueError: If an unsupported format string is provided.
         """
         assert isinstance(path, str), "Path must be a string"
-        # noinspection PyUnresolvedReferences
-        from java.io import File
-        # noinspection PyUnresolvedReferences
-        import org.semanticweb.owlapi.model.IRI
-        # //Create a file for the new format
-        file = File(path)
-        print(f"Saving Ontology into {path}")
-        if document_iri is None:
-            document_iri = org.semanticweb.owlapi.model.IRI.create(file.toURI())
-        else:
+
+        if document_iri is not None:
             raise NotImplementedError("document_iri must be None for the time being")
-        self.owlapi_manager.saveOntology(self.owlapi_ontology,
-                                         self.owlapi_manager.getOntologyFormat(self.owlapi_ontology), document_iri)
+
+        # Ensure parent directory exists
+        parent = os.path.dirname(os.path.abspath(path))
+        os.makedirs(parent, exist_ok=True)
+
+        fmt_key = document_format.strip().lower() if document_format is not None else None
+
+        # ── rdflib-backed path ──────────────────────────────────────────────
+        if fmt_key is not None and fmt_key in self._RDFLIB_FORMATS:
+            self._save_via_rdflib(path, self._RDFLIB_FORMATS[fmt_key])
+            return
+
+        # ── OWL API path ────────────────────────────────────────────────────
+        # noinspection PyUnresolvedReferences
+        from java.io import File, FileOutputStream
+        # noinspection PyUnresolvedReferences
+        import org.semanticweb.owlapi.formats
+
+        if fmt_key is not None:
+            fmt_class_name = self._DOCUMENT_FORMATS.get(fmt_key)
+            if fmt_class_name is None:
+                all_supported = sorted(
+                    set(self._DOCUMENT_FORMATS.keys()) | set(self._RDFLIB_FORMATS.keys())
+                )
+                raise ValueError(
+                    f"Unsupported document format '{document_format}'. "
+                    f"Supported formats: {', '.join(all_supported)}"
+                )
+            fmt_class = getattr(org.semanticweb.owlapi.formats, fmt_class_name)
+            owlapi_format = fmt_class()
+        else:
+            owlapi_format = self.owlapi_manager.getOntologyFormat(self.owlapi_ontology)
+
+        print(f"Saving Ontology into {path}")
+        # Always use FileOutputStream so that every format (including non-RDF
+        # text-based storers like DL Syntax, KRSS2, LaTeX, Manchester) reliably
+        # writes to the requested file rather than stdout.
+        with FileOutputStream(File(path)) as fos:
+            self.owlapi_manager.saveOntology(self.owlapi_ontology, owlapi_format, fos)
+
+    def _save_via_rdflib(self, path: str, rdflib_format: str) -> None:
+        """Save using rdflib as the serialiser.
+
+        Strategy:
+          1. Save the ontology to a *temporary* RDF/XML file via OWL API.
+          2. Parse that file with rdflib.
+          3. Serialise with rdflib in the requested format to *path*.
+          4. Delete the temporary file.
+
+        Formats that require a context-aware store (N-Quads, TriX) are
+        loaded into a ``ConjunctiveGraph``; all others use a plain ``Graph``.
+
+        Args:
+            path: Destination file path.
+            rdflib_format: rdflib format name (e.g. ``"ntriples"``, ``"trig"``).
+        """
+        import tempfile
+        import rdflib
+        # noinspection PyUnresolvedReferences
+        from java.io import File, FileOutputStream
+        # noinspection PyUnresolvedReferences
+        from org.semanticweb.owlapi.formats import RDFXMLDocumentFormat
+
+        # Step 1 – dump to a temp RDF/XML file
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix=".owl", prefix="_owlapy_tmp_")
+        os.close(tmp_fd)
+        try:
+            print(f"Saving Ontology into {path} (via rdflib '{rdflib_format}')")
+            with FileOutputStream(File(tmp_path)) as fos:
+                self.owlapi_manager.saveOntology(
+                    self.owlapi_ontology, RDFXMLDocumentFormat(), fos
+                )
+            # Step 2 – parse into the appropriate graph type
+            if rdflib_format in self._RDFLIB_CONJUNCTIVE_FORMATS:
+                g = rdflib.ConjunctiveGraph()
+            else:
+                g = rdflib.Graph()
+            g.parse(tmp_path, format="xml")
+            # Step 3 – re-serialise
+            g.serialize(destination=path, format=rdflib_format)
+        finally:
+            # Step 4 – always remove the temp file
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
 
 
 class RDFLibOntology(AbstractOWLOntology):
@@ -1767,6 +2077,16 @@ class NeuralOntology(AbstractOWLOntology):
     def __init__(self, path_neural_embedding: str, train_if_not_exists: bool = False,
                  training_params: Optional[Union[Dict[str, Any], str]] = None, batch_size: int = 1024, device: str = "gpu",
                  gamma: float = 0.5):
+        try:
+            from dicee.knowledge_graph_embeddings import KGE
+            # installing dicee will also install torch
+            import torch
+        except ImportError:
+            raise ImportError("The 'dicee' package is required to use NeuralOntology. "
+                              "Please install it via 'pip install dicee'."
+                              "For the CPU-only version (recommended): pip install dicee --extra-index-url https://download.pytorch.org/whl/cpu")
+
+
         """
         Initialize a Neural Ontology from a KGE model.
 
@@ -1809,6 +2129,9 @@ class NeuralOntology(AbstractOWLOntology):
             path: Path to a directory containing train.txt or to the dataset directory
             training_params: Optional dictionary of training parameters or path to a JSON file.
         """
+        from dicee.config import Namespace
+        from dicee.executer import Execute
+        from dicee.knowledge_graph_embeddings import KGE
         args = Namespace()
 
         # Set default parameters
@@ -1856,6 +2179,36 @@ class NeuralOntology(AbstractOWLOntology):
             topk = len(self.model.relation_to_idx)
         else:
             topk = len(self.model.entity_to_idx)
+
+        # Filter out unknown relations; return empty list (0 scores) if none remain
+        if r is not None:
+            if isinstance(r, str):
+                if r not in self.model.relation_to_idx:
+                    return []
+            else:
+                r = [ri for ri in r if ri in self.model.relation_to_idx]
+                if not r:
+                    return []
+
+        # Filter out unknown head entities; return empty list (0 scores) if none remain
+        if h is not None:
+            if isinstance(h, str):
+                if h not in self.model.entity_to_idx:
+                    return []
+            else:
+                h = [hi for hi in h if hi in self.model.entity_to_idx]
+                if not h:
+                    return []
+
+        # Filter out unknown tail entities; return empty list (0 scores) if none remain
+        if t is not None:
+            if isinstance(t, str):
+                if t not in self.model.entity_to_idx:
+                    return []
+            else:
+                t = [ti for ti in t if ti in self.model.entity_to_idx]
+                if not t:
+                    return []
 
         return [(top_entity, score) for row in
                 self.model.predict_topk(h=h, r=r, t=t, topk=topk, batch_size=self.batch_size) for top_entity, score in
