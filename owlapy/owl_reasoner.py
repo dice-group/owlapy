@@ -2162,7 +2162,7 @@ class SyncReasoner(AbstractOWLReasoner):
                 else:
                     cause = e.getCause()
                     raise RuntimeError(
-                        f"Justification failed for class expression '{ce}': {cause}"
+                        f"Justification failed for axiom '{axiom_to_explain}': {cause}"
                     ) from None
             else:
                 raise
