@@ -1379,8 +1379,8 @@ class SyncOntology(AbstractOWLOntology):
         fmt_key = document_format.strip().lower() if document_format is not None else None
 
         # ── rdflib-backed path ──────────────────────────────────────────────
-        if fmt_key is not None and fmt_key in self._RDFLIB_FORMATS:
-            self._save_via_rdflib(path, self._RDFLIB_FORMATS[fmt_key])
+        if fmt_key is not None and fmt_key in _RDFLIB_FORMATS:
+            self._save_via_rdflib(path, _RDFLIB_FORMATS[fmt_key])
             return
 
         # ── OWL API path ────────────────────────────────────────────────────
@@ -1390,10 +1390,10 @@ class SyncOntology(AbstractOWLOntology):
         import org.semanticweb.owlapi.formats
 
         if fmt_key is not None:
-            fmt_class_name = self._DOCUMENT_FORMATS.get(fmt_key)
+            fmt_class_name = _DOCUMENT_FORMATS.get(fmt_key)
             if fmt_class_name is None:
                 all_supported = sorted(
-                    set(self._DOCUMENT_FORMATS.keys()) | set(self._RDFLIB_FORMATS.keys())
+                    set(_DOCUMENT_FORMATS.keys()) | set(_RDFLIB_FORMATS.keys())
                 )
                 raise ValueError(
                     f"Unsupported document format '{document_format}'. "
@@ -1444,7 +1444,7 @@ class SyncOntology(AbstractOWLOntology):
                     self.owlapi_ontology, RDFXMLDocumentFormat(), fos
                 )
             # Step 2 – parse into the appropriate graph type
-            if rdflib_format in self._RDFLIB_CONJUNCTIVE_FORMATS:
+            if rdflib_format in _RDFLIB_CONJUNCTIVE_FORMATS:
                 g = rdflib.ConjunctiveGraph()
             else:
                 g = rdflib.Graph()
