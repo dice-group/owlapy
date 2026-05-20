@@ -426,5 +426,44 @@ FILTER NOT EXISTS {
         self.assertEqual(int(sparql_results.bindings[0]["fp"]), 1)
         self.assertEqual(int(sparql_results.bindings[0]["tn"]), 1)
 
+    def test_DataSomeValuesFrom_with_TopOWLDatatype_in_Complement(self):
+        """Test for issue #212: Incorrect SPARQL translation for OWLDataSomeValuesFrom with rdfs:Literal"""
+        from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLDataSomeValuesFrom
+        from owlapy.owl_property import OWLDataProperty
+        from owlapy.owl_literal import TopOWLDatatype
+        
+        # Create ((CONTEXT_POSITION_MARKER ⊓ ∃mouse_lymph.Literal) ⊓ ¬∃salmonella.Literal)
+        ce = OWLObjectIntersectionOf((
+            OWLObjectIntersectionOf((
+                OWLClass(IRI('http://owlapy.internal/', 'CONTEXT_POSITION_MARKER')),
+                OWLDataSomeValuesFrom(
+                    property=OWLDataProperty(IRI('http://dl-learner.org/carcinogenesis#', 'mouse_lymph')),
+                    filler=TopOWLDatatype
+                )
+            )),
+            OWLObjectComplementOf(
+                OWLDataSomeValuesFrom(
+                    property=OWLDataProperty(IRI('http://dl-learner.org/carcinogenesis#', 'salmonella')),
+                    filler=TopOWLDatatype
+                )
+            )
+        ))
+
+        converter = Owl2SparqlConverter()
+        result = converter.convert('?pos', ce, True, False)
+        sparql = "".join(result)
+        
+        # Verify the SPARQL is valid and doesn't contain the incorrect ?pos ?s_X ?s_Y pattern
+        # The bug was producing: ?pos ?s_2 ?s_3 . between the two FILTER statements
+        self.assertNotIn('?pos ?s_2 ?s_3', sparql)
+        
+        # Verify the correct patterns are present
+        self.assertIn('?pos a <http://owlapy.internal/CONTEXT_POSITION_MARKER>', sparql)
+        self.assertIn('?pos <http://dl-learner.org/carcinogenesis#mouse_lymph>', sparql)
+        self.assertIn('FILTER ( isLiteral ( ?s_1 ) )', sparql)
+        self.assertIn('FILTER NOT EXISTS', sparql)
+        self.assertIn('<http://dl-learner.org/carcinogenesis#salmonella>', sparql)
+        self.assertIn('FILTER ( isLiteral ( ?s_2 ) )', sparql)  # Inside the FILTER NOT EXISTS
+
 if __name__ == '__main__':
     unittest.main()
