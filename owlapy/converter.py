@@ -649,7 +649,8 @@ class Owl2SparqlConverter:
                  for_all_de_morgan: bool = True,
                  count: bool = False,
                  values: Optional[Iterable[OWLNamedIndividual]] = None,
-                 named_individuals: bool = False) -> str:
+                 named_individuals: bool = False,
+                 validate: bool = False) -> str:
         assert isinstance(ce,OWLClassExpression), f"ce must be an instance of OWLClassExpression. Currently {type(ce)}"
         # root variable: the variable that will be projected
         # ce: the class expression to be transformed to a SPARQL query
@@ -658,6 +659,7 @@ class Owl2SparqlConverter:
         # values: positive or negative examples from a class expression problem
         # named_individuals: if set to True, the generated SPARQL query will return only entities that are instances
         #                    of owl:NamedIndividual
+        # validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
         qs = ["SELECT"]
         tp = self.convert(root_variable, ce, for_all_de_morgan=for_all_de_morgan, named_individuals=named_individuals)
         if count:
@@ -677,7 +679,8 @@ class Owl2SparqlConverter:
 
 
         query = "\n".join(qs)
-        parseQuery(query)
+        if validate:
+            parseQuery(query)
         return query
 
     def as_confusion_matrix_query(self,
@@ -686,7 +689,8 @@ class Owl2SparqlConverter:
                                   positive_examples: Iterable[OWLNamedIndividual],
                                   negative_examples: Iterable[OWLNamedIndividual],
                                   for_all_de_morgan: bool = True,
-                                  named_individuals: bool = False) -> str:
+                                  named_individuals: bool = False,
+                                  validate: bool = False) -> str:
         # get the graph pattern corresponding to the provided class expression (ce)
         tp = self.convert(root_variable, ce, for_all_de_morgan=for_all_de_morgan, named_individuals=named_individuals)
         if named_individuals:
@@ -734,7 +738,8 @@ class Owl2SparqlConverter:
                        }}
                     }}
                     """
-        parseQuery(sparql_str)
+        if validate:
+            parseQuery(sparql_str)
         return sparql_str
 
 
@@ -745,7 +750,8 @@ def owl_expression_to_sparql(expression: OWLClassExpression = None,
                              root_variable: str = "?x",
                              values: Optional[Iterable[OWLNamedIndividual]] = None,
                              for_all_de_morgan: bool = True,
-                             named_individuals: bool = False) -> str:
+                             named_individuals: bool = False,
+                             validate: bool = False) -> str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
      root variable: the variable that will be projected
      expression: the class expression to be transformed to a SPARQL query
@@ -755,10 +761,12 @@ def owl_expression_to_sparql(expression: OWLClassExpression = None,
      patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
      named_individuals: if set to True, the generated SPARQL query will return only entities
      that are instances of owl:NamedIndividual
+     validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
     """
     assert expression is not None, "expression cannot be None"
     return converter.as_query(root_variable, expression, count=False, values=values,
-                              named_individuals=named_individuals, for_all_de_morgan=for_all_de_morgan)
+                              named_individuals=named_individuals, for_all_de_morgan=for_all_de_morgan,
+                              validate=validate)
 
 
 def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpression,
@@ -766,7 +774,8 @@ def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpressio
                                                    negative_examples: Optional[Iterable[OWLNamedIndividual]],
                                                    root_variable: str = "?x",
                                                    for_all_de_morgan: bool = True,
-                                                   named_individuals: bool = False) -> str:
+                                                   named_individuals: bool = False,
+                                                   validate: bool = False) -> str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
      root variable: the variable that will be projected
      expression: the class expression to be transformed to a SPARQL query
@@ -776,6 +785,7 @@ def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpressio
      patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
      named_individuals: if set to True, the generated SPARQL query will return only entities
      that are instances of owl:NamedIndividual
+     validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
     """
     assert expression is not None, "expression cannot be None"
     assert positive_examples is not None, "positive examples cannot be None"
@@ -785,4 +795,5 @@ def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpressio
                                                positive_examples=positive_examples,
                                                negative_examples=negative_examples,
                                                named_individuals=named_individuals,
-                                               for_all_de_morgan=for_all_de_morgan)
+                                               for_all_de_morgan=for_all_de_morgan,
+                                               validate=validate)

@@ -2,6 +2,7 @@
 name: "owlapy"
 description: "Master agent for the owlapy Python OWL framework. Use for any owlapy question or task: ontology engineering, OWL class expressions, DL/Manchester/SPARQL syntax, reasoning (HermiT, Pellet, ELK, Structural), knowledge graph generation from text (AGenKG), SWRL rules, OWLAPI integration, axiom manipulation, ontology enrichment, csv to RDF, class expression simplification, NNF/CNF/DNF, instance retrieval, sub-class queries, justifications"
 argument-hint: "Describe your owlapy task (e.g., 'load an ontology and retrieve instances', 'convert DL to SPARQL', 'generate KG from text')"
+user-invocable: true
 tools: [read, edit, search, execute, agent, github]
 agents:
   - owlapy_ontology_agent
@@ -77,7 +78,7 @@ conda create -n temp_owlapy python=3.11 --no-default-packages && conda activate 
 pip install -e '.[dev]'
 ```
 
-> See [`copilot-instructions.md`](copilot-instructions.md) for full developer guidelines including linting, testing, and dependency notes.
+> See [`copilot-instructions.md`](../copilot-instructions.md) for full developer guidelines including linting, testing, and dependency notes.
 
 ### Key Design Principles
 - **All OWL entities are Python objects** with IRIs — no strings passed to reasoners
