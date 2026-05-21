@@ -1,17 +1,16 @@
 """OWL Reasoner"""
+import logging
 from abc import ABCMeta, abstractmethod
 from inspect import signature
 from typing import Iterable
-import logging
 
-from owlapy.class_expression import OWLClassExpression
-from owlapy.class_expression import OWLClass
-from owlapy.owl_data_ranges import OWLDataRange
-from owlapy.owl_object import OWLEntity
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
-from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty
+from owlapy.class_expression import OWLClass, OWLClassExpression
+from owlapy.owl_data_ranges import OWLDataRange
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
+from owlapy.owl_object import OWLEntity
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty, OWLObjectPropertyExpression
 
 logger = logging.getLogger(__name__)
 

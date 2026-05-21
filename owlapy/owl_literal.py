@@ -1,16 +1,19 @@
 """OWL Literals"""
-from decimal import Decimal
+import re
 from abc import ABCMeta, abstractmethod
+from datetime import date, datetime, time
+from decimal import Decimal
 from enum import Enum
 from functools import total_ordering
-from .owl_annotation import OWLAnnotationValue
-from typing import Final, Optional, Union, Set
-from .owl_datatype import OWLDatatype
-from datetime import datetime, date, time
+from typing import Final, Optional, Set, Union
+
 from pandas import Timedelta
+
 from owlapy.vocab import OWLRDFVocabulary, XSDVocabulary
-from .owl_property import OWLObjectProperty, OWLDataProperty
-import re
+
+from .owl_annotation import OWLAnnotationValue
+from .owl_datatype import OWLDatatype
+from .owl_property import OWLDataProperty, OWLObjectProperty
 
 #: the built-in top object property
 OWLTopObjectProperty: Final = OWLObjectProperty(OWLRDFVocabulary.OWL_TOP_OBJECT_PROPERTY.iri)

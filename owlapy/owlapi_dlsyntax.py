@@ -21,7 +21,7 @@ Usage example::
     ce = parser.parse_expression("∃ r.A ⊓ B")
     axiom = parser.parse_axiom("A ⊑ ∃ r.B")
 """
-from typing import Optional, List
+from typing import List, Optional
 
 import jpype
 import jpype.imports
@@ -35,11 +35,9 @@ from owlapy.static_funcs import startJVM
 if not jpype.isJVMStarted():
     startJVM()
 
-from org.semanticweb.owlapi.dlsyntax.renderer import \
-    DLSyntaxObjectRenderer as _OWLAPI_DLSyntaxObjectRenderer
-from org.semanticweb.owlapi.dlsyntax.parser import \
-    DLSyntaxParser as _OWLAPI_DLSyntaxParser
 from org.semanticweb.owlapi.apibinding import OWLManager as _OWLManager
+from org.semanticweb.owlapi.dlsyntax.parser import DLSyntaxParser as _OWLAPI_DLSyntaxParser
+from org.semanticweb.owlapi.dlsyntax.renderer import DLSyntaxObjectRenderer as _OWLAPI_DLSyntaxObjectRenderer
 
 # Shared data factory for creating OWLAPI objects
 _manager = _OWLManager.createOWLOntologyManager()

@@ -1,5 +1,6 @@
 """OWL Annotations"""
 from abc import ABCMeta
+
 from .owl_object import OWLObject
 
 

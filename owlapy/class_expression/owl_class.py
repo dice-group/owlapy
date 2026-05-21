@@ -1,8 +1,9 @@
 """OWL Class"""
-from .class_expression import OWLClassExpression, OWLObjectComplementOf
-from ..owl_object import OWLEntity
 from typing import Final, Union
+
 from ..iri import IRI
+from ..owl_object import OWLEntity
+from .class_expression import OWLClassExpression, OWLObjectComplementOf
 
 
 class OWLClass(OWLClassExpression, OWLEntity):

@@ -1,11 +1,12 @@
 """Static functions for general purposes."""
+import importlib.resources as resources
 import os
-import subprocess
 import platform
 import shutil
+import subprocess
+
 import jpype
 import jpype.imports
-import importlib.resources as resources
 
 # NOTE: Static functions closely related with owl classes should be placed in utils.py
 # or util_owl_static_funcs.py not here

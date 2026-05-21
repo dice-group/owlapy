@@ -3,21 +3,40 @@ from collections import defaultdict
 from contextlib import contextmanager
 from functools import singledispatchmethod
 from types import MappingProxyType
-from typing import Set, List, Dict, Optional, Iterable
+from typing import Dict, Iterable, List, Optional, Set
 
 from rdflib.plugins.sparql.parser import parseQuery
 
-from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction, OWLDataMinCardinality, \
-    OWLDataMaxCardinality, OWLDataExactCardinality, OWLClass, OWLClassExpression, OWLObjectIntersectionOf, \
-    OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, \
-    OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, \
-    OWLDataCardinalityRestriction, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, \
-    OWLDataOneOf
+from owlapy.class_expression import (
+    OWLClass,
+    OWLClassExpression,
+    OWLDataAllValuesFrom,
+    OWLDataCardinalityRestriction,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLObjectAllValuesFrom,
+    OWLObjectCardinalityRestriction,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasSelf,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+)
+from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, TopOWLDatatype
-from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.owl_object import OWLEntity
-from owlapy.owl_datatype import OWLDatatype
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 
 _Variable_facet_comp = MappingProxyType({
@@ -83,10 +102,33 @@ class VariablesMapping:
 
 
 class Owl2SparqlConverter:
-    """Convert owl (owlapy model class expressions) to SPARQL."""
+    """Convert OWL class expressions to SPARQL queries.
+
+    This class converts OWL class expressions from the owlapy model into equivalent SPARQL queries.
+    It maintains internal state for variable management, parent-child relationships, and query building.
+
+    The converter uses a recursive approach to traverse the class expression tree and generates
+    SPARQL patterns for each type of class expression (e.g., OWLClass, OWLObjectSomeValuesFrom,
+    OWLObjectIntersectionOf, etc.).
+
+    Attributes:
+        ce: The root OWL class expression being converted
+        sparql: List of SPARQL query patterns being constructed
+        variables: List of variable names used in the query
+        parent: Stack of parent class expressions during traversal
+        parent_var: Stack of parent variable names during traversal
+        variable_entities: Set of OWL entities associated with variables
+        properties: Mapping from expression indices to their properties
+        _intersection: Mapping tracking whether expressions are in intersections
+        mapping: Variable mapping manager for De Morgan transformations
+        grouping_vars: Variables used in GROUP BY clauses for cardinality restrictions
+        having_conditions: HAVING clause conditions for cardinality restrictions
+        cnt: Counter for generating unique variable names
+        for_all_de_morgan: Whether to apply De Morgan's laws for universal quantification
+        named_individuals: Whether to restrict results to named individuals only
+    """
     __slots__ = 'ce', 'sparql', 'variables', 'parent', 'parent_var', 'properties', 'variable_entities', 'cnt', \
                 'mapping', 'grouping_vars', 'having_conditions', 'for_all_de_morgan', 'named_individuals', '_intersection'
-    # @TODO:CD: We need to document this class. The computation behind the mapping is not clear.
 
     ce: OWLClassExpression
     sparql: List[str]
