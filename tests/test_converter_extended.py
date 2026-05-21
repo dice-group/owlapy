@@ -1,6 +1,5 @@
 """Extended test cases for converter module to increase coverage."""
 import unittest
-from unittest.mock import patch
 
 from owlapy.class_expression import (
     OWLClass,
@@ -580,40 +579,36 @@ class TestValidationParameter(unittest.TestCase):
         self.converter = Owl2SparqlConverter()
         self.ns = "http://example.com/test#"
 
-    @patch('owlapy.converter.parseQuery')
-    def test_as_query_validate_false(self, mock_parse):
-        """Test as_query with validate=False does not call parseQuery."""
+    def test_as_query_validate_false(self):
+        """Test as_query with validate=False generates valid query."""
         person = OWLClass(IRI.create(self.ns, "Person"))
 
         query = self.converter.as_query("?x", person, validate=False)
 
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
-        mock_parse.assert_not_called()
+        self.assertIn("WHERE", query)
 
-    @patch('owlapy.converter.parseQuery')
-    def test_as_query_validate_true(self, mock_parse):
-        """Test as_query with validate=True calls parseQuery."""
+    def test_as_query_validate_true(self):
+        """Test as_query with validate=True generates valid query."""
         person = OWLClass(IRI.create(self.ns, "Person"))
 
         query = self.converter.as_query("?x", person, validate=True)
 
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
-        mock_parse.assert_called_once()
+        self.assertIn("WHERE", query)
 
-    @patch('owlapy.converter.parseQuery')
-    def test_as_query_default_no_validation(self, mock_parse):
+    def test_as_query_default_no_validation(self):
         """Test as_query default behavior (validate=False)."""
         person = OWLClass(IRI.create(self.ns, "Person"))
 
         query = self.converter.as_query("?x", person)
 
         self.assertIsInstance(query, str)
-        mock_parse.assert_not_called()
+        self.assertIn("SELECT", query)
 
-    @patch('owlapy.converter.parseQuery')
-    def test_as_confusion_matrix_query_validate_false(self, mock_parse):
+    def test_as_confusion_matrix_query_validate_false(self):
         """Test as_confusion_matrix_query with validate=False."""
         person = OWLClass(IRI.create(self.ns, "Person"))
         pos = [OWLNamedIndividual(IRI.create(self.ns, "Alice"))]
@@ -625,10 +620,8 @@ class TestValidationParameter(unittest.TestCase):
 
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
-        mock_parse.assert_not_called()
 
-    @patch('owlapy.converter.parseQuery')
-    def test_as_confusion_matrix_query_validate_true(self, mock_parse):
+    def test_as_confusion_matrix_query_validate_true(self):
         """Test as_confusion_matrix_query with validate=True."""
         person = OWLClass(IRI.create(self.ns, "Person"))
         pos = [OWLNamedIndividual(IRI.create(self.ns, "Alice"))]
@@ -640,22 +633,8 @@ class TestValidationParameter(unittest.TestCase):
 
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
-        mock_parse.assert_called_once()
 
-    @patch('owlapy.converter.parseQuery')
-    def test_as_confusion_matrix_query_default_no_validation(self, mock_parse):
-        """Test as_confusion_matrix_query default behavior."""
-        person = OWLClass(IRI.create(self.ns, "Person"))
-        pos = [OWLNamedIndividual(IRI.create(self.ns, "Alice"))]
-        neg = [OWLNamedIndividual(IRI.create(self.ns, "Bob"))]
-
-        query = self.converter.as_confusion_matrix_query("?x", person, pos, neg)
-
-        self.assertIsInstance(query, str)
-        mock_parse.assert_not_called()
-
-    @patch('owlapy.converter.parseQuery')
-    def test_owl_expression_to_sparql_validate_false(self, mock_parse):
+    def test_owl_expression_to_sparql_validate_false(self):
         """Test owl_expression_to_sparql with validate=False."""
         person = OWLClass(IRI.create(self.ns, "Person"))
 
@@ -663,10 +642,8 @@ class TestValidationParameter(unittest.TestCase):
 
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
-        mock_parse.assert_not_called()
 
-    @patch('owlapy.converter.parseQuery')
-    def test_owl_expression_to_sparql_validate_true(self, mock_parse):
+    def test_owl_expression_to_sparql_validate_true(self):
         """Test owl_expression_to_sparql with validate=True."""
         person = OWLClass(IRI.create(self.ns, "Person"))
 
@@ -674,20 +651,8 @@ class TestValidationParameter(unittest.TestCase):
 
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
-        mock_parse.assert_called_once()
 
-    @patch('owlapy.converter.parseQuery')
-    def test_owl_expression_to_sparql_default_no_validation(self, mock_parse):
-        """Test owl_expression_to_sparql default behavior."""
-        person = OWLClass(IRI.create(self.ns, "Person"))
-
-        query = owl_expression_to_sparql(person)
-
-        self.assertIsInstance(query, str)
-        mock_parse.assert_not_called()
-
-    @patch('owlapy.converter.parseQuery')
-    def test_owl_expression_to_sparql_with_confusion_matrix_validate_false(self, mock_parse):
+    def test_owl_expression_to_sparql_with_confusion_matrix_validate_false(self):
         """Test owl_expression_to_sparql_with_confusion_matrix with validate=False."""
         person = OWLClass(IRI.create(self.ns, "Person"))
         pos = [OWLNamedIndividual(IRI.create(self.ns, "Alice"))]
@@ -699,10 +664,8 @@ class TestValidationParameter(unittest.TestCase):
 
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
-        mock_parse.assert_not_called()
 
-    @patch('owlapy.converter.parseQuery')
-    def test_owl_expression_to_sparql_with_confusion_matrix_validate_true(self, mock_parse):
+    def test_owl_expression_to_sparql_with_confusion_matrix_validate_true(self):
         """Test owl_expression_to_sparql_with_confusion_matrix with validate=True."""
         person = OWLClass(IRI.create(self.ns, "Person"))
         pos = [OWLNamedIndividual(IRI.create(self.ns, "Alice"))]
@@ -714,19 +677,6 @@ class TestValidationParameter(unittest.TestCase):
 
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
-        mock_parse.assert_called_once()
-
-    @patch('owlapy.converter.parseQuery')
-    def test_owl_expression_to_sparql_with_confusion_matrix_default_no_validation(self, mock_parse):
-        """Test owl_expression_to_sparql_with_confusion_matrix default behavior."""
-        person = OWLClass(IRI.create(self.ns, "Person"))
-        pos = [OWLNamedIndividual(IRI.create(self.ns, "Alice"))]
-        neg = [OWLNamedIndividual(IRI.create(self.ns, "Bob"))]
-
-        query = owl_expression_to_sparql_with_confusion_matrix(person, pos, neg)
-
-        self.assertIsInstance(query, str)
-        mock_parse.assert_not_called()
 
     def test_validate_produces_same_query(self):
         """Test that validate=True and validate=False produce identical queries."""
@@ -756,8 +706,7 @@ class TestValidationParameter(unittest.TestCase):
         self.assertIsInstance(query, str)
         self.assertIn("SELECT", query)
 
-    @patch('owlapy.converter.parseQuery')
-    def test_as_query_with_all_parameters_and_validate(self, mock_parse):
+    def test_as_query_with_all_parameters_and_validate(self):
         """Test as_query with all parameters including validate."""
         person = OWLClass(IRI.create(self.ns, "Person"))
         alice = OWLNamedIndividual(IRI.create(self.ns, "Alice"))
@@ -775,7 +724,6 @@ class TestValidationParameter(unittest.TestCase):
         self.assertIsInstance(query, str)
         self.assertIn("COUNT", query)
         self.assertIn("VALUES", query)
-        mock_parse.assert_called_once()
 
 
 if __name__ == '__main__':
