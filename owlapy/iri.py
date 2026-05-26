@@ -5,8 +5,9 @@ from typing import Final, Union
 from weakref import WeakKeyDictionary
 
 from owlapy import namespaces
-from .owl_annotation import OWLAnnotationSubject, OWLAnnotationValue
 from owlapy.namespaces import Namespaces
+
+from .owl_annotation import OWLAnnotationSubject, OWLAnnotationValue
 
 
 class _WeakCached(type):

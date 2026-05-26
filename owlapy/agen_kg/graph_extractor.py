@@ -1,21 +1,30 @@
 import re
-from typing import List, Union, Optional
-import dspy
 from abc import ABC, abstractmethod
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import List, Optional, Union
 
+import dspy
+
+from owlapy.agen_kg.chunking_models.simple_chunker import TextChunker
+from owlapy.agen_kg.signatures import (
+    ChunkSummarizer,
+    CoherenceChecker,
+    EntityDeduplication,
+    EntityDeduplicationWithSummary,
+    IncrementalEntityMerger,
+    IncrementalTripleMerger,
+    IncrementalTypeMerger,
+    PlanDecomposer,
+    RelationClustering,
+    RelationClusteringWithSummary,
+    TextSummarizer,
+    TypeClustering,
+    TypeClusteringWithSummary,
+)
+from owlapy.agen_kg.text_loader import UniversalTextLoader
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import Ontology
-from owlapy.agen_kg.signatures import (EntityDeduplication, CoherenceChecker, TypeClustering,
-                                       RelationClustering, TextSummarizer, ChunkSummarizer,
-                                       EntityDeduplicationWithSummary,
-                                       TypeClusteringWithSummary, RelationClusteringWithSummary,
-                                       IncrementalEntityMerger,
-                                       IncrementalTripleMerger, IncrementalTypeMerger, PlanDecomposer
-                                       )
-from owlapy.agen_kg.text_loader import UniversalTextLoader
-from owlapy.agen_kg.chunking_models.simple_chunker import TextChunker
 
 
 # A compatible metaclass that combines dspy.Module's metaclass with ABCMeta

@@ -1,10 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from typing import Final, Iterable, Union, Optional, TypeVar
+from typing import Final, Iterable, Optional, TypeVar, Union
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLEquivalentClassesAxiom, OWLClassAxiom, OWLDataPropertyDomainAxiom, \
-    OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLAxiom
+from owlapy.owl_axiom import OWLAxiom, OWLClassAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLEquivalentClassesAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_object import OWLObject
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty

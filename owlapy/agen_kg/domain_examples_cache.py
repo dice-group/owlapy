@@ -12,7 +12,6 @@ import json
 from pathlib import Path
 from typing import Dict, Optional
 
-
 # Mapping of example types to variable names for consistency
 EXAMPLE_TYPE_MAPPING = {
     'entity_extraction': 'examples_for_entity_extraction',

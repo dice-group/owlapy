@@ -1,50 +1,103 @@
 """OWL Ontology"""
-from functools import singledispatchmethod, singledispatch
-from itertools import chain, islice, combinations
-import types
-from types import MappingProxyType
-from typing import Final, cast, Iterable, List, Optional, Tuple, Union, Dict, Any
+import json
 import logging
+import os
+import types
+from datetime import date, datetime
+from functools import singledispatch, singledispatchmethod
+from itertools import chain, combinations, islice
+from pathlib import Path
+from types import MappingProxyType
+from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union, cast
 
 import jpype
 import owlready2
 import rdflib
+from owlready2 import AllDifferent, AllDisjoint, GeneralClassAxiom, destroy_entity
 from pandas import Timedelta
+
 from owlapy import namespaces
 from owlapy.abstracts.abstract_owl_ontology import _OI, AbstractOWLOntology
-from owlapy.owl_data_ranges import OWLDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
-from owlapy.owl_datatype import OWLDatatype
-from owlapy.owl_individual import OWLNamedIndividual, OWLIndividual
-from owlapy.owl_literal import IntegerOWLDatatype, DoubleOWLDatatype, BooleanOWLDatatype, StringOWLDatatype, \
-    DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype, OWLLiteral
-from owlapy.owl_object import OWLObject
+from owlapy.class_expression import (
+    OWLClass,
+    OWLClassExpression,
+    OWLDataAllValuesFrom,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataRestriction,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLFacetRestriction,
+    OWLNaryBooleanClassExpression,
+    OWLObjectAllValuesFrom,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectRestriction,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+    OWLQuantifiedDataRestriction,
+    OWLQuantifiedObjectRestriction,
+    OWLRestriction,
+    OWLThing,
+)
 from owlapy.iri import IRI
-from owlapy.class_expression import OWLClass, OWLThing, OWLClassExpression, OWLObjectComplementOf, OWLObjectUnionOf, \
-    OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectExactCardinality, \
-    OWLObjectMaxCardinality, OWLObjectMinCardinality, OWLObjectHasValue, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
-    OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, OWLDataOneOf, \
-    OWLDatatypeRestriction, OWLRestriction, OWLObjectRestriction, OWLDataRestriction, OWLFacetRestriction, \
-    OWLNaryBooleanClassExpression, OWLQuantifiedObjectRestriction, OWLQuantifiedDataRestriction, OWLObjectOneOf
-from owlapy.owl_property import OWLDataProperty, OWLObjectProperty, OWLPropertyExpression, OWLObjectInverseOf, \
-    OWLObjectPropertyExpression, OWLDataPropertyExpression, OWLProperty
-from datetime import date, datetime
-from owlready2 import destroy_entity, AllDisjoint, AllDifferent, GeneralClassAxiom
-from owlapy.owl_axiom import OWLObjectPropertyRangeAxiom, OWLAxiom, OWLSubClassOfAxiom, OWLEquivalentClassesAxiom, \
-    OWLDisjointUnionAxiom, OWLAnnotationAssertionAxiom, OWLAnnotationProperty, OWLSubPropertyAxiom, \
-    OWLPropertyRangeAxiom, OWLClassAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom, \
-    OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom, OWLPropertyDomainAxiom, \
-    OWLAsymmetricObjectPropertyAxiom, OWLDataPropertyCharacteristicAxiom, OWLFunctionalDataPropertyAxiom, \
-    OWLReflexiveObjectPropertyAxiom, OWLDataPropertyAssertionAxiom, OWLFunctionalObjectPropertyAxiom, \
-    OWLObjectPropertyCharacteristicAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, \
-    OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentDataPropertiesAxiom, \
-    OWLEquivalentObjectPropertiesAxiom, OWLInverseObjectPropertiesAxiom, OWLNaryPropertyAxiom, OWLNaryIndividualAxiom, \
-    OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLSameIndividualAxiom, OWLClassAxiom, \
-    OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, OWLSubPropertyChainAxiom
+from owlapy.owl_axiom import (
+    OWLAnnotationAssertionAxiom,
+    OWLAnnotationProperty,
+    OWLAsymmetricObjectPropertyAxiom,
+    OWLAxiom,
+    OWLClassAssertionAxiom,
+    OWLClassAxiom,
+    OWLDataPropertyAssertionAxiom,
+    OWLDataPropertyCharacteristicAxiom,
+    OWLDataPropertyDomainAxiom,
+    OWLDataPropertyRangeAxiom,
+    OWLDeclarationAxiom,
+    OWLDifferentIndividualsAxiom,
+    OWLDisjointClassesAxiom,
+    OWLDisjointDataPropertiesAxiom,
+    OWLDisjointObjectPropertiesAxiom,
+    OWLDisjointUnionAxiom,
+    OWLEquivalentClassesAxiom,
+    OWLEquivalentDataPropertiesAxiom,
+    OWLEquivalentObjectPropertiesAxiom,
+    OWLFunctionalDataPropertyAxiom,
+    OWLFunctionalObjectPropertyAxiom,
+    OWLInverseFunctionalObjectPropertyAxiom,
+    OWLInverseObjectPropertiesAxiom,
+    OWLIrreflexiveObjectPropertyAxiom,
+    OWLNaryIndividualAxiom,
+    OWLNaryPropertyAxiom,
+    OWLObjectPropertyAssertionAxiom,
+    OWLObjectPropertyCharacteristicAxiom,
+    OWLObjectPropertyDomainAxiom,
+    OWLObjectPropertyRangeAxiom,
+    OWLPropertyDomainAxiom,
+    OWLPropertyRangeAxiom,
+    OWLReflexiveObjectPropertyAxiom,
+    OWLSameIndividualAxiom,
+    OWLSubClassOfAxiom,
+    OWLSubPropertyAxiom,
+    OWLSubPropertyChainAxiom,
+    OWLSymmetricObjectPropertyAxiom,
+    OWLTransitiveObjectPropertyAxiom,
+)
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataRange, OWLDataUnionOf
+from owlapy.owl_datatype import OWLDatatype
+from owlapy.owl_individual import OWLIndividual, OWLNamedIndividual
+from owlapy.owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype
+from owlapy.owl_object import OWLObject
+from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
-import os
-import json
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -303,7 +356,10 @@ def _(axiom: OWLSubClassOfAxiom, ontology: AbstractOWLOntology, world: owlready2
         sub_class_x.is_a.append(super_class_x)
 
 
-# TODO: Update as soon as owlready2 adds support for EquivalentClasses general class axioms
+# NOTE: owlready2 limitation - This implementation is constrained by owlready2's current lack of support
+# for EquivalentClasses general class axioms. Only named classes can be marked as equivalent.
+# See: https://owlready2.readthedocs.io/en/latest/class.html#equivalent-classes
+# This may be updated in future owlready2 releases.
 @_add_axiom.register
 def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: owlready2.namespace.World):
     conv = ToOwlready2(world)
@@ -1176,14 +1232,17 @@ class SyncOntology(AbstractOWLOntology):
         if not jpype.isJVMStarted():
             startJVM()
         # noinspection PyUnresolvedReferences
-        from org.semanticweb.owlapi.apibinding import OWLManager
-        from owlapy.owlapi_mapper import OWLAPIMapper
         # noinspection PyUnresolvedReferences
         from java.io import File
+
         # noinspection PyUnresolvedReferences
         from java.util.stream import Stream
+        from org.semanticweb.owlapi.apibinding import OWLManager
+
         # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.model import IRI as owlapi_IRI
+
+        from owlapy.owlapi_mapper import OWLAPIMapper
 
         self.owlapi_manager = OWLManager.createOWLOntologyManager()
         self.path = path
@@ -1385,9 +1444,9 @@ class SyncOntology(AbstractOWLOntology):
 
         # ── OWL API path ────────────────────────────────────────────────────
         # noinspection PyUnresolvedReferences
-        from java.io import File, FileOutputStream
         # noinspection PyUnresolvedReferences
         import org.semanticweb.owlapi.formats
+        from java.io import File, FileOutputStream
 
         if fmt_key is not None:
             fmt_class_name = _DOCUMENT_FORMATS.get(fmt_key)
@@ -1428,9 +1487,12 @@ class SyncOntology(AbstractOWLOntology):
             rdflib_format: rdflib format name (e.g. ``"ntriples"``, ``"trig"``).
         """
         import tempfile
+
         import rdflib
+
         # noinspection PyUnresolvedReferences
         from java.io import File, FileOutputStream
+
         # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.formats import RDFXMLDocumentFormat
 
@@ -2078,9 +2140,9 @@ class NeuralOntology(AbstractOWLOntology):
                  training_params: Optional[Union[Dict[str, Any], str]] = None, batch_size: int = 1024, device: str = "gpu",
                  gamma: float = 0.5):
         try:
-            from dicee.knowledge_graph_embeddings import KGE
             # installing dicee will also install torch
             import torch
+            from dicee.knowledge_graph_embeddings import KGE
         except ImportError:
             raise ImportError("The 'dicee' package is required to use NeuralOntology. "
                               "Please install it via 'pip install dicee'."

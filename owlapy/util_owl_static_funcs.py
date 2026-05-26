@@ -1,19 +1,21 @@
-from .owl_ontology import Ontology, SyncOntology
-from .class_expression import OWLClassExpression, OWLClass
-from .owl_individual import OWLNamedIndividual
-from .iri import IRI
-from .owl_axiom import OWLEquivalentClassesAxiom, OWLDataPropertyAssertionAxiom
-from .owl_property import OWLDataProperty
-from .owl_literal import OWLLiteral
-import os
 import json
+import os
 import random
 from typing import List, Set
-from tqdm import tqdm
+
 import pandas as pd
-from rdflib import Graph, URIRef, Literal, RDFS, OWL, Namespace, RDF
+from owlready2 import destroy_entity, get_ontology
+from rdflib import OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import XSD
-from owlready2 import get_ontology, destroy_entity
+from tqdm import tqdm
+
+from .class_expression import OWLClass, OWLClassExpression
+from .iri import IRI
+from .owl_axiom import OWLDataPropertyAssertionAxiom, OWLEquivalentClassesAxiom
+from .owl_individual import OWLNamedIndividual
+from .owl_literal import OWLLiteral
+from .owl_ontology import Ontology, SyncOntology
+from .owl_property import OWLDataProperty
 
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
@@ -131,7 +133,7 @@ def csv_to_rdf_kg(path_csv: str = None, path_kg: str = None, namespace: str = No
 
 def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
     """
-    Constructs a CSV file from an RDF Knowledge Graph (RDF/XML) 
+    Constructs a CSV file from an RDF Knowledge Graph (RDF/XML)
 
     Args:
         path_kg (str): Path to the RDF Knowledge Graph file (RDF/XML)
@@ -147,6 +149,7 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
         >>> print("CSV reconstructed from RDF KG saved as reconstructed_iris_dataset.csv")
     """
     import os
+
     import pandas as pd
 
     # Validate arguments
@@ -171,7 +174,7 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
             if literal_value == "nan":
                 print(f"Skipping {axiom} as it has a NaN value")
                 continue
-            
+
             try:
                 row_index = int(subject_ind.remainder)
             except ValueError:
@@ -191,7 +194,7 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
 
             if row_index not in rows:
                 rows[row_index] = {}
-            rows[row_index][column_fragment] = value    
+            rows[row_index][column_fragment] = value
             if column_fragment not in columns_list:
                 columns_list.append(column_fragment)
 

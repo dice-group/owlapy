@@ -4,11 +4,11 @@ https://www.w3.org/TR/owl2-syntax/#Data_Ranges
 
 DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction
 """
-from .owl_object import OWLObject
-from .meta_classes import HasOperands
-from typing import Final, Sequence, Iterable
-
 from abc import ABCMeta
+from typing import Final, Iterable, Sequence
+
+from .meta_classes import HasOperands
+from .owl_object import OWLObject
 
 
 class OWLPropertyRange(OWLObject, metaclass=ABCMeta):

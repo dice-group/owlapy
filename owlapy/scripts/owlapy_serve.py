@@ -1,15 +1,16 @@
-import os
 import argparse
+import os
+from contextlib import asynccontextmanager
+from enum import Enum
+
 import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from owlapy.class_expression import OWLClass
 from owlapy.owl_ontology import SyncOntology
 from owlapy.owl_reasoner import SyncReasoner
-from owlapy.class_expression import OWLClass
 from owlapy.static_funcs import stopJVM
-from contextlib import asynccontextmanager
-from enum import Enum
 
 ontology = None
 reasoner = None
@@ -80,12 +81,12 @@ def create_app(ontology_path: str, reasoner_name: str):
     async def get_object_properties():
         object_properties = [op.__str__() for op in ontology.object_properties_in_signature()]
         return {"object_properties": object_properties}
-    
+
     @app.get("/data_properties")
     async def get_data_properties():
         data_properties = [dp.__str__() for dp in ontology.data_properties_in_signature()]
         return {"data_properties": data_properties}
-    
+
     @app.get("/individuals")
     async def get_individuals():
         individuals = [ind.__str__() for ind in ontology.individuals_in_signature()]
@@ -100,7 +101,7 @@ def create_app(ontology_path: str, reasoner_name: str):
     async def get_tbox():
         tbox = ontology.get_tbox_axioms()
         return {"tbox": [axiom.__str__() for axiom in tbox]}
-        
+
     @app.post("/infer_axioms")
     async def infer_axioms(request: InfrenceTypeRequest):
         inference_type = request.inference_type

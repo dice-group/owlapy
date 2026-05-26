@@ -12,28 +12,39 @@ ClassExpression :=
     ObjectMinCardinality, ObjectMaxCardinality, ObjectExactCardinality, DataSomeValuesFrom, DataAllValuesFrom,
     DataHasValue, DataMinCardinality, DataMaxCardinality, DataExactCardinality
 """
-from .class_expression import OWLClassExpression, OWLAnonymousClassExpression, OWLBooleanClassExpression, \
-    OWLObjectComplementOf
+from .class_expression import OWLAnonymousClassExpression, OWLBooleanClassExpression, OWLClassExpression, OWLObjectComplementOf
+from .nary_boolean_expression import OWLNaryBooleanClassExpression, OWLObjectIntersectionOf, OWLObjectUnionOf
 from .owl_class import OWLClass
-from .nary_boolean_expression import OWLNaryBooleanClassExpression, OWLObjectUnionOf, OWLObjectIntersectionOf
-from .restriction import (OWLRestriction, OWLQuantifiedRestriction, OWLQuantifiedObjectRestriction,
-                          OWLObjectRestriction,
-                          OWLHasValueRestriction, OWLDataRestriction, OWLCardinalityRestriction,
-                          OWLObjectCardinalityRestriction, OWLObjectHasSelf,
-                          OWLDataOneOf, OWLQuantifiedDataRestriction, OWLDataCardinalityRestriction,
-                          OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectHasValue,
-                          OWLDatatypeRestriction, OWLFacet, OWLFacetRestriction,
-                          OWLObjectMinCardinality,
-                          OWLObjectMaxCardinality,
-                          OWLObjectExactCardinality,
-                          OWLDataSomeValuesFrom,
+from .restriction import (
+                          OWLCardinalityRestriction,
                           OWLDataAllValuesFrom,
-                          OWLDataHasValue,
-                          OWLDataMinCardinality,
-                          OWLDataMaxCardinality,
+                          OWLDataCardinalityRestriction,
                           OWLDataExactCardinality,
-                          OWLObjectOneOf
-                          )
+                          OWLDataHasValue,
+                          OWLDataMaxCardinality,
+                          OWLDataMinCardinality,
+                          OWLDataOneOf,
+                          OWLDataRestriction,
+                          OWLDataSomeValuesFrom,
+                          OWLDatatypeRestriction,
+                          OWLFacet,
+                          OWLFacetRestriction,
+                          OWLHasValueRestriction,
+                          OWLObjectAllValuesFrom,
+                          OWLObjectCardinalityRestriction,
+                          OWLObjectExactCardinality,
+                          OWLObjectHasSelf,
+                          OWLObjectHasValue,
+                          OWLObjectMaxCardinality,
+                          OWLObjectMinCardinality,
+                          OWLObjectOneOf,
+                          OWLObjectRestriction,
+                          OWLObjectSomeValuesFrom,
+                          OWLQuantifiedDataRestriction,
+                          OWLQuantifiedObjectRestriction,
+                          OWLQuantifiedRestriction,
+                          OWLRestriction,
+)
 
 __all__ = ['OWLClassExpression', 'OWLAnonymousClassExpression', 'OWLBooleanClassExpression', 'OWLObjectComplementOf',
            'OWLNaryBooleanClassExpression', 'OWLObjectUnionOf', 'OWLObjectIntersectionOf', 'OWLRestriction',
@@ -46,6 +57,7 @@ __all__ = ['OWLClassExpression', 'OWLAnonymousClassExpression', 'OWLBooleanClass
            'OWLDataExactCardinality', 'OWLObjectOneOf', 'OWLDataOneOf', 'OWLDataCardinalityRestriction']
 
 from typing import Final
+
 from ..vocab import OWLRDFVocabulary
 
 OWLThing: Final = OWLClass(OWLRDFVocabulary.OWL_THING.iri)  #: : :The OWL Class corresponding to owl:Thing

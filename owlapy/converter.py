@@ -3,21 +3,40 @@ from collections import defaultdict
 from contextlib import contextmanager
 from functools import singledispatchmethod
 from types import MappingProxyType
-from typing import Set, List, Dict, Optional, Iterable
+from typing import Dict, Iterable, List, Optional, Set
 
 from rdflib.plugins.sparql.parser import parseQuery
 
-from owlapy.class_expression import OWLObjectHasValue, OWLObjectOneOf, OWLDatatypeRestriction, OWLDataMinCardinality, \
-    OWLDataMaxCardinality, OWLDataExactCardinality, OWLClass, OWLClassExpression, OWLObjectIntersectionOf, \
-    OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, \
-    OWLObjectCardinalityRestriction, OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, \
-    OWLDataCardinalityRestriction, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, \
-    OWLDataOneOf
+from owlapy.class_expression import (
+    OWLClass,
+    OWLClassExpression,
+    OWLDataAllValuesFrom,
+    OWLDataCardinalityRestriction,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLObjectAllValuesFrom,
+    OWLObjectCardinalityRestriction,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasSelf,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+)
+from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, TopOWLDatatype
-from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.owl_object import OWLEntity
-from owlapy.owl_datatype import OWLDatatype
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.vocab import OWLFacet, OWLRDFVocabulary
 
 _Variable_facet_comp = MappingProxyType({
@@ -83,10 +102,33 @@ class VariablesMapping:
 
 
 class Owl2SparqlConverter:
-    """Convert owl (owlapy model class expressions) to SPARQL."""
+    """Convert OWL class expressions to SPARQL queries.
+
+    This class converts OWL class expressions from the owlapy model into equivalent SPARQL queries.
+    It maintains internal state for variable management, parent-child relationships, and query building.
+
+    The converter uses a recursive approach to traverse the class expression tree and generates
+    SPARQL patterns for each type of class expression (e.g., OWLClass, OWLObjectSomeValuesFrom,
+    OWLObjectIntersectionOf, etc.).
+
+    Attributes:
+        ce: The root OWL class expression being converted
+        sparql: List of SPARQL query patterns being constructed
+        variables: List of variable names used in the query
+        parent: Stack of parent class expressions during traversal
+        parent_var: Stack of parent variable names during traversal
+        variable_entities: Set of OWL entities associated with variables
+        properties: Mapping from expression indices to their properties
+        _intersection: Mapping tracking whether expressions are in intersections
+        mapping: Variable mapping manager for De Morgan transformations
+        grouping_vars: Variables used in GROUP BY clauses for cardinality restrictions
+        having_conditions: HAVING clause conditions for cardinality restrictions
+        cnt: Counter for generating unique variable names
+        for_all_de_morgan: Whether to apply De Morgan's laws for universal quantification
+        named_individuals: Whether to restrict results to named individuals only
+    """
     __slots__ = 'ce', 'sparql', 'variables', 'parent', 'parent_var', 'properties', 'variable_entities', 'cnt', \
                 'mapping', 'grouping_vars', 'having_conditions', 'for_all_de_morgan', 'named_individuals', '_intersection'
-    # @TODO:CD: We need to document this class. The computation behind the mapping is not clear.
 
     ce: OWLClassExpression
     sparql: List[str]
@@ -607,7 +649,8 @@ class Owl2SparqlConverter:
                  for_all_de_morgan: bool = True,
                  count: bool = False,
                  values: Optional[Iterable[OWLNamedIndividual]] = None,
-                 named_individuals: bool = False) -> str:
+                 named_individuals: bool = False,
+                 validate: bool = False) -> str:
         assert isinstance(ce,OWLClassExpression), f"ce must be an instance of OWLClassExpression. Currently {type(ce)}"
         # root variable: the variable that will be projected
         # ce: the class expression to be transformed to a SPARQL query
@@ -616,6 +659,7 @@ class Owl2SparqlConverter:
         # values: positive or negative examples from a class expression problem
         # named_individuals: if set to True, the generated SPARQL query will return only entities that are instances
         #                    of owl:NamedIndividual
+        # validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
         qs = ["SELECT"]
         tp = self.convert(root_variable, ce, for_all_de_morgan=for_all_de_morgan, named_individuals=named_individuals)
         if count:
@@ -635,7 +679,8 @@ class Owl2SparqlConverter:
 
 
         query = "\n".join(qs)
-        parseQuery(query)
+        if validate:
+            parseQuery(query)
         return query
 
     def as_confusion_matrix_query(self,
@@ -644,7 +689,8 @@ class Owl2SparqlConverter:
                                   positive_examples: Iterable[OWLNamedIndividual],
                                   negative_examples: Iterable[OWLNamedIndividual],
                                   for_all_de_morgan: bool = True,
-                                  named_individuals: bool = False) -> str:
+                                  named_individuals: bool = False,
+                                  validate: bool = False) -> str:
         # get the graph pattern corresponding to the provided class expression (ce)
         tp = self.convert(root_variable, ce, for_all_de_morgan=for_all_de_morgan, named_individuals=named_individuals)
         if named_individuals:
@@ -692,7 +738,8 @@ class Owl2SparqlConverter:
                        }}
                     }}
                     """
-        parseQuery(sparql_str)
+        if validate:
+            parseQuery(sparql_str)
         return sparql_str
 
 
@@ -703,7 +750,8 @@ def owl_expression_to_sparql(expression: OWLClassExpression = None,
                              root_variable: str = "?x",
                              values: Optional[Iterable[OWLNamedIndividual]] = None,
                              for_all_de_morgan: bool = True,
-                             named_individuals: bool = False) -> str:
+                             named_individuals: bool = False,
+                             validate: bool = False) -> str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
      root variable: the variable that will be projected
      expression: the class expression to be transformed to a SPARQL query
@@ -713,10 +761,12 @@ def owl_expression_to_sparql(expression: OWLClassExpression = None,
      patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
      named_individuals: if set to True, the generated SPARQL query will return only entities
      that are instances of owl:NamedIndividual
+     validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
     """
     assert expression is not None, "expression cannot be None"
     return converter.as_query(root_variable, expression, count=False, values=values,
-                              named_individuals=named_individuals, for_all_de_morgan=for_all_de_morgan)
+                              named_individuals=named_individuals, for_all_de_morgan=for_all_de_morgan,
+                              validate=validate)
 
 
 def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpression,
@@ -724,7 +774,8 @@ def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpressio
                                                    negative_examples: Optional[Iterable[OWLNamedIndividual]],
                                                    root_variable: str = "?x",
                                                    for_all_de_morgan: bool = True,
-                                                   named_individuals: bool = False) -> str:
+                                                   named_individuals: bool = False,
+                                                   validate: bool = False) -> str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
      root variable: the variable that will be projected
      expression: the class expression to be transformed to a SPARQL query
@@ -734,6 +785,7 @@ def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpressio
      patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query
      named_individuals: if set to True, the generated SPARQL query will return only entities
      that are instances of owl:NamedIndividual
+     validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
     """
     assert expression is not None, "expression cannot be None"
     assert positive_examples is not None, "positive examples cannot be None"
@@ -743,4 +795,5 @@ def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpressio
                                                positive_examples=positive_examples,
                                                negative_examples=negative_examples,
                                                named_individuals=named_individuals,
-                                               for_all_de_morgan=for_all_de_morgan)
+                                               for_all_de_morgan=for_all_de_morgan,
+                                               validate=validate)

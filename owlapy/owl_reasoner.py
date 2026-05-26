@@ -1,41 +1,57 @@
 """OWL Reasoner"""
-import os
-import operator
-import logging
-import owlready2
 import json
+import logging
+import operator
+import os
 import subprocess
 import sys
-
-from collections import defaultdict, Counter
-from functools import singledispatchmethod, reduce, cached_property
+from collections import Counter, defaultdict
+from functools import cached_property, reduce, singledispatchmethod
 from itertools import chain, repeat
-from types import MappingProxyType, FunctionType
-from typing import (DefaultDict,Generator, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, Union,
-                    List, Tuple)
+from types import FunctionType, MappingProxyType
+from typing import DefaultDict, Dict, FrozenSet, Generator, Iterable, List, Mapping, Optional, Set, Tuple, Type, TypeVar, Union
 
-from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
-    OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
-    OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
-    OWLDataSomeValuesFrom, OWLDataOneOf, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataHasValue, \
-    OWLDataAllValuesFrom, OWLNothing, OWLThing, OWLDataMinCardinality, OWLDataMaxCardinality, OWLDataExactCardinality
-from owlapy.class_expression import OWLClass
-from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
-from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
-from owlapy.owl_datatype import OWLDatatype
-from owlapy.owl_object import OWLEntity
-from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology, NeuralOntology
-from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
-from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
-    OWLPropertyExpression, OWLDataPropertyExpression, OWLProperty
-from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObjectProperty, OWLBottomDataProperty, \
-    OWLTopDataProperty
-from owlapy.utils import run_with_timeout
-from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+import owlready2
 from jpype import JClass
 
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
+from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from owlapy.class_expression import (
+    OWLClass,
+    OWLClassExpression,
+    OWLDataAllValuesFrom,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLFacetRestriction,
+    OWLNothing,
+    OWLObjectAllValuesFrom,
+    OWLObjectCardinalityRestriction,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+    OWLThing,
+)
+from owlapy.iri import IRI
+from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
+from owlapy.owl_datatype import OWLDatatype
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLBottomDataProperty, OWLBottomObjectProperty, OWLLiteral, OWLTopDataProperty, OWLTopObjectProperty
+from owlapy.owl_object import OWLEntity
+from owlapy.owl_ontology import NeuralOntology, Ontology, SyncOntology, _parse_concept_to_owlapy
+from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
+from owlapy.utils import run_with_timeout
 
 logger = logging.getLogger(__name__)
 
@@ -1656,6 +1672,7 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         # noinspection PyUnresolvedReferences
         from java.util import ArrayList
+
         # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.util import InferredOntologyGenerator
 
@@ -1697,12 +1714,15 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         # noinspection PyUnresolvedReferences
         from java.io import File, FileOutputStream
+
         # noinspection PyUnresolvedReferences
         from java.util import ArrayList
+
+        # noinspection PyUnresolvedReferences
+        from org.semanticweb.owlapi.formats import OWLXMLDocumentFormat, RDFXMLDocumentFormat, TurtleDocumentFormat
+
         # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.util import InferredOntologyGenerator
-        # noinspection PyUnresolvedReferences
-        from org.semanticweb.owlapi.formats import TurtleDocumentFormat, RDFXMLDocumentFormat, OWLXMLDocumentFormat
         if output_format == "ttl" or output_format == "turtle":
             document_format = TurtleDocumentFormat()
         elif output_format == "rdf/xml":
@@ -1827,11 +1847,7 @@ class SyncReasoner(AbstractOWLReasoner):
             raise ValueError(
                 f"The axiom {axiom_to_explain} is not entailed by the ontology. No justifications to create."
             )
-        from com.clarkparsia.owlapi.explanation import (
-            BlackBoxExplanation,
-            HSTExplanationGenerator,
-            SatisfiabilityConverter
-        )
+        from com.clarkparsia.owlapi.explanation import BlackBoxExplanation, HSTExplanationGenerator, SatisfiabilityConverter
 
         j_axiom = self.mapper.map_(axiom_to_explain)
         j_ontology = self._owlapi_ontology
@@ -1904,8 +1920,8 @@ class SyncReasoner(AbstractOWLReasoner):
 
         # Save to justifications.owl if requested
         if save:
-            from owlapy.owl_ontology import SyncOntology
             from owlapy.iri import IRI
+            from owlapy.owl_ontology import SyncOntology
 
             # Create a new in-memory ontology to store justifications
             just_iri = IRI.create("http://example.org/justifications")
@@ -1998,8 +2014,8 @@ class SyncReasoner(AbstractOWLReasoner):
 
         # Save to justifications.owl if requested
         if save:
-            from owlapy.owl_ontology import SyncOntology
             from owlapy.iri import IRI
+            from owlapy.owl_ontology import SyncOntology
 
             # Create a new in-memory ontology to store justifications
             just_iri = IRI.create("http://example.org/laconic_axiom_justifications")
@@ -2038,8 +2054,7 @@ class SyncReasoner(AbstractOWLReasoner):
         if self.has_consistent_ontology():
             raise ValueError("The ontology is consistent. No inconsistency justifications to create.")
 
-        from org.semanticweb.owl.explanation.impl.blackbox.checker import \
-            InconsistentOntologyExplanationGeneratorFactory
+        from org.semanticweb.owl.explanation.impl.blackbox.checker import InconsistentOntologyExplanationGeneratorFactory
 
         # Get the reasoner factory
         if self.reasoner_name == "Pellet":
@@ -2083,8 +2098,8 @@ class SyncReasoner(AbstractOWLReasoner):
             justifications.append(py_axioms)
         # Save to justifications.owl if requested
         if save:
-            from owlapy.owl_ontology import SyncOntology
             from owlapy.iri import IRI
+            from owlapy.owl_ontology import SyncOntology
 
             # Create a new in-memory ontology to store justifications
             just_iri = IRI.create("http://example.org/inconsistency_justifications")
@@ -2283,16 +2298,19 @@ def initialize_reasoner(reasoner: str, owlapi_ontology):
 
 def import_and_include_axioms_generators():
     # noinspection PyUnresolvedReferences
-    from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
-                                             InferredEquivalentClassAxiomGenerator,
-                                             InferredDisjointClassesAxiomGenerator,
-                                             InferredEquivalentDataPropertiesAxiomGenerator,
-                                             InferredEquivalentObjectPropertyAxiomGenerator,
-                                             InferredInverseObjectPropertiesAxiomGenerator,
-                                             InferredSubDataPropertyAxiomGenerator,
-                                             InferredSubObjectPropertyAxiomGenerator,
-                                             InferredDataPropertyCharacteristicAxiomGenerator,
-                                             InferredObjectPropertyCharacteristicAxiomGenerator)
+    from org.semanticweb.owlapi.util import (
+        InferredClassAssertionAxiomGenerator,
+        InferredDataPropertyCharacteristicAxiomGenerator,
+        InferredDisjointClassesAxiomGenerator,
+        InferredEquivalentClassAxiomGenerator,
+        InferredEquivalentDataPropertiesAxiomGenerator,
+        InferredEquivalentObjectPropertyAxiomGenerator,
+        InferredInverseObjectPropertiesAxiomGenerator,
+        InferredObjectPropertyCharacteristicAxiomGenerator,
+        InferredSubClassAxiomGenerator,
+        InferredSubDataPropertyAxiomGenerator,
+        InferredSubObjectPropertyAxiomGenerator,
+    )
 
     return {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
             "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
@@ -2489,7 +2507,7 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
             yield from all_individuals - excluded_individuals
         elif isinstance(expression, OWLObjectIntersectionOf):
             """ Handling intersection of class expressions:
-            Given an OWLObjectIntersectionOf (C ⊓ D),  
+            Given an OWLObjectIntersectionOf (C ⊓ D),
             retrieve its instances by intersecting the instance of each operands.
             {x | phi(x, type, C) ≥ γ} ∩ {x | phi(x, type, D) ≥ γ}
             """
@@ -2504,10 +2522,10 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
                     result = result.intersection(retrieval_of_op)
             yield from result
         elif isinstance(expression, OWLObjectAllValuesFrom):
-            """
-            Given an OWLObjectAllValuesFrom ∀ r.C, retrieve its instances => 
-            Retrieval(¬∃ r.¬C) =             
-            Entities \setminus {x | ∃ y: \phi(y, type, C) < \gamma AND \phi(x,r,y)  ≥ \gamma } 
+            r"""
+            Given an OWLObjectAllValuesFrom ∀ r.C, retrieve its instances =>
+            Retrieval(¬∃ r.¬C) =
+            Entities \setminus {x | ∃ y: \phi(y, type, C) < \gamma AND \phi(x,r,y)  ≥ \gamma }
             """
             object_property = expression.get_property()
             filler_expression = expression.get_filler()
@@ -2515,10 +2533,10 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
                 OWLObjectSomeValuesFrom(object_property, OWLObjectComplementOf(filler_expression))))
 
         elif isinstance(expression, OWLObjectMinCardinality) or isinstance(expression, OWLObjectSomeValuesFrom):
-            """
-            Given an OWLObjectSomeValuesFrom ∃ r.C, retrieve its instances => 
-            Retrieval(∃ r.C) = 
-            {x | ∃ y : phi(y, type, C) ≥ \gamma AND phi(x, r, y) ≥ \gamma }  
+            r"""
+            Given an OWLObjectSomeValuesFrom ∃ r.C, retrieve its instances =>
+            Retrieval(∃ r.C) =
+            {x | ∃ y : phi(y, type, C) ≥ \gamma AND phi(x, r, y) ≥ \gamma }
             """
             object_property = expression.get_property()
             filler_expression = expression.get_filler()
