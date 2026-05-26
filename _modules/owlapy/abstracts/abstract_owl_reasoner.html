@@ -82,19 +82,18 @@
              
   <h1>Source code for owlapy.abstracts.abstract_owl_reasoner</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;OWL Reasoner&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">signature</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClassExpression</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataRange</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLClassExpression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataRange</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -550,21 +549,24 @@
     <span class="c1"># default</span>
 <div class="viewcode-block" id="AbstractOWLReasoner.all_data_property_values">
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner.all_data_property_values">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">all_data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_data_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">inds</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all values for the given data property expression that appear in the knowledge base.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            pe: The data property expression whose values are to be retrieved</span>
 <span class="sd">            direct: Specifies if only the direct values of the data property pe should be retrieved (True), or if</span>
 <span class="sd">                    the values of sub properties of pe should be taken into account (False).</span>
+<span class="sd">            inds: Optional set of individuals to consider. If None, all individuals in the ontology are considered.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner</span>
-<span class="sd">            axioms entails DataPropertyAssertion(pe ind l) for any ind.</span>
+<span class="sd">            axioms entails DataPropertyAssertion(pe ind l) for any ind in inds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inds</span><span class="p">:</span>
+            <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
+            <span class="n">inds</span> <span class="o">=</span> <span class="n">onto</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()</span>
         <span class="n">has_direct</span> <span class="o">=</span> <span class="s2">&quot;direct&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">inds</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">has_direct</span><span class="p">:</span>
                 <span class="n">dpv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">pe</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -576,21 +578,25 @@
     <span class="c1"># default</span>
 <div class="viewcode-block" id="AbstractOWLReasoner.ind_data_properties">
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner.ind_data_properties">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">ind_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ind_data_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">dps</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLDataProperty</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all data properties for the given individual that appear in the knowledge base.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ind: The named individual whose data properties are to be retrieved</span>
 <span class="sd">            direct: Specifies if the direct data properties should be retrieved (True), or if all</span>
 <span class="sd">                data properties should be retrieved (False), so that sub properties are taken into account.</span>
+<span class="sd">            dps: Optional set of data properties to consider. If None, all data properties in the ontology are</span>
+<span class="sd">             considered.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            All data properties pe where the set of reasoner axioms entails DataPropertyAssertion(pe ind l)</span>
-<span class="sd">            for atleast one l.</span>
+<span class="sd">            All data properties dp where the set of reasoner axioms entails DataPropertyAssertion(dp ind l)</span>
+<span class="sd">            for at least one l where dp in dps.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dps</span><span class="p">:</span>
+            <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
+            <span class="n">dps</span> <span class="o">=</span> <span class="n">onto</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">()</span>
         <span class="n">has_direct</span> <span class="o">=</span> <span class="s2">&quot;direct&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">dps</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">has_direct</span><span class="p">:</span>
                     <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">direct</span><span class="p">)))</span>
@@ -604,21 +610,25 @@
     <span class="c1"># default</span>
 <div class="viewcode-block" id="AbstractOWLReasoner.ind_object_properties">
 <a class="viewcode-back" href="../../../autoapi/owlapy/abstracts/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner.ind_object_properties">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">ind_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ind_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">ops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets all object properties for the given individual that appear in the knowledge base.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ind: The named individual whose object properties are to be retrieved</span>
 <span class="sd">            direct: Specifies if the direct object properties should be retrieved (True), or if all</span>
 <span class="sd">                object properties should be retrieved (False), so that sub properties are taken into account.</span>
+<span class="sd">            ops: Optional set of object properties to consider. If None, all object properties in the ontology are</span>
+<span class="sd">             considered.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            All data properties pe where the set of reasoner axioms entails ObjectPropertyAssertion(pe ind ind2)</span>
-<span class="sd">            for atleast one ind2.</span>
+<span class="sd">            Object properties op where the set of reasoner axioms entails ObjectPropertyAssertion(op ind ind2)</span>
+<span class="sd">            for at least one ind2 where op in ops.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ops</span><span class="p">:</span>
+            <span class="n">onto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_ontology</span><span class="p">()</span>
+            <span class="n">ops</span> <span class="o">=</span> <span class="n">onto</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">()</span>
         <span class="n">has_direct</span> <span class="o">=</span> <span class="s2">&quot;direct&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">onto</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">has_direct</span><span class="p">:</span>
                     <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">direct</span><span class="p">)))</span>

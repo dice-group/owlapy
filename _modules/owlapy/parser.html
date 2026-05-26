@@ -84,29 +84,49 @@
 <span></span><span class="sd">&quot;&quot;&quot;String to OWL parsers.&quot;&quot;&quot;</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">parsimonious.grammar</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grammar</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">parsimonious.nodes</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeVisitor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">parsimonious.nodes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntegerOWLDatatype</span><span class="p">,</span> <span class="n">BooleanOWLDatatype</span><span class="p">,</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span> <span class="n">StringOWLDatatype</span><span class="p">,</span> <span class="n">DateOWLDatatype</span><span class="p">,</span> \
-    <span class="n">DateTimeOWLDatatype</span><span class="p">,</span> <span class="n">DurationOWLDatatype</span><span class="p">,</span> <span class="n">OWLLiteral</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectParser</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.namespaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">Namespaces</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.render</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DL_SYNTAX</span><span class="p">,</span> <span class="n">_MAN_SYNTAX</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLRDFVocabulary</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> \
-    <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> \
-    <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> \
-    <span class="n">OWLQuantifiedDataRestriction</span><span class="p">,</span> <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span>  <span class="n">OWLFacetRestriction</span><span class="p">,</span> \
-    <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> \
-    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> \
-    <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> \
-    <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataRange</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">parsimonious.grammar</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grammar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">parsimonious.nodes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span><span class="p">,</span> <span class="n">NodeVisitor</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OWLClass</span><span class="p">,</span>
+    <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span>
+    <span class="n">OWLDataExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataHasValue</span><span class="p">,</span>
+    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataOneOf</span><span class="p">,</span>
+    <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDatatypeRestriction</span><span class="p">,</span>
+    <span class="n">OWLFacetRestriction</span><span class="p">,</span>
+    <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span>
+    <span class="n">OWLObjectComplementOf</span><span class="p">,</span>
+    <span class="n">OWLObjectExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectHasSelf</span><span class="p">,</span>
+    <span class="n">OWLObjectHasValue</span><span class="p">,</span>
+    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span>
+    <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectOneOf</span><span class="p">,</span>
+    <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectUnionOf</span><span class="p">,</span>
+    <span class="n">OWLQuantifiedDataRestriction</span><span class="p">,</span>
+    <span class="n">OWLQuantifiedObjectRestriction</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataRange</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.namespaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">Namespaces</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">BooleanOWLDatatype</span><span class="p">,</span> <span class="n">DateOWLDatatype</span><span class="p">,</span> <span class="n">DateTimeOWLDatatype</span><span class="p">,</span> <span class="n">DoubleOWLDatatype</span><span class="p">,</span> <span class="n">DurationOWLDatatype</span><span class="p">,</span> <span class="n">IntegerOWLDatatype</span><span class="p">,</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">StringOWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.render</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DL_SYNTAX</span><span class="p">,</span> <span class="n">_MAN_SYNTAX</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLRDFVocabulary</span>
 
 <span class="n">MANCHESTER_GRAMMAR</span> <span class="o">=</span> <span class="n">Grammar</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    union = intersection (must_ws &quot;or&quot; must_ws intersection)*</span>

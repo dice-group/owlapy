@@ -158,10 +158,10 @@
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor" title="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenGraphExtractor</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.graph_extracting_models.DomainGraphExtractor" title="owlapy.agen_kg.graph_extracting_models.DomainGraphExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DomainGraphExtractor</span></code></a></p></td>
 <td><p>Base class for all graph extractors.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.graph_extracting_models.DomainGraphExtractor" title="owlapy.agen_kg.graph_extracting_models.DomainGraphExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DomainGraphExtractor</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor" title="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenGraphExtractor</span></code></a></p></td>
 <td><p>Base class for all graph extractors.</p></td>
 </tr>
 </tbody>
@@ -169,82 +169,6 @@
 </section>
 <section id="package-contents">
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.graph_extracting_models.</span></span><span class="sig-name descname"><span class="pre">OpenGraphExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extracting_models/open_graph_extractor.html#OpenGraphExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="../graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor" title="owlapy.agen_kg.graph_extractor.GraphExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.agen_kg.graph_extractor.GraphExtractor</span></code></a></p>
-<p>Base class for all graph extractors.
-Provides common functionality for entity clustering, coherence checking,
-text chunking for large documents, and utility methods shared across all extractor types.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.entity_extractor">
-<span class="sig-name descname"><span class="pre">entity_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.entity_extractor" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.triples_extractor">
-<span class="sig-name descname"><span class="pre">triples_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.triples_extractor" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.type_asserter">
-<span class="sig-name descname"><span class="pre">type_asserter</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.type_asserter" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.type_generator">
-<span class="sig-name descname"><span class="pre">type_generator</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.type_generator" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.literal_extractor">
-<span class="sig-name descname"><span class="pre">literal_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.literal_extractor" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.spl_triples_extractor">
-<span class="sig-name descname"><span class="pre">spl_triples_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.spl_triples_extractor" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.generate_ontology">
-<span class="sig-name descname"><span class="pre">generate_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">text:</span> <span class="pre">Union[str,</span> <span class="pre">pathlib.Path],</span> <span class="pre">ontology_namespace=f'http://ontology.local/{uuid.uuid4()}#',</span> <span class="pre">query:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">entity_types:</span> <span class="pre">List[str]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">generate_types=False,</span> <span class="pre">extract_spl_triples=False,</span> <span class="pre">create_class_hierarchy=False,</span> <span class="pre">entity_clustering=True,</span> <span class="pre">use_chunking:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">use_incremental_merging:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,</span> <span class="pre">examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,</span> <span class="pre">examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,</span> <span class="pre">examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION,</span> <span class="pre">examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION,</span> <span class="pre">examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION,</span> <span class="pre">fact_reassurance=True,</span> <span class="pre">save_path='generated_ontology.owl'</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="pre">owlapy.owl_ontology.Ontology</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extracting_models/open_graph_extractor.html#OpenGraphExtractor.generate_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.generate_ontology" title="Link to this definition"></a></dt>
-<dd><p>Generate an ontology from the given text or file.</p>
-<p>Supports automatic chunking for large texts that exceed the LLM’s context window.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>text</strong> – Input text or file path.</p></li>
-<li><p><strong>ontology_namespace</strong> – Namespace for the ontology.</p></li>
-<li><p><strong>query</strong> – A custom prompt to give directions to the agent.</p></li>
-<li><p><strong>entity_types</strong> – List of entity types to assign.</p></li>
-<li><p><strong>generate_types</strong> – Whether to generate types automatically.</p></li>
-<li><p><strong>extract_spl_triples</strong> – Whether to extract subject-property-literal triples.</p></li>
-<li><p><strong>create_class_hierarchy</strong> – Whether to create class hierarchy from DBpedia.</p></li>
-<li><p><strong>entity_clustering</strong> – Whether to perform entity clustering.</p></li>
-<li><p><strong>use_chunking</strong> – Whether to use text chunking for large documents.
-- None (default): Auto-detect based on text size (uses auto_chunk_threshold).
-- True: Force chunking even for smaller texts.
-- False: Disable chunking (may fail for very large texts).</p></li>
-<li><p><strong>use_incremental_merging</strong> – Whether to use incremental merging when chunking is enabled (default: False).</p></li>
-<li><p><strong>examples_for_entity_extraction</strong> – Few-shot examples for entity extraction.</p></li>
-<li><p><strong>examples_for_triples_extraction</strong> – Few-shot examples for triple extraction.</p></li>
-<li><p><strong>examples_for_type_assertion</strong> – Few-shot examples for type assertion.</p></li>
-<li><p><strong>examples_for_type_generation</strong> – Few-shot examples for type generation and assertion.</p></li>
-<li><p><strong>examples_for_literal_extraction</strong> – Few-shot examples for literal extraction.</p></li>
-<li><p><strong>examples_for_spl_triples_extraction</strong> – Few-shot examples for s-p-l triples extraction.</p></li>
-<li><p><strong>fact_reassurance</strong> – Whether to enforce as step of fact checking after triple extraction.</p></li>
-<li><p><strong>save_path</strong> – Path to save the ontology.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Generated Ontology object.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.DomainGraphExtractor">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.graph_extracting_models.</span></span><span class="sig-name descname"><span class="pre">DomainGraphExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">examples_cache_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extracting_models/domain_graph_extractor.html#DomainGraphExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.DomainGraphExtractor" title="Link to this definition"></a></dt>
@@ -404,6 +328,82 @@ Supports files: .txt, .pdf, .docx, .doc, .rtf, .html, .htm</p></li>
 - False: Disable chunking (may fail for very large texts).</p></li>
 <li><p><strong>use_incremental_merging</strong> – Whether to use incremental merging when chunking is enabled (default: False).</p></li>
 <li><p><strong>fact_reassurance</strong> – Whether to perform the coherence check on triples (default: True).</p></li>
+<li><p><strong>save_path</strong> – Path to save the ontology.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated Ontology object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.graph_extracting_models.</span></span><span class="sig-name descname"><span class="pre">OpenGraphExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_logging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extracting_models/open_graph_extractor.html#OpenGraphExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor" title="owlapy.agen_kg.graph_extractor.GraphExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.agen_kg.graph_extractor.GraphExtractor</span></code></a></p>
+<p>Base class for all graph extractors.
+Provides common functionality for entity clustering, coherence checking,
+text chunking for large documents, and utility methods shared across all extractor types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.entity_extractor">
+<span class="sig-name descname"><span class="pre">entity_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.entity_extractor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.triples_extractor">
+<span class="sig-name descname"><span class="pre">triples_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.triples_extractor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.type_asserter">
+<span class="sig-name descname"><span class="pre">type_asserter</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.type_asserter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.type_generator">
+<span class="sig-name descname"><span class="pre">type_generator</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.type_generator" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.literal_extractor">
+<span class="sig-name descname"><span class="pre">literal_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.literal_extractor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.spl_triples_extractor">
+<span class="sig-name descname"><span class="pre">spl_triples_extractor</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.spl_triples_extractor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.generate_ontology">
+<span class="sig-name descname"><span class="pre">generate_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">text:</span> <span class="pre">Union[str,</span> <span class="pre">pathlib.Path],</span> <span class="pre">ontology_namespace=f'http://ontology.local/{uuid.uuid4()}#',</span> <span class="pre">query:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">entity_types:</span> <span class="pre">List[str]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">generate_types=False,</span> <span class="pre">extract_spl_triples=False,</span> <span class="pre">create_class_hierarchy=False,</span> <span class="pre">entity_clustering=True,</span> <span class="pre">use_chunking:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">use_incremental_merging:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,</span> <span class="pre">examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,</span> <span class="pre">examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,</span> <span class="pre">examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION,</span> <span class="pre">examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION,</span> <span class="pre">examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION,</span> <span class="pre">fact_reassurance=True,</span> <span class="pre">save_path='generated_ontology.owl'</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../owl_ontology/index.html#owlapy.owl_ontology.Ontology" title="owlapy.owl_ontology.Ontology"><span class="pre">owlapy.owl_ontology.Ontology</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extracting_models/open_graph_extractor.html#OpenGraphExtractor.generate_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extracting_models.OpenGraphExtractor.generate_ontology" title="Link to this definition"></a></dt>
+<dd><p>Generate an ontology from the given text or file.</p>
+<p>Supports automatic chunking for large texts that exceed the LLM’s context window.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – Input text or file path.</p></li>
+<li><p><strong>ontology_namespace</strong> – Namespace for the ontology.</p></li>
+<li><p><strong>query</strong> – A custom prompt to give directions to the agent.</p></li>
+<li><p><strong>entity_types</strong> – List of entity types to assign.</p></li>
+<li><p><strong>generate_types</strong> – Whether to generate types automatically.</p></li>
+<li><p><strong>extract_spl_triples</strong> – Whether to extract subject-property-literal triples.</p></li>
+<li><p><strong>create_class_hierarchy</strong> – Whether to create class hierarchy from DBpedia.</p></li>
+<li><p><strong>entity_clustering</strong> – Whether to perform entity clustering.</p></li>
+<li><p><strong>use_chunking</strong> – Whether to use text chunking for large documents.
+- None (default): Auto-detect based on text size (uses auto_chunk_threshold).
+- True: Force chunking even for smaller texts.
+- False: Disable chunking (may fail for very large texts).</p></li>
+<li><p><strong>use_incremental_merging</strong> – Whether to use incremental merging when chunking is enabled (default: False).</p></li>
+<li><p><strong>examples_for_entity_extraction</strong> – Few-shot examples for entity extraction.</p></li>
+<li><p><strong>examples_for_triples_extraction</strong> – Few-shot examples for triple extraction.</p></li>
+<li><p><strong>examples_for_type_assertion</strong> – Few-shot examples for type assertion.</p></li>
+<li><p><strong>examples_for_type_generation</strong> – Few-shot examples for type generation and assertion.</p></li>
+<li><p><strong>examples_for_literal_extraction</strong> – Few-shot examples for literal extraction.</p></li>
+<li><p><strong>examples_for_spl_triples_extraction</strong> – Few-shot examples for s-p-l triples extraction.</p></li>
+<li><p><strong>fact_reassurance</strong> – Whether to enforce as step of fact checking after triple extraction.</p></li>
 <li><p><strong>save_path</strong> – Path to save the ontology.</p></li>
 </ul>
 </dd>

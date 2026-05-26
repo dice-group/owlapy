@@ -82,43 +82,60 @@
              
   <h1>Source code for owlapy.owl_reasoner</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;OWL Reasoner&quot;&quot;&quot;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">owlready2</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">Counter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span><span class="p">,</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">defaultdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span><span class="p">,</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">singledispatchmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">repeat</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span><span class="p">,</span> <span class="n">FunctionType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">DefaultDict</span><span class="p">,</span><span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span>
-                    <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">FunctionType</span><span class="p">,</span> <span class="n">MappingProxyType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> \
-    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> \
-    <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> \
-    <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLFacetRestriction</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> \
-    <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLNothing</span><span class="p">,</span> <span class="n">OWLThing</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">OWLSubClassOfAxiom</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">,</span> <span class="n">NeuralOntology</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> \
-    <span class="n">OWLPropertyExpression</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">OWLBottomObjectProperty</span><span class="p">,</span> <span class="n">OWLTopObjectProperty</span><span class="p">,</span> <span class="n">OWLBottomDataProperty</span><span class="p">,</span> \
-    <span class="n">OWLTopDataProperty</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_with_timeout</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jpype</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">owlready2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jpype</span><span class="w"> </span><span class="kn">import</span> <span class="n">JClass</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OWLClass</span><span class="p">,</span>
+    <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDataExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataHasValue</span><span class="p">,</span>
+    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataOneOf</span><span class="p">,</span>
+    <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDatatypeRestriction</span><span class="p">,</span>
+    <span class="n">OWLFacetRestriction</span><span class="p">,</span>
+    <span class="n">OWLNothing</span><span class="p">,</span>
+    <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span>
+    <span class="n">OWLObjectComplementOf</span><span class="p">,</span>
+    <span class="n">OWLObjectExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectHasValue</span><span class="p">,</span>
+    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span>
+    <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectOneOf</span><span class="p">,</span>
+    <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectUnionOf</span><span class="p">,</span>
+    <span class="n">OWLThing</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">OWLSubClassOfAxiom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLBottomDataProperty</span><span class="p">,</span> <span class="n">OWLBottomObjectProperty</span><span class="p">,</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">OWLTopDataProperty</span><span class="p">,</span> <span class="n">OWLTopObjectProperty</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">NeuralOntology</span><span class="p">,</span> <span class="n">Ontology</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">,</span> <span class="n">_parse_concept_to_owlapy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLDataPropertyExpression</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">OWLProperty</span><span class="p">,</span> <span class="n">OWLPropertyExpression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_with_timeout</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -1149,6 +1166,183 @@
         <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_instances_from_owl_class</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cls_to_ind</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
 
+    <span class="nd">@_find_instances</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataMinCardinality</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_instances_data_card_restriction</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
+    <span class="nd">@_find_instances</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataMaxCardinality</span><span class="p">):</span>
+        <span class="n">all_</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">())</span>
+        <span class="n">min_ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_instances_data_card_restriction</span><span class="p">(</span>
+            <span class="n">OWLDataMinCardinality</span><span class="p">(</span><span class="n">cardinality</span><span class="o">=</span><span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                                  <span class="nb">property</span><span class="o">=</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span>
+                                  <span class="n">filler</span><span class="o">=</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">all_</span> <span class="o">^</span> <span class="n">min_ind</span>
+
+    <span class="nd">@_find_instances</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataExactCardinality</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_instances_data_card_restriction</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_instances_data_card_restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenSet</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get instances for OWLDataMinCardinality or OWLDataExactCardinality restrictions.&quot;&quot;&quot;</span>
+        <span class="n">pe</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">):</span>
+            <span class="n">min_count</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+            <span class="n">max_count</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">):</span>
+            <span class="n">min_count</span> <span class="o">=</span> <span class="n">max_count</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">assert</span> <span class="n">min_count</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">max_count</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">is_modified</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_cache</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_and_disable_cache</span><span class="p">()</span>
+        <span class="n">property_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_cache</span>
+
+        <span class="k">if</span> <span class="n">property_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lazy_cache_data_prop</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span>
+            <span class="n">dps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_prop</span><span class="p">[</span><span class="n">pe</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">subs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_some_values_subject_index</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span>
+
+        <span class="n">ind</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filler</span><span class="p">,</span> <span class="n">OWLDatatype</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">property_cache</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">literals</span> <span class="ow">in</span> <span class="n">dps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="n">literals</span> <span class="k">if</span> <span class="n">lit</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">==</span> <span class="n">filler</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span> <span class="k">if</span> <span class="n">lit</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">==</span> <span class="n">filler</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filler</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">filler</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">property_cache</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">literals</span> <span class="ow">in</span> <span class="n">dps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">literals</span> <span class="o">&amp;</span> <span class="n">values</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span> <span class="k">if</span> <span class="n">lit</span> <span class="ow">in</span> <span class="n">values</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filler</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">res_to_callable</span><span class="p">(</span><span class="n">res</span><span class="p">:</span> <span class="n">OWLFacetRestriction</span><span class="p">):</span>
+                <span class="n">op</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span><span class="o">.</span><span class="n">operator</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">inner</span><span class="p">(</span><span class="n">lv</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">op</span><span class="p">(</span><span class="n">lv</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">inner</span>
+
+            <span class="n">apply</span> <span class="o">=</span> <span class="n">FunctionType</span><span class="o">.</span><span class="fm">__call__</span>
+            <span class="n">facet_restrictions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">res_to_callable</span><span class="p">,</span> <span class="n">filler</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()))</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">include</span><span class="p">(</span><span class="n">lv</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">lv</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">==</span> <span class="n">filler</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="ow">and</span> \
+                    <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">apply</span><span class="p">,</span> <span class="n">facet_restrictions</span><span class="p">,</span> <span class="n">repeat</span><span class="p">(</span><span class="n">lv</span><span class="p">)))</span>
+
+            <span class="k">if</span> <span class="n">property_cache</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">literals</span> <span class="ow">in</span> <span class="n">dps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="n">literals</span> <span class="k">if</span> <span class="n">include</span><span class="p">(</span><span class="n">lit</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span> <span class="k">if</span> <span class="n">include</span><span class="p">(</span><span class="n">lit</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filler</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">):</span>
+            <span class="c1"># Count values NOT matching the inner data range</span>
+            <span class="n">inner_filler</span> <span class="o">=</span> <span class="n">filler</span><span class="o">.</span><span class="n">get_data_range</span><span class="p">()</span>
+            <span class="c1"># some_inner = OWLDataSomeValuesFrom(property=pe, filler=inner_filler)</span>
+            <span class="c1"># We need to count per-individual, so we iterate</span>
+            <span class="k">if</span> <span class="n">property_cache</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">literals</span> <span class="ow">in</span> <span class="n">dps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="c1"># Count literals that match the complement (i.e., do NOT match the inner filler)</span>
+                    <span class="n">match_inner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_data_filler_matches</span><span class="p">(</span><span class="n">literals</span><span class="p">,</span> <span class="n">inner_filler</span><span class="p">)</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">literals</span><span class="p">)</span> <span class="o">-</span> <span class="n">match_inner</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">:</span>
+                    <span class="n">all_lits</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">pe</span><span class="p">))</span>
+                    <span class="n">match_inner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_data_filler_matches</span><span class="p">(</span><span class="n">all_lits</span><span class="p">,</span> <span class="n">inner_filler</span><span class="p">)</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_lits</span><span class="p">)</span> <span class="o">-</span> <span class="n">match_inner</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filler</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">property_cache</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">literals</span> <span class="ow">in</span> <span class="n">dps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="n">literals</span>
+                                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_literal_matches_data_range</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+                                       <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">filler</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_literal_matches_data_range</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+                                       <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">filler</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filler</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">property_cache</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">literals</span> <span class="ow">in</span> <span class="n">dps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="n">literals</span>
+                                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_literal_matches_data_range</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+                                       <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">filler</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">:</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_property_values</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_literal_matches_data_range</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+                                       <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">filler</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="n">min_count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="n">max_count</span><span class="p">):</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="k">return</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_literal_matches_data_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lit</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a single literal matches a data range.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">OWLDatatype</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">lit</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">==</span> <span class="n">dr</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">OWLDataOneOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">lit</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">dr</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">lit</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span> <span class="o">!=</span> <span class="n">dr</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">dr</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">():</span>
+                <span class="n">op</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span><span class="o">.</span><span class="n">operator</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">op</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">OWLDataComplementOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_literal_matches_data_range</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">dr</span><span class="o">.</span><span class="n">get_data_range</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_literal_matches_data_range</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">dr</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_literal_matches_data_range</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">dr</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported data range type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_count_data_filler_matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">literals</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLLiteral</span><span class="p">],</span> <span class="n">dr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Count how many literals in the set match the given data range.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">lit</span> <span class="ow">in</span> <span class="n">literals</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_literal_matches_data_range</span><span class="p">(</span><span class="n">lit</span><span class="p">,</span> <span class="n">dr</span><span class="p">))</span>
+
 <div class="viewcode-block" id="StructuralReasoner.get_instances_from_owl_class">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner.get_instances_from_owl_class">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_instances_from_owl_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">):</span>
@@ -1229,10 +1423,130 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">mapper</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inference_types_mapping</span> <span class="o">=</span> <span class="n">import_and_include_axioms_generators</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="n">initialize_reasoner</span><span class="p">(</span><span class="n">reasoner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span><span class="p">)</span>
+        <span class="c1"># A single-threaded Java executor shared across all instances() calls.</span>
+        <span class="c1"># Using one reusable executor ensures that reasoning tasks are serialized,</span>
+        <span class="c1"># preventing &quot;ExtensionManager is not reentrant&quot; errors that occur when</span>
+        <span class="c1"># two Java threads concurrently access a non-thread-safe reasoner (e.g. HermiT).</span>
+        <span class="c1"># We use a daemon-thread factory so that lingering reasoning threads</span>
+        <span class="c1"># (e.g. ones that ignored an interrupt after a timeout) do not prevent</span>
+        <span class="c1"># the JVM / Python process from exiting.</span>
+        <span class="n">Executors</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.Executors&quot;</span><span class="p">)</span>
+        <span class="n">ThreadFactory</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.ThreadFactory&quot;</span><span class="p">)</span>
+
+        <span class="nd">@jpype</span><span class="o">.</span><span class="n">JImplements</span><span class="p">(</span><span class="n">ThreadFactory</span><span class="p">)</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_DaemonThreadFactory</span><span class="p">:</span>
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">newThread</span><span class="p">(</span><span class="n">self_</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">jpype</span><span class="o">.</span><span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.lang.Thread&quot;</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+                <span class="n">t</span><span class="o">.</span><span class="n">setDaemon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">t</span><span class="o">.</span><span class="n">setName</span><span class="p">(</span><span class="s2">&quot;owlapy-reasoner-worker&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">t</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span> <span class="o">=</span> <span class="n">Executors</span><span class="o">.</span><span class="n">newSingleThreadExecutor</span><span class="p">(</span><span class="n">_DaemonThreadFactory</span><span class="p">())</span>
+
+<div class="viewcode-block" id="SyncReasoner.__del__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.__del__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shut down the shared Java executor and dispose the reasoner when garbage-collected.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.close">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Explicitly shut down the reasoner and the shared Java executor.</span>
+
+<span class="sd">        Call this when done with the reasoner to release all Java resources</span>
+<span class="sd">        and allow the process to exit cleanly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 1. Dispose the OWL API reasoner (releases internal threads &amp; caches).</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_owlapi_reasoner&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">dispose</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># 2. Shut down the executor and wait briefly for its thread to finish.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_reasoning_executor&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span><span class="o">.</span><span class="n">shutdownNow</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">TimeUnit</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.TimeUnit&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span><span class="o">.</span><span class="n">awaitTermination</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="n">SECONDS</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.__enter__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.__enter__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SyncReasoner.__exit__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.__exit__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_with_java_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">java_callable_fn</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">task_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Reasoning task&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a Java-level callable on the shared reasoning executor with a timeout.</span>
+
+<span class="sd">        This helper encapsulates the common boilerplate of:</span>
+<span class="sd">        1. Creating a ``java.util.concurrent.Callable`` from *java_callable_fn*.</span>
+<span class="sd">        2. Submitting it to ``self._reasoning_executor``.</span>
+<span class="sd">        3. Waiting up to *timeout* seconds for the result.</span>
+<span class="sd">        4. Handling ``TimeoutException`` and ``ExecutionException``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            java_callable_fn: A **no-arg** Python callable that performs the</span>
+<span class="sd">                actual Java work.  It will be executed on the executor thread.</span>
+<span class="sd">            timeout (int): Maximum time in seconds to wait for the result.</span>
+<span class="sd">            task_description (str): Human-readable label used in error / log</span>
+<span class="sd">                messages (e.g. ``&quot;Consistency check&quot;``).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Whatever *java_callable_fn* returns (already a Python / JPype object).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TimeoutError: If the task exceeds *timeout* seconds.</span>
+<span class="sd">            RuntimeError: If the callable raises an exception.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">TimeUnit</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.TimeUnit&quot;</span><span class="p">)</span>
+
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">java_callable_fn</span>  <span class="c1"># capture for the inner class</span>
+
+        <span class="nd">@jpype</span><span class="o">.</span><span class="n">JImplements</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.Callable&quot;</span><span class="p">)</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_Callable</span><span class="p">:</span>
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="n">self_</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">fn</span><span class="p">()</span>
+
+        <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_Callable</span><span class="p">())</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="n">MILLISECONDS</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">jpype</span><span class="o">.</span><span class="n">JException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;TimeoutException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                <span class="n">future</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">task_description</span><span class="si">}</span><span class="s2"> timed out after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2"> seconds.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">elif</span> <span class="s2">&quot;ExecutionException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                <span class="n">cause</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">getCause</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">task_description</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">cause</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the instances for a given class expression using HermiT.</span>
+<span class="sd">        Get the instances for a given class expression.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ce (OWLClassExpression): The class expression in OWLAPY format.</span>
@@ -1250,7 +1564,59 @@
 <div class="viewcode-block" id="SyncReasoner.instances">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.instances">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">run_with_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_instances</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">direct</span><span class="p">))</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the instances for a given class expression with a Java-level timeout.</span>
+
+<span class="sd">        Uses Java&#39;s ExecutorService to run the reasoning task in a separate Java thread,</span>
+<span class="sd">        enabling proper timeout and interruption of the underlying Java reasoner (e.g. HermiT,</span>
+<span class="sd">        Pellet). This overcomes the limitation of Python&#39;s threading which cannot interrupt</span>
+<span class="sd">        JPype Java calls.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ce (OWLClassExpression): The class expression in OWLAPY format.</span>
+<span class="sd">            direct (bool): Whether to get direct instances or not. Defaults to False.</span>
+<span class="sd">            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            set: A set of individuals classified by the given class expression.</span>
+<span class="sd">                 Returns an empty set if the timeout is exceeded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mapped_ce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
+        <span class="n">TimeUnit</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.TimeUnit&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Submit the reasoning task to the shared single-threaded executor.</span>
+        <span class="c1"># Using a shared executor (created once in __init__) ensures that all</span>
+        <span class="c1"># instances() calls are serialized on one Java thread, preventing the</span>
+        <span class="c1"># &quot;ExtensionManager is not reentrant&quot; error that arises when a new</span>
+        <span class="c1"># executor is created per call and two threads overlap during shutdown.</span>
+        <span class="n">owlapi_reasoner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span>
+
+        <span class="nd">@jpype</span><span class="o">.</span><span class="n">JImplements</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.Callable&quot;</span><span class="p">)</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_ReasonerCallable</span><span class="p">:</span>
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="n">self_</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">owlapi_reasoner</span><span class="o">.</span><span class="n">getInstances</span><span class="p">(</span><span class="n">mapped_ce</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span>
+
+        <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_ReasonerCallable</span><span class="p">())</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instances</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="n">SECONDS</span><span class="p">)</span>
+            <span class="n">flattened_instances</span> <span class="o">=</span> <span class="n">instances</span><span class="o">.</span><span class="n">getFlattened</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">flattened_instances</span><span class="p">}</span>
+        <span class="k">except</span> <span class="n">jpype</span><span class="o">.</span><span class="n">JException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># java.util.concurrent.TimeoutException when reasoning exceeds the timeout</span>
+            <span class="k">if</span> <span class="s2">&quot;TimeoutException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                <span class="n">future</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Interrupt the Java reasoning thread</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reasoner timed out after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2"> seconds for instances query on: </span><span class="si">{</span><span class="n">ce</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="c1"># java.util.concurrent.ExecutionException wraps exceptions from the Callable</span>
+            <span class="k">elif</span> <span class="s2">&quot;ExecutionException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                <span class="n">cause</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">getCause</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Reasoning failed for class expression &#39;</span><span class="si">{</span><span class="n">ce</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">cause</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.equivalent_classes">
@@ -1684,14 +2050,25 @@
 
 <div class="viewcode-block" id="SyncReasoner.has_consistent_ontology">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.has_consistent_ontology">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">has_consistent_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_consistent_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the used ontology is consistent.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the ontology used by this reasoner is consistent, False otherwise.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TimeoutError: If the reasoning task exceeds the timeout.</span>
+<span class="sd">            RuntimeError: If the reasoning task fails for another reason.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">isConsistent</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_execute_with_java_timeout</span><span class="p">(</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">isConsistent</span><span class="p">(),</span>
+            <span class="n">timeout</span><span class="p">,</span>
+            <span class="s2">&quot;Consistency check&quot;</span><span class="p">,</span>
+        <span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.infer_axioms">
@@ -1716,6 +2093,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayList</span>
+
         <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">InferredOntologyGenerator</span>
 
@@ -1760,12 +2138,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span><span class="p">,</span> <span class="n">FileOutputStream</span>
+
         <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">java.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayList</span>
+
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.formats</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLXMLDocumentFormat</span><span class="p">,</span> <span class="n">RDFXMLDocumentFormat</span><span class="p">,</span> <span class="n">TurtleDocumentFormat</span>
+
         <span class="c1"># noinspection PyUnresolvedReferences</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">InferredOntologyGenerator</span>
-        <span class="c1"># noinspection PyUnresolvedReferences</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.formats</span><span class="w"> </span><span class="kn">import</span> <span class="n">TurtleDocumentFormat</span><span class="p">,</span> <span class="n">RDFXMLDocumentFormat</span><span class="p">,</span> <span class="n">OWLXMLDocumentFormat</span>
         <span class="k">if</span> <span class="n">output_format</span> <span class="o">==</span> <span class="s2">&quot;ttl&quot;</span> <span class="ow">or</span> <span class="n">output_format</span> <span class="o">==</span> <span class="s2">&quot;turtle&quot;</span><span class="p">:</span>
             <span class="n">document_format</span> <span class="o">=</span> <span class="n">TurtleDocumentFormat</span><span class="p">()</span>
         <span class="k">elif</span> <span class="n">output_format</span> <span class="o">==</span> <span class="s2">&quot;rdf/xml&quot;</span><span class="p">:</span>
@@ -1822,40 +2203,75 @@
 
 <div class="viewcode-block" id="SyncReasoner.is_entailed">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.is_entailed">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">is_entailed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_entailed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axiom</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            axiom: The axiom to check for entailment.</span>
+<span class="sd">            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.</span>
 
 <span class="sd">        Return:</span>
 <span class="sd">            True if the axiom is entailed by the reasoner axioms and False otherwise.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TimeoutError: If the reasoning task exceeds the timeout.</span>
+<span class="sd">            RuntimeError: If the reasoning task fails for another reason.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">isEntailed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom</span><span class="p">)))</span></div>
+        <span class="n">j_axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_execute_with_java_timeout</span><span class="p">(</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">isEntailed</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">),</span>
+            <span class="n">timeout</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Entailment check for axiom: </span><span class="si">{</span><span class="n">axiom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.is_satisfiable">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.is_satisfiable">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">is_satisfiable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_satisfiable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that determines if the specified class expression is satisfiable with respect</span>
 <span class="sd">        to the reasoner axioms.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ce: The class expression to check for satisfiability.</span>
+<span class="sd">            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.</span>
 
 <span class="sd">        Return:</span>
 <span class="sd">            True if the class expression is satisfiable by the reasoner axioms and False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">isSatisfiable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">)))</span></div>
+<span class="sd">        Raises:</span>
+<span class="sd">            TimeoutError: If the reasoning task exceeds the timeout.</span>
+<span class="sd">            RuntimeError: If the reasoning task fails for another reason.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">j_ce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_execute_with_java_timeout</span><span class="p">(</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">isSatisfiable</span><span class="p">(</span><span class="n">j_ce</span><span class="p">),</span>
+            <span class="n">timeout</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Satisfiability check for: </span><span class="si">{</span><span class="n">ce</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.unsatisfiable_classes">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">unsatisfiable_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unsatisfiable_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A convenience method that obtains the classes in the signature of the root ontology that are</span>
-<span class="sd">        unsatisfiable.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">unsatisfiableClasses</span><span class="p">())</span></div>
+<span class="sd">        unsatisfiable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The unsatisfiable classes.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TimeoutError: If the reasoning task exceeds the timeout.</span>
+<span class="sd">            RuntimeError: If the reasoning task fails for another reason.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_with_java_timeout</span><span class="p">(</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">unsatisfiableClasses</span><span class="p">(),</span>
+            <span class="n">timeout</span><span class="p">,</span>
+            <span class="s2">&quot;Unsatisfiable classes retrieval&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.create_axiom_justifications">
@@ -1863,11 +2279,16 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">create_axiom_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                     <span class="n">axiom_to_explain</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">,</span>
                                     <span class="n">n_max_justifications</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                                    <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
                                     <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate multiple justifications for why an axiom is entailed by the ontology.</span>
-<span class="sd">        The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java</span>
-<span class="sd">        The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator.java# .</span>
+<span class="sd">        The implementation uses the ``owlexplanation`` library (which also depends on ``owlapi``</span>
+<span class="sd">        and ``telemetry-2.0.0``), by Matthew Horridge.  Internally an</span>
+<span class="sd">        ``ExplanationProgressMonitor`` is used so that (a) the generator can be</span>
+<span class="sd">        cooperatively cancelled when the *timeout* is reached and (b) any</span>
+<span class="sd">        justifications that were already found before the timeout are still returned.</span>
+
 <span class="sd">        The supported axiom types are:</span>
 <span class="sd">        - OWLClassAssertionAxiom</span>
 <span class="sd">        - OWLDataPropertyAssertionAxiom</span>
@@ -1891,6 +2312,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            axiom_to_explain (OWLAxiom): The axiom to create justifications for.</span>
 <span class="sd">            n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.</span>
+<span class="sd">            timeout (int, optional): The maximum time (in seconds) to wait for justification generation. Defaults to 1000.</span>
 <span class="sd">            save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.</span>
 
 <span class="sd">        Raises:</span>
@@ -1898,92 +2320,157 @@
 <span class="sd">            NotImplementedError: If the specified reasoner is not supported for axiom justification.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.</span>
+<span class="sd">            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed</span>
+<span class="sd">                by the ontology. If the timeout is reached, the justifications found so far are returned (which may be</span>
+<span class="sd">                an empty list).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_time</span>
+
         <span class="c1"># First verify that the axiom is even entailed</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_entailed</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;The axiom </span><span class="si">{</span><span class="n">axiom_to_explain</span><span class="si">}</span><span class="s2"> is not entailed by the ontology. No justifications to create.&quot;</span>
             <span class="p">)</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">com.clarkparsia.owlapi.explanation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-            <span class="n">BlackBoxExplanation</span><span class="p">,</span>
-            <span class="n">HSTExplanationGenerator</span><span class="p">,</span>
-            <span class="n">SatisfiabilityConverter</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.blackbox</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.blackbox.checker</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">BlackBoxExplanationGeneratorFactory</span><span class="p">,</span>
+            <span class="n">SatisfiabilityEntailmentCheckerFactory</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">j_axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span>
-        <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
-        <span class="n">j_reasoner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span>
-        <span class="n">j_data_factory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_manager</span><span class="o">.</span><span class="n">getOWLDataFactory</span><span class="p">()</span>
+        <span class="n">TimeUnit</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.TimeUnit&quot;</span><span class="p">)</span>
+        <span class="n">Thread</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.lang.Thread&quot;</span><span class="p">)</span>
 
+        <span class="c1"># Get a hold of the reasoner factory</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;HermiT&quot;</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.HermiT</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ReasonerFactory</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.elk.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElkReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">ElkReasonerFactory</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;JFact&quot;</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">uk.ac.manchester.cs.jfact</span><span class="w"> </span><span class="kn">import</span> <span class="n">JFactFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">JFactFactory</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Openllet&quot;</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">openllet.owlapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">PelletReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">PelletReasonerFactory</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Structural&quot;</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.reasoner.structural</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasonerFactory</span>
-            <span class="n">reasoner_factory</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span>
+            <span class="n">j_reasoner_factory</span> <span class="o">=</span> <span class="n">StructuralReasonerFactory</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reasoner &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span><span class="si">}</span><span class="s2">&#39; is not supported for axiom justification.&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Following the internal implementation of DefaultExplanationGenerator to circumvent the need for a progress monitor</span>
+        <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
 
-        <span class="n">converter</span> <span class="o">=</span> <span class="n">SatisfiabilityConverter</span><span class="p">(</span><span class="n">j_data_factory</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">j_axiom_ce</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s2">&quot;not implemented&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Failed to convert the axiom </span><span class="si">{</span><span class="n">axiom_to_explain</span><span class="si">}</span><span class="s2"> into a class expression. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;This most likely means that the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-            <span class="k">raise</span> <span class="n">e</span>
-        <span class="n">blackbox_exp</span> <span class="o">=</span> <span class="n">BlackBoxExplanation</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">,</span> <span class="n">reasoner_factory</span><span class="p">,</span> <span class="n">j_reasoner</span><span class="p">)</span>
-        <span class="n">explanation_gen</span> <span class="o">=</span> <span class="n">HSTExplanationGenerator</span><span class="p">(</span><span class="n">blackbox_exp</span><span class="p">)</span>
+        <span class="c1"># Convert timeout from seconds to milliseconds for the Java-level</span>
+        <span class="c1"># SatisfiabilityEntailmentCheckerFactory (cooperative timeout inside</span>
+        <span class="c1"># the explanation library).</span>
+        <span class="n">timeout_ms</span> <span class="o">=</span> <span class="n">timeout</span> <span class="o">*</span> <span class="mi">1000</span>
 
-        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Build the owlexplanation generator chain with timeout support.</span>
+        <span class="c1"># Explicitly use JLong to disambiguate the (OWLReasonerFactory, long)</span>
+        <span class="c1"># constructor from the (OWLReasonerFactory, boolean) overload.</span>
+        <span class="n">j_checker_factory</span> <span class="o">=</span> <span class="n">SatisfiabilityEntailmentCheckerFactory</span><span class="p">(</span>
+            <span class="n">j_reasoner_factory</span><span class="p">,</span> <span class="n">jpype</span><span class="o">.</span><span class="n">JLong</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">j_config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">j_checker_factory</span><span class="p">)</span>
+        <span class="n">j_gen_fac</span> <span class="o">=</span> <span class="n">BlackBoxExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_config</span><span class="p">)</span>
+
+        <span class="c1"># Create a progress monitor that collects partial results and supports</span>
+        <span class="c1"># cooperative cancellation via both a wall-clock deadline and Java</span>
+        <span class="c1"># thread interruption (set by future.cancel(True) on hard timeout).</span>
+        <span class="nd">@jpype</span><span class="o">.</span><span class="n">JImplements</span><span class="p">(</span><span class="s2">&quot;org.semanticweb.owl.explanation.api.ExplanationProgressMonitor&quot;</span><span class="p">)</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_TimeoutProgressMonitor</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="n">self_</span><span class="p">,</span> <span class="n">deadline</span><span class="p">):</span>
+                <span class="n">self_</span><span class="o">.</span><span class="n">_found</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">self_</span><span class="o">.</span><span class="n">_deadline</span> <span class="o">=</span> <span class="n">deadline</span>
+
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">foundExplanation</span><span class="p">(</span><span class="n">self_</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">explanation</span><span class="p">,</span> <span class="n">allExplanations</span><span class="p">):</span>
+                <span class="n">self_</span><span class="o">.</span><span class="n">_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">explanation</span><span class="p">)</span>
+
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">isCancelled</span><span class="p">(</span><span class="n">self_</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">_time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">self_</span><span class="o">.</span><span class="n">_deadline</span>
+                        <span class="ow">or</span> <span class="n">Thread</span><span class="o">.</span><span class="n">currentThread</span><span class="p">()</span><span class="o">.</span><span class="n">isInterrupted</span><span class="p">())</span>
+
+        <span class="n">deadline</span> <span class="o">=</span> <span class="n">_time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout</span>
+        <span class="n">monitor</span> <span class="o">=</span> <span class="n">_TimeoutProgressMonitor</span><span class="p">(</span><span class="n">deadline</span><span class="p">)</span>
+
+        <span class="n">j_gen</span> <span class="o">=</span> <span class="n">j_gen_fac</span><span class="o">.</span><span class="n">createExplanationGenerator</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">,</span> <span class="n">monitor</span><span class="p">)</span>
+
+        <span class="n">j_axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="n">n_max_justifications</span><span class="p">,</span> <span class="nb">int</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;n_max_justifications must be an integer or None, but got </span><span class="si">{</span><span class="n">n_max_justifications</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_max_justifications</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">explanation_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span>
-                    <span class="n">j_axiom_ce</span><span class="p">,</span> <span class="n">n_max_justifications</span>
-                <span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Justification failed most likely because the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">explanation_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom_ce</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Justification failed most likely because the axiom type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification generation.</span><span class="se">\n</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
 
+        <span class="c1"># Submit the justification task to the shared single-threaded executor</span>
+        <span class="c1"># so that Future.get(timeout) provides a hard, enforceable timeout and</span>
+        <span class="c1"># future.cancel(True) can interrupt the Java reasoning thread.</span>
+        <span class="n">n_max</span> <span class="o">=</span> <span class="n">n_max_justifications</span>  <span class="c1"># capture for closure</span>
+
+        <span class="nd">@jpype</span><span class="o">.</span><span class="n">JImplements</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.Callable&quot;</span><span class="p">)</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_JustificationCallable</span><span class="p">:</span>
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="n">self_</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">n_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_max</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">,</span> <span class="n">n_max</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">)</span>
+
+        <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_JustificationCallable</span><span class="p">())</span>
+        <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="n">SECONDS</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">jpype</span><span class="o">.</span><span class="n">JException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;TimeoutException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                <span class="n">future</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Interrupt the Java reasoning thread</span>
+                <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Justification generation timed out after </span><span class="si">%d</span><span class="s2"> seconds. &quot;</span>
+                    <span class="s2">&quot;Returning </span><span class="si">%d</span><span class="s2"> partial justification(s) found before timeout.&quot;</span><span class="p">,</span>
+                    <span class="n">timeout</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">monitor</span><span class="o">.</span><span class="n">_found</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span>
+            <span class="k">elif</span> <span class="s2">&quot;ExecutionException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;Justification generation was interrupted. &quot;</span>
+                        <span class="s2">&quot;Returning </span><span class="si">%d</span><span class="s2"> partial justification(s) found so far.&quot;</span><span class="p">,</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">monitor</span><span class="o">.</span><span class="n">_found</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cause</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">getCause</span><span class="p">()</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Justification failed for axiom &#39;</span><span class="si">{</span><span class="n">axiom_to_explain</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">cause</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+        <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
-            <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="p">}</span>
+            <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="o">.</span><span class="n">getAxioms</span><span class="p">()}</span>
             <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
+
+        <span class="c1"># If the normal result set was empty but the monitor collected partial</span>
+        <span class="c1"># results (e.g. timeout fired between getExplanations completing and</span>
+        <span class="c1"># result mapping), fall back to the monitor&#39;s collection.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">justifications</span> <span class="ow">and</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">timed_out</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span><span class="p">:</span>
+                <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="o">.</span><span class="n">getAxioms</span><span class="p">()}</span>
+                <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
 
         <span class="c1"># Save to justifications.owl if requested</span>
         <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
 
             <span class="c1"># Create a new in-memory ontology to store justifications</span>
             <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/justifications&quot;</span><span class="p">)</span>
@@ -2006,7 +2493,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">create_laconic_axiom_justifications</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                             <span class="n">axiom_to_explain</span><span class="p">:</span> <span class="n">OWLAxiom</span><span class="p">,</span>
                                             <span class="n">n_max_justifications</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-                                            <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10_000</span><span class="p">,</span>
+                                            <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
                                             <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="n">OWLAxiom</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate multiple laconic justifications for why an axiom is entailed by the ontology.</span>
 <span class="sd">        Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.</span>
@@ -2017,7 +2504,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            axiom_to_explain (OWLAxiom): The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See</span>
 <span class="sd">            n_max_justifications (Optional[int], optional): The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</span>
-<span class="sd">            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</span>
+<span class="sd">            timeout (int, optional): The maximum time (in seconds) to wait for justification generation. Defaults to 1000.</span>
 <span class="sd">            save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.</span>
 
 <span class="sd">        Raises:</span>
@@ -2027,9 +2514,17 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_time</span>
 
-        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExplanationManager</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.blackbox</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.blackbox.checker</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">BlackBoxExplanationGeneratorFactory</span><span class="p">,</span>
+            <span class="n">SatisfiabilityEntailmentCheckerFactory</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.laconic</span><span class="w"> </span><span class="kn">import</span> <span class="n">LaconicExplanationGeneratorFactory</span>
+
+        <span class="n">TimeUnit</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.TimeUnit&quot;</span><span class="p">)</span>
+        <span class="n">Thread</span> <span class="o">=</span> <span class="n">JClass</span><span class="p">(</span><span class="s2">&quot;java.lang.Thread&quot;</span><span class="p">)</span>
 
         <span class="c1"># Get a hold of the reasoner factory and the ontology</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
@@ -2056,10 +2551,45 @@
 
         <span class="n">j_ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_ontology</span>
 
-        <span class="n">j_gen_fac</span> <span class="o">=</span> <span class="n">ExplanationManager</span><span class="o">.</span><span class="n">createExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_reasoner_factory</span><span class="p">)</span>
+        <span class="c1"># Convert timeout from seconds to milliseconds for the Java-level</span>
+        <span class="c1"># SatisfiabilityEntailmentCheckerFactory (cooperative timeout inside</span>
+        <span class="c1"># the explanation library).</span>
+        <span class="n">timeout_ms</span> <span class="o">=</span> <span class="n">timeout</span> <span class="o">*</span> <span class="mi">1000</span>
+
+        <span class="c1"># Build the chain manually so that the timeout is forwarded to the</span>
+        <span class="c1"># SatisfiabilityEntailmentCheckerFactory (ExplanationManager does not</span>
+        <span class="c1"># pass a timeout).</span>
+        <span class="c1"># Explicitly use JLong to disambiguate the (OWLReasonerFactory, long)</span>
+        <span class="c1"># constructor from the (OWLReasonerFactory, boolean) overload.</span>
+        <span class="n">j_checker_factory</span> <span class="o">=</span> <span class="n">SatisfiabilityEntailmentCheckerFactory</span><span class="p">(</span>
+            <span class="n">j_reasoner_factory</span><span class="p">,</span> <span class="n">jpype</span><span class="o">.</span><span class="n">JLong</span><span class="p">(</span><span class="n">timeout_ms</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">j_config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">j_checker_factory</span><span class="p">)</span>
+        <span class="n">j_gen_fac</span> <span class="o">=</span> <span class="n">BlackBoxExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_config</span><span class="p">)</span>
         <span class="n">j_laconic_gen_fac</span> <span class="o">=</span> <span class="n">LaconicExplanationGeneratorFactory</span><span class="p">(</span><span class="n">j_gen_fac</span><span class="p">)</span>
 
-        <span class="n">j_gen</span> <span class="o">=</span> <span class="n">j_laconic_gen_fac</span><span class="o">.</span><span class="n">createExplanationGenerator</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">)</span>
+        <span class="c1"># Create a progress monitor that collects partial results and supports</span>
+        <span class="c1"># cooperative cancellation via both a wall-clock deadline and Java</span>
+        <span class="c1"># thread interruption (set by future.cancel(True) on hard timeout).</span>
+        <span class="nd">@jpype</span><span class="o">.</span><span class="n">JImplements</span><span class="p">(</span><span class="s2">&quot;org.semanticweb.owl.explanation.api.ExplanationProgressMonitor&quot;</span><span class="p">)</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_TimeoutProgressMonitor</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="n">self_</span><span class="p">,</span> <span class="n">deadline</span><span class="p">):</span>
+                <span class="n">self_</span><span class="o">.</span><span class="n">_found</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">self_</span><span class="o">.</span><span class="n">_deadline</span> <span class="o">=</span> <span class="n">deadline</span>
+
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">foundExplanation</span><span class="p">(</span><span class="n">self_</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">explanation</span><span class="p">,</span> <span class="n">allExplanations</span><span class="p">):</span>
+                <span class="n">self_</span><span class="o">.</span><span class="n">_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">explanation</span><span class="p">)</span>
+
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">isCancelled</span><span class="p">(</span><span class="n">self_</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">_time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">self_</span><span class="o">.</span><span class="n">_deadline</span>
+                        <span class="ow">or</span> <span class="n">Thread</span><span class="o">.</span><span class="n">currentThread</span><span class="p">()</span><span class="o">.</span><span class="n">isInterrupted</span><span class="p">())</span>
+
+        <span class="n">deadline</span> <span class="o">=</span> <span class="n">_time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout</span>
+        <span class="n">monitor</span> <span class="o">=</span> <span class="n">_TimeoutProgressMonitor</span><span class="p">(</span><span class="n">deadline</span><span class="p">)</span>
+
+        <span class="n">j_gen</span> <span class="o">=</span> <span class="n">j_laconic_gen_fac</span><span class="o">.</span><span class="n">createExplanationGenerator</span><span class="p">(</span><span class="n">j_ontology</span><span class="p">,</span> <span class="n">monitor</span><span class="p">)</span>
 
         <span class="n">j_axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
@@ -2068,19 +2598,70 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;n_max_justifications must be an integer or None, but got </span><span class="si">{</span><span class="n">n_max_justifications</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_max_justifications</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_max_justifications</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">,</span> <span class="n">n_max_justifications</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">)</span>
+
+        <span class="c1"># Submit the justification task to the shared single-threaded executor</span>
+        <span class="c1"># so that Future.get(timeout) provides a hard, enforceable timeout and</span>
+        <span class="c1"># future.cancel(True) can interrupt the Java reasoning thread.</span>
+        <span class="n">n_max</span> <span class="o">=</span> <span class="n">n_max_justifications</span>  <span class="c1"># capture for closure</span>
+
+        <span class="nd">@jpype</span><span class="o">.</span><span class="n">JImplements</span><span class="p">(</span><span class="s2">&quot;java.util.concurrent.Callable&quot;</span><span class="p">)</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_JustificationCallable</span><span class="p">:</span>
+            <span class="nd">@jpype</span><span class="o">.</span><span class="n">JOverride</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="n">self_</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">n_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_max</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">,</span> <span class="n">n_max</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">j_gen</span><span class="o">.</span><span class="n">getExplanations</span><span class="p">(</span><span class="n">j_axiom</span><span class="p">)</span>
+
+        <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_JustificationCallable</span><span class="p">())</span>
+        <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="n">SECONDS</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">jpype</span><span class="o">.</span><span class="n">JException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;TimeoutException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                <span class="n">future</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Interrupt the Java reasoning thread</span>
+                <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Laconic justification generation timed out after </span><span class="si">%d</span><span class="s2"> seconds. &quot;</span>
+                    <span class="s2">&quot;Returning </span><span class="si">%d</span><span class="s2"> partial justification(s) found before timeout.&quot;</span><span class="p">,</span>
+                    <span class="n">timeout</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">monitor</span><span class="o">.</span><span class="n">_found</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span>
+            <span class="k">elif</span> <span class="s2">&quot;ExecutionException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;Laconic justification generation was interrupted. &quot;</span>
+                        <span class="s2">&quot;Returning </span><span class="si">%d</span><span class="s2"> partial justification(s) found so far.&quot;</span><span class="p">,</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">monitor</span><span class="o">.</span><span class="n">_found</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">j_explanations</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cause</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">getCause</span><span class="p">()</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Laconic justification failed most likely because the axiom type &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">axiom_to_explain</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not supported for justification &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;generation.</span><span class="se">\n</span><span class="si">{</span><span class="n">cause</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span>
+
         <span class="n">justifications</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">j_explanations</span><span class="p">:</span>
             <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="o">.</span><span class="n">getAxioms</span><span class="p">()}</span>
             <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
 
+        <span class="c1"># If the normal result set was empty but the monitor collected partial</span>
+        <span class="c1"># results (e.g. timeout fired between getExplanations completing and</span>
+        <span class="c1"># result mapping), fall back to the monitor&#39;s collection.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">justifications</span> <span class="ow">and</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">timed_out</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j_expl</span> <span class="ow">in</span> <span class="n">monitor</span><span class="o">.</span><span class="n">_found</span><span class="p">:</span>
+                <span class="n">py_axioms</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">j_expl</span><span class="o">.</span><span class="n">getAxioms</span><span class="p">()}</span>
+                <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
+
         <span class="c1"># Save to justifications.owl if requested</span>
         <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
 
             <span class="c1"># Create a new in-memory ontology to store justifications</span>
             <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/laconic_axiom_justifications&quot;</span><span class="p">)</span>
@@ -2122,8 +2703,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_consistent_ontology</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The ontology is consistent. No inconsistency justifications to create.&quot;</span><span class="p">)</span>
 
-        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.blackbox.checker</span><span class="w"> </span><span class="kn">import</span> \
-            <span class="n">InconsistentOntologyExplanationGeneratorFactory</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owl.explanation.impl.blackbox.checker</span><span class="w"> </span><span class="kn">import</span> <span class="n">InconsistentOntologyExplanationGeneratorFactory</span>
 
         <span class="c1"># Get the reasoner factory</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;Pellet&quot;</span><span class="p">:</span>
@@ -2167,8 +2747,8 @@
             <span class="n">justifications</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">py_axioms</span><span class="p">)</span>
         <span class="c1"># Save to justifications.owl if requested</span>
         <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
 
             <span class="c1"># Create a new in-memory ontology to store justifications</span>
             <span class="n">just_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://example.org/inconsistency_justifications&quot;</span><span class="p">)</span>
@@ -2380,16 +2960,19 @@
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.import_and_include_axioms_generators">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">import_and_include_axioms_generators</span><span class="p">():</span>
     <span class="c1"># noinspection PyUnresolvedReferences</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.util</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">,</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">,</span>
-                                             <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.util</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredDataPropertyCharacteristicAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredDisjointClassesAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredEquivalentClassAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredEquivalentDataPropertiesAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredEquivalentObjectPropertyAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredInverseObjectPropertiesAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredObjectPropertyCharacteristicAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredSubClassAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredSubDataPropertyAxiomGenerator</span><span class="p">,</span>
+        <span class="n">InferredSubObjectPropertyAxiomGenerator</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;InferredClassAssertionAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredClassAssertionAxiomGenerator</span><span class="p">(),</span>
             <span class="s2">&quot;InferredSubClassAxiomGenerator&quot;</span><span class="p">:</span> <span class="n">InferredSubClassAxiomGenerator</span><span class="p">(),</span>
@@ -2645,7 +3228,7 @@
             <span class="k">yield from</span> <span class="n">all_individuals</span> <span class="o">-</span> <span class="n">excluded_individuals</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot; Handling intersection of class expressions:</span>
-<span class="sd">            Given an OWLObjectIntersectionOf (C ⊓ D),  </span>
+<span class="sd">            Given an OWLObjectIntersectionOf (C ⊓ D),</span>
 <span class="sd">            retrieve its instances by intersecting the instance of each operands.</span>
 <span class="sd">            {x | phi(x, type, C) ≥ γ} ∩ {x | phi(x, type, D) ≥ γ}</span>
 <span class="sd">            &quot;&quot;&quot;</span>
@@ -2660,10 +3243,10 @@
                     <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">retrieval_of_op</span><span class="p">)</span>
             <span class="k">yield from</span> <span class="n">result</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Given an OWLObjectAllValuesFrom ∀ r.C, retrieve its instances =&gt; </span>
-<span class="sd">            Retrieval(¬∃ r.¬C) =             </span>
-<span class="sd">            Entities \setminus {x | ∃ y: \phi(y, type, C) &lt; \gamma AND \phi(x,r,y)  ≥ \gamma } </span>
+<span class="w">            </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Given an OWLObjectAllValuesFrom ∀ r.C, retrieve its instances =&gt;</span>
+<span class="sd">            Retrieval(¬∃ r.¬C) =</span>
+<span class="sd">            Entities \setminus {x | ∃ y: \phi(y, type, C) &lt; \gamma AND \phi(x,r,y)  ≥ \gamma }</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">object_property</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
             <span class="n">filler_expression</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
@@ -2671,10 +3254,10 @@
                 <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="n">object_property</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="n">filler_expression</span><span class="p">))))</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Given an OWLObjectSomeValuesFrom ∃ r.C, retrieve its instances =&gt; </span>
-<span class="sd">            Retrieval(∃ r.C) = </span>
-<span class="sd">            {x | ∃ y : phi(y, type, C) ≥ \gamma AND phi(x, r, y) ≥ \gamma }  </span>
+<span class="w">            </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Given an OWLObjectSomeValuesFrom ∃ r.C, retrieve its instances =&gt;</span>
+<span class="sd">            Retrieval(∃ r.C) =</span>
+<span class="sd">            {x | ∃ y : phi(y, type, C) ≥ \gamma AND phi(x, r, y) ≥ \gamma }</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">object_property</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
             <span class="n">filler_expression</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>

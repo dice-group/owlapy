@@ -86,21 +86,40 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Set</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">rdflib.plugins.sparql.parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parseQuery</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> \
-    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> \
-    <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> \
-    <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> \
-    <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> \
-    <span class="n">OWLDataOneOf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OWLClass</span><span class="p">,</span>
+    <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span>
+    <span class="n">OWLDataExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataHasValue</span><span class="p">,</span>
+    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataOneOf</span><span class="p">,</span>
+    <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDatatypeRestriction</span><span class="p">,</span>
+    <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span>
+    <span class="n">OWLObjectComplementOf</span><span class="p">,</span>
+    <span class="n">OWLObjectExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectHasSelf</span><span class="p">,</span>
+    <span class="n">OWLObjectHasValue</span><span class="p">,</span>
+    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span>
+    <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectOneOf</span><span class="p">,</span>
+    <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectUnionOf</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">TopOWLDatatype</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLFacet</span><span class="p">,</span> <span class="n">OWLRDFVocabulary</span>
 
 <span class="n">_Variable_facet_comp</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">({</span>
@@ -189,10 +208,33 @@
 <div class="viewcode-block" id="Owl2SparqlConverter">
 <a class="viewcode-back" href="../../autoapi/owlapy/converter/index.html#owlapy.converter.Owl2SparqlConverter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Owl2SparqlConverter</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert owl (owlapy model class expressions) to SPARQL.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert OWL class expressions to SPARQL queries.</span>
+
+<span class="sd">    This class converts OWL class expressions from the owlapy model into equivalent SPARQL queries.</span>
+<span class="sd">    It maintains internal state for variable management, parent-child relationships, and query building.</span>
+
+<span class="sd">    The converter uses a recursive approach to traverse the class expression tree and generates</span>
+<span class="sd">    SPARQL patterns for each type of class expression (e.g., OWLClass, OWLObjectSomeValuesFrom,</span>
+<span class="sd">    OWLObjectIntersectionOf, etc.).</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        ce: The root OWL class expression being converted</span>
+<span class="sd">        sparql: List of SPARQL query patterns being constructed</span>
+<span class="sd">        variables: List of variable names used in the query</span>
+<span class="sd">        parent: Stack of parent class expressions during traversal</span>
+<span class="sd">        parent_var: Stack of parent variable names during traversal</span>
+<span class="sd">        variable_entities: Set of OWL entities associated with variables</span>
+<span class="sd">        properties: Mapping from expression indices to their properties</span>
+<span class="sd">        _intersection: Mapping tracking whether expressions are in intersections</span>
+<span class="sd">        mapping: Variable mapping manager for De Morgan transformations</span>
+<span class="sd">        grouping_vars: Variables used in GROUP BY clauses for cardinality restrictions</span>
+<span class="sd">        having_conditions: HAVING clause conditions for cardinality restrictions</span>
+<span class="sd">        cnt: Counter for generating unique variable names</span>
+<span class="sd">        for_all_de_morgan: Whether to apply De Morgan&#39;s laws for universal quantification</span>
+<span class="sd">        named_individuals: Whether to restrict results to named individuals only</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;ce&#39;</span><span class="p">,</span> <span class="s1">&#39;sparql&#39;</span><span class="p">,</span> <span class="s1">&#39;variables&#39;</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">,</span> <span class="s1">&#39;parent_var&#39;</span><span class="p">,</span> <span class="s1">&#39;properties&#39;</span><span class="p">,</span> <span class="s1">&#39;variable_entities&#39;</span><span class="p">,</span> <span class="s1">&#39;cnt&#39;</span><span class="p">,</span> \
                 <span class="s1">&#39;mapping&#39;</span><span class="p">,</span> <span class="s1">&#39;grouping_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;having_conditions&#39;</span><span class="p">,</span> <span class="s1">&#39;for_all_de_morgan&#39;</span><span class="p">,</span> <span class="s1">&#39;named_individuals&#39;</span><span class="p">,</span> <span class="s1">&#39;_intersection&#39;</span>
-    <span class="c1"># @TODO:CD: We need to document this class. The computation behind the mapping is not clear.</span>
 
     <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span>
     <span class="n">sparql</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -240,8 +282,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">for_all_de_morgan</span> <span class="o">=</span> <span class="n">for_all_de_morgan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">named_individuals</span> <span class="o">=</span> <span class="n">named_individuals</span>
         <span class="c1"># # if named_individuals is True, we return only entities that are instances of owl:NamedIndividual</span>
-        <span class="c1"># if named_individuals:</span>
-        <span class="c1">#     self.append_triple(root_variable, &#39;a&#39;, f&quot;&lt;{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}&gt;&quot;)</span>
+        <span class="k">if</span> <span class="n">named_individuals</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NAMED_INDIVIDUAL</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">root_variable</span><span class="p">):</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_parent</span><span class="p">(</span><span class="n">ce</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
@@ -391,10 +433,9 @@
         <span class="c1"># the exclusion of &quot;?x ?p ?o&quot; results in the group graph pattern to just return true or false (not bindings)</span>
         <span class="c1"># as a result, we need to comment out the if-clause of the following line</span>
         <span class="c1"># if not self.in_intersection and self.modal_depth == 1:</span>
-        <span class="c1"># if namedIndividual is set to True, do not use variables --&gt; restrict the subject to instances of NamedIndividual</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_individuals</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NAMED_INDIVIDUAL</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># However, if the complement is directly inside an intersection at the top level,</span>
+        <span class="c1"># the intersection already provides bindings, so we don&#39;t need the extra triple pattern</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">modal_depth</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
@@ -684,7 +725,9 @@
     <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">node</span> <span class="o">!=</span> <span class="n">TopOWLDatatype</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( DATATYPE ( </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> = &lt;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt; ) ) &quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( DATATYPE ( </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> ) = &lt;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt; ) &quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( isLiteral ( </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> ) ) &quot;</span><span class="p">)</span>
 
     <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">OWLDataOneOf</span><span class="p">):</span>
@@ -747,7 +790,8 @@
                  <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">count</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+                 <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span><span class="n">OWLClassExpression</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;ce must be an instance of OWLClassExpression. Currently </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="c1"># root variable: the variable that will be projected</span>
         <span class="c1"># ce: the class expression to be transformed to a SPARQL query</span>
@@ -756,6 +800,7 @@
         <span class="c1"># values: positive or negative examples from a class expression problem</span>
         <span class="c1"># named_individuals: if set to True, the generated SPARQL query will return only entities that are instances</span>
         <span class="c1">#                    of owl:NamedIndividual</span>
+        <span class="c1"># validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)</span>
         <span class="n">qs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SELECT&quot;</span><span class="p">]</span>
         <span class="n">tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span> <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
@@ -768,12 +813,15 @@
                 <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
             <span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;} . &quot;</span><span class="p">)</span>
             <span class="n">qs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">named_individuals</span><span class="p">:</span>
+            <span class="n">qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2"> a &lt;</span><span class="si">{</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NAMED_INDIVIDUAL</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt; . &quot;</span><span class="p">)</span>
         <span class="n">qs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
         <span class="n">qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; }&quot;</span><span class="p">)</span>
 
 
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
-        <span class="n">parseQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="n">parseQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">query</span></div>
 
 
@@ -785,12 +833,15 @@
                                   <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
                                   <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
                                   <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                                  <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+                                  <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                                  <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="c1"># get the graph pattern corresponding to the provided class expression (ce)</span>
-        <span class="n">graph_pattern_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span>
-                                                 <span class="n">ce</span><span class="p">,</span>
-                                                 <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
-                                                 <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">))</span>
+        <span class="n">tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span> <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">named_individuals</span><span class="p">:</span>
+            <span class="n">named_individual_triple</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable</span><span class="si">}</span><span class="s2"> a &lt;</span><span class="si">{</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NAMED_INDIVIDUAL</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt; . &quot;</span>
+            <span class="n">graph_pattern_str</span> <span class="o">=</span> <span class="n">named_individual_triple</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">graph_pattern_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
         <span class="c1"># preparation for the final query</span>
 
         <span class="c1"># required to compute false negatives</span>
@@ -831,7 +882,8 @@
 <span class="s2">                       </span><span class="se">}}</span>
 <span class="s2">                    </span><span class="se">}}</span>
 <span class="s2">                    &quot;&quot;&quot;</span>
-        <span class="n">parseQuery</span><span class="p">(</span><span class="n">sparql_str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="n">parseQuery</span><span class="p">(</span><span class="n">sparql_str</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">sparql_str</span></div>
 </div>
 
@@ -846,7 +898,8 @@
                              <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?x&quot;</span><span class="p">,</span>
                              <span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                             <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+                             <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                             <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query</span>
 <span class="sd">     root variable: the variable that will be projected</span>
 <span class="sd">     expression: the class expression to be transformed to a SPARQL query</span>
@@ -856,10 +909,12 @@
 <span class="sd">     patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query</span>
 <span class="sd">     named_individuals: if set to True, the generated SPARQL query will return only entities</span>
 <span class="sd">     that are instances of owl:NamedIndividual</span>
+<span class="sd">     validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;expression cannot be None&quot;</span>
     <span class="k">return</span> <span class="n">converter</span><span class="o">.</span><span class="n">as_query</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
-                              <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span> <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">)</span></div>
+                              <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span> <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                              <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">)</span></div>
 
 
 
@@ -870,7 +925,8 @@
                                                    <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]],</span>
                                                    <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?x&quot;</span><span class="p">,</span>
                                                    <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                                                   <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+                                                   <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                                                   <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query</span>
 <span class="sd">     root variable: the variable that will be projected</span>
 <span class="sd">     expression: the class expression to be transformed to a SPARQL query</span>
@@ -880,6 +936,7 @@
 <span class="sd">     patterns for the universal quantifier (¬(∃r.¬C)), instead of the counting query</span>
 <span class="sd">     named_individuals: if set to True, the generated SPARQL query will return only entities</span>
 <span class="sd">     that are instances of owl:NamedIndividual</span>
+<span class="sd">     validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;expression cannot be None&quot;</span>
     <span class="k">assert</span> <span class="n">positive_examples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;positive examples cannot be None&quot;</span>
@@ -889,7 +946,8 @@
                                                <span class="n">positive_examples</span><span class="o">=</span><span class="n">positive_examples</span><span class="p">,</span>
                                                <span class="n">negative_examples</span><span class="o">=</span><span class="n">negative_examples</span><span class="p">,</span>
                                                <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
-                                               <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">)</span></div>
+                                               <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                               <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">)</span></div>
 
 </pre></div>
 

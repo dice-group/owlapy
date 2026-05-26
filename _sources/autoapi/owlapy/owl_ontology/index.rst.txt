@@ -261,12 +261,43 @@ Module Contents
 
 
 
-   .. py:method:: save(path: Union[str, owlapy.iri.IRI] = None, inplace: bool = False, rdf_format='rdfxml')
+   .. py:method:: save(path: Union[str, owlapy.iri.IRI] = None, inplace: bool = False, document_format: Optional[str] = None)
 
-      Saves this ontology, using its IRI to determine where/how the ontology should be
-      saved.
+      Save the ontology to a file, optionally in a different serialisation format.
 
-      :param document_iri: Whether you want to save in a different location.
+      owlready2 natively supports ``"rdfxml"`` and ``"ntriples"``.  Any other
+      format is handled by loading the RDF/XML output into rdflib and
+      re-serialising there.
+
+      **owlready2-native formats:**
+
+      ========================  ==========================================
+      Format string(s)          Serialisation
+      ========================  ==========================================
+      ``"rdfxml"``              RDF/XML  *(default)*
+      ``"ntriples"`` / ``"nt"`` N-Triples
+      ========================  ==========================================
+
+      **rdflib-backed formats** – saved as RDF/XML first, then converted:
+
+      =============================  ==========================================
+      Format string(s)               Serialisation
+      =============================  ==========================================
+      ``"turtle"`` / ``"ttl"``       Turtle
+      ``"json-ld"`` / ``"jsonld"``   JSON-LD
+      ``"nt11"``                     N-Triples 1.1
+      ``"n3"``                       Notation3
+      ``"trig"``                     TriG
+      ``"trix"``                     TriX
+      ``"nquads"`` / ``"nq"``        N-Quads
+      =============================  ==========================================
+
+      :param path: File path where the ontology will be saved.
+      :param inplace: If ``True``, overwrite the file the ontology was loaded from.
+      :param document_format: Desired serialisation format (see tables above).
+                              Defaults to ``"rdfxml"`` when not specified.
+
+      :raises ValueError: If an unsupported format string is provided.
 
 
 
@@ -435,6 +466,15 @@ Module Contents
 
 
 
+   .. py:method:: get_rbox_axioms(include_imports_closure: bool = True) -> Iterable[owlapy.owl_axiom.OWLAxiom]
+
+      Get all RBox axioms.
+      :param include_imports_closure: Whether to include/exclude imports from searches.
+
+      :returns: RBox axioms.
+
+
+
    .. py:method:: get_tbox_axioms(include_imports_closure: bool = True) -> Iterable[owlapy.owl_axiom.OWLAxiom]
 
       Get all TBox axioms.
@@ -442,16 +482,6 @@ Module Contents
       :param include_imports_closure: Whether to include/exclude imports from searches.
 
       :returns: TBox axioms.
-
-
-
-   .. py:method:: get_rbox_axioms(include_imports_closure: bool = True) -> Iterable[owlapy.owl_axiom.OWLAxiom]
-
-      Get all RBox axioms.
-
-      :param include_imports_closure: Whether to include/exclude imports from searches.
-
-      :returns: RBox axioms.
 
 
 
@@ -486,10 +516,50 @@ Module Contents
 
 
 
-   .. py:method:: save(path: str = None, document_iri: Optional[owlapy.iri.IRI] = None)
+   .. py:method:: save(path: str = None, document_iri: Optional[owlapy.iri.IRI] = None, document_format: Optional[str] = None)
 
-      https://github.com/phillord/owl-api/blob/b2a5bfb9a0c6730c8ff950776af8f9bf19c78eac/
-              contract/src/test/java/org/coode/owlapi/examples/Examples.java#L206
+      Save the ontology to a file, optionally specifying the output format.
+
+      **OWL API–backed formats** (case-insensitive):
+
+      =========================  ==========================================
+      Format string(s)           Serialisation
+      =========================  ==========================================
+      ``"rdf/xml"`` / ``"rdfxml"``        RDF/XML
+      ``"owl/xml"`` / ``"owlxml"``        OWL/XML
+      ``"turtle"``  / ``"ttl"``           Turtle (OWL API)
+      ``"functional"`` / ``"fss"``        OWL Functional Syntax
+      ``"manchester"`` / ``"ms"``         Manchester OWL Syntax
+      ``"latex"``                         LaTeX
+      ``"dlsyntax"`` / ``"dl"``           DL Syntax
+      ``"krss2"``                         KRSS2
+      ``"obo"``                           OBO
+      =========================  ==========================================
+
+      **rdflib-backed formats** – the ontology is first saved as RDF/XML by
+      OWL API to a temporary file, loaded by rdflib, re-serialised in the
+      requested format, then the temporary file is deleted:
+
+      =============================  ==========================================
+      Format string(s)               Serialisation
+      =============================  ==========================================
+      ``"turtle2"``                  Turtle (rdflib)
+      ``"json-ld"`` / ``"jsonld"``   JSON-LD
+      ``"ntriples"`` / ``"nt"``      N-Triples
+      ``"nt11"``                     N-Triples 1.1
+      ``"n3"``                       Notation3
+      ``"trig"``                     TriG
+      ``"trix"``                     TriX
+      ``"nquads"`` / ``"nq"``        N-Quads
+      =============================  ==========================================
+
+      If *document_format* is ``None`` the ontology's current format is kept.
+
+      :param path: File path where the ontology will be saved.
+      :param document_iri: Reserved for future use; must be ``None``.
+      :param document_format: Desired serialisation format (see tables above).
+
+      :raises ValueError: If an unsupported format string is provided.
 
 
 

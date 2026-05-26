@@ -81,8 +81,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.agen_kg.graph_extracting_models.domain_graph_extractor</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -90,19 +91,16 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">,</span> \
-    <span class="n">OWLSubClassOfAxiom</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObjectProperty</span><span class="p">,</span> <span class="n">OWLDataProperty</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">Entity</span><span class="p">,</span> <span class="n">Triple</span><span class="p">,</span> <span class="n">TypeAssertion</span><span class="p">,</span> <span class="n">TypeGeneration</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">SPLTriples</span><span class="p">,</span> <span class="n">Domain</span><span class="p">,</span>
-    <span class="n">DomainSpecificFewShotGenerator</span><span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_hierarchy_from_dbpedia</span><span class="p">,</span> <span class="n">task_example_mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.domain_examples_cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DomainExamplesCache</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.graph_extractor</span><span class="w"> </span><span class="kn">import</span> <span class="n">GraphExtractor</span>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_hierarchy_from_dbpedia</span><span class="p">,</span> <span class="n">task_example_mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Domain</span><span class="p">,</span> <span class="n">DomainSpecificFewShotGenerator</span><span class="p">,</span> <span class="n">Entity</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">SPLTriples</span><span class="p">,</span> <span class="n">Triple</span><span class="p">,</span> <span class="n">TypeAssertion</span><span class="p">,</span> <span class="n">TypeGeneration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">,</span> <span class="n">OWLDataPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLObjectPropertyAssertionAxiom</span><span class="p">,</span> <span class="n">OWLSubClassOfAxiom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
 
 
 <div class="viewcode-block" id="DomainGraphExtractor">

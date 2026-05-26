@@ -104,7 +104,7 @@
 <span class="sd">    ce = parser.parse_expression(&quot;∃ r.A ⊓ B&quot;)</span>
 <span class="sd">    axiom = parser.parse_axiom(&quot;A ⊑ ∃ r.B&quot;)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">jpype</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jpype.imports</span>
@@ -118,11 +118,9 @@
 <span class="k">if</span> <span class="ow">not</span> <span class="n">jpype</span><span class="o">.</span><span class="n">isJVMStarted</span><span class="p">():</span>
     <span class="n">startJVM</span><span class="p">()</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.dlsyntax.renderer</span><span class="w"> </span><span class="kn">import</span> \
-    <span class="n">DLSyntaxObjectRenderer</span> <span class="k">as</span> <span class="n">_OWLAPI_DLSyntaxObjectRenderer</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.dlsyntax.parser</span><span class="w"> </span><span class="kn">import</span> \
-    <span class="n">DLSyntaxParser</span> <span class="k">as</span> <span class="n">_OWLAPI_DLSyntaxParser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.apibinding</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLManager</span> <span class="k">as</span> <span class="n">_OWLManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.dlsyntax.parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">DLSyntaxParser</span> <span class="k">as</span> <span class="n">_OWLAPI_DLSyntaxParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.dlsyntax.renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">DLSyntaxObjectRenderer</span> <span class="k">as</span> <span class="n">_OWLAPI_DLSyntaxObjectRenderer</span>
 
 <span class="c1"># Shared data factory for creating OWLAPI objects</span>
 <span class="n">_manager</span> <span class="o">=</span> <span class="n">_OWLManager</span><span class="o">.</span><span class="n">createOWLOntologyManager</span><span class="p">()</span>

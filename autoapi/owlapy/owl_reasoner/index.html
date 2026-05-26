@@ -117,6 +117,10 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.reasoner_name"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.reasoner_name</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.mapper"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.mapper</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.inference_types_mapping"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.inference_types_mapping</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.__del__"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.__del__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.close"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.close()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.__enter__"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.__enter__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.__exit__"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.__exit__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.instances"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.instances()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.equivalent_classes"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.equivalent_classes()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner.SyncReasoner.disjoint_classes"><code class="docutils literal notranslate"><span class="pre">SyncReasoner.disjoint_classes()</span></code></a></li>
@@ -510,11 +514,12 @@ axioms entails DataPropertyAssertion(pe ind l).</p>
 <li><p><strong>pe</strong> – The data property expression whose values are to be retrieved</p></li>
 <li><p><strong>direct</strong> – Specifies if only the direct values of the data property pe should be retrieved (True), or if
 the values of sub properties of pe should be taken into account (False).</p></li>
+<li><p><strong>inds</strong> – Optional set of individuals to consider. If None, all individuals in the ontology are considered.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
-axioms entails DataPropertyAssertion(pe ind l) for any ind.</p>
+axioms entails DataPropertyAssertion(pe ind l) for any ind in inds.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -815,23 +820,54 @@ a particular ontology - the “root” ontology.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.__del__">
+<span class="sig-name descname"><span class="pre">__del__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.__del__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.__del__" title="Link to this definition"></a></dt>
+<dd><p>Shut down the shared Java executor and dispose the reasoner when garbage-collected.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.close" title="Link to this definition"></a></dt>
+<dd><p>Explicitly shut down the reasoner and the shared Java executor.</p>
+<p>Call this when done with the reasoner to release all Java resources
+and allow the process to exit cleanly.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.__enter__">
+<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.__enter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.__enter__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.__exit__">
+<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_tb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.__exit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.__exit__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.instances">
 <span class="sig-name descname"><span class="pre">instances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.instances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.instances" title="Link to this definition"></a></dt>
-<dd><p>Gets the individuals which are instances of the specified class expression.</p>
+<dd><p>Get the instances for a given class expression with a Java-level timeout.</p>
+<p>Uses Java’s ExecutorService to run the reasoning task in a separate Java thread,
+enabling proper timeout and interruption of the underlying Java reasoner (e.g. HermiT,
+Pellet). This overcomes the limitation of Python’s threading which cannot interrupt
+JPype Java calls.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ce</strong> – The class expression whose instances are to be retrieved.</p></li>
-<li><p><strong>direct</strong> – Specifies if the direct instances should be retrieved (True), or if all instances should be
-retrieved (False).</p></li>
-<li><p><strong>timeout</strong> – Time limit in seconds until results must be returned, else empty set is returned.</p></li>
+<li><p><strong>ce</strong> (<a class="reference internal" href="../class_expression/class_expression/index.html#owlapy.class_expression.class_expression.OWLClassExpression" title="owlapy.class_expression.class_expression.OWLClassExpression"><em>OWLClassExpression</em></a>) – The class expression in OWLAPY format.</p></li>
+<li><p><strong>direct</strong> (<em>bool</em>) – Whether to get direct instances or not. Defaults to False.</p></li>
+<li><p><strong>timeout</strong> (<em>int</em>) – Timeout in seconds for the reasoning task. Defaults to 1000.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>If direct is True, each named individual j where the set of reasoner axioms entails
-DirectClassAssertion(ce, j). If direct is False, each named individual j where the set of reasoner axioms
-entails ClassAssertion(ce, j). If ce is unsatisfiable with respect to the set of reasoner axioms then
-nothing returned.</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>A set of individuals classified by the given class expression.</dt><dd><p>Returns an empty set if the timeout is exceeded.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1233,14 +1269,23 @@ entails ClassAssertion(C, ind).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.has_consistent_ontology">
-<span class="sig-name descname"><span class="pre">has_consistent_ontology</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.has_consistent_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.has_consistent_ontology" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">has_consistent_ontology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.has_consistent_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.has_consistent_ontology" title="Link to this definition"></a></dt>
 <dd><p>Check if the used ontology is consistent.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>True if the ontology used by this reasoner is consistent, False otherwise.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timeout</strong> (<em>int</em>) – Timeout in seconds for the reasoning task. Defaults to 1000.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the ontology used by this reasoner is consistent, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TimeoutError</strong> – If the reasoning task exceeds the timeout.</p></li>
+<li><p><strong>RuntimeError</strong> – If the reasoning task fails for another reason.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1339,47 +1384,82 @@ InferredClassAssertionAxiomGenerator.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.is_entailed">
-<span class="sig-name descname"><span class="pre">is_entailed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.is_entailed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.is_entailed" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">is_entailed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.is_entailed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.is_entailed" title="Link to this definition"></a></dt>
 <dd><p>A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>axiom</strong> – The axiom to check for entailment.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axiom</strong> – The axiom to check for entailment.</p></li>
+<li><p><strong>timeout</strong> (<em>int</em>) – Timeout in seconds for the reasoning task. Defaults to 1000.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>True if the axiom is entailed by the reasoner axioms and False otherwise.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TimeoutError</strong> – If the reasoning task exceeds the timeout.</p></li>
+<li><p><strong>RuntimeError</strong> – If the reasoning task fails for another reason.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.is_satisfiable">
-<span class="sig-name descname"><span class="pre">is_satisfiable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.is_satisfiable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.is_satisfiable" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">is_satisfiable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.is_satisfiable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.is_satisfiable" title="Link to this definition"></a></dt>
 <dd><p>A convenience method that determines if the specified class expression is satisfiable with respect
 to the reasoner axioms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ce</strong> – The class expression to check for satisfiability.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression to check for satisfiability.</p></li>
+<li><p><strong>timeout</strong> (<em>int</em>) – Timeout in seconds for the reasoning task. Defaults to 1000.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>True if the class expression is satisfiable by the reasoner axioms and False otherwise.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TimeoutError</strong> – If the reasoning task exceeds the timeout.</p></li>
+<li><p><strong>RuntimeError</strong> – If the reasoning task fails for another reason.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes">
-<span class="sig-name descname"><span class="pre">unsatisfiable_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.unsatisfiable_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">unsatisfiable_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.unsatisfiable_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.unsatisfiable_classes" title="Link to this definition"></a></dt>
 <dd><p>A convenience method that obtains the classes in the signature of the root ontology that are
 unsatisfiable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timeout</strong> (<em>int</em>) – Timeout in seconds for the reasoning task. Defaults to 1000.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The unsatisfiable classes.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TimeoutError</strong> – If the reasoning task exceeds the timeout.</p></li>
+<li><p><strong>RuntimeError</strong> – If the reasoning task fails for another reason.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications">
-<span class="sig-name descname"><span class="pre">create_axiom_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_to_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_axiom_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">create_axiom_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_to_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_axiom_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_axiom_justifications" title="Link to this definition"></a></dt>
 <dd><p>Generate multiple justifications for why an axiom is entailed by the ontology.
-The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: <a class="reference external" href="https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java">https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java</a>
-The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see <a class="reference external" href="https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator">https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator</a>.java# .
-The supported axiom types are:
+The implementation uses the <code class="docutils literal notranslate"><span class="pre">owlexplanation</span></code> library (which also depends on <code class="docutils literal notranslate"><span class="pre">owlapi</span></code>
+and <code class="docutils literal notranslate"><span class="pre">telemetry-2.0.0</span></code>), by Matthew Horridge.  Internally an
+<code class="docutils literal notranslate"><span class="pre">ExplanationProgressMonitor</span></code> is used so that (a) the generator can be
+cooperatively cancelled when the <em>timeout</em> is reached and (b) any
+justifications that were already found before the timeout are still returned.</p>
+<p>The supported axiom types are:
 - OWLClassAssertionAxiom
 - OWLDataPropertyAssertionAxiom
 - OWLDataPropertyDomainAxiom
@@ -1402,6 +1482,7 @@ The supported axiom types are:
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>axiom_to_explain</strong> (<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><em>OWLAxiom</em></a>) – The axiom to create justifications for.</p></li>
 <li><p><strong>n_max_justifications</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The maximum number of justifications to generate. Defaults to 10.</p></li>
+<li><p><strong>timeout</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum time (in seconds) to wait for justification generation. Defaults to 1000.</p></li>
 <li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, saves all justifications in a new ontology as axioms. Defaults to False.</p></li>
 </ul>
 </dd>
@@ -1412,7 +1493,12 @@ The supported axiom types are:
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.</p>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed</dt><dd><p>by the ontology. If the timeout is reached, the justifications found so far are returned (which may be
+an empty list).</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>List[Set[<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom">OWLAxiom</a>]]</p>
@@ -1422,7 +1508,7 @@ The supported axiom types are:
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications">
-<span class="sig-name descname"><span class="pre">create_laconic_axiom_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_to_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_laconic_axiom_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">create_laconic_axiom_justifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axiom_to_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max_justifications</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner.html#SyncReasoner.create_laconic_axiom_justifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner.SyncReasoner.create_laconic_axiom_justifications" title="Link to this definition"></a></dt>
 <dd><p>Generate multiple laconic justifications for why an axiom is entailed by the ontology.
 Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
 An axiom is considered relevant if it participates in the inference of the axiom to explain, and irrelevant otherwise.
@@ -1433,7 +1519,7 @@ The implementation uses <cite>owlexplanation</cite> under the hood (which also d
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>axiom_to_explain</strong> (<a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><em>OWLAxiom</em></a>) – The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See</p></li>
 <li><p><strong>n_max_justifications</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.</p></li>
-<li><p><strong>timeout</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.</p></li>
+<li><p><strong>timeout</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum time (in seconds) to wait for justification generation. Defaults to 1000.</p></li>
 <li><p><strong>save</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to save the generated justifications to a file. Defaults to False.</p></li>
 </ul>
 </dd>

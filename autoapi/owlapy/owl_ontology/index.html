@@ -140,8 +140,8 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.object_property_range_axioms"><code class="docutils literal notranslate"><span class="pre">SyncOntology.object_property_range_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_signature"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_signature()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_abox_axioms"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_abox_axioms()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_tbox_axioms"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_tbox_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_rbox_axioms"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_rbox_axioms()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_tbox_axioms"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_tbox_axioms()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_owlapi_ontology"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_owlapi_ontology()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.get_ontology_id"><code class="docutils literal notranslate"><span class="pre">SyncOntology.get_ontology_id()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_ontology.SyncOntology.add_axiom"><code class="docutils literal notranslate"><span class="pre">SyncOntology.add_axiom()</span></code></a></li>
@@ -611,12 +611,54 @@ Structural Specification).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.Ontology.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdf_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rdfxml'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.save" title="Link to this definition"></a></dt>
-<dd><p>Saves this ontology, using its IRI to determine where/how the ontology should be
-saved.</p>
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#Ontology.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.Ontology.save" title="Link to this definition"></a></dt>
+<dd><p>Save the ontology to a file, optionally in a different serialisation format.</p>
+<p>owlready2 natively supports <code class="docutils literal notranslate"><span class="pre">&quot;rdfxml&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;ntriples&quot;</span></code>.  Any other
+format is handled by loading the RDF/XML output into rdflib and
+re-serialising there.</p>
+<p><strong>owlready2-native formats:</strong></p>
+<p><strong>rdflib-backed formats</strong> – saved as RDF/XML first, then converted:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Format string(s)</p></th>
+<th class="head"><p>Serialisation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;turtle&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;ttl&quot;</span></code></p></td>
+<td><p>Turtle</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;json-ld&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;jsonld&quot;</span></code></p></td>
+<td><p>JSON-LD</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;nt11&quot;</span></code></p></td>
+<td><p>N-Triples 1.1</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;n3&quot;</span></code></p></td>
+<td><p>Notation3</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;trig&quot;</span></code></p></td>
+<td><p>TriG</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;trix&quot;</span></code></p></td>
+<td><p>TriX</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;nquads&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;nq&quot;</span></code></p></td>
+<td><p>N-Quads</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>document_iri</strong> – Whether you want to save in a different location.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – File path where the ontology will be saved.</p></li>
+<li><p><strong>inplace</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, overwrite the file the ontology was loaded from.</p></li>
+<li><p><strong>document_format</strong> – Desired serialisation format (see tables above).
+Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;rdfxml&quot;</span></code> when not specified.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an unsupported format string is provided.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -850,6 +892,18 @@ Structural Specification).</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.get_rbox_axioms">
+<span class="sig-name descname"><span class="pre">get_rbox_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_imports_closure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.get_rbox_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.get_rbox_axioms" title="Link to this definition"></a></dt>
+<dd><p>Get all RBox axioms.
+:param include_imports_closure: Whether to include/exclude imports from searches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>RBox axioms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.get_tbox_axioms">
 <span class="sig-name descname"><span class="pre">get_tbox_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_imports_closure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.get_tbox_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.get_tbox_axioms" title="Link to this definition"></a></dt>
 <dd><p>Get all TBox axioms.</p>
@@ -859,20 +913,6 @@ Structural Specification).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>TBox axioms.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.get_rbox_axioms">
-<span class="sig-name descname"><span class="pre">get_rbox_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_imports_closure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_axiom/index.html#owlapy.owl_axiom.OWLAxiom" title="owlapy.owl_axiom.OWLAxiom"><span class="pre">owlapy.owl_axiom.OWLAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.get_rbox_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.get_rbox_axioms" title="Link to this definition"></a></dt>
-<dd><p>Get all RBox axioms.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>include_imports_closure</strong> – Whether to include/exclude imports from searches.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>RBox axioms.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -923,9 +963,56 @@ Structural Specification).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.owl_ontology.SyncOntology.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.save" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt><a class="reference external" href="https://github.com/phillord/owl-api/blob/b2a5bfb9a0c6730c8ff950776af8f9bf19c78eac/">https://github.com/phillord/owl-api/blob/b2a5bfb9a0c6730c8ff950776af8f9bf19c78eac/</a></dt><dd><p>contract/src/test/java/org/coode/owlapi/examples/Examples.java#L206</p>
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_ontology.html#SyncOntology.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_ontology.SyncOntology.save" title="Link to this definition"></a></dt>
+<dd><p>Save the ontology to a file, optionally specifying the output format.</p>
+<p><strong>OWL API–backed formats</strong> (case-insensitive):</p>
+<p><strong>rdflib-backed formats</strong> – the ontology is first saved as RDF/XML by
+OWL API to a temporary file, loaded by rdflib, re-serialised in the
+requested format, then the temporary file is deleted:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Format string(s)</p></th>
+<th class="head"><p>Serialisation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;turtle2&quot;</span></code></p></td>
+<td><p>Turtle (rdflib)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;json-ld&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;jsonld&quot;</span></code></p></td>
+<td><p>JSON-LD</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;ntriples&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;nt&quot;</span></code></p></td>
+<td><p>N-Triples</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;nt11&quot;</span></code></p></td>
+<td><p>N-Triples 1.1</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;n3&quot;</span></code></p></td>
+<td><p>Notation3</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;trig&quot;</span></code></p></td>
+<td><p>TriG</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;trix&quot;</span></code></p></td>
+<td><p>TriX</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;nquads&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;nq&quot;</span></code></p></td>
+<td><p>N-Quads</p></td>
+</tr>
+</tbody>
+</table>
+<p>If <em>document_format</em> is <code class="docutils literal notranslate"><span class="pre">None</span></code> the ontology’s current format is kept.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – File path where the ontology will be saved.</p></li>
+<li><p><strong>document_iri</strong> – Reserved for future use; must be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>document_format</strong> – Desired serialisation format (see tables above).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an unsupported format string is provided.</p>
 </dd>
 </dl>
 </dd></dl>

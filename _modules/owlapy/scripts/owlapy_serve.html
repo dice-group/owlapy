@@ -81,18 +81,19 @@
            <div itemprop="articleBody">
              
   <h1>Source code for owlapy.scripts.owlapy_serve</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">asynccontextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">uvicorn</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncReasoner</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.static_funcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">stopJVM</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">asynccontextmanager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 
 <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">reasoner</span> <span class="o">=</span> <span class="kc">None</span>
@@ -177,12 +178,12 @@
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_object_properties</span><span class="p">():</span>
         <span class="n">object_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">object_properties_in_signature</span><span class="p">()]</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;object_properties&quot;</span><span class="p">:</span> <span class="n">object_properties</span><span class="p">}</span>
-    
+
     <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/data_properties&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_data_properties</span><span class="p">():</span>
         <span class="n">data_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">data_properties_in_signature</span><span class="p">()]</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;data_properties&quot;</span><span class="p">:</span> <span class="n">data_properties</span><span class="p">}</span>
-    
+
     <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/individuals&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_individuals</span><span class="p">():</span>
         <span class="n">individuals</span> <span class="o">=</span> <span class="p">[</span><span class="n">ind</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">individuals_in_signature</span><span class="p">()]</span>
@@ -197,7 +198,7 @@
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_tbox</span><span class="p">():</span>
         <span class="n">tbox</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">get_tbox_axioms</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;tbox&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">axiom</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="k">for</span> <span class="n">axiom</span> <span class="ow">in</span> <span class="n">tbox</span><span class="p">]}</span>
-        
+
     <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/infer_axioms&quot;</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">infer_axioms</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">InfrenceTypeRequest</span><span class="p">):</span>
         <span class="n">inference_type</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">inference_type</span>

@@ -82,23 +82,32 @@
              
   <h1>Source code for owlapy.agen_kg.graph_extractor</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.chunking_models.simple_chunker</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextChunker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ChunkSummarizer</span><span class="p">,</span>
+    <span class="n">CoherenceChecker</span><span class="p">,</span>
+    <span class="n">EntityDeduplication</span><span class="p">,</span>
+    <span class="n">EntityDeduplicationWithSummary</span><span class="p">,</span>
+    <span class="n">IncrementalEntityMerger</span><span class="p">,</span>
+    <span class="n">IncrementalTripleMerger</span><span class="p">,</span>
+    <span class="n">IncrementalTypeMerger</span><span class="p">,</span>
+    <span class="n">PlanDecomposer</span><span class="p">,</span>
+    <span class="n">RelationClustering</span><span class="p">,</span>
+    <span class="n">RelationClusteringWithSummary</span><span class="p">,</span>
+    <span class="n">TextSummarizer</span><span class="p">,</span>
+    <span class="n">TypeClustering</span><span class="p">,</span>
+    <span class="n">TypeClusteringWithSummary</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.text_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">UniversalTextLoader</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">EntityDeduplication</span><span class="p">,</span> <span class="n">CoherenceChecker</span><span class="p">,</span> <span class="n">TypeClustering</span><span class="p">,</span>
-                                       <span class="n">RelationClustering</span><span class="p">,</span> <span class="n">TextSummarizer</span><span class="p">,</span> <span class="n">ChunkSummarizer</span><span class="p">,</span>
-                                       <span class="n">EntityDeduplicationWithSummary</span><span class="p">,</span>
-                                       <span class="n">TypeClusteringWithSummary</span><span class="p">,</span> <span class="n">RelationClusteringWithSummary</span><span class="p">,</span>
-                                       <span class="n">IncrementalEntityMerger</span><span class="p">,</span>
-                                       <span class="n">IncrementalTripleMerger</span><span class="p">,</span> <span class="n">IncrementalTypeMerger</span><span class="p">,</span> <span class="n">PlanDecomposer</span>
-                                       <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.text_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">UniversalTextLoader</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.chunking_models.simple_chunker</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextChunker</span>
 
 
 <span class="c1"># A compatible metaclass that combines dspy.Module&#39;s metaclass with ABCMeta</span>

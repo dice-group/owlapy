@@ -407,42 +407,47 @@ Module Contents
 
 
 
-   .. py:method:: all_data_property_values(pe: owlapy.owl_property.OWLDataProperty, direct: bool = True) -> Iterable[owlapy.owl_literal.OWLLiteral]
+   .. py:method:: all_data_property_values(pe: owlapy.owl_property.OWLDataProperty, direct: bool = True, inds=None) -> Iterable[owlapy.owl_literal.OWLLiteral]
 
       Gets all values for the given data property expression that appear in the knowledge base.
 
       :param pe: The data property expression whose values are to be retrieved
       :param direct: Specifies if only the direct values of the data property pe should be retrieved (True), or if
                      the values of sub properties of pe should be taken into account (False).
+      :param inds: Optional set of individuals to consider. If None, all individuals in the ontology are considered.
 
       :returns: A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
-                axioms entails DataPropertyAssertion(pe ind l) for any ind.
+                axioms entails DataPropertyAssertion(pe ind l) for any ind in inds.
 
 
 
-   .. py:method:: ind_data_properties(ind: owlapy.owl_individual.OWLNamedIndividual, direct: bool = True) -> Iterable[owlapy.owl_property.OWLDataProperty]
+   .. py:method:: ind_data_properties(ind: owlapy.owl_individual.OWLNamedIndividual, direct: bool = True, dps=None) -> Iterable[owlapy.owl_property.OWLDataProperty]
 
       Gets all data properties for the given individual that appear in the knowledge base.
 
       :param ind: The named individual whose data properties are to be retrieved
       :param direct: Specifies if the direct data properties should be retrieved (True), or if all
                      data properties should be retrieved (False), so that sub properties are taken into account.
+      :param dps: Optional set of data properties to consider. If None, all data properties in the ontology are
+                  considered.
 
-      :returns: All data properties pe where the set of reasoner axioms entails DataPropertyAssertion(pe ind l)
-                for atleast one l.
+      :returns: All data properties dp where the set of reasoner axioms entails DataPropertyAssertion(dp ind l)
+                for at least one l where dp in dps.
 
 
 
-   .. py:method:: ind_object_properties(ind: owlapy.owl_individual.OWLNamedIndividual, direct: bool = True) -> Iterable[owlapy.owl_property.OWLObjectProperty]
+   .. py:method:: ind_object_properties(ind: owlapy.owl_individual.OWLNamedIndividual, direct: bool = True, ops=None) -> Iterable[owlapy.owl_property.OWLObjectProperty]
 
       Gets all object properties for the given individual that appear in the knowledge base.
 
       :param ind: The named individual whose object properties are to be retrieved
       :param direct: Specifies if the direct object properties should be retrieved (True), or if all
                      object properties should be retrieved (False), so that sub properties are taken into account.
+      :param ops: Optional set of object properties to consider. If None, all object properties in the ontology are
+                  considered.
 
-      :returns: All data properties pe where the set of reasoner axioms entails ObjectPropertyAssertion(pe ind ind2)
-                for atleast one ind2.
+      :returns: Object properties op where the set of reasoner axioms entails ObjectPropertyAssertion(op ind ind2)
+                for at least one ind2 where op in ops.
 
 
 

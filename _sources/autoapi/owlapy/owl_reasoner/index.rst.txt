@@ -194,9 +194,10 @@ Module Contents
       :param pe: The data property expression whose values are to be retrieved
       :param direct: Specifies if only the direct values of the data property pe should be retrieved (True), or if
                      the values of sub properties of pe should be taken into account (False).
+      :param inds: Optional set of individuals to consider. If None, all individuals in the ontology are considered.
 
       :returns: A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
-                axioms entails DataPropertyAssertion(pe ind l) for any ind.
+                axioms entails DataPropertyAssertion(pe ind l) for any ind in inds.
 
 
 
@@ -422,19 +423,48 @@ Module Contents
    .. py:attribute:: inference_types_mapping
 
 
+   .. py:method:: __del__()
+
+      Shut down the shared Java executor and dispose the reasoner when garbage-collected.
+
+
+
+   .. py:method:: close()
+
+      Explicitly shut down the reasoner and the shared Java executor.
+
+      Call this when done with the reasoner to release all Java resources
+      and allow the process to exit cleanly.
+
+
+
+   .. py:method:: __enter__()
+
+
+   .. py:method:: __exit__(exc_type, exc_val, exc_tb)
+
+
    .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, timeout: int = 1000)
 
-      Gets the individuals which are instances of the specified class expression.
+      Get the instances for a given class expression with a Java-level timeout.
 
-      :param ce: The class expression whose instances are to be retrieved.
-      :param direct: Specifies if the direct instances should be retrieved (True), or if all instances should be
-                     retrieved (False).
-      :param timeout: Time limit in seconds until results must be returned, else empty set is returned.
+      Uses Java's ExecutorService to run the reasoning task in a separate Java thread,
+      enabling proper timeout and interruption of the underlying Java reasoner (e.g. HermiT,
+      Pellet). This overcomes the limitation of Python's threading which cannot interrupt
+      JPype Java calls.
 
-      :returns: If direct is True, each named individual j where the set of reasoner axioms entails
-                DirectClassAssertion(ce, j). If direct is False, each named individual j where the set of reasoner axioms
-                entails ClassAssertion(ce, j). If ce is unsatisfiable with respect to the set of reasoner axioms then
-                nothing returned.
+      :param ce: The class expression in OWLAPY format.
+      :type ce: OWLClassExpression
+      :param direct: Whether to get direct instances or not. Defaults to False.
+      :type direct: bool
+      :param timeout: Timeout in seconds for the reasoning task. Defaults to 1000.
+      :type timeout: int
+
+      :returns:
+
+                A set of individuals classified by the given class expression.
+                     Returns an empty set if the timeout is exceeded.
+      :rtype: set
 
 
 
@@ -726,12 +756,18 @@ Module Contents
 
 
 
-   .. py:method:: has_consistent_ontology() -> bool
+   .. py:method:: has_consistent_ontology(timeout: int = 1000) -> bool
 
       Check if the used ontology is consistent.
 
+      :param timeout: Timeout in seconds for the reasoning task. Defaults to 1000.
+      :type timeout: int
+
       :returns: True if the ontology used by this reasoner is consistent, False otherwise.
       :rtype: bool
+
+      :raises TimeoutError: If the reasoning task exceeds the timeout.
+      :raises RuntimeError: If the reasoning task fails for another reason.
 
 
 
@@ -807,39 +843,61 @@ Module Contents
 
 
 
-   .. py:method:: is_entailed(axiom: owlapy.owl_axiom.OWLAxiom) -> bool
+   .. py:method:: is_entailed(axiom: owlapy.owl_axiom.OWLAxiom, timeout: int = 1000) -> bool
 
       A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.
 
       :param axiom: The axiom to check for entailment.
+      :param timeout: Timeout in seconds for the reasoning task. Defaults to 1000.
+      :type timeout: int
 
       :returns: True if the axiom is entailed by the reasoner axioms and False otherwise.
 
+      :raises TimeoutError: If the reasoning task exceeds the timeout.
+      :raises RuntimeError: If the reasoning task fails for another reason.
 
 
-   .. py:method:: is_satisfiable(ce: owlapy.class_expression.OWLClassExpression) -> bool
+
+   .. py:method:: is_satisfiable(ce: owlapy.class_expression.OWLClassExpression, timeout: int = 1000) -> bool
 
       A convenience method that determines if the specified class expression is satisfiable with respect
       to the reasoner axioms.
 
       :param ce: The class expression to check for satisfiability.
+      :param timeout: Timeout in seconds for the reasoning task. Defaults to 1000.
+      :type timeout: int
 
       :returns: True if the class expression is satisfiable by the reasoner axioms and False otherwise.
 
+      :raises TimeoutError: If the reasoning task exceeds the timeout.
+      :raises RuntimeError: If the reasoning task fails for another reason.
 
 
-   .. py:method:: unsatisfiable_classes()
+
+   .. py:method:: unsatisfiable_classes(timeout: int = 1000)
 
       A convenience method that obtains the classes in the signature of the root ontology that are
       unsatisfiable.
 
+      :param timeout: Timeout in seconds for the reasoning task. Defaults to 1000.
+      :type timeout: int
+
+      :returns: The unsatisfiable classes.
+
+      :raises TimeoutError: If the reasoning task exceeds the timeout.
+      :raises RuntimeError: If the reasoning task fails for another reason.
 
 
-   .. py:method:: create_axiom_justifications(axiom_to_explain: owlapy.owl_axiom.OWLAxiom, n_max_justifications: Optional[int] = 10, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
+
+   .. py:method:: create_axiom_justifications(axiom_to_explain: owlapy.owl_axiom.OWLAxiom, n_max_justifications: Optional[int] = 10, timeout: int = 1000, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
 
       Generate multiple justifications for why an axiom is entailed by the ontology.
-      The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java
-      The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator.java# .
+      The implementation uses the ``owlexplanation`` library (which also depends on ``owlapi``
+      and ``telemetry-2.0.0``), by Matthew Horridge.  Internally an
+      ``ExplanationProgressMonitor`` is used so that (a) the generator can be
+      cooperatively cancelled when the *timeout* is reached and (b) any
+      justifications that were already found before the timeout are still returned.
+
       The supported axiom types are:
       - OWLClassAssertionAxiom
       - OWLDataPropertyAssertionAxiom
@@ -864,18 +922,24 @@ Module Contents
       :type axiom_to_explain: OWLAxiom
       :param n_max_justifications: The maximum number of justifications to generate. Defaults to 10.
       :type n_max_justifications: Optional[int], optional
+      :param timeout: The maximum time (in seconds) to wait for justification generation. Defaults to 1000.
+      :type timeout: int, optional
       :param save: If True, saves all justifications in a new ontology as axioms. Defaults to False.
       :type save: bool, optional
 
       :raises ValueError: If the axiom is not entailed by the ontology or if n_max_justifications is not an integer or None.
       :raises NotImplementedError: If the specified reasoner is not supported for axiom justification.
 
-      :returns: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.
+      :returns:
+
+                Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed
+                    by the ontology. If the timeout is reached, the justifications found so far are returned (which may be
+                    an empty list).
       :rtype: List[Set[OWLAxiom]]
 
 
 
-   .. py:method:: create_laconic_axiom_justifications(axiom_to_explain: owlapy.owl_axiom.OWLAxiom, n_max_justifications: Optional[int] = 10, timeout: int = 10000, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
+   .. py:method:: create_laconic_axiom_justifications(axiom_to_explain: owlapy.owl_axiom.OWLAxiom, n_max_justifications: Optional[int] = 10, timeout: int = 1000, save: bool = False) -> List[Set[owlapy.owl_axiom.OWLAxiom]]
 
       Generate multiple laconic justifications for why an axiom is entailed by the ontology.
       Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
@@ -887,7 +951,7 @@ Module Contents
       :type axiom_to_explain: OWLAxiom
       :param n_max_justifications: The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
       :type n_max_justifications: Optional[int], optional
-      :param timeout: The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+      :param timeout: The maximum time (in seconds) to wait for justification generation. Defaults to 1000.
       :type timeout: int, optional
       :param save: Whether to save the generated justifications to a file. Defaults to False.
       :type save: bool, optional
