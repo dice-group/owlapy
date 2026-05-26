@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.5] - 2026-05-26
+
 ### Added
+- Timeout support for `SyncReasoner.instances()` method with configurable timeout parameter (default: 1000 seconds)
+- Timeout support for `create_axiom_justifications()` method with cooperative cancellation via Java thread interruption
+- Timeout support for `create_laconic_axiom_justifications()` method
+- Java ExecutorService-based timeout mechanism for proper interruption of Java reasoning tasks
+- Comprehensive test suite for timeout functionality in `tests/test_reasoner_timeout.py`
 - CHANGELOG.md to track version history
 - CONTRIBUTING.md with contributor guidelines
 - CODE_OF_CONDUCT.md for community standards
@@ -20,10 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved CI/CD pipeline with coverage reporting
 - Modernized Python packaging configuration
 - Reorganized Copilot agent files under .github/agents/owlapy/
+- Refactored reasoning methods to use shared single-threaded Java executor to prevent "ExtensionManager is not reentrant" errors
 
 ### Fixed
+- Resolved merge conflicts with develop branch maintaining timeout functionality
+- Fixed import ordering to comply with ruff linting standards
 - Resolved Python version inconsistencies in documentation and setup
 - Fixed coverage report generation in CI pipeline
+- Prevented concurrent Java thread access issues in HermiT and other reasoners
 
 ## [1.6.4] - 2025-05-20
 
