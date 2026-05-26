@@ -1,5 +1,6 @@
 import re
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 _deps = [
     "scikit-learn>=1.5.2",
@@ -54,7 +55,7 @@ with open('README.md', 'r') as fh:
 setup(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
-    version="1.6.4",
+    version="1.6.5",
     packages=find_packages(),
     include_package_data=True,
     package_data={'owlapy': ['jar_dependencies/*.jar', 'py.typed'],},

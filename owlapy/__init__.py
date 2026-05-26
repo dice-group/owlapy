@@ -2,7 +2,7 @@ from .converter import owl_expression_to_sparql, owl_expression_to_sparql_with_c
 from .parser import dl_to_owl_expression, manchester_to_owl_expression
 from .render import owl_expression_to_dl, owl_expression_to_manchester
 
-__version__ = '1.6.4'
+__version__ = '1.6.5'
 
 __all__ = [
     'owl_expression_to_dl', 'owl_expression_to_manchester',
