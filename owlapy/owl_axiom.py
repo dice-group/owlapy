@@ -1,18 +1,18 @@
 """OWL Axioms"""
 from abc import ABCMeta, abstractmethod
 from itertools import combinations
+from typing import Generic, Iterable, List, Optional, Sequence, TypeVar, Union
 
-from typing import TypeVar, List, Optional, Iterable, Generic, Union, Sequence
-from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression
-from .owl_object import OWLObject, OWLEntity
-from .owl_datatype import OWLDatatype, OWLDataRange
-from .meta_classes import HasOperands
-from .owl_property import OWLPropertyExpression, OWLProperty
-from .class_expression import OWLClassExpression, OWLClass, OWLNothing, OWLThing, OWLObjectUnionOf
-from .owl_individual import OWLIndividual
-from .iri import IRI
 from owlapy.owl_annotation import OWLAnnotationSubject, OWLAnnotationValue
+
+from .class_expression import OWLClass, OWLClassExpression, OWLNothing, OWLObjectUnionOf, OWLThing
+from .iri import IRI
+from .meta_classes import HasOperands
+from .owl_datatype import OWLDataRange, OWLDatatype
+from .owl_individual import OWLIndividual
 from .owl_literal import OWLLiteral
+from .owl_object import OWLEntity, OWLObject
+from .owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
 
 _C = TypeVar('_C', bound='OWLObject')  # noqa: F821
 _P = TypeVar('_P', bound='OWLPropertyExpression')  # noqa: F821
@@ -1392,7 +1392,7 @@ class OWLSubPropertyChainAxiom(OWLObjectPropertyAxiom):
 
     def get_super_property(self) -> _P:
         return self._super_property
-    
+
 
     def get_property_chain(self) -> Sequence[OWLObjectPropertyExpression]:
         yield from self._property_chain

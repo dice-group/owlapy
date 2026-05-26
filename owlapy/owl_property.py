@@ -1,8 +1,9 @@
 """OWL Properties"""
-from .owl_object import OWLObject, OWLEntity
 from abc import ABCMeta, abstractmethod
 from typing import Final, Union
+
 from .iri import IRI
+from .owl_object import OWLEntity, OWLObject
 
 
 class OWLPropertyExpression(OWLObject, metaclass=ABCMeta):
@@ -217,7 +218,7 @@ class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
 
     def __hash__(self):
         return hash(("OWLDataProperty",self._iri))
-    
+
 
 # class OWLObjectPropertyChain(OWLObjectPropertyExpression):
 #     """Represents a property chain expression. A property chain is a sequence of object properties
@@ -246,7 +247,7 @@ class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
 
 #     def __repr__(self):
 #         return f"OWLObjectPropertyChain([{', '.join([repr(ope) for ope in self._object_property_expressions])}])"
-    
+
 #     def __eq__( self, other ):
 #         if type(other) is type(self):
 #             if len(self._object_property_expressions) != len(other._object_property_expressions):
@@ -256,13 +257,13 @@ class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
 #                     return False
 #             return True
 #         return False
-    
+
 #     def __hash__(self):
 #         hash_value = hash(
 #             ("OWLObjectPropertyChain", tuple(self._object_property_expressions))
 #         )
 #         return hash_value
-    
+
 #     def property_chain(self) -> Sequence[OWLObjectPropertyExpression]:
 #         """Gets the list of object property expressions in this property chain.
 
@@ -270,9 +271,9 @@ class OWLDataProperty(OWLDataPropertyExpression, OWLProperty):
 #             The list of object property expressions in this property chain.
 #         """
 #         return self._object_property_expressions
-    
+
 #     def get_named_property(self):
 #         # I have no idea how to do it because I am not familiar with the implementation.
 #         raise NotImplementedError("get_named_property is not implemented for OWLObjectPropertyChain.")
-    
+
 

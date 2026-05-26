@@ -68,7 +68,7 @@ pip3 install owlapy
 ``` bash
 git clone https://github.com/dice-group/owlapy && cd owlapy
 
-conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip install -e '.[dev]'
+conda create -n temp_owlapy python=3.11 --no-default-packages && conda activate temp_owlapy && pip install -e '.[dev]'
 ```
 
 #### Extra Files (optional)

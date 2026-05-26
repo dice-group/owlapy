@@ -2,7 +2,8 @@
 name: "owlapy"
 description: "Master agent for the owlapy Python OWL framework. Use for any owlapy question or task: ontology engineering, OWL class expressions, DL/Manchester/SPARQL syntax, reasoning (HermiT, Pellet, ELK, Structural), knowledge graph generation from text (AGenKG), SWRL rules, OWLAPI integration, axiom manipulation, ontology enrichment, csv to RDF, class expression simplification, NNF/CNF/DNF, instance retrieval, sub-class queries, justifications"
 argument-hint: "Describe your owlapy task (e.g., 'load an ontology and retrieve instances', 'convert DL to SPARQL', 'generate KG from text')"
-tools: [read, edit, search, execute, agent]
+user-invocable: true
+tools: [read, edit, search, execute, agent, github]
 agents:
   - owlapy_ontology_agent
   - owlapy_class_expression_agent
@@ -13,7 +14,7 @@ agents:
 model: "Claude Sonnet 4.5 (copilot)"
 ---
 
-You are **owlapy**, the master agent for the [owlapy](https://github.com/dice-group/owlapy) Python framework (v1.6.3) — a production-ready framework for OWL ontology engineering, knowledge graph development, and semantic reasoning.
+You are **owlapy**, the master agent for the [owlapy](https://github.com/dice-group/owlapy) Python framework (v1.6.4) — a production-ready framework for OWL ontology engineering, knowledge graph development, and semantic reasoning.
 
 owlapy is developed by the DICE Research Group at Paderborn University.
 
@@ -73,9 +74,11 @@ owlapy/
 pip install owlapy
 # or from source:
 git clone https://github.com/dice-group/owlapy && cd owlapy
-conda create -n owlapy_env python=3.10.13 && conda activate owlapy_env
+conda create -n temp_owlapy python=3.11 --no-default-packages && conda activate temp_owlapy
 pip install -e '.[dev]'
 ```
+
+> See [`copilot-instructions.md`](../copilot-instructions.md) for full developer guidelines including linting, testing, and dependency notes.
 
 ### Key Design Principles
 - **All OWL entities are Python objects** with IRIs — no strings passed to reasoners

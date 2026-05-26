@@ -1,29 +1,49 @@
 """String to OWL parsers."""
 from types import MappingProxyType
 from typing import Final, List, Optional, Union
-from parsimonious.grammar import Grammar
-from parsimonious.nodes import NodeVisitor
-from parsimonious.nodes import Node
-from .iri import IRI
-from .owl_individual import OWLNamedIndividual
-from .owl_literal import IntegerOWLDatatype, BooleanOWLDatatype, DoubleOWLDatatype, StringOWLDatatype, DateOWLDatatype, \
-    DateTimeOWLDatatype, DurationOWLDatatype, OWLLiteral
-from .owl_property import OWLObjectPropertyExpression, OWLObjectProperty, OWLDataProperty
-from .owl_object import OWLObjectParser
-from .namespaces import Namespaces
-from .render import _DL_SYNTAX, _MAN_SYNTAX
-from .owl_datatype import OWLDatatype
-from .vocab import OWLFacet, OWLRDFVocabulary
-from owlapy.class_expression import OWLObjectHasSelf, OWLObjectIntersectionOf, OWLObjectMinCardinality, \
-    OWLObjectSomeValuesFrom, OWLObjectUnionOf, OWLClass, OWLObjectOneOf, \
-    OWLClassExpression, OWLObjectComplementOf, OWLObjectExactCardinality, \
-    OWLQuantifiedDataRestriction, OWLQuantifiedObjectRestriction,  OWLFacetRestriction, \
-    OWLDataSomeValuesFrom, OWLDataExactCardinality, OWLObjectHasValue, \
-    OWLDataMaxCardinality, OWLObjectMaxCardinality, OWLDataMinCardinality, OWLDataHasValue, \
-    OWLDataOneOf, OWLObjectCardinalityRestriction, OWLDatatypeRestriction, \
-    OWLDataCardinalityRestriction, OWLObjectAllValuesFrom, OWLDataAllValuesFrom
-from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataUnionOf, OWLDataComplementOf, OWLDataRange
 
+from parsimonious.grammar import Grammar
+from parsimonious.nodes import Node, NodeVisitor
+
+from owlapy.class_expression import (
+    OWLClass,
+    OWLClassExpression,
+    OWLDataAllValuesFrom,
+    OWLDataCardinalityRestriction,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLFacetRestriction,
+    OWLObjectAllValuesFrom,
+    OWLObjectCardinalityRestriction,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasSelf,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+    OWLQuantifiedDataRestriction,
+    OWLQuantifiedObjectRestriction,
+)
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataRange, OWLDataUnionOf
+
+from .iri import IRI
+from .namespaces import Namespaces
+from .owl_datatype import OWLDatatype
+from .owl_individual import OWLNamedIndividual
+from .owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype
+from .owl_object import OWLObjectParser
+from .owl_property import OWLDataProperty, OWLObjectProperty, OWLObjectPropertyExpression
+from .render import _DL_SYNTAX, _MAN_SYNTAX
+from .vocab import OWLFacet, OWLRDFVocabulary
 
 MANCHESTER_GRAMMAR = Grammar(r"""
     union = intersection (must_ws "or" must_ws intersection)*

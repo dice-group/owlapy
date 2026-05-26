@@ -1,14 +1,13 @@
+import re
 from abc import ABCMeta, abstractmethod
 from typing import List, Union
-import re
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
-
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 
 BUILTINS = ["add", "subtract", "multiply", "divide", "mod", "pow", "abs", "round", "floor", "ceiling",
             "equal", "notEqual", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual",

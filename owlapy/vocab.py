@@ -1,14 +1,15 @@
 """Enumerations."""
 from abc import ABCMeta
 from enum import Enum, EnumMeta
-from typing import Final, Callable, TypeVar
-from operator import lt, le, gt, ge
+from operator import ge, gt, le, lt
 from re import match
+from typing import Callable, Final, TypeVar
 
 from owlapy import namespaces
-from .meta_classes import HasIRI
-from .iri import IRI
 from owlapy.namespaces import Namespaces
+
+from .iri import IRI
+from .meta_classes import HasIRI
 
 
 class _Vocabulary(HasIRI):

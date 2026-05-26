@@ -1,18 +1,20 @@
 """OWL Restrictions"""
 from abc import ABCMeta, abstractmethod
-from ..meta_classes import HasFiller, HasCardinality, HasOperands
-from typing import TypeVar, Generic, Final, Sequence, Union, Iterable
-from .nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
-from .class_expression import OWLAnonymousClassExpression, OWLClassExpression
-from ..owl_property import OWLPropertyExpression, OWLObjectPropertyExpression, OWLDataPropertyExpression
-from ..owl_data_ranges import OWLPropertyRange, OWLDataRange
-from ..owl_literal import OWLLiteral
-from ..owl_individual import OWLIndividual
-from ..owl_datatype import OWLDatatype
-from ..owl_object import OWLObject
-from ..vocab import OWLFacet
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import Final, Generic, Iterable, Sequence, TypeVar, Union
+
 from pandas import Timedelta
+
+from ..meta_classes import HasCardinality, HasFiller, HasOperands
+from ..owl_data_ranges import OWLDataRange, OWLPropertyRange
+from ..owl_datatype import OWLDatatype
+from ..owl_individual import OWLIndividual
+from ..owl_literal import OWLLiteral
+from ..owl_object import OWLObject
+from ..owl_property import OWLDataPropertyExpression, OWLObjectPropertyExpression, OWLPropertyExpression
+from ..vocab import OWLFacet
+from .class_expression import OWLAnonymousClassExpression, OWLClassExpression
+from .nary_boolean_expression import OWLObjectIntersectionOf, OWLObjectUnionOf
 
 _T = TypeVar('_T')  #:
 _F = TypeVar('_F', bound=OWLPropertyRange)  #:

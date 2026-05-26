@@ -1,13 +1,13 @@
 """Classes representing hierarchy in OWL."""
 
 from abc import ABCMeta, abstractmethod
-from typing import Dict, Iterable, Tuple, overload, TypeVar, Generic, Type, cast, Optional, FrozenSet, Set
+from typing import Dict, FrozenSet, Generic, Iterable, Optional, Set, Tuple, Type, TypeVar, cast, overload
 
-from owlapy.class_expression import OWLClass, OWLThing, OWLNothing
-from owlapy.meta_classes import HasIRI
-from owlapy.owl_literal import OWLTopObjectProperty, OWLBottomObjectProperty, OWLTopDataProperty, OWLBottomDataProperty
-from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from owlapy.class_expression import OWLClass, OWLNothing, OWLThing
+from owlapy.meta_classes import HasIRI
+from owlapy.owl_literal import OWLBottomDataProperty, OWLBottomObjectProperty, OWLTopDataProperty, OWLTopObjectProperty
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 
 _S = TypeVar('_S', bound=HasIRI)  #:
 _U = TypeVar('_U', bound='AbstractHierarchy')  #:

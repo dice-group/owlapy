@@ -1,43 +1,63 @@
 """Owlapy utils."""
+import concurrent.futures
 from collections import Counter
 from copy import copy
-from itertools import repeat
-
-from owlapy.owl_individual import OWLNamedIndividual
-from sortedcontainers import SortedSet
 from functools import singledispatchmethod, total_ordering
-from typing import Iterable, List, Type, Callable, TypeVar, Generic, Tuple, cast, Optional, Union, overload, Protocol, \
-    ClassVar, Set
+from itertools import repeat
+from typing import Callable, ClassVar, Generic, Iterable, List, Optional, Protocol, Set, Tuple, Type, TypeVar, Union, cast, overload
 
-from .meta_classes import HasIRI, HasFiller, HasCardinality, HasOperands
-from .owl_literal import OWLLiteral
-from .owl_property import OWLObjectInverseOf, OWLObjectProperty, OWLDataProperty
-from owlapy.class_expression import OWLClassExpression, OWLClass, OWLObjectCardinalityRestriction, \
-    OWLObjectComplementOf, OWLNothing, OWLRestriction, OWLThing, OWLObjectSomeValuesFrom, \
-    OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectHasSelf, \
-    OWLDataMaxCardinality, OWLDataMinCardinality, OWLDataExactCardinality, OWLDataHasValue, \
-    OWLDataAllValuesFrom, OWLDataSomeValuesFrom, OWLObjectAllValuesFrom, \
-    OWLDataOneOf, OWLObjectIntersectionOf, \
-    OWLDataCardinalityRestriction, OWLNaryBooleanClassExpression, OWLObjectUnionOf, \
-    OWLObjectHasValue, OWLDatatypeRestriction, OWLFacetRestriction, OWLObjectOneOf, OWLQuantifiedObjectRestriction, \
-    OWLCardinalityRestriction
-from .owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf, OWLNaryDataRange, OWLDataRange, \
-    OWLPropertyRange
-from .owl_object import OWLObject
+from sortedcontainers import SortedSet
+
+from owlapy.class_expression import (
+    OWLCardinalityRestriction,
+    OWLClass,
+    OWLClassExpression,
+    OWLDataAllValuesFrom,
+    OWLDataCardinalityRestriction,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLFacetRestriction,
+    OWLNaryBooleanClassExpression,
+    OWLNothing,
+    OWLObjectAllValuesFrom,
+    OWLObjectCardinalityRestriction,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasSelf,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+    OWLQuantifiedObjectRestriction,
+    OWLRestriction,
+    OWLThing,
+)
+from owlapy.owl_individual import OWLNamedIndividual
+
+from .meta_classes import HasCardinality, HasFiller, HasIRI, HasOperands
+from .owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataRange, OWLDataUnionOf, OWLNaryDataRange, OWLPropertyRange
 from .owl_datatype import OWLDatatype
-
-import concurrent.futures
-
+from .owl_literal import OWLLiteral
+from .owl_object import OWLObject
+from .owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
 from .vocab import OWLFacet
 
 
 def jaccard_similarity(set1, set2) -> float:
     """Calculate the Jaccard similarity between two sets.
-    
+
     Args:
         set1: First set
         set2: Second set
-        
+
     Returns:
         Jaccard similarity: intersection(set1, set2) / union(set1, set2)
     """
@@ -50,27 +70,27 @@ def jaccard_similarity(set1, set2) -> float:
 
 def f1_set_similarity(set1, set2) -> float:
     """Calculate the F1 score between two sets.
-    
+
     Args:
         set1: First set (treated as ground truth)
         set2: Second set (treated as prediction)
-        
+
     Returns:
         F1 score
     """
     if len(set1) == 0 and len(set2) == 0:
         return 1.0
-    
+
     if len(set2) == 0:
         return 0.0
-    
+
     true_positives = len(set1.intersection(set2))
     precision = true_positives / len(set2) if len(set2) > 0 else 0
     recall = true_positives / len(set1) if len(set1) > 0 else 0
-    
+
     if precision + recall == 0:
         return 0.0
-    
+
     return 2 * (precision * recall) / (precision + recall)
 
 def run_with_timeout(func, timeout, args=(), **kwargs):

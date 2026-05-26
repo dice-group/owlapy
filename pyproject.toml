@@ -1,3 +1,43 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_untyped_defs = false
+# Enable gradually - set to true when ready for stricter checks
+check_untyped_defs = true
+no_implicit_optional = true
+show_error_codes = true
+exclude = [
+    "build/",
+    "dist/",
+    ".eggs/",
+    "*.egg-info/",
+]
+
+[tool.ruff]
+line-length = 200
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+]
+ignore = [
+    "E501",  # line too long (handled by line-length)
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+pythonpath = ["."]
+addopts = "-p no:warnings"
