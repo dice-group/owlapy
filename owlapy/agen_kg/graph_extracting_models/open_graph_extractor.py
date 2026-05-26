@@ -1,5 +1,6 @@
-from typing import List, Union
 import os
+from typing import List, Union
+
 try:
     import dspy
 except ImportError:
@@ -7,19 +8,23 @@ except ImportError:
 import uuid
 from pathlib import Path
 
+from owlapy.agen_kg.few_shot_examples import (
+    EXAMPLES_FOR_ENTITY_EXTRACTION,
+    EXAMPLES_FOR_LITERAL_EXTRACTION,
+    EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION,
+    EXAMPLES_FOR_TRIPLES_EXTRACTION,
+    EXAMPLES_FOR_TYPE_ASSERTION,
+    EXAMPLES_FOR_TYPE_GENERATION,
+)
+from owlapy.agen_kg.graph_extractor import GraphExtractor
+from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
+from owlapy.agen_kg.signatures import Entity, Literal, SPLTriples, Triple, TypeAssertion, TypeGeneration
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
-from owlapy.agen_kg.few_shot_examples import EXAMPLES_FOR_ENTITY_EXTRACTION, EXAMPLES_FOR_TRIPLES_EXTRACTION, \
-    EXAMPLES_FOR_TYPE_ASSERTION, EXAMPLES_FOR_TYPE_GENERATION, EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION, \
-    EXAMPLES_FOR_LITERAL_EXTRACTION
-from owlapy.owl_axiom import OWLObjectPropertyAssertionAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, \
-    OWLSubClassOfAxiom
+from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLSubClassOfAxiom
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology import Ontology
-from owlapy.owl_property import OWLObjectProperty, OWLDataProperty
-from owlapy.agen_kg.signatures import Entity, Triple, TypeAssertion, TypeGeneration, Literal, SPLTriples
-from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
-from owlapy.agen_kg.graph_extractor import GraphExtractor
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 
 
 class OpenGraphExtractor(GraphExtractor):

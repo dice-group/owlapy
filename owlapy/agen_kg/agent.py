@@ -3,7 +3,8 @@ try:
     import dspy
 except ImportError:
     raise ImportError("dspy is required for AGenKG. Please install it using 'pip install dspy'")
-from owlapy.agen_kg.graph_extracting_models import (OpenGraphExtractor, DomainGraphExtractor)
+from owlapy.agen_kg.graph_extracting_models import DomainGraphExtractor, OpenGraphExtractor
+
 
 class AGenKG:
     def __init__(self, model="gpt-4o", api_key="<YOUR_GITHUB_PAT>",

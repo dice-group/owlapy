@@ -1,7 +1,8 @@
 """OWL nary boolean expressions"""
-from .class_expression import OWLClassExpression, OWLBooleanClassExpression
+from typing import Final, Iterable, Sequence
+
 from ..meta_classes import HasOperands
-from typing import Final, Sequence, Iterable
+from .class_expression import OWLBooleanClassExpression, OWLClassExpression
 
 
 class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLClassExpression]):

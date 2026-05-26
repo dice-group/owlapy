@@ -1,8 +1,9 @@
 """OWL Individuals"""
 from abc import ABCMeta
-from .owl_object import OWLObject, OWLEntity
-from .iri import IRI
 from typing import Final, Union
+
+from .iri import IRI
+from .owl_object import OWLEntity, OWLObject
 
 
 class OWLIndividual(OWLObject, metaclass=ABCMeta):

@@ -1,4 +1,5 @@
 import argparse
+
 from owlapy.owl_reasoner import SyncReasoner
 
 inference_types = ["InferredClassAssertionAxiomGenerator",

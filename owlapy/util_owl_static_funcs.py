@@ -1,55 +1,57 @@
-from .owl_ontology import Ontology, SyncOntology
-from .class_expression import OWLClassExpression, OWLClass
-from .owl_individual import OWLNamedIndividual
-from .iri import IRI
-from .owl_axiom import OWLEquivalentClassesAxiom, OWLDataPropertyAssertionAxiom
-from .owl_property import OWLDataProperty
-from .owl_literal import OWLLiteral
-import os
 import json
+import os
 import random
 from typing import List, Set
-from tqdm import tqdm
+
 import pandas as pd
-from rdflib import Graph, URIRef, Literal, RDFS, OWL, Namespace, RDF
+from owlready2 import destroy_entity, get_ontology
+from rdflib import OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import XSD
-from owlready2 import get_ontology, destroy_entity
+from tqdm import tqdm
+
+from .class_expression import OWLClass, OWLClassExpression
+from .iri import IRI
+from .owl_axiom import OWLDataPropertyAssertionAxiom, OWLEquivalentClassesAxiom
+from .owl_individual import OWLNamedIndividual
+from .owl_literal import OWLLiteral
+from .owl_ontology import Ontology, SyncOntology
+from .owl_property import OWLDataProperty
 
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
                                path: str = 'predictions',
-                               rdf_format: str = 'rdfxml',
+                               document_format: str = 'rdfxml',
                                namespace: str = None) -> None:
     """
     Saves a set of OWL class expressions to an ontology file in RDF/XML format.
 
     This function takes one or more OWL class expressions, creates an ontology,
-    and saves the expressions as OWL equivalent class axioms in the specified RDF format.
+    and saves the expressions as OWL equivalent class axioms in the specified format.
     By default, it saves the file to the specified path using the 'rdfxml' format.
 
     Args:
         expressions (OWLClassExpression | List[OWLClassExpression]): A single or a list of OWL class expressions
             to be saved as equivalent class axioms.
         path (str, optional): The file path where the ontology will be saved. Defaults to 'predictions'.
-        rdf_format (str, optional): RDF serialization format for saving the ontology. Currently only
+        document_format (str, optional): RDF serialization format for saving the ontology. Currently only
             supports 'rdfxml'. Defaults to 'rdfxml'.
         namespace (str, optional): The namespace URI used for the ontology. If None, defaults to
             'https://dice-research.org/predictions#'. Must end with '#'.
 
     Raises:
         AssertionError: If `expressions` is neither an OWLClassExpression nor a list of OWLClassExpression.
-        AssertionError: If `rdf_format` is not 'rdfxml'.
+        AssertionError: If `document_format` is not 'rdfxml'.
         AssertionError: If `namespace` does not end with a '#'.
 
     Example:
         >>> from some_module import OWLClassExpression
         >>> expr1 = OWLClassExpression("SomeExpression1")
         >>> expr2 = OWLClassExpression("SomeExpression2")
-        >>> save_owl_class_expressions([expr1, expr2], path="my_ontology.owl", rdf_format="rdfxml")
+        >>> save_owl_class_expressions([expr1, expr2], path="my_ontology.owl", document_format="rdfxml")
     """
     assert isinstance(expressions, OWLClassExpression) or isinstance(expressions[0],
                                                                      OWLClassExpression), "expressions must be either OWLClassExpression or a list of OWLClassExpression"
-    assert rdf_format == 'rdfxml', f'Format {rdf_format} not implemented. Please use rdfxml'
+    assert document_format == 'rdfxml', f'Format {document_format} not implemented. Please use rdfxml'
 
     if isinstance(expressions, OWLClassExpression):
         expressions = [expressions]
@@ -64,7 +66,7 @@ def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassEx
         cls_a = OWLClass(IRI.create(namespace, str(th)))
         equivalent_classes_axiom = OWLEquivalentClassesAxiom([cls_a, i])
         ontology.add_axiom(equivalent_classes_axiom)
-    ontology.save(path=path, inplace=False, rdf_format=rdf_format)
+    ontology.save(path=path, inplace=False, document_format=document_format)
 
 
 def csv_to_rdf_kg(path_csv: str = None, path_kg: str = None, namespace: str = None):
@@ -131,7 +133,7 @@ def csv_to_rdf_kg(path_csv: str = None, path_kg: str = None, namespace: str = No
 
 def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
     """
-    Constructs a CSV file from an RDF Knowledge Graph (RDF/XML) 
+    Constructs a CSV file from an RDF Knowledge Graph (RDF/XML)
 
     Args:
         path_kg (str): Path to the RDF Knowledge Graph file (RDF/XML)
@@ -147,6 +149,7 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
         >>> print("CSV reconstructed from RDF KG saved as reconstructed_iris_dataset.csv")
     """
     import os
+
     import pandas as pd
 
     # Validate arguments
@@ -171,7 +174,7 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
             if literal_value == "nan":
                 print(f"Skipping {axiom} as it has a NaN value")
                 continue
-            
+
             try:
                 row_index = int(subject_ind.remainder)
             except ValueError:
@@ -191,7 +194,7 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
 
             if row_index not in rows:
                 rows[row_index] = {}
-            rows[row_index][column_fragment] = value    
+            rows[row_index][column_fragment] = value
             if column_fragment not in columns_list:
                 columns_list.append(column_fragment)
 

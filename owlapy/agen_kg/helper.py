@@ -1,8 +1,14 @@
 import dspy
 import requests
-from owlapy.agen_kg.few_shot_examples import (EXAMPLES_FOR_ENTITY_EXTRACTION, EXAMPLES_FOR_TRIPLES_EXTRACTION,
-                                              EXAMPLES_FOR_TYPE_ASSERTION, EXAMPLES_FOR_TYPE_GENERATION,
-                                              EXAMPLES_FOR_LITERAL_EXTRACTION, EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION)
+
+from owlapy.agen_kg.few_shot_examples import (
+    EXAMPLES_FOR_ENTITY_EXTRACTION,
+    EXAMPLES_FOR_LITERAL_EXTRACTION,
+    EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION,
+    EXAMPLES_FOR_TRIPLES_EXTRACTION,
+    EXAMPLES_FOR_TYPE_ASSERTION,
+    EXAMPLES_FOR_TYPE_GENERATION,
+)
 
 # DBpedia often uses British English, so we define a mapping for common American to British English terms.
 american_to_british = {

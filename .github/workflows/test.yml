@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11.14"]
+        python-version: ["3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v3
@@ -22,12 +22,26 @@ jobs:
       - name: Lint with ruff
         run: |
           ruff check owlapy --line-length=200
-      - name: Tests and Coverage Report
+      - name: Download test data
         run: |
           wget https://files.dice-research.org/projects/Ontolearn/KGs.zip
           unzip KGs.zip
+      - name: Run tests with coverage
+        run: |
           pip install coverage
-          coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x && coverage report -m
+          coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x
+      - name: Generate coverage report
+        run: |
+          coverage report -m
+          coverage xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: matrix.python-version == '3.11'
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
 
 # Removed because of an error is generated when trying to create the report.

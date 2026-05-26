@@ -1,17 +1,16 @@
 """OWL Reasoner"""
+import logging
 from abc import ABCMeta, abstractmethod
 from inspect import signature
 from typing import Iterable
-import logging
 
-from owlapy.class_expression import OWLClassExpression
-from owlapy.class_expression import OWLClass
-from owlapy.owl_data_ranges import OWLDataRange
-from owlapy.owl_object import OWLEntity
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
-from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty
+from owlapy.class_expression import OWLClass, OWLClassExpression
+from owlapy.owl_data_ranges import OWLDataRange
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
+from owlapy.owl_object import OWLEntity
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty, OWLObjectPropertyExpression
 
 logger = logging.getLogger(__name__)
 
@@ -394,21 +393,24 @@ class AbstractOWLReasoner(metaclass=ABCMeta):
                 logger.warning("indirect not implemented")
 
     # default
-    def all_data_property_values(self, pe: OWLDataProperty, direct: bool = True) -> Iterable[OWLLiteral]:
+    def all_data_property_values(self, pe: OWLDataProperty, direct: bool = True, inds=None) -> Iterable[OWLLiteral]:
         """Gets all values for the given data property expression that appear in the knowledge base.
 
         Args:
             pe: The data property expression whose values are to be retrieved
             direct: Specifies if only the direct values of the data property pe should be retrieved (True), or if
                     the values of sub properties of pe should be taken into account (False).
+            inds: Optional set of individuals to consider. If None, all individuals in the ontology are considered.
 
         Returns:
             A set of OWLLiterals containing literals such that for each literal l in the set, the set of reasoner
-            axioms entails DataPropertyAssertion(pe ind l) for any ind.
+            axioms entails DataPropertyAssertion(pe ind l) for any ind in inds.
         """
-        onto = self.get_root_ontology()
+        if not inds:
+            onto = self.get_root_ontology()
+            inds = onto.individuals_in_signature()
         has_direct = "direct" in str(signature(self.data_property_values))
-        for ind in onto.individuals_in_signature():
+        for ind in inds:
             if has_direct:
                 dpv = self.data_property_values(ind, pe, direct)
             else:
@@ -417,21 +419,25 @@ class AbstractOWLReasoner(metaclass=ABCMeta):
                 yield lit
 
     # default
-    def ind_data_properties(self, ind: OWLNamedIndividual, direct: bool = True) -> Iterable[OWLDataProperty]:
+    def ind_data_properties(self, ind: OWLNamedIndividual, direct: bool = True, dps = None) -> Iterable[OWLDataProperty]:
         """Gets all data properties for the given individual that appear in the knowledge base.
 
         Args:
             ind: The named individual whose data properties are to be retrieved
             direct: Specifies if the direct data properties should be retrieved (True), or if all
                 data properties should be retrieved (False), so that sub properties are taken into account.
+            dps: Optional set of data properties to consider. If None, all data properties in the ontology are
+             considered.
 
         Returns:
-            All data properties pe where the set of reasoner axioms entails DataPropertyAssertion(pe ind l)
-            for atleast one l.
+            All data properties dp where the set of reasoner axioms entails DataPropertyAssertion(dp ind l)
+            for at least one l where dp in dps.
         """
-        onto = self.get_root_ontology()
+        if not dps:
+            onto = self.get_root_ontology()
+            dps = onto.data_properties_in_signature()
         has_direct = "direct" in str(signature(self.data_property_values))
-        for dp in onto.data_properties_in_signature():
+        for dp in dps:
             try:
                 if has_direct:
                     next(iter(self.data_property_values(ind, dp, direct)))
@@ -442,21 +448,25 @@ class AbstractOWLReasoner(metaclass=ABCMeta):
                 pass
 
     # default
-    def ind_object_properties(self, ind: OWLNamedIndividual, direct: bool = True) -> Iterable[OWLObjectProperty]:
+    def ind_object_properties(self, ind: OWLNamedIndividual, direct: bool = True, ops = None) -> Iterable[OWLObjectProperty]:
         """Gets all object properties for the given individual that appear in the knowledge base.
 
         Args:
             ind: The named individual whose object properties are to be retrieved
             direct: Specifies if the direct object properties should be retrieved (True), or if all
                 object properties should be retrieved (False), so that sub properties are taken into account.
+            ops: Optional set of object properties to consider. If None, all object properties in the ontology are
+             considered.
 
         Returns:
-            All data properties pe where the set of reasoner axioms entails ObjectPropertyAssertion(pe ind ind2)
-            for atleast one ind2.
+            Object properties op where the set of reasoner axioms entails ObjectPropertyAssertion(op ind ind2)
+            for at least one ind2 where op in ops.
         """
-        onto = self.get_root_ontology()
+        if not ops:
+            onto = self.get_root_ontology()
+            ops = onto.object_properties_in_signature()
         has_direct = "direct" in str(signature(self.object_property_values))
-        for op in onto.object_properties_in_signature():
+        for op in ops:
             try:
                 if has_direct:
                     next(iter(self.object_property_values(ind, op, direct)))

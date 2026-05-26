@@ -1,81 +1,169 @@
 from functools import singledispatchmethod
 from typing import Iterable, TypeVar
+
 import jpype.imports
 
-from owlapy.class_expression import OWLDataOneOf, OWLFacetRestriction, OWLDatatypeRestriction, \
-    OWLClass, OWLObjectComplementOf, OWLObjectUnionOf, OWLObjectIntersectionOf, \
-    OWLObjectHasSelf, OWLObjectHasValue, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectMinCardinality, \
-    OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, OWLDataHasValue, \
-    OWLDataMinCardinality, OWLDataMaxCardinality, OWLDataExactCardinality, OWLObjectOneOf
+from owlapy.class_expression import (
+    OWLClass,
+    OWLDataAllValuesFrom,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLFacetRestriction,
+    OWLObjectAllValuesFrom,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasSelf,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+)
 from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLDeclarationAxiom, OWLAnnotation, OWLAnnotationProperty, OWLClassAssertionAxiom, \
-    OWLDataPropertyAssertionAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, \
-    OWLObjectPropertyRangeAxiom, OWLSubPropertyChainAxiom, \
-    OWLObjectPropertyAssertionAxiom, OWLEquivalentClassesAxiom, \
-    OWLEquivalentDataPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLDisjointClassesAxiom, \
-    OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLHasKeyAxiom, OWLSubDataPropertyOfAxiom, \
-    OWLSubClassOfAxiom, OWLSubObjectPropertyOfAxiom, OWLAsymmetricObjectPropertyAxiom, OWLDatatypeDefinitionAxiom, \
-    OWLDifferentIndividualsAxiom, OWLDisjointUnionAxiom, OWLFunctionalDataPropertyAxiom, \
-    OWLFunctionalObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, OWLInverseObjectPropertiesAxiom, \
-    OWLIrreflexiveObjectPropertyAxiom, OWLNegativeDataPropertyAssertionAxiom, OWLReflexiveObjectPropertyAxiom, \
-    OWLNegativeObjectPropertyAssertionAxiom, OWLSameIndividualAxiom, OWLSymmetricObjectPropertyAxiom, \
-    OWLTransitiveObjectPropertyAxiom, OWLAnnotationAssertionAxiom, OWLAnnotationPropertyDomainAxiom, \
-    OWLAnnotationPropertyRangeAxiom, OWLSubAnnotationPropertyOfAxiom
-from owlapy.owl_data_ranges import OWLDataIntersectionOf, OWLDataComplementOf, OWLDataUnionOf, OWLNaryDataRange
+from owlapy.owl_axiom import (
+    OWLAnnotation,
+    OWLAnnotationAssertionAxiom,
+    OWLAnnotationProperty,
+    OWLAnnotationPropertyDomainAxiom,
+    OWLAnnotationPropertyRangeAxiom,
+    OWLAsymmetricObjectPropertyAxiom,
+    OWLClassAssertionAxiom,
+    OWLDataPropertyAssertionAxiom,
+    OWLDataPropertyDomainAxiom,
+    OWLDataPropertyRangeAxiom,
+    OWLDatatypeDefinitionAxiom,
+    OWLDeclarationAxiom,
+    OWLDifferentIndividualsAxiom,
+    OWLDisjointClassesAxiom,
+    OWLDisjointDataPropertiesAxiom,
+    OWLDisjointObjectPropertiesAxiom,
+    OWLDisjointUnionAxiom,
+    OWLEquivalentClassesAxiom,
+    OWLEquivalentDataPropertiesAxiom,
+    OWLEquivalentObjectPropertiesAxiom,
+    OWLFunctionalDataPropertyAxiom,
+    OWLFunctionalObjectPropertyAxiom,
+    OWLHasKeyAxiom,
+    OWLInverseFunctionalObjectPropertyAxiom,
+    OWLInverseObjectPropertiesAxiom,
+    OWLIrreflexiveObjectPropertyAxiom,
+    OWLNegativeDataPropertyAssertionAxiom,
+    OWLNegativeObjectPropertyAssertionAxiom,
+    OWLObjectPropertyAssertionAxiom,
+    OWLObjectPropertyDomainAxiom,
+    OWLObjectPropertyRangeAxiom,
+    OWLReflexiveObjectPropertyAxiom,
+    OWLSameIndividualAxiom,
+    OWLSubAnnotationPropertyOfAxiom,
+    OWLSubClassOfAxiom,
+    OWLSubDataPropertyOfAxiom,
+    OWLSubObjectPropertyOfAxiom,
+    OWLSubPropertyChainAxiom,
+    OWLSymmetricObjectPropertyAxiom,
+    OWLTransitiveObjectPropertyAxiom,
+)
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf, OWLNaryDataRange
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import (OWLLiteral, PositiveIntegerOWLDatatype, NegativeIntegerOWLDatatype,
-                                NonPositiveIntegerOWLDatatype, NonNegativeIntegerOWLDatatype)
+from owlapy.owl_literal import NegativeIntegerOWLDatatype, NonNegativeIntegerOWLDatatype, NonPositiveIntegerOWLDatatype, OWLLiteral, PositiveIntegerOWLDatatype
 from owlapy.owl_ontology import OWLOntologyID
-from owlapy.owl_property import OWLObjectProperty, OWLDataProperty, OWLObjectInverseOf
+from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
 
 if not jpype.isJVMStarted():
     startJVM()
-from org.semanticweb.owlapi.model import IRI as owlapi_IRI, OWLOntologyID as owlapi_OWLOntologyID
-from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
-from java.util import ArrayList, List, Set, LinkedHashSet, Optional, Collections
+from java.util import ArrayList, Collections, LinkedHashSet, List, Optional, Set
 from java.util.stream import Stream
-from uk.ac.manchester.cs.owl.owlapi import (OWLClassImpl, OWLDataAllValuesFromImpl, OWL2DatatypeImpl,
-                                            OWLDataExactCardinalityImpl,OWLDataHasValueImpl, OWLObjectInverseOfImpl,
-                                            OWLDataMaxCardinalityImpl, OWLDataUnionOfImpl,
-                                            OWLDataMinCardinalityImpl, OWLDataSomeValuesFromImpl,
-                                            OWLObjectAllValuesFromImpl, OWLObjectComplementOfImpl,
-                                            OWLObjectExactCardinalityImpl, OWLObjectHasSelfImpl,
-                                            OWLObjectHasValueImpl, OWLObjectIntersectionOfImpl,
-                                            OWLObjectMaxCardinalityImpl, OWLObjectMinCardinalityImpl,
-                                            OWLObjectOneOfImpl, OWLObjectSomeValuesFromImpl, OWLNaryDataRangeImpl,
-                                            OWLObjectUnionOfImpl,OWLLiteralImplBoolean, OWLLiteralImplString,
-                                            OWLLiteralImplDouble, OWLLiteralImplFloat, OWLLiteralImplInteger,
-                                            OWLLiteralImplNoCompression,
-                                            OWLDisjointClassesAxiomImpl, OWLDeclarationAxiomImpl, OWLAnnotationImpl,
-                                            OWLAnnotationPropertyImpl, OWLClassAssertionAxiomImpl,
-                                            OWLDataPropertyAssertionAxiomImpl, OWLDataPropertyDomainAxiomImpl,
-                                            OWLDataPropertyRangeAxiomImpl, OWLEquivalentClassesAxiomImpl,
-                                            OWLEquivalentDataPropertiesAxiomImpl, OWLDataIntersectionOfImpl,
-                                            OWLEquivalentObjectPropertiesAxiomImpl, OWLDataOneOfImpl,
-                                            OWLObjectPropertyDomainAxiomImpl, OWLObjectPropertyRangeAxiomImpl,
-                                            OWLSubPropertyChainAxiomImpl,
-                                            OWLObjectPropertyAssertionAxiomImpl, OWLDisjointDataPropertiesAxiomImpl,
-                                            OWLDisjointObjectPropertiesAxiomImpl, OWLHasKeyAxiomImpl,
-                                            OWLSubClassOfAxiomImpl, OWLSubDataPropertyOfAxiomImpl,
-                                            OWLSubObjectPropertyOfAxiomImpl, OWLAsymmetricObjectPropertyAxiomImpl,
-                                            OWLDatatypeDefinitionAxiomImpl, OWLDatatypeImpl, OWLObjectPropertyImpl,
-                                            OWLDataPropertyImpl, OWLNamedIndividualImpl, OWLDisjointUnionAxiomImpl,
-                                            OWLDifferentIndividualsAxiomImpl, OWLFunctionalDataPropertyAxiomImpl,
-                                            OWLFunctionalObjectPropertyAxiomImpl, OWLSameIndividualAxiomImpl,
-                                            OWLInverseFunctionalObjectPropertyAxiomImpl, OWLDataComplementOfImpl,
-                                            OWLInverseObjectPropertiesAxiomImpl,OWLReflexiveObjectPropertyAxiomImpl,
-                                            OWLIrreflexiveObjectPropertyAxiomImpl, OWLAnnotationAssertionAxiomImpl,
-                                            OWLNegativeDataPropertyAssertionAxiomImpl, OWLFacetRestrictionImpl,
-                                            OWLNegativeObjectPropertyAssertionAxiomImpl, OWLDatatypeRestrictionImpl,
-                                            OWLSymmetricObjectPropertyAxiomImpl,
-                                            OWLTransitiveObjectPropertyAxiomImpl,
-                                            OWLAnnotationPropertyDomainAxiomImpl,
-                                            OWLAnnotationPropertyRangeAxiomImpl,
-                                            OWLSubAnnotationPropertyOfAxiomImpl
-                                            )
+from org.semanticweb.owlapi.model import IRI as owlapi_IRI
+from org.semanticweb.owlapi.model import OWLOntologyID as owlapi_OWLOntologyID
+from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
+from uk.ac.manchester.cs.owl.owlapi import (
+    OWL2DatatypeImpl,
+    OWLAnnotationAssertionAxiomImpl,
+    OWLAnnotationImpl,
+    OWLAnnotationPropertyDomainAxiomImpl,
+    OWLAnnotationPropertyImpl,
+    OWLAnnotationPropertyRangeAxiomImpl,
+    OWLAsymmetricObjectPropertyAxiomImpl,
+    OWLClassAssertionAxiomImpl,
+    OWLClassImpl,
+    OWLDataAllValuesFromImpl,
+    OWLDataComplementOfImpl,
+    OWLDataExactCardinalityImpl,
+    OWLDataHasValueImpl,
+    OWLDataIntersectionOfImpl,
+    OWLDataMaxCardinalityImpl,
+    OWLDataMinCardinalityImpl,
+    OWLDataOneOfImpl,
+    OWLDataPropertyAssertionAxiomImpl,
+    OWLDataPropertyDomainAxiomImpl,
+    OWLDataPropertyImpl,
+    OWLDataPropertyRangeAxiomImpl,
+    OWLDataSomeValuesFromImpl,
+    OWLDatatypeDefinitionAxiomImpl,
+    OWLDatatypeImpl,
+    OWLDatatypeRestrictionImpl,
+    OWLDataUnionOfImpl,
+    OWLDeclarationAxiomImpl,
+    OWLDifferentIndividualsAxiomImpl,
+    OWLDisjointClassesAxiomImpl,
+    OWLDisjointDataPropertiesAxiomImpl,
+    OWLDisjointObjectPropertiesAxiomImpl,
+    OWLDisjointUnionAxiomImpl,
+    OWLEquivalentClassesAxiomImpl,
+    OWLEquivalentDataPropertiesAxiomImpl,
+    OWLEquivalentObjectPropertiesAxiomImpl,
+    OWLFacetRestrictionImpl,
+    OWLFunctionalDataPropertyAxiomImpl,
+    OWLFunctionalObjectPropertyAxiomImpl,
+    OWLHasKeyAxiomImpl,
+    OWLInverseFunctionalObjectPropertyAxiomImpl,
+    OWLInverseObjectPropertiesAxiomImpl,
+    OWLIrreflexiveObjectPropertyAxiomImpl,
+    OWLLiteralImplBoolean,
+    OWLLiteralImplDouble,
+    OWLLiteralImplFloat,
+    OWLLiteralImplInteger,
+    OWLLiteralImplNoCompression,
+    OWLLiteralImplString,
+    OWLNamedIndividualImpl,
+    OWLNaryDataRangeImpl,
+    OWLNegativeDataPropertyAssertionAxiomImpl,
+    OWLNegativeObjectPropertyAssertionAxiomImpl,
+    OWLObjectAllValuesFromImpl,
+    OWLObjectComplementOfImpl,
+    OWLObjectExactCardinalityImpl,
+    OWLObjectHasSelfImpl,
+    OWLObjectHasValueImpl,
+    OWLObjectIntersectionOfImpl,
+    OWLObjectInverseOfImpl,
+    OWLObjectMaxCardinalityImpl,
+    OWLObjectMinCardinalityImpl,
+    OWLObjectOneOfImpl,
+    OWLObjectPropertyAssertionAxiomImpl,
+    OWLObjectPropertyDomainAxiomImpl,
+    OWLObjectPropertyImpl,
+    OWLObjectPropertyRangeAxiomImpl,
+    OWLObjectSomeValuesFromImpl,
+    OWLObjectUnionOfImpl,
+    OWLReflexiveObjectPropertyAxiomImpl,
+    OWLSameIndividualAxiomImpl,
+    OWLSubAnnotationPropertyOfAxiomImpl,
+    OWLSubClassOfAxiomImpl,
+    OWLSubDataPropertyOfAxiomImpl,
+    OWLSubObjectPropertyOfAxiomImpl,
+    OWLSubPropertyChainAxiomImpl,
+    OWLSymmetricObjectPropertyAxiomImpl,
+    OWLTransitiveObjectPropertyAxiomImpl,
+)
 
 
 def init(the_class):

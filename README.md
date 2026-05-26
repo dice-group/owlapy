@@ -68,7 +68,7 @@ pip3 install owlapy
 ``` bash
 git clone https://github.com/dice-group/owlapy && cd owlapy
 
-conda create -n temp_owlapy python=3.10.13 --no-default-packages && conda activate temp_owlapy && pip install -e '.[dev]'
+conda create -n temp_owlapy python=3.11 --no-default-packages && conda activate temp_owlapy && pip install -e '.[dev]'
 ```
 
 #### Extra Files (optional)
@@ -384,6 +384,41 @@ target_class = manchester_to_owl_expression(manchester_expr_str, "http://www.ben
 axiom = OWLClassAssertionAxiom(individual, target_class)
 justifications = reasoner.create_axiom_justifications(axiom)
 [print(justification) for justification in justifications]
+```
+</details>
+
+
+### Get Contrastive Explanations
+
+<details><summary> Click me!</summary>
+
+```python
+from owlapy import manchester_to_owl_expression
+from owlapy.iri import IRI
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_reasoner import SyncReasoner
+
+# --- Load ontology and reasoner ---
+ontology = SyncOntology("../KGs/Family/family.owl")
+reasoner = SyncReasoner(ontology, reasoner="HermiT")
+
+# --- Define class expression ---
+class_expr = manchester_to_owl_expression(
+    "Sister and (hasSibling some (married some (hasChild some Grandchild)))",
+    "http://www.benchmark.org/family#"
+)
+
+# --- Define individuals ---
+fact = OWLNamedIndividual(IRI.create("http://www.benchmark.org/family#F9F143"))
+foil = OWLNamedIndividual(IRI.create("http://www.benchmark.org/family#F9M161"))
+
+# --- Get contrastive explanation ---
+result = reasoner.get_contrastive_explanation(class_expr, fact, foil)
+
+# --- Print results ---
+for k in ["common", "different", "conflict"]:
+    print(f"{k.capitalize()} axioms: {result[k]}")
 ```
 </details>
 

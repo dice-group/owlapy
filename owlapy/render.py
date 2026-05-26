@@ -1,31 +1,53 @@
 """Renderers for different syntax."""
 # -*- coding: utf-8 -*-
 
+import abc
 import types
+import warnings
 from functools import singledispatchmethod
-from typing import List, Callable
+from typing import Callable, List
+
+import requests
 
 from owlapy import namespaces
+from owlapy.vocab import OWLFacet
+
+from .abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from .class_expression import (
+    OWLBooleanClassExpression,
+    OWLClass,
+    OWLClassExpression,
+    OWLDataAllValuesFrom,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLFacetRestriction,
+    OWLNaryBooleanClassExpression,
+    OWLObjectAllValuesFrom,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasSelf,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+    OWLRestriction,
+)
 from .iri import IRI
+from .owl_axiom import OWLEquivalentClassesAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLSubClassOfAxiom
+from .owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf, OWLNaryDataRange
+from .owl_datatype import OWLDatatype
 from .owl_individual import OWLNamedIndividual
 from .owl_literal import OWLLiteral
-from .owl_object import OWLObjectRenderer, OWLEntity, OWLObject
-from .owl_property import OWLObjectInverseOf, OWLPropertyExpression, OWLDataProperty
-from .class_expression import OWLClassExpression, OWLBooleanClassExpression, OWLClass, OWLObjectSomeValuesFrom, \
-    OWLObjectAllValuesFrom, OWLObjectUnionOf, OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectMinCardinality, \
-    OWLObjectExactCardinality, OWLObjectMaxCardinality, OWLObjectHasSelf, OWLDataSomeValuesFrom, OWLDataAllValuesFrom, \
-    OWLDataHasValue, OWLDataMinCardinality, OWLDataExactCardinality, OWLDataMaxCardinality, OWLDataOneOf, \
-    OWLNaryBooleanClassExpression, OWLRestriction
-from owlapy.vocab import OWLFacet
-from .owl_data_ranges import OWLNaryDataRange, OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
-from .class_expression import OWLObjectHasValue, OWLFacetRestriction, OWLDatatypeRestriction, OWLObjectOneOf
-from .owl_datatype import OWLDatatype
-from .abstracts.abstract_owl_reasoner import AbstractOWLReasoner
-from .owl_axiom import (OWLEquivalentClassesAxiom, OWLSubClassOfAxiom,
-                        OWLObjectPropertyRangeAxiom, OWLObjectPropertyDomainAxiom)
-import requests
-import warnings
-import abc
+from .owl_object import OWLEntity, OWLObject, OWLObjectRenderer
+from .owl_property import OWLDataProperty, OWLObjectInverseOf, OWLPropertyExpression
 
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",

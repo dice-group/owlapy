@@ -46,6 +46,6 @@ onto.add_axiom(OWLClassAssertionAxiom(cdemir, father))
 # (9) Check whether cdemir is in the signature.
 assert cdemir in [c for c in onto.individuals_in_signature()]
 # (10) Save the modified ontology locally.
-onto.save(path="babo.owl", rdf_format="rdfxml")
+onto.save(path="babo.owl", document_format="rdfxml")
 
 

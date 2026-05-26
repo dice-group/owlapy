@@ -1,41 +1,58 @@
 """OWL Reasoner"""
-import os
-import operator
-import logging
-import owlready2
 import json
+import logging
+import operator
+import os
 import subprocess
 import sys
-
-from collections import defaultdict, Counter
-from functools import singledispatchmethod, reduce, cached_property
+from collections import Counter, defaultdict
+from functools import cached_property, reduce, singledispatchmethod
 from itertools import chain, repeat
-from types import MappingProxyType, FunctionType
-from typing import (DefaultDict,Generator, Iterable, Dict, Mapping, Set, Type, TypeVar, Optional, FrozenSet, Union,
-                    List, Tuple)
+from types import FunctionType, MappingProxyType
+from typing import DefaultDict, Dict, FrozenSet, Generator, Iterable, List, Mapping, Optional, Set, Tuple, Type, TypeVar, Union
 
-from owlapy.class_expression import OWLClassExpression, OWLObjectSomeValuesFrom, OWLObjectUnionOf, \
-    OWLObjectIntersectionOf, OWLObjectComplementOf, OWLObjectAllValuesFrom, OWLObjectOneOf, OWLObjectHasValue, \
-    OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectCardinalityRestriction, \
-    OWLDataSomeValuesFrom, OWLDataOneOf, OWLDatatypeRestriction, OWLFacetRestriction, OWLDataHasValue, \
-    OWLDataAllValuesFrom, OWLNothing, OWLThing
-from owlapy.class_expression import OWLClass
-from owlapy.iri import IRI
-from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
-from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataUnionOf, OWLDataIntersectionOf
-from owlapy.owl_datatype import OWLDatatype
-from owlapy.owl_object import OWLEntity
-from owlapy.owl_ontology import Ontology, _parse_concept_to_owlapy, SyncOntology, NeuralOntology
-from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
-from owlapy.owl_property import OWLObjectPropertyExpression, OWLDataProperty, OWLObjectProperty, OWLObjectInverseOf, \
-    OWLPropertyExpression, OWLDataPropertyExpression, OWLProperty
-from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral, OWLBottomObjectProperty, OWLTopObjectProperty, OWLBottomDataProperty, \
-    OWLTopDataProperty
-from owlapy.utils import run_with_timeout
-from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+import jpype
+import owlready2
 from jpype import JClass
 
+from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
+from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
+from owlapy.class_expression import (
+    OWLClass,
+    OWLClassExpression,
+    OWLDataAllValuesFrom,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
+    OWLFacetRestriction,
+    OWLNothing,
+    OWLObjectAllValuesFrom,
+    OWLObjectCardinalityRestriction,
+    OWLObjectComplementOf,
+    OWLObjectExactCardinality,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
+    OWLObjectOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+    OWLThing,
+)
+from owlapy.iri import IRI
+from owlapy.owl_axiom import OWLAxiom, OWLSubClassOfAxiom
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
+from owlapy.owl_datatype import OWLDatatype
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLBottomDataProperty, OWLBottomObjectProperty, OWLLiteral, OWLTopDataProperty, OWLTopObjectProperty
+from owlapy.owl_object import OWLEntity
+from owlapy.owl_ontology import NeuralOntology, Ontology, SyncOntology, _parse_concept_to_owlapy
+from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
+from owlapy.utils import run_with_timeout
 
 logger = logging.getLogger(__name__)
 
@@ -989,6 +1006,183 @@ class StructuralReasoner(AbstractOWLReasoner):
         temp = self.get_instances_from_owl_class(c)
         self._cls_to_ind[c] = frozenset(temp)
 
+    @_find_instances.register
+    def _(self, ce: OWLDataMinCardinality):
+        return self._get_instances_data_card_restriction(ce)
+
+    @_find_instances.register
+    def _(self, ce: OWLDataMaxCardinality):
+        all_ = frozenset(self._ontology.individuals_in_signature())
+        min_ind = self._get_instances_data_card_restriction(
+            OWLDataMinCardinality(cardinality=ce.get_cardinality() + 1,
+                                  property=ce.get_property(),
+                                  filler=ce.get_filler()))
+        return all_ ^ min_ind
+
+    @_find_instances.register
+    def _(self, ce: OWLDataExactCardinality):
+        return self._get_instances_data_card_restriction(ce)
+
+    def _get_instances_data_card_restriction(self, ce) -> FrozenSet[OWLNamedIndividual]:
+        """Get instances for OWLDataMinCardinality or OWLDataExactCardinality restrictions."""
+        pe = ce.get_property()
+        filler = ce.get_filler()
+        assert isinstance(pe, OWLDataProperty)
+
+        if isinstance(ce, OWLDataMinCardinality):
+            min_count = ce.get_cardinality()
+            max_count = None
+        elif isinstance(ce, OWLDataExactCardinality):
+            min_count = max_count = ce.get_cardinality()
+        else:
+            raise NotImplementedError
+
+        assert min_count >= 0
+        assert max_count is None or max_count >= 0
+
+        if self._ontology.is_modified and (self.class_cache or self._property_cache):
+            self.reset_and_disable_cache()
+        property_cache = self._property_cache
+
+        if property_cache:
+            self._lazy_cache_data_prop(pe)
+            dps = self._data_prop[pe]
+        else:
+            subs = self._some_values_subject_index(pe)
+
+        ind = set()
+
+        if isinstance(filler, OWLDatatype):
+            if property_cache:
+                for s, literals in dps.items():
+                    count = sum(1 for lit in literals if lit.get_datatype() == filler)
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe) if lit.get_datatype() == filler)
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDataOneOf):
+            values = set(filler.values())
+            if property_cache:
+                for s, literals in dps.items():
+                    count = len(literals & values)
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe) if lit in values)
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDatatypeRestriction):
+            def res_to_callable(res: OWLFacetRestriction):
+                op = res.get_facet().operator
+                v = res.get_facet_value()
+
+                def inner(lv: OWLLiteral):
+                    return op(lv, v)
+
+                return inner
+
+            apply = FunctionType.__call__
+            facet_restrictions = tuple(map(res_to_callable, filler.get_facet_restrictions()))
+
+            def include(lv: OWLLiteral):
+                return lv.get_datatype() == filler.get_datatype() and \
+                    all(map(apply, facet_restrictions, repeat(lv)))
+
+            if property_cache:
+                for s, literals in dps.items():
+                    count = sum(1 for lit in literals if include(lit))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe) if include(lit))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDataComplementOf):
+            # Count values NOT matching the inner data range
+            inner_filler = filler.get_data_range()
+            # some_inner = OWLDataSomeValuesFrom(property=pe, filler=inner_filler)
+            # We need to count per-individual, so we iterate
+            if property_cache:
+                for s, literals in dps.items():
+                    # Count literals that match the complement (i.e., do NOT match the inner filler)
+                    match_inner = self._count_data_filler_matches(literals, inner_filler)
+                    count = len(literals) - match_inner
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    all_lits = set(self.data_property_values(s, pe))
+                    match_inner = self._count_data_filler_matches(all_lits, inner_filler)
+                    count = len(all_lits) - match_inner
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDataUnionOf):
+            if property_cache:
+                for s, literals in dps.items():
+                    count = sum(1 for lit in literals
+                                if any(self._literal_matches_data_range(lit, op)
+                                       for op in filler.operands()))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe)
+                                if any(self._literal_matches_data_range(lit, op)
+                                       for op in filler.operands()))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        elif isinstance(filler, OWLDataIntersectionOf):
+            if property_cache:
+                for s, literals in dps.items():
+                    count = sum(1 for lit in literals
+                                if all(self._literal_matches_data_range(lit, op)
+                                       for op in filler.operands()))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+            else:
+                for s in subs:
+                    count = sum(1 for lit in self.data_property_values(s, pe)
+                                if all(self._literal_matches_data_range(lit, op)
+                                       for op in filler.operands()))
+                    if count >= min_count and (max_count is None or count <= max_count):
+                        ind.add(s)
+        else:
+            raise ValueError
+
+        return frozenset(ind)
+
+    def _literal_matches_data_range(self, lit: OWLLiteral, dr) -> bool:
+        """Check if a single literal matches a data range."""
+        if isinstance(dr, OWLDatatype):
+            return lit.get_datatype() == dr
+        elif isinstance(dr, OWLDataOneOf):
+            return lit in set(dr.values())
+        elif isinstance(dr, OWLDatatypeRestriction):
+            if lit.get_datatype() != dr.get_datatype():
+                return False
+            for res in dr.get_facet_restrictions():
+                op = res.get_facet().operator
+                if not op(lit, res.get_facet_value()):
+                    return False
+            return True
+        elif isinstance(dr, OWLDataComplementOf):
+            return not self._literal_matches_data_range(lit, dr.get_data_range())
+        elif isinstance(dr, OWLDataUnionOf):
+            return any(self._literal_matches_data_range(lit, op) for op in dr.operands())
+        elif isinstance(dr, OWLDataIntersectionOf):
+            return all(self._literal_matches_data_range(lit, op) for op in dr.operands())
+        else:
+            raise ValueError(f"Unsupported data range type: {type(dr)}")
+
+    def _count_data_filler_matches(self, literals: Set[OWLLiteral], dr) -> int:
+        """Count how many literals in the set match the given data range."""
+        return sum(1 for lit in literals if self._literal_matches_data_range(lit, dr))
+
     def get_instances_from_owl_class(self, c: OWLClass):
         if c.is_owl_thing():
             yield from self._ontology.individuals_in_signature()
@@ -1060,10 +1254,118 @@ class SyncReasoner(AbstractOWLReasoner):
         self.mapper = self.ontology.mapper
         self.inference_types_mapping = import_and_include_axioms_generators()
         self._owlapi_reasoner = initialize_reasoner(reasoner, self._owlapi_ontology)
+        # A single-threaded Java executor shared across all instances() calls.
+        # Using one reusable executor ensures that reasoning tasks are serialized,
+        # preventing "ExtensionManager is not reentrant" errors that occur when
+        # two Java threads concurrently access a non-thread-safe reasoner (e.g. HermiT).
+        # We use a daemon-thread factory so that lingering reasoning threads
+        # (e.g. ones that ignored an interrupt after a timeout) do not prevent
+        # the JVM / Python process from exiting.
+        Executors = JClass("java.util.concurrent.Executors")
+        ThreadFactory = JClass("java.util.concurrent.ThreadFactory")
+
+        @jpype.JImplements(ThreadFactory)
+        class _DaemonThreadFactory:
+            @jpype.JOverride
+            def newThread(self_, r):
+                t = jpype.JClass("java.lang.Thread")(r)
+                t.setDaemon(True)
+                t.setName("owlapy-reasoner-worker")
+                return t
+
+        self._reasoning_executor = Executors.newSingleThreadExecutor(_DaemonThreadFactory())
+
+    def __del__(self):
+        """Shut down the shared Java executor and dispose the reasoner when garbage-collected."""
+        try:
+            self.close()
+        except Exception:
+            pass
+
+    def close(self):
+        """Explicitly shut down the reasoner and the shared Java executor.
+
+        Call this when done with the reasoner to release all Java resources
+        and allow the process to exit cleanly.
+        """
+        # 1. Dispose the OWL API reasoner (releases internal threads & caches).
+        if hasattr(self, "_owlapi_reasoner") and self._owlapi_reasoner is not None:
+            try:
+                self._owlapi_reasoner.dispose()
+            except Exception:
+                pass
+            self._owlapi_reasoner = None
+
+        # 2. Shut down the executor and wait briefly for its thread to finish.
+        if hasattr(self, "_reasoning_executor") and self._reasoning_executor is not None:
+            self._reasoning_executor.shutdownNow()
+            try:
+                TimeUnit = JClass("java.util.concurrent.TimeUnit")
+                self._reasoning_executor.awaitTermination(5, TimeUnit.SECONDS)
+            except Exception:
+                pass
+            self._reasoning_executor = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def _execute_with_java_timeout(self, java_callable_fn, timeout: int, task_description: str = "Reasoning task"):
+        """Execute a Java-level callable on the shared reasoning executor with a timeout.
+
+        This helper encapsulates the common boilerplate of:
+        1. Creating a ``java.util.concurrent.Callable`` from *java_callable_fn*.
+        2. Submitting it to ``self._reasoning_executor``.
+        3. Waiting up to *timeout* seconds for the result.
+        4. Handling ``TimeoutException`` and ``ExecutionException``.
+
+        Args:
+            java_callable_fn: A **no-arg** Python callable that performs the
+                actual Java work.  It will be executed on the executor thread.
+            timeout (int): Maximum time in seconds to wait for the result.
+            task_description (str): Human-readable label used in error / log
+                messages (e.g. ``"Consistency check"``).
+
+        Returns:
+            Whatever *java_callable_fn* returns (already a Python / JPype object).
+
+        Raises:
+            TimeoutError: If the task exceeds *timeout* seconds.
+            RuntimeError: If the callable raises an exception.
+        """
+        TimeUnit = JClass("java.util.concurrent.TimeUnit")
+
+        fn = java_callable_fn  # capture for the inner class
+
+        @jpype.JImplements("java.util.concurrent.Callable")
+        class _Callable:
+            @jpype.JOverride
+            def call(self_):
+                return fn()
+
+        future = self._reasoning_executor.submit(_Callable())
+        try:
+            return future.get(timeout, TimeUnit.MILLISECONDS)
+        except jpype.JException as e:
+            if "TimeoutException" in type(e).__name__:
+                future.cancel(True)
+                raise TimeoutError(
+                    f"{task_description} timed out after {timeout} seconds."
+                ) from None
+            elif "ExecutionException" in type(e).__name__:
+                cause = e.getCause()
+                raise RuntimeError(
+                    f"{task_description} failed: {cause}"
+                ) from None
+            else:
+                raise
 
     def _instances(self, ce: OWLClassExpression, direct=False) -> Set[OWLNamedIndividual]:
         """
-        Get the instances for a given class expression using HermiT.
+        Get the instances for a given class expression.
 
         Args:
             ce (OWLClassExpression): The class expression in OWLAPY format.
@@ -1079,7 +1381,59 @@ class SyncReasoner(AbstractOWLReasoner):
         return {self.mapper.map_(ind) for ind in flattened_instances}
 
     def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
-        return run_with_timeout(self._instances, timeout, (ce, direct))
+        """
+        Get the instances for a given class expression with a Java-level timeout.
+
+        Uses Java's ExecutorService to run the reasoning task in a separate Java thread,
+        enabling proper timeout and interruption of the underlying Java reasoner (e.g. HermiT,
+        Pellet). This overcomes the limitation of Python's threading which cannot interrupt
+        JPype Java calls.
+
+        Args:
+            ce (OWLClassExpression): The class expression in OWLAPY format.
+            direct (bool): Whether to get direct instances or not. Defaults to False.
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
+
+        Returns:
+            set: A set of individuals classified by the given class expression.
+                 Returns an empty set if the timeout is exceeded.
+        """
+        mapped_ce = self.mapper.map_(ce)
+
+        TimeUnit = JClass("java.util.concurrent.TimeUnit")
+
+        # Submit the reasoning task to the shared single-threaded executor.
+        # Using a shared executor (created once in __init__) ensures that all
+        # instances() calls are serialized on one Java thread, preventing the
+        # "ExtensionManager is not reentrant" error that arises when a new
+        # executor is created per call and two threads overlap during shutdown.
+        owlapi_reasoner = self._owlapi_reasoner
+
+        @jpype.JImplements("java.util.concurrent.Callable")
+        class _ReasonerCallable:
+            @jpype.JOverride
+            def call(self_):
+                return owlapi_reasoner.getInstances(mapped_ce, direct)
+
+        future = self._reasoning_executor.submit(_ReasonerCallable())
+        try:
+            instances = future.get(timeout, TimeUnit.SECONDS)
+            flattened_instances = instances.getFlattened()
+            return {self.mapper.map_(ind) for ind in flattened_instances}
+        except jpype.JException as e:
+            # java.util.concurrent.TimeoutException when reasoning exceeds the timeout
+            if "TimeoutException" in type(e).__name__:
+                future.cancel(True)  # Interrupt the Java reasoning thread
+                logger.warning(f"Reasoner timed out after {timeout} seconds for instances query on: {ce}")
+                return set()
+            # java.util.concurrent.ExecutionException wraps exceptions from the Callable
+            elif "ExecutionException" in type(e).__name__:
+                cause = e.getCause()
+                raise RuntimeError(
+                    f"Reasoning failed for class expression '{ce}': {cause}"
+                ) from None
+            else:
+                raise
 
     def equivalent_classes(self, ce: OWLClassExpression):
         """
@@ -1450,14 +1804,25 @@ class SyncReasoner(AbstractOWLReasoner):
         yield from [self.mapper.map_(ind) for ind in
                     self._owlapi_reasoner.getTypes(self.mapper.map_(individual), direct).getFlattened()]
 
-    def has_consistent_ontology(self) -> bool:
+    def has_consistent_ontology(self, timeout: int = 1000) -> bool:
         """
         Check if the used ontology is consistent.
 
+        Args:
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
+
         Returns:
             bool: True if the ontology used by this reasoner is consistent, False otherwise.
+
+        Raises:
+            TimeoutError: If the reasoning task exceeds the timeout.
+            RuntimeError: If the reasoning task fails for another reason.
         """
-        return self._owlapi_reasoner.isConsistent()
+        return bool(self._execute_with_java_timeout(
+            lambda: self._owlapi_reasoner.isConsistent(),
+            timeout,
+            "Consistency check",
+        ))
 
     def infer_axioms(self, inference_types: list[str]) -> Iterable[OWLAxiom]:
         """
@@ -1479,6 +1844,7 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         # noinspection PyUnresolvedReferences
         from java.util import ArrayList
+
         # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.util import InferredOntologyGenerator
 
@@ -1520,12 +1886,15 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         # noinspection PyUnresolvedReferences
         from java.io import File, FileOutputStream
+
         # noinspection PyUnresolvedReferences
         from java.util import ArrayList
+
+        # noinspection PyUnresolvedReferences
+        from org.semanticweb.owlapi.formats import OWLXMLDocumentFormat, RDFXMLDocumentFormat, TurtleDocumentFormat
+
         # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.util import InferredOntologyGenerator
-        # noinspection PyUnresolvedReferences
-        from org.semanticweb.owlapi.formats import TurtleDocumentFormat, RDFXMLDocumentFormat, OWLXMLDocumentFormat
         if output_format == "ttl" or output_format == "turtle":
             document_format = TurtleDocumentFormat()
         elif output_format == "rdf/xml":
@@ -1576,43 +1945,83 @@ class SyncReasoner(AbstractOWLReasoner):
         """
         self.infer_axioms_and_save(output, output_format, ["InferredClassAssertionAxiomGenerator"])
 
-    def is_entailed(self, axiom: OWLAxiom) -> bool:
+    def is_entailed(self, axiom: OWLAxiom, timeout: int = 1000) -> bool:
         """A convenience method that determines if the specified axiom is entailed by the set of reasoner axioms.
 
         Args:
             axiom: The axiom to check for entailment.
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
 
         Return:
             True if the axiom is entailed by the reasoner axioms and False otherwise.
-        """
-        return bool(self._owlapi_reasoner.isEntailed(self.mapper.map_(axiom)))
 
-    def is_satisfiable(self, ce: OWLClassExpression) -> bool:
+        Raises:
+            TimeoutError: If the reasoning task exceeds the timeout.
+            RuntimeError: If the reasoning task fails for another reason.
+        """
+        j_axiom = self.mapper.map_(axiom)
+        return bool(self._execute_with_java_timeout(
+            lambda: self._owlapi_reasoner.isEntailed(j_axiom),
+            timeout,
+            f"Entailment check for axiom: {axiom}",
+        ))
+
+    def is_satisfiable(self, ce: OWLClassExpression, timeout: int = 1000) -> bool:
         """A convenience method that determines if the specified class expression is satisfiable with respect
         to the reasoner axioms.
 
         Args:
             ce: The class expression to check for satisfiability.
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
 
         Return:
             True if the class expression is satisfiable by the reasoner axioms and False otherwise.
+
+        Raises:
+            TimeoutError: If the reasoning task exceeds the timeout.
+            RuntimeError: If the reasoning task fails for another reason.
         """
+        j_ce = self.mapper.map_(ce)
+        return bool(self._execute_with_java_timeout(
+            lambda: self._owlapi_reasoner.isSatisfiable(j_ce),
+            timeout,
+            f"Satisfiability check for: {ce}",
+        ))
 
-        return bool(self._owlapi_reasoner.isSatisfiable(self.mapper.map_(ce)))
-
-    def unsatisfiable_classes(self):
+    def unsatisfiable_classes(self, timeout: int = 1000):
         """A convenience method that obtains the classes in the signature of the root ontology that are
-        unsatisfiable."""
-        return self.mapper.map_(self._owlapi_reasoner.unsatisfiableClasses())
+        unsatisfiable.
+
+        Args:
+            timeout (int): Timeout in seconds for the reasoning task. Defaults to 1000.
+
+        Returns:
+            The unsatisfiable classes.
+
+        Raises:
+            TimeoutError: If the reasoning task exceeds the timeout.
+            RuntimeError: If the reasoning task fails for another reason.
+        """
+        result = self._execute_with_java_timeout(
+            lambda: self._owlapi_reasoner.unsatisfiableClasses(),
+            timeout,
+            "Unsatisfiable classes retrieval",
+        )
+        return self.mapper.map_(result)
 
     def create_axiom_justifications(self,
                                     axiom_to_explain: OWLAxiom,
                                     n_max_justifications: Optional[int] = 10,
+                                    timeout: int = 1000,
                                     save: bool = False,
     ) -> List[Set[OWLAxiom]]:
         """Generate multiple justifications for why an axiom is entailed by the ontology.
-        The prerequisite is that the axiom can be converted into a class expression. See the following link to see which axioms can be converted: https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/AxiomConverter.java
-        The implementation follows the internal implementation of DefaultExplanationGenerator in the OWLAPI to circumvent the need for a progress monitor, see https://github.com/owlcs/owlapi/blob/d7e997a53b470e32700de89cc610d9daf01ea769/tools/src/main/java/com/clarkparsia/owlapi/explanation/DefaultExplanationGenerator.java# .
+        The implementation uses the ``owlexplanation`` library (which also depends on ``owlapi``
+        and ``telemetry-2.0.0``), by Matthew Horridge.  Internally an
+        ``ExplanationProgressMonitor`` is used so that (a) the generator can be
+        cooperatively cancelled when the *timeout* is reached and (b) any
+        justifications that were already found before the timeout are still returned.
+
         The supported axiom types are:
         - OWLClassAssertionAxiom
         - OWLDataPropertyAssertionAxiom
@@ -1636,6 +2045,7 @@ class SyncReasoner(AbstractOWLReasoner):
         Args:
             axiom_to_explain (OWLAxiom): The axiom to create justifications for.
             n_max_justifications (Optional[int], optional): The maximum number of justifications to generate. Defaults to 10.
+            timeout (int, optional): The maximum time (in seconds) to wait for justification generation. Defaults to 1000.
             save (bool, optional): If True, saves all justifications in a new ontology as axioms. Defaults to False.
 
         Raises:
@@ -1643,92 +2053,157 @@ class SyncReasoner(AbstractOWLReasoner):
             NotImplementedError: If the specified reasoner is not supported for axiom justification.
 
         Returns:
-            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed by the ontology.
+            List[Set[OWLAxiom]]: Each item is a justification (set of OWLAxioms) that explains why the axiom is entailed
+                by the ontology. If the timeout is reached, the justifications found so far are returned (which may be
+                an empty list).
         """
+        import time as _time
+
         # First verify that the axiom is even entailed
         if not self.is_entailed(axiom_to_explain):
             raise ValueError(
                 f"The axiom {axiom_to_explain} is not entailed by the ontology. No justifications to create."
             )
-        from com.clarkparsia.owlapi.explanation import (
-            BlackBoxExplanation,
-            HSTExplanationGenerator,
-            SatisfiabilityConverter
+
+        from org.semanticweb.owl.explanation.impl.blackbox import Configuration
+        from org.semanticweb.owl.explanation.impl.blackbox.checker import (
+            BlackBoxExplanationGeneratorFactory,
+            SatisfiabilityEntailmentCheckerFactory,
         )
 
-        j_axiom = self.mapper.map_(axiom_to_explain)
-        j_ontology = self._owlapi_ontology
-        j_reasoner = self._owlapi_reasoner
-        j_data_factory = self._owlapi_manager.getOWLDataFactory()
+        TimeUnit = JClass("java.util.concurrent.TimeUnit")
+        Thread = JClass("java.lang.Thread")
 
+        # Get a hold of the reasoner factory
         if self.reasoner_name == "Pellet":
             from openllet.owlapi import PelletReasonerFactory
-            reasoner_factory = PelletReasonerFactory.getInstance()
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
         elif self.reasoner_name == "HermiT":
             from org.semanticweb.HermiT import ReasonerFactory
-            reasoner_factory = ReasonerFactory()
+            j_reasoner_factory = ReasonerFactory()
         elif self.reasoner_name == "ELK":
             from org.semanticweb.elk.owlapi import ElkReasonerFactory
-            reasoner_factory = ElkReasonerFactory()
+            j_reasoner_factory = ElkReasonerFactory()
         elif self.reasoner_name == "JFact":
             from uk.ac.manchester.cs.jfact import JFactFactory
-            reasoner_factory = JFactFactory()
+            j_reasoner_factory = JFactFactory()
         elif self.reasoner_name == "Openllet":
             from openllet.owlapi import PelletReasonerFactory
-            reasoner_factory = PelletReasonerFactory.getInstance()
+            j_reasoner_factory = PelletReasonerFactory.getInstance()
         elif self.reasoner_name == "Structural":
             from org.semanticweb.owlapi.reasoner.structural import StructuralReasonerFactory
-            reasoner_factory = StructuralReasonerFactory()
+            j_reasoner_factory = StructuralReasonerFactory()
         else:
             raise NotImplementedError(f"Reasoner '{self.reasoner_name}' is not supported for axiom justification.")
 
-        # Following the internal implementation of DefaultExplanationGenerator to circumvent the need for a progress monitor
+        j_ontology = self._owlapi_ontology
 
-        converter = SatisfiabilityConverter(j_data_factory)
-        try:
-            j_axiom_ce = converter.convert(j_axiom)
-        except Exception as e:
-            if "not implemented" in str(e).lower():
-                raise NotImplementedError(
-                    f"Failed to convert the axiom {axiom_to_explain} into a class expression. "
-                    f"This most likely means that the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
-                )
-            raise e
-        blackbox_exp = BlackBoxExplanation(j_ontology, reasoner_factory, j_reasoner)
-        explanation_gen = HSTExplanationGenerator(blackbox_exp)
+        # Convert timeout from seconds to milliseconds for the Java-level
+        # SatisfiabilityEntailmentCheckerFactory (cooperative timeout inside
+        # the explanation library).
+        timeout_ms = timeout * 1000
 
-        justifications = []
+        # Build the owlexplanation generator chain with timeout support.
+        # Explicitly use JLong to disambiguate the (OWLReasonerFactory, long)
+        # constructor from the (OWLReasonerFactory, boolean) overload.
+        j_checker_factory = SatisfiabilityEntailmentCheckerFactory(
+            j_reasoner_factory, jpype.JLong(timeout_ms)
+        )
+        j_config = Configuration(j_checker_factory)
+        j_gen_fac = BlackBoxExplanationGeneratorFactory(j_config)
+
+        # Create a progress monitor that collects partial results and supports
+        # cooperative cancellation via both a wall-clock deadline and Java
+        # thread interruption (set by future.cancel(True) on hard timeout).
+        @jpype.JImplements("org.semanticweb.owl.explanation.api.ExplanationProgressMonitor")
+        class _TimeoutProgressMonitor:
+            def __init__(self_, deadline):
+                self_._found = []
+                self_._deadline = deadline
+
+            @jpype.JOverride
+            def foundExplanation(self_, generator, explanation, allExplanations):
+                self_._found.append(explanation)
+
+            @jpype.JOverride
+            def isCancelled(self_):
+                return (_time.time() >= self_._deadline
+                        or Thread.currentThread().isInterrupted())
+
+        deadline = _time.time() + timeout
+        monitor = _TimeoutProgressMonitor(deadline)
+
+        j_gen = j_gen_fac.createExplanationGenerator(j_ontology, monitor)
+
+        j_axiom = self.mapper.map_(axiom_to_explain)
         if n_max_justifications is not None and not isinstance(
             n_max_justifications, int
         ):
             raise ValueError(
                 f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
             )
-        if n_max_justifications is not None and n_max_justifications > 0:
-            try:
-                j_explanations = explanation_gen.getExplanations(
-                    j_axiom_ce, n_max_justifications
-                )
-            except Exception as e:
-                raise ValueError(
-                    f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
-                )
-        else:
-            try:
-                j_explanations = explanation_gen.getExplanations(j_axiom_ce)
-            except Exception as e:
-                raise ValueError(
-                    f"Justification failed most likely because the axiom type {type(axiom_to_explain)} is not supported for justification generation.\n{str(e)}"
-                )
 
+        # Submit the justification task to the shared single-threaded executor
+        # so that Future.get(timeout) provides a hard, enforceable timeout and
+        # future.cancel(True) can interrupt the Java reasoning thread.
+        n_max = n_max_justifications  # capture for closure
+
+        @jpype.JImplements("java.util.concurrent.Callable")
+        class _JustificationCallable:
+            @jpype.JOverride
+            def call(self_):
+                if n_max is not None and n_max > 0:
+                    return j_gen.getExplanations(j_axiom, n_max)
+                else:
+                    return j_gen.getExplanations(j_axiom)
+
+        future = self._reasoning_executor.submit(_JustificationCallable())
+        timed_out = False
+        try:
+            j_explanations = future.get(timeout, TimeUnit.SECONDS)
+        except jpype.JException as e:
+            if "TimeoutException" in type(e).__name__:
+                future.cancel(True)  # Interrupt the Java reasoning thread
+                timed_out = True
+                logger.warning(
+                    "Justification generation timed out after %d seconds. "
+                    "Returning %d partial justification(s) found before timeout.",
+                    timeout, len(monitor._found)
+                )
+                j_explanations = monitor._found
+            elif "ExecutionException" in type(e).__name__:
+                if monitor._found:
+                    logger.warning(
+                        "Justification generation was interrupted. "
+                        "Returning %d partial justification(s) found so far.",
+                        len(monitor._found)
+                    )
+                    j_explanations = monitor._found
+                else:
+                    cause = e.getCause()
+                    raise RuntimeError(
+                        f"Justification failed for axiom '{axiom_to_explain}': {cause}"
+                    ) from None
+            else:
+                raise
+
+        justifications = []
         for j_expl in j_explanations:
-            py_axioms = {self.mapper.map_(ax) for ax in j_expl}
+            py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
             justifications.append(py_axioms)
+
+        # If the normal result set was empty but the monitor collected partial
+        # results (e.g. timeout fired between getExplanations completing and
+        # result mapping), fall back to the monitor's collection.
+        if not justifications and monitor._found and not timed_out:
+            for j_expl in monitor._found:
+                py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
+                justifications.append(py_axioms)
 
         # Save to justifications.owl if requested
         if save:
-            from owlapy.owl_ontology import SyncOntology
             from owlapy.iri import IRI
+            from owlapy.owl_ontology import SyncOntology
 
             # Create a new in-memory ontology to store justifications
             just_iri = IRI.create("http://example.org/justifications")
@@ -1748,7 +2223,7 @@ class SyncReasoner(AbstractOWLReasoner):
     def create_laconic_axiom_justifications(self,
                                             axiom_to_explain: OWLAxiom,
                                             n_max_justifications: Optional[int] = 10,
-                                            timeout: int = 10_000,
+                                            timeout: int = 1000,
                                             save: bool = False) -> List[Set[OWLAxiom]]:
         """Generate multiple laconic justifications for why an axiom is entailed by the ontology.
         Laconic justifications are a subset of the full justifications, where all irrelevant axioms have been removed.
@@ -1759,7 +2234,7 @@ class SyncReasoner(AbstractOWLReasoner):
         Args:
             axiom_to_explain (OWLAxiom): The axiom to create laconic justifications for. Must be of a type that can be converted into a class expression (e.g., OWLSubClassOfAxiom, OWLClassAssertionAxiom, etc.). See
             n_max_justifications (Optional[int], optional): The maximum number of laconic justifications to generate. If None or a non-positive integer is provided, all justifications will be generated. Defaults to 10.
-            timeout (int, optional): The maximum time (in milliseconds) to wait for each justification. Defaults to 10_000.
+            timeout (int, optional): The maximum time (in seconds) to wait for justification generation. Defaults to 1000.
             save (bool, optional): Whether to save the generated justifications to a file. Defaults to False.
 
         Raises:
@@ -1769,9 +2244,17 @@ class SyncReasoner(AbstractOWLReasoner):
         Returns:
             List[Set[OWLAxiom]]: A list of sets of OWLAxioms, where each set represents a laconic justification for why the axiom is entailed by the ontology.
         """
+        import time as _time
 
-        from org.semanticweb.owl.explanation.api import ExplanationManager
+        from org.semanticweb.owl.explanation.impl.blackbox import Configuration
+        from org.semanticweb.owl.explanation.impl.blackbox.checker import (
+            BlackBoxExplanationGeneratorFactory,
+            SatisfiabilityEntailmentCheckerFactory,
+        )
         from org.semanticweb.owl.explanation.impl.laconic import LaconicExplanationGeneratorFactory
+
+        TimeUnit = JClass("java.util.concurrent.TimeUnit")
+        Thread = JClass("java.lang.Thread")
 
         # Get a hold of the reasoner factory and the ontology
         if self.reasoner_name == "Pellet":
@@ -1798,10 +2281,45 @@ class SyncReasoner(AbstractOWLReasoner):
 
         j_ontology = self._owlapi_ontology
 
-        j_gen_fac = ExplanationManager.createExplanationGeneratorFactory(j_reasoner_factory)
+        # Convert timeout from seconds to milliseconds for the Java-level
+        # SatisfiabilityEntailmentCheckerFactory (cooperative timeout inside
+        # the explanation library).
+        timeout_ms = timeout * 1000
+
+        # Build the chain manually so that the timeout is forwarded to the
+        # SatisfiabilityEntailmentCheckerFactory (ExplanationManager does not
+        # pass a timeout).
+        # Explicitly use JLong to disambiguate the (OWLReasonerFactory, long)
+        # constructor from the (OWLReasonerFactory, boolean) overload.
+        j_checker_factory = SatisfiabilityEntailmentCheckerFactory(
+            j_reasoner_factory, jpype.JLong(timeout_ms)
+        )
+        j_config = Configuration(j_checker_factory)
+        j_gen_fac = BlackBoxExplanationGeneratorFactory(j_config)
         j_laconic_gen_fac = LaconicExplanationGeneratorFactory(j_gen_fac)
 
-        j_gen = j_laconic_gen_fac.createExplanationGenerator(j_ontology)
+        # Create a progress monitor that collects partial results and supports
+        # cooperative cancellation via both a wall-clock deadline and Java
+        # thread interruption (set by future.cancel(True) on hard timeout).
+        @jpype.JImplements("org.semanticweb.owl.explanation.api.ExplanationProgressMonitor")
+        class _TimeoutProgressMonitor:
+            def __init__(self_, deadline):
+                self_._found = []
+                self_._deadline = deadline
+
+            @jpype.JOverride
+            def foundExplanation(self_, generator, explanation, allExplanations):
+                self_._found.append(explanation)
+
+            @jpype.JOverride
+            def isCancelled(self_):
+                return (_time.time() >= self_._deadline
+                        or Thread.currentThread().isInterrupted())
+
+        deadline = _time.time() + timeout
+        monitor = _TimeoutProgressMonitor(deadline)
+
+        j_gen = j_laconic_gen_fac.createExplanationGenerator(j_ontology, monitor)
 
         j_axiom = self.mapper.map_(axiom_to_explain)
         if n_max_justifications is not None and not isinstance(
@@ -1810,19 +2328,70 @@ class SyncReasoner(AbstractOWLReasoner):
             raise ValueError(
                 f"n_max_justifications must be an integer or None, but got {n_max_justifications}"
             )
-        if n_max_justifications is not None and n_max_justifications > 0:
-            j_explanations = j_gen.getExplanations(j_axiom, n_max_justifications)
-        else:
-            j_explanations = j_gen.getExplanations(j_axiom)
+
+        # Submit the justification task to the shared single-threaded executor
+        # so that Future.get(timeout) provides a hard, enforceable timeout and
+        # future.cancel(True) can interrupt the Java reasoning thread.
+        n_max = n_max_justifications  # capture for closure
+
+        @jpype.JImplements("java.util.concurrent.Callable")
+        class _JustificationCallable:
+            @jpype.JOverride
+            def call(self_):
+                if n_max is not None and n_max > 0:
+                    return j_gen.getExplanations(j_axiom, n_max)
+                else:
+                    return j_gen.getExplanations(j_axiom)
+
+        future = self._reasoning_executor.submit(_JustificationCallable())
+        timed_out = False
+        try:
+            j_explanations = future.get(timeout, TimeUnit.SECONDS)
+        except jpype.JException as e:
+            if "TimeoutException" in type(e).__name__:
+                future.cancel(True)  # Interrupt the Java reasoning thread
+                timed_out = True
+                logger.warning(
+                    "Laconic justification generation timed out after %d seconds. "
+                    "Returning %d partial justification(s) found before timeout.",
+                    timeout, len(monitor._found)
+                )
+                j_explanations = monitor._found
+            elif "ExecutionException" in type(e).__name__:
+                if monitor._found:
+                    logger.warning(
+                        "Laconic justification generation was interrupted. "
+                        "Returning %d partial justification(s) found so far.",
+                        len(monitor._found)
+                    )
+                    j_explanations = monitor._found
+                else:
+                    cause = e.getCause()
+                    raise ValueError(
+                        f"Laconic justification failed most likely because the axiom type "
+                        f"{type(axiom_to_explain)} is not supported for justification "
+                        f"generation.\n{cause}"
+                    ) from None
+            else:
+                raise
+
         justifications = []
         for j_expl in j_explanations:
             py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
             justifications.append(py_axioms)
 
+        # If the normal result set was empty but the monitor collected partial
+        # results (e.g. timeout fired between getExplanations completing and
+        # result mapping), fall back to the monitor's collection.
+        if not justifications and monitor._found and not timed_out:
+            for j_expl in monitor._found:
+                py_axioms = {self.mapper.map_(ax) for ax in j_expl.getAxioms()}
+                justifications.append(py_axioms)
+
         # Save to justifications.owl if requested
         if save:
-            from owlapy.owl_ontology import SyncOntology
             from owlapy.iri import IRI
+            from owlapy.owl_ontology import SyncOntology
 
             # Create a new in-memory ontology to store justifications
             just_iri = IRI.create("http://example.org/laconic_axiom_justifications")
@@ -1861,8 +2430,7 @@ class SyncReasoner(AbstractOWLReasoner):
         if self.has_consistent_ontology():
             raise ValueError("The ontology is consistent. No inconsistency justifications to create.")
 
-        from org.semanticweb.owl.explanation.impl.blackbox.checker import \
-            InconsistentOntologyExplanationGeneratorFactory
+        from org.semanticweb.owl.explanation.impl.blackbox.checker import InconsistentOntologyExplanationGeneratorFactory
 
         # Get the reasoner factory
         if self.reasoner_name == "Pellet":
@@ -1906,8 +2474,8 @@ class SyncReasoner(AbstractOWLReasoner):
             justifications.append(py_axioms)
         # Save to justifications.owl if requested
         if save:
-            from owlapy.owl_ontology import SyncOntology
             from owlapy.iri import IRI
+            from owlapy.owl_ontology import SyncOntology
 
             # Create a new in-memory ontology to store justifications
             just_iri = IRI.create("http://example.org/inconsistency_justifications")
@@ -2106,16 +2674,19 @@ def initialize_reasoner(reasoner: str, owlapi_ontology):
 
 def import_and_include_axioms_generators():
     # noinspection PyUnresolvedReferences
-    from org.semanticweb.owlapi.util import (InferredClassAssertionAxiomGenerator, InferredSubClassAxiomGenerator,
-                                             InferredEquivalentClassAxiomGenerator,
-                                             InferredDisjointClassesAxiomGenerator,
-                                             InferredEquivalentDataPropertiesAxiomGenerator,
-                                             InferredEquivalentObjectPropertyAxiomGenerator,
-                                             InferredInverseObjectPropertiesAxiomGenerator,
-                                             InferredSubDataPropertyAxiomGenerator,
-                                             InferredSubObjectPropertyAxiomGenerator,
-                                             InferredDataPropertyCharacteristicAxiomGenerator,
-                                             InferredObjectPropertyCharacteristicAxiomGenerator)
+    from org.semanticweb.owlapi.util import (
+        InferredClassAssertionAxiomGenerator,
+        InferredDataPropertyCharacteristicAxiomGenerator,
+        InferredDisjointClassesAxiomGenerator,
+        InferredEquivalentClassAxiomGenerator,
+        InferredEquivalentDataPropertiesAxiomGenerator,
+        InferredEquivalentObjectPropertyAxiomGenerator,
+        InferredInverseObjectPropertiesAxiomGenerator,
+        InferredObjectPropertyCharacteristicAxiomGenerator,
+        InferredSubClassAxiomGenerator,
+        InferredSubDataPropertyAxiomGenerator,
+        InferredSubObjectPropertyAxiomGenerator,
+    )
 
     return {"InferredClassAssertionAxiomGenerator": InferredClassAssertionAxiomGenerator(),
             "InferredSubClassAxiomGenerator": InferredSubClassAxiomGenerator(),
@@ -2312,7 +2883,7 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
             yield from all_individuals - excluded_individuals
         elif isinstance(expression, OWLObjectIntersectionOf):
             """ Handling intersection of class expressions:
-            Given an OWLObjectIntersectionOf (C ⊓ D),  
+            Given an OWLObjectIntersectionOf (C ⊓ D),
             retrieve its instances by intersecting the instance of each operands.
             {x | phi(x, type, C) ≥ γ} ∩ {x | phi(x, type, D) ≥ γ}
             """
@@ -2327,10 +2898,10 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
                     result = result.intersection(retrieval_of_op)
             yield from result
         elif isinstance(expression, OWLObjectAllValuesFrom):
-            """
-            Given an OWLObjectAllValuesFrom ∀ r.C, retrieve its instances => 
-            Retrieval(¬∃ r.¬C) =             
-            Entities \setminus {x | ∃ y: \phi(y, type, C) < \gamma AND \phi(x,r,y)  ≥ \gamma } 
+            r"""
+            Given an OWLObjectAllValuesFrom ∀ r.C, retrieve its instances =>
+            Retrieval(¬∃ r.¬C) =
+            Entities \setminus {x | ∃ y: \phi(y, type, C) < \gamma AND \phi(x,r,y)  ≥ \gamma }
             """
             object_property = expression.get_property()
             filler_expression = expression.get_filler()
@@ -2338,10 +2909,10 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
                 OWLObjectSomeValuesFrom(object_property, OWLObjectComplementOf(filler_expression))))
 
         elif isinstance(expression, OWLObjectMinCardinality) or isinstance(expression, OWLObjectSomeValuesFrom):
-            """
-            Given an OWLObjectSomeValuesFrom ∃ r.C, retrieve its instances => 
-            Retrieval(∃ r.C) = 
-            {x | ∃ y : phi(y, type, C) ≥ \gamma AND phi(x, r, y) ≥ \gamma }  
+            r"""
+            Given an OWLObjectSomeValuesFrom ∃ r.C, retrieve its instances =>
+            Retrieval(∃ r.C) =
+            {x | ∃ y : phi(y, type, C) ≥ \gamma AND phi(x, r, y) ≥ \gamma }
             """
             object_property = expression.get_property()
             filler_expression = expression.get_filler()

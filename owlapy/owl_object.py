@@ -1,7 +1,8 @@
 """OWL Base classes"""
-from abc import abstractmethod, ABCMeta
-from .meta_classes import HasIRI
+from abc import ABCMeta, abstractmethod
 from typing import TypeVar
+
+from .meta_classes import HasIRI
 
 _I = TypeVar('_I', bound='IRI')  # noqa: F821
 
