@@ -96,3 +96,169 @@ Current version is tracked in **two places** — keep them in sync:
 - Always call `stopJVM()` after using any Java-backed `SyncReasoner`
 - Use full IRI strings when constructing OWL entities
 - Never pass raw strings to reasoners — wrap them in the appropriate OWL object first
+
+## Release Process
+
+### Creating a New Release
+
+Follow this complete workflow to release a new version to PyPI:
+
+#### 1. Create Release Branch
+
+```bash
+# Ensure you're on develop and up-to-date
+git checkout develop
+git pull origin develop
+
+# Create a release branch
+git checkout -b feature/release-X.Y.Z
+```
+
+#### 2. Update Version Numbers
+
+Update version in **both** files (keep in sync):
+
+```bash
+# owlapy/__init__.py
+__version__ = 'X.Y.Z'
+
+# setup.py
+version="X.Y.Z"
+```
+
+#### 3. Update CHANGELOG.md
+
+Add a new version section following [Keep a Changelog](https://keepachangelog.com/) format:
+
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+
+### Added
+- New features and functionality
+
+### Changed
+- Updates to existing features
+
+### Fixed
+- Bug fixes and corrections
+```
+
+#### 4. Add Tests for New Features
+
+- Create test files in `tests/` directory
+- Ensure all tests pass: `PYTHONPATH=. pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings`
+- Run linter: `ruff check owlapy --line-length=200 --fix --unsafe-fixes`
+
+#### 5. Commit and Push Release Branch
+
+```bash
+git add owlapy/__init__.py setup.py CHANGELOG.md tests/
+git commit -m "chore: bump version to X.Y.Z and add tests
+
+- Increment version from A.B.C to X.Y.Z
+- Add comprehensive test suite
+- Update CHANGELOG.md with release notes"
+
+git push -u origin feature/release-X.Y.Z
+```
+
+#### 6. Merge to Develop
+
+```bash
+git checkout develop
+git merge feature/release-X.Y.Z --no-ff -m "Merge feature/release-X.Y.Z into develop
+
+Release version X.Y.Z with [feature description]"
+
+git push origin develop
+```
+
+#### 7. Merge to Main
+
+```bash
+git checkout main
+git pull origin main
+git merge develop --no-ff -m "Release vX.Y.Z: Merge develop into main
+
+This release includes:
+- [Feature 1]
+- [Feature 2]
+- Bug fixes and improvements"
+
+git push origin main
+```
+
+#### 8. Create Git Tag
+
+```bash
+git tag -a vX.Y.Z -m "Release version X.Y.Z
+
+- [Feature 1]
+- [Feature 2]
+- Bug fixes and documentation improvements"
+
+git push origin vX.Y.Z
+```
+
+#### 9. Build and Publish to PyPI
+
+```bash
+# Clean old builds
+rm -rf build/ dist/ *.egg-info owlapy.egg-info
+
+# Install/upgrade build tools
+pip install --upgrade build twine
+
+# Build distributions
+python -m build
+
+# Verify build
+ls -lh dist/
+twine check dist/*
+
+# Upload to PyPI (requires API token in ~/.pypirc)
+twine upload dist/*
+```
+
+#### 10. Configure PyPI Credentials (One-time Setup)
+
+Create `~/.pypirc` with your API token:
+
+```ini
+[pypi]
+username = __token__
+password = pypi-YOUR_API_TOKEN_HERE
+```
+
+Set secure permissions:
+
+```bash
+chmod 600 ~/.pypirc
+```
+
+### Post-Release Verification
+
+```bash
+# Verify package is available on PyPI
+pip install --upgrade owlapy
+
+# Check installed version
+python -c "import owlapy; print(owlapy.__version__)"
+
+# View package page
+# https://pypi.org/project/owlapy/X.Y.Z/
+```
+
+### Common Issues
+
+**Twine check fails with metadata errors:**
+- Upgrade twine: `pip install --upgrade twine`
+- Use `python -m build` instead of `python setup.py bdist_wheel sdist`
+
+**Merge conflicts:**
+- When merging branches with conflicts, prefer keeping alphabetized imports while preserving functionality
+- Always run `ruff check --fix --unsafe-fixes` after resolving conflicts
+
+**Version mismatch:**
+- Ensure version is updated in both `owlapy/__init__.py` AND `setup.py`
+- Verify with: `grep -r "version.*=" owlapy/__init__.py setup.py`
