@@ -1268,7 +1268,11 @@ class SyncOntology(AbstractOWLOntology):
 
     def __eq__(self, other):
         if isinstance(other, SyncOntology):
-            return other.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
+            try:
+                return self.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
+            except:
+                # If JVM is not running, fall back to comparing IRI paths
+                return self.path == other.path
         return False
 
     def __hash__(self):

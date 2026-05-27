@@ -126,12 +126,10 @@ class TestSyncReasonerTimeout(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Clean up resources."""
-        if hasattr(cls, 'reasoner'):
-            try:
-                from owlapy.static_funcs import stopJVM
-                stopJVM()
-            except Exception:
-                pass  # JVM might already be stopped
+        # Note: Don't call stopJVM() here as JPype cannot restart the JVM
+        # and it would break subsequent tests that need the JVM.
+        # The JVM will be cleaned up when the Python process exits.
+        pass
 
 
 if __name__ == '__main__':
