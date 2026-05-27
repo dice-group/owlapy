@@ -81,7 +81,27 @@ wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && 
 PYTHONPATH=. pytest
 ```
 
-## 📋 Examples
+## � Documentation
+
+### LLM-Friendly Documentation
+
+For comprehensive, LLM-optimized documentation, check out the [`markdown_docs/`](markdown_docs/) directory:
+
+- **[Getting Started](markdown_docs/01_getting_started.md)** - Installation, setup, and quick start guide
+- **[Core Concepts](markdown_docs/02_core_concepts.md)** - OWL fundamentals, ontologies, reasoners, and class expressions
+- **[Ontology Management](markdown_docs/03_ontology_management.md)** - Creating, loading, saving, and modifying ontologies
+- **[Reasoning](markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, StructuralReasoner, and SyncReasoner
+- **[Common Patterns](markdown_docs/08_common_patterns.md)** - Best practices, patterns, and anti-patterns
+- **[API Reference](markdown_docs/09_api_reference.md)** - Complete API documentation
+
+These docs are specifically formatted for LLM consumption and provide detailed examples, type information, and troubleshooting guidance.
+
+### Official Documentation
+
+- **[Online Documentation](https://dice-group.github.io/owlapy/usage/main.html)** - Complete API reference and tutorials
+- **[DeepWiki Assistant](https://deepwiki.com/dice-group/owlapy)** - AI-powered documentation assistant
+
+## �📋 Examples
 
 ### Exploring OWL Ontology
 
