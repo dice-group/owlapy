@@ -66,8 +66,8 @@ from owlapy.owl_property import OWLDataProperty
 age = OWLDataProperty("http://example.com/ont#age")
 age_values = set(reasoner.data_property_values(markus, age))
 
-# All individuals
-all_inds = set(reasoner.all_individuals())
+# All individuals (use ontology, not reasoner)
+all_inds = set(ontology.individuals_in_signature())
 ```
 
 ## SyncReasoner (Java Reasoners — Requires JVM)
@@ -112,18 +112,27 @@ sync_reasoner.infer_axioms_and_save(
     # inference_types defaults to all supported types
 )
 
-# Available inference_types values:
-# "InferredClassAssertionAxiomGenerator"
-# "InferredSubClassAxiomGenerator"
-# "InferredDisjointClassesAxiomGenerator"
-# "InferredEquivalentClassAxiomGenerator"
-# "InferredEquivalentDataPropertiesAxiomGenerator"
-# "InferredEquivalentObjectPropertyAxiomGenerator"
-# "InferredInverseObjectPropertiesAxiomGenerator"
-# "InferredSubDataPropertyAxiomGenerator"
-# "InferredSubObjectPropertyAxiomGenerator"
-# "InferredDataPropertyCharacteristicAxiomGenerator"
-# "InferredObjectPropertyCharacteristicAxiomGenerator"
+# Available inference_types values and descriptions:
+inference_types = [
+    "InferredClassAssertionAxiomGenerator",          # Inferred class memberships for individuals
+    "InferredSubClassAxiomGenerator",                # Inferred subclass relationships (class hierarchy)
+    "InferredDisjointClassesAxiomGenerator",         # Inferred disjoint class axioms
+    "InferredEquivalentClassAxiomGenerator",         # Inferred class equivalences
+    "InferredEquivalentDataPropertiesAxiomGenerator", # Inferred equivalent data properties
+    "InferredEquivalentObjectPropertyAxiomGenerator", # Inferred equivalent object properties
+    "InferredInverseObjectPropertiesAxiomGenerator",  # Inferred inverse object property relationships
+    "InferredSubDataPropertyAxiomGenerator",          # Inferred data property hierarchy
+    "InferredSubObjectPropertyAxiomGenerator",        # Inferred object property hierarchy
+    "InferredDataPropertyCharacteristicAxiomGenerator", # Inferred data property characteristics (functional, etc.)
+    "InferredObjectPropertyCharacteristicAxiomGenerator", # Inferred object property characteristics (transitive, symmetric, etc.)
+]
+
+# Use specific inference types
+sync_reasoner.infer_axioms_and_save(
+    output_path="KGs/Family/inferred_classes_only.owl",
+    output_format="rdfxml",
+    inference_types=["InferredClassAssertionAxiomGenerator", "InferredSubClassAxiomGenerator"]
+)
 
 stopJVM()
 ```

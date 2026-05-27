@@ -24,14 +24,15 @@ from owlapy.agen_kg import AGenKG
 
 # Initialize with any OpenAI-compatible LLM
 agent = AGenKG(
-    model="gpt-4o",
-    api_key="<YOUR_API_KEY>",
-    api_base="https://models.github.ai/inference",  # GitHub Models (free tier)
-    temperature=0.1,
-    seed=42,
-    max_tokens=6000,
-    enable_logging=True,   # Show progress logs
-    cache=False            # Set True to cache LLM responses for re-runs
+    model="gpt-4o",              # LLM model name
+    api_key="<YOUR_API_KEY>",    # API key for authentication
+    api_base="https://models.github.ai/inference",  # API endpoint
+    temperature=0.1,             # Lower = more deterministic (0.0-1.0)
+    seed=42,                     # Reproducibility seed (optional)
+    max_tokens=6000,             # Max tokens per LLM response (default: 4000)
+                                 # Increase for complex extractions, decrease for simpler ones
+    enable_logging=True,         # Show progress logs (helpful for debugging)
+    cache=False                  # Cache LLM responses for re-runs (saves API calls)
 )
 
 # Generate ontology from a text file
@@ -41,6 +42,11 @@ agent.generate_ontology(
     save_path="output_ontology.owl"
 )
 ```
+
+**Parameter Notes**:
+- `max_tokens`: Default is 4000. Increase to 6000+ for large documents or complex domain extractions. Too high may increase cost and latency.
+- `temperature`: Use 0.0-0.2 for factual extraction, 0.3-0.7 for creative generation.
+- `cache=True`: Recommended for iterative development; stores LLM responses to avoid re-processing.
 
 ## Ontology Types
 
@@ -199,6 +205,87 @@ onto = SyncOntology("generated_kg.owl")
 print(f"Classes: {len(list(onto.classes_in_signature()))}")
 print(f"Individuals: {len(list(onto.individuals_in_signature()))}")
 print(f"ABox axioms: {len(list(onto.get_abox_axioms()))}")
+```
+
+## Error Handling Patterns
+
+```python
+from owlapy.agen_kg import AGenKG
+import logging
+
+# Basic error handling for LLM failures
+try:
+    agent = AGenKG(
+        model="gpt-4o",
+        api_key="<YOUR_API_KEY>",
+        api_base="https://api.openai.com/v1",
+        enable_logging=True
+    )
+    
+    agent.generate_ontology(
+        text="path/to/document.txt",
+        ontology_type="domain",
+        save_path="output.owl"
+    )
+    
+except FileNotFoundError as e:
+    print(f"Input file not found: {e}")
+    
+except UnicodeDecodeError as e:
+    print(f"File encoding error: {e}")
+    print("Try specifying encoding: open('file.txt', encoding='utf-8')")
+    
+except ConnectionError as e:
+    print(f"API connection failed: {e}")
+    print("Check your internet connection and API endpoint")
+    
+except Exception as e:
+    logging.error(f"AGenKG generation failed: {e}")
+    print("Enable logging to diagnose LLM response issues")
+    raise
+
+# Robust pattern with retries and validation
+import time
+
+def generate_kg_with_retry(text_path, output_path, max_retries=3):
+    """Generate KG with retry logic for transient failures"""
+    for attempt in range(max_retries):
+        try:
+            agent = AGenKG(
+                model="gpt-4o",
+                api_key="<YOUR_API_KEY>",
+                api_base="https://models.github.ai/inference",
+                enable_logging=True,
+                cache=True  # Avoid re-processing on retry
+            )
+            
+            agent.generate_ontology(
+                text=text_path,
+                ontology_type="domain",
+                save_path=output_path
+            )
+            
+            # Validate output
+            from owlapy.owl_ontology import SyncOntology
+            onto = SyncOntology(output_path)
+            if len(list(onto.classes_in_signature())) == 0:
+                raise ValueError("Generated ontology is empty")
+            
+            print(f"✓ Successfully generated KG with {len(list(onto.classes_in_signature()))} classes")
+            return output_path
+            
+        except (ConnectionError, TimeoutError) as e:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # Exponential backoff
+                print(f"Attempt {attempt + 1} failed: {e}. Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                raise
+    
+    raise RuntimeError(f"Failed after {max_retries} attempts")
+
+# Usage
+generate_kg_with_retry("document.txt", "output.owl")
 ```
 
 ## Constraints

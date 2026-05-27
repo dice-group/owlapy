@@ -1,6 +1,6 @@
 ---
 name: "owlapy OWLAPI & SWRL"
-description: "Use when: using OWLAPI Java integration; owlapi_mapper; owlapi_dlsyntax; SWRL rules; SWRLRule; SWRLAtom; SWRLClassAtom; SWRLObjectPropertyAtom; SWRLDataPropertyAtom; SWRLBuiltInAtom; SWRLVariable; DL syntax via OWLAPI; Manchester syntax via OWLAPI; OWLAPIMapper; using OWLAPI features from Python; Java bridge; JVM integration; sync with Java reasoners"
+description: "Use when: using OWLAPI Java integration; owlapi_mapper; owlapi_dlsyntax; SWRL rules; Rule; Atom; ClassAtom; ObjectPropertyAtom; DataPropertyAtom; BuiltInAtom; IVariable; DVariable; DL syntax via OWLAPI; Manchester syntax via OWLAPI; OWLAPIMapper; using OWLAPI features from Python; Java bridge; JVM integration; sync with Java reasoners"
 user-invocable: false
 tools: [read, edit, search, execute]
 ---
@@ -61,60 +61,64 @@ SWRL (Semantic Web Rule Language) rules combine OWL with Horn rules.
 ### SWRL Classes
 ```python
 from owlapy.swrl import (
-    SWRLRule,
-    SWRLAtom,
-    SWRLClassAtom,           # C(?x) — class membership atom
-    SWRLObjectPropertyAtom,  # r(?x, ?y) — object property atom
-    SWRLDataPropertyAtom,    # dp(?x, ?v) — data property atom
-    SWRLBuiltInAtom,         # built-in(?v1, ?v2) — SWRL built-in
-    SWRLVariable,            # ?x — SWRL variable
-    SWRLIndividualArgument,  # named individual as argument
-    SWRLLiteralArgument,     # literal as argument
+    Rule,                   # SWRL rule: body → head
+    Atom,                   # Base class for SWRL atoms
+    ClassAtom,              # C(?x) — class membership atom
+    ObjectPropertyAtom,     # r(?x, ?y) — object property atom
+    DataPropertyAtom,       # dp(?x, ?v) — data property atom
+    BuiltInAtom,            # built-in(?v1, ?v2) — SWRL built-in
+    IVariable,              # ?x — individual/object variable
+    DVariable,              # ?v — data/literal variable
 )
+from owlapy.owl_individual import OWLNamedIndividual  # For individual arguments
+from owlapy.owl_literal import OWLLiteral              # For literal arguments
 ```
 
 ### Creating SWRL Variables
 ```python
-from owlapy.swrl import SWRLVariable
+from owlapy.swrl import IVariable, DVariable
 from owlapy.iri import IRI
 
-# SWRL variables are identified by IRI
-x = SWRLVariable(IRI.create("urn:swrl:var#", "x"))
-y = SWRLVariable(IRI.create("urn:swrl:var#", "y"))
+# Individual variables (for objects/named individuals)
+x = IVariable(IRI.create("urn:swrl:var#", "x"))
+y = IVariable(IRI.create("urn:swrl:var#", "y"))
+
+# Data variables (for literals/data values)
+v = DVariable(IRI.create("urn:swrl:var#", "v"))
+w = DVariable(IRI.create("urn:swrl:var#", "w"))
 ```
 
 ### Creating SWRL Atoms
 ```python
-from owlapy.swrl import SWRLClassAtom, SWRLObjectPropertyAtom
+from owlapy.swrl import ClassAtom, ObjectPropertyAtom
 from owlapy.class_expression import OWLClass
 from owlapy.owl_property import OWLObjectProperty
 
 # Class atom: Person(?x)
 person = OWLClass("http://example.com/ont#Person")
-person_atom = SWRLClassAtom(person, x)
+person_atom = ClassAtom(person, x)
 
 # Object property atom: hasChild(?x, ?y)
 hasChild = OWLObjectProperty("http://example.com/ont#hasChild")
-has_child_atom = SWRLObjectPropertyAtom(hasChild, x, y)
+has_child_atom = ObjectPropertyAtom(hasChild, x, y)
 
 # Male(?y)
 male = OWLClass("http://example.com/ont#Male")
-male_atom = SWRLClassAtom(male, y)
+male_atom = ClassAtom(male, y)
 ```
 
 ### Creating and Adding a SWRL Rule
 ```python
-from owlapy.swrl import SWRLRule
+from owlapy.swrl import Rule
 from owlapy.iri import IRI
 
 # Rule: Person(?x) ∧ hasChild(?x, ?y) ∧ Male(?y) → Father(?x)
 father = OWLClass("http://example.com/ont#Father")
-father_atom = SWRLClassAtom(father, x)
+father_atom = ClassAtom(father, x)
 
-rule = SWRLRule(
-    body=[person_atom, has_child_atom, male_atom],  # antecedent
-    head=[father_atom],                              # consequent
-    annotations=[]
+rule = Rule(
+    body_atoms=[person_atom, has_child_atom, male_atom],  # antecedent
+    head_atoms=[father_atom]                               # consequent
 )
 
 # Add the rule to an ontology
@@ -126,44 +130,45 @@ onto.save(inplace=True)
 
 ### SWRL with Data Properties
 ```python
-from owlapy.swrl import SWRLDataPropertyAtom, SWRLLiteralArgument, SWRLBuiltInAtom
+from owlapy.swrl import DataPropertyAtom, BuiltInAtom, DVariable
 from owlapy.owl_property import OWLDataProperty
 from owlapy.owl_literal import OWLLiteral
 from owlapy.iri import IRI
 
 age_prop = OWLDataProperty("http://example.com/ont#age")
-v = SWRLVariable(IRI.create("urn:swrl:var#", "v"))
+v = DVariable(IRI.create("urn:swrl:var#", "v"))  # Data variable for age value
 
 # age(?x, ?v)
-age_atom = SWRLDataPropertyAtom(age_prop, x, v)
+age_atom = DataPropertyAtom(age_prop, x, v)
 
 # Built-in: swrlb:greaterThan(?v, 18)
-adult_age = SWRLLiteralArgument(OWLLiteral(18))
-builtin_atom = SWRLBuiltInAtom(
+# Use OWLLiteral directly for literal arguments
+adult_age = OWLLiteral(18)
+builtin_atom = BuiltInAtom(
     IRI.create("http://www.w3.org/2003/11/swrlb#", "greaterThan"),
     [v, adult_age]
 )
 
 # Rule: Person(?x) ∧ age(?x, ?v) ∧ swrlb:greaterThan(?v, 18) → Adult(?x)
 adult = OWLClass("http://example.com/ont#Adult")
-rule = SWRLRule(
-    body=[person_atom, age_atom, builtin_atom],
-    head=[SWRLClassAtom(adult, x)]
+rule = Rule(
+    body_atoms=[person_atom, age_atom, builtin_atom],
+    head_atoms=[ClassAtom(adult, x)]
 )
 ```
 
 ### Retrieving SWRL Rules from an Ontology
 ```python
 from owlapy.owl_ontology import SyncOntology
+from owlapy.swrl import Rule
 
 onto = SyncOntology("path/to/ontology.owl")
 
 # SWRL rules appear as axioms in the ontology
 for axiom in onto.get_tbox_axioms():
-    from owlapy.swrl import SWRLRule
-    if isinstance(axiom, SWRLRule):
-        print("Body:", list(axiom.body()))
-        print("Head:", list(axiom.head()))
+    if isinstance(axiom, Rule):
+        print("Body:", axiom.body)   # body is a property, not a method
+        print("Head:", axiom.head)   # head is a property, not a method
 ```
 
 ## Common SWRL Built-ins
@@ -187,9 +192,10 @@ Base IRI: `http://www.w3.org/2003/11/swrlb#`
 ## Constraints
 - OWLAPI bridge requires a JVM; always call `stopJVM()` when done
 - SWRL rules can be added to any `SyncOntology` or `Ontology` via `add_axiom`
-- `SWRLVariable` IRIs are arbitrary but must be unique within a rule (use `urn:swrl:var#x` convention)
+- Variable IRIs are arbitrary but must be unique within a rule (use `urn:swrl:var#x` convention)
+- Use `IVariable` for individual/object variables and `DVariable` for data/literal variables
 - SWRL rules are only applied by complete reasoners (HermiT, Pellet) — not `StructuralReasoner`
-- Built-in atom arguments must use `SWRLLiteralArgument` for literal values and `SWRLVariable` for variables
+- Built-in atom arguments accept `OWLLiteral` for literal values and `DVariable` for variables
 
 ## Output Format
 Provide complete code with all imports. Show body and head separately. Explain the semantics of the rule in natural language (e.g., "If X is a Person AND X hasChild Y AND Y is Male, THEN X is a Father").
