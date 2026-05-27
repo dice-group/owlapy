@@ -1,4 +1,5 @@
 from .converter import owl_expression_to_sparql, owl_expression_to_sparql_with_confusion_matrix
+from .owl_reasoner_rdflib import RDFLibReasoner
 from .parser import dl_to_owl_expression, manchester_to_owl_expression
 from .render import owl_expression_to_dl, owl_expression_to_manchester
 
@@ -7,5 +8,6 @@ __version__ = '1.6.5'
 __all__ = [
     'owl_expression_to_dl', 'owl_expression_to_manchester',
     'dl_to_owl_expression', 'manchester_to_owl_expression',
-    'owl_expression_to_sparql', 'owl_expression_to_sparql_with_confusion_matrix'
+    'owl_expression_to_sparql', 'owl_expression_to_sparql_with_confusion_matrix',
+    'RDFLibReasoner'
 ]
