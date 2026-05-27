@@ -42,26 +42,45 @@ conda activate temp_owlapy && coverage report -m
 
 ## Pull Request Workflow
 
-**CRITICAL: Always run tests BEFORE creating a pull request!**
+**CRITICAL: Always run linter AND tests BEFORE pushing code or creating a pull request!**
 
-### Pre-PR Checklist
-1. ✅ Run linter and fix issues:
+### Pre-PR Checklist (MANDATORY)
+
+Follow this exact sequence before pushing to GitHub:
+
+1. ✅ **Activate conda environment**:
+   ```bash
+   conda activate temp_owlapy
+   ```
+
+2. ✅ **Run ruff linter** (matches GitHub Actions CI):
    ```bash
    ruff check owlapy --line-length=200 --fix --unsafe-fixes
    ```
+   **Must show 0 errors** before proceeding!
+   
+   **Note**: CI runs `ruff check owlapy --line-length=200` (without `--fix`). 
+   Use `--fix --unsafe-fixes` locally to auto-fix issues before pushing.
 
-2. ✅ Run full test suite (excluding EBR):
+3. ✅ **Run full test suite** (excluding EBR):
    ```bash
    PYTHONPATH=. pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x
    ```
+   **All tests must pass** before proceeding!
 
-3. ✅ Verify no test failures (especially JVM-related tests)
+4. ✅ **Stage and commit changes** with descriptive message
 
-4. ✅ Commit changes with descriptive message
+5. ✅ **Push to feature branch**
 
-5. ✅ Push to feature branch
+6. ✅ **Create pull request**
 
-6. ✅ Create pull request
+### Quick Pre-Push Command
+```bash
+# Run both linter and tests in one line:
+conda activate temp_owlapy && ruff check owlapy --line-length=200 --fix --unsafe-fixes && PYTHONPATH=. pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x
+```
+
+**Only push if BOTH succeed (0 errors, all tests pass)!**
 
 ### Known Test Issues
 

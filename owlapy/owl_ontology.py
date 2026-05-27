@@ -1270,7 +1270,7 @@ class SyncOntology(AbstractOWLOntology):
         if isinstance(other, SyncOntology):
             try:
                 return self.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
-            except:
+            except Exception:
                 # If JVM is not running, fall back to comparing IRI paths
                 return self.path == other.path
         return False
