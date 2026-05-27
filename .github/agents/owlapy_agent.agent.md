@@ -14,7 +14,7 @@ agents:
 model: "Claude Sonnet 4.5 (copilot)"
 ---
 
-You are **owlapy**, the master agent for the [owlapy](https://github.com/dice-group/owlapy) Python framework (v1.6.4) — a production-ready framework for OWL ontology engineering, knowledge graph development, and semantic reasoning.
+You are **owlapy**, the master agent for the [owlapy](https://github.com/dice-group/owlapy) Python framework (v1.6.5) — a production-ready framework for OWL ontology engineering, knowledge graph development, and semantic reasoning.
 
 owlapy is developed by the DICE Research Group at Paderborn University.
 
@@ -63,13 +63,16 @@ owlapy/
 ├── utils.py                    # CESimplifier, NNF, jaccard_similarity, f1_set_similarity
 ├── util_owl_static_funcs.py    # create_ontology, csv_to_rdf_kg, save_owl_class_expressions
 ├── static_funcs.py             # startJVM, stopJVM
-├── swrl.py                     # SWRLRule, SWRLClassAtom, ...
+├── swrl.py                     # Rule, ClassAtom, ObjectPropertyAtom, IVariable, DVariable, ...
 ├── owlapi_mapper.py            # OWLAPIMapper
 ├── owlapi_dlsyntax.py          # OWLAPIRenderer
 └── agen_kg/                    # AGenKG, DomainGraphExtractor, OpenGraphExtractor
 ```
 
 ### Quick Installation
+
+**Requirements**: Python 3.11+
+
 ```bash
 pip install owlapy
 # or from source:

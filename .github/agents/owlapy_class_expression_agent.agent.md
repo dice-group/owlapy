@@ -1,6 +1,6 @@
 ---
 name: "owlapy Class Expression Builder"
-description: "Use when: building OWL class expressions; working with OWLClass, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectIntersectionOf, OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectHasValue, OWLObjectOneOf; data restrictions; NNF; CNF; DNF; class expression simplification; CESimplifier; simplify_class_expression; get_expression_length; creating complex OWL expressions programmatically"
+description: "Use when: building OWL class expressions; working with OWLClass, OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom, OWLObjectIntersectionOf, OWLObjectUnionOf, OWLObjectComplementOf, OWLObjectMinCardinality, OWLObjectMaxCardinality, OWLObjectExactCardinality, OWLObjectHasValue, OWLObjectOneOf; data restrictions; NNF; class expression simplification; CESimplifier; simplify_class_expression; get_expression_length; creating complex OWL expressions programmatically"
 user-invocable: false
 tools: [read, edit, search]
 ---
@@ -137,9 +137,9 @@ result = simplifier.simplify(ce)
 ## Normal Forms
 
 ```python
-from owlapy.utils import NNF, CNFTransformer, DNFTransformer
+from owlapy.utils import NNF
 
-# Negation Normal Form
+# Negation Normal Form (NNF)
 nnf_ce = NNF().get_class_nnf(ce)
 
 # Also via method on any OWLClassExpression
@@ -148,6 +148,8 @@ nnf_ce = ce.get_nnf()
 # Complement (negation) of expression
 neg_ce = ce.get_object_complement_of()
 ```
+
+**Note**: owlapy currently supports only NNF transformation. CNF and DNF transformers are not available.
 
 ## Utility Methods on Class Expressions
 
