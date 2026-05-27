@@ -2230,11 +2230,18 @@ class NeuralOntology(AbstractOWLOntology):
             for key, value in training_params.items():
                 setattr(args, key, value)
 
-        # Train the model
-        Execute(args).start()
-
-        # Load the trained model
-        self.model = KGE(path=args.path_to_store_single_run)
+        # Check if model already exists before training
+        if os.path.isdir(args.path_to_store_single_run) and \
+           os.path.exists(os.path.join(args.path_to_store_single_run, "configuration.json")):
+            # Load existing pretrained model
+            print(f"Loading existing model from {args.path_to_store_single_run}")
+            self.model = KGE(path=args.path_to_store_single_run)
+        else:
+            # Train the model
+            print(f"Training new model, will be saved to {args.path_to_store_single_run}")
+            Execute(args).start()
+            # Load the trained model
+            self.model = KGE(path=args.path_to_store_single_run)
 
     def predict(self, h: List[str] = None, r: List[str] = None, t: List[str] = None) -> List[Tuple[str, float]]:
         if r is None:
