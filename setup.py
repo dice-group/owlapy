@@ -2,6 +2,21 @@ import re
 
 from setuptools import find_packages, setup
 
+# Try to import setuptools-rust for optional Rust extensions
+try:
+    from setuptools_rust import Binding, RustExtension
+    rust_extensions = [
+        RustExtension(
+            "owlapy_rust",
+            path="owlapy/rust/Cargo.toml",
+            binding=Binding.PyO3,
+            optional=True,
+        )
+    ]
+except ImportError:
+    # setuptools-rust not installed, skip Rust extensions
+    rust_extensions = []
+
 _deps = [
     "scikit-learn>=1.5.2",
     "pandas>=1.5.0",
@@ -52,7 +67,8 @@ install_requires = [extras["min"]]
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
-setup(
+
+setup_kwargs = dict(
     name="owlapy",
     description="OWLAPY is a Python Framework for creating and manipulating OWL Ontologies.",
     version="1.6.5",
@@ -73,3 +89,9 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
 )
+
+# Add Rust extensions if available
+if rust_extensions:
+    setup_kwargs['rust_extensions'] = rust_extensions
+
+setup(**setup_kwargs)

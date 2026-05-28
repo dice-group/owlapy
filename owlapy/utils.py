@@ -50,9 +50,20 @@ from .owl_object import OWLObject
 from .owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
 from .vocab import OWLFacet
 
+# Try to import Rust-accelerated versions
+try:
+    from owlapy import owlapy_rust as _rust_module
+    _jaccard_rust = _rust_module.jaccard_similarity
+    _f1_rust = _rust_module.f1_set_similarity
+    _RUST_AVAILABLE = True
+except ImportError:
+    _RUST_AVAILABLE = False
+    _jaccard_rust = None
+    _f1_rust = None
 
-def jaccard_similarity(set1, set2) -> float:
-    """Calculate the Jaccard similarity between two sets.
+
+def _jaccard_similarity_python(set1, set2) -> float:
+    """Pure Python Jaccard similarity (fallback).
 
     Args:
         set1: First set
@@ -68,8 +79,8 @@ def jaccard_similarity(set1, set2) -> float:
     return intersection / union
 
 
-def f1_set_similarity(set1, set2) -> float:
-    """Calculate the F1 score between two sets.
+def _f1_set_similarity_python(set1, set2) -> float:
+    """Pure Python F1 score (fallback).
 
     Args:
         set1: First set (treated as ground truth)
@@ -92,6 +103,20 @@ def f1_set_similarity(set1, set2) -> float:
         return 0.0
 
     return 2 * (precision * recall) / (precision + recall)
+
+
+# Public API: Use Rust if available, otherwise fall back to Python
+if _RUST_AVAILABLE:
+    jaccard_similarity = _jaccard_rust
+    f1_set_similarity = _f1_rust
+else:
+    jaccard_similarity = _jaccard_similarity_python
+    f1_set_similarity = _f1_set_similarity_python
+
+
+# Explicitly expose both versions for testing
+jaccard_similarity_python = _jaccard_similarity_python
+f1_set_similarity_python = _f1_set_similarity_python
 
 def run_with_timeout(func, timeout, args=(), **kwargs):
     with concurrent.futures.ThreadPoolExecutor() as executor:

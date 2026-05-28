@@ -1,0 +1,20 @@
+[package]
+name = "owlapy-rust"
+version = "1.6.5"
+edition = "2021"
+rust-version = "1.70"
+
+[lib]
+name = "owlapy_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module", "abi3-py311"] }
+fxhash = "0.2"
+ahash = "0.8"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true

@@ -1,0 +1,70 @@
+name: Rust Extension CI
+
+on:
+  push:
+    branches: [ develop, main, feature/rust-* ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  rust-build-test:
+    name: Build and Test Rust Extension
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+    
+    - name: Cache Rust dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          owlapy/rust/target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools-rust wheel pytest pytest-benchmark
+        pip install -e '.[dev]'
+    
+    - name: Rust format check
+      run: |
+        cd owlapy/rust
+        cargo fmt --check
+    
+    - name: Rust clippy
+      run: |
+        cd owlapy/rust
+        cargo clippy -- -D warnings
+    
+    - name: Build Rust extension
+      run: |
+        pip install -e . --force-reinstall --no-cache-dir
+    
+    - name: Verify Rust extension loaded
+      run: |
+        python -c "import owlapy_rust; print('✓ Rust extension loaded successfully')"
+    
+    - name: Run regression tests
+      run: |
+        pytest tests/test_rust_similarity_regression.py -v
+    
+    - name: Run performance benchmarks
+      run: |
+        pytest tests/test_rust_similarity_regression.py::TestRustSimilarityPerformance -v -s
