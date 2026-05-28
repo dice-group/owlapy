@@ -122,10 +122,10 @@ f1_set_similarity_python = _f1_set_similarity_python
 # Batch similarity operations (Phase 2: Rust optimization)
 def _batch_jaccard_similarity_python(pairs: List[Tuple[Set, Set]]) -> List[float]:
     """Pure Python batch Jaccard similarity (fallback).
-    
+
     Args:
         pairs: List of (set1, set2) tuples
-    
+
     Returns:
         List of Jaccard similarity scores
     """
@@ -134,10 +134,10 @@ def _batch_jaccard_similarity_python(pairs: List[Tuple[Set, Set]]) -> List[float
 
 def _batch_f1_set_similarity_python(pairs: List[Tuple[Set, Set]]) -> List[float]:
     """Pure Python batch F1 similarity (fallback).
-    
+
     Args:
         pairs: List of (set1, set2) tuples
-    
+
     Returns:
         List of F1 scores
     """
