@@ -118,6 +118,52 @@ else:
 jaccard_similarity_python = _jaccard_similarity_python
 f1_set_similarity_python = _f1_set_similarity_python
 
+
+# Batch similarity operations (Phase 2: Rust optimization)
+def _batch_jaccard_similarity_python(pairs: List[Tuple[Set, Set]]) -> List[float]:
+    """Pure Python batch Jaccard similarity (fallback).
+    
+    Args:
+        pairs: List of (set1, set2) tuples
+    
+    Returns:
+        List of Jaccard similarity scores
+    """
+    return [_jaccard_similarity_python(s1, s2) for s1, s2 in pairs]
+
+
+def _batch_f1_set_similarity_python(pairs: List[Tuple[Set, Set]]) -> List[float]:
+    """Pure Python batch F1 similarity (fallback).
+    
+    Args:
+        pairs: List of (set1, set2) tuples
+    
+    Returns:
+        List of F1 scores
+    """
+    return [_f1_set_similarity_python(s1, s2) for s1, s2 in pairs]
+
+
+# Public batch API: Use Rust (parallel) if available, otherwise Python (sequential)
+if _RUST_AVAILABLE:
+    try:
+        _batch_jaccard_rust = _rust_module.batch_jaccard_similarity
+        _batch_f1_rust = _rust_module.batch_f1_set_similarity
+        batch_jaccard_similarity = _batch_jaccard_rust
+        batch_f1_set_similarity = _batch_f1_rust
+    except AttributeError:
+        # Rust module exists but doesn't have batch functions (older version)
+        batch_jaccard_similarity = _batch_jaccard_similarity_python
+        batch_f1_set_similarity = _batch_f1_set_similarity_python
+else:
+    batch_jaccard_similarity = _batch_jaccard_similarity_python
+    batch_f1_set_similarity = _batch_f1_set_similarity_python
+
+
+# Explicitly expose both versions for testing
+batch_jaccard_similarity_python = _batch_jaccard_similarity_python
+batch_f1_set_similarity_python = _batch_f1_set_similarity_python
+
 def run_with_timeout(func, timeout, args=(), **kwargs):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(func, *args, **kwargs)
