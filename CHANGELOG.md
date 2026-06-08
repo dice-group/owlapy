@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- The ontology generation pipeline now supports:
+  - `rdfs:label` annotations, deterministically computed from entity IRIs
+  - `rdfs:comment` annotations, generated via LLM
+
 ## [1.6.5] - 2026-05-26
 
 ### Added

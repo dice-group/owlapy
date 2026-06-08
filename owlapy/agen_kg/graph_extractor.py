@@ -2,12 +2,14 @@ import re
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 
 import dspy
 
 from owlapy.agen_kg.chunking_models.simple_chunker import TextChunker
+from owlapy.agen_kg.helper import RDFS_COMMENT_IRI, RDFS_LABEL_IRI
 from owlapy.agen_kg.signatures import (
+    BatchRdfsCommentGenerator,
     ChunkSummarizer,
     CoherenceChecker,
     EntityDeduplication,
@@ -23,6 +25,12 @@ from owlapy.agen_kg.signatures import (
     TypeClusteringWithSummary,
 )
 from owlapy.agen_kg.text_loader import UniversalTextLoader
+from owlapy.iri import IRI
+from owlapy.owl_axiom import (
+    OWLAnnotation,
+    OWLAnnotationAssertionAxiom,
+    OWLAnnotationProperty,
+)
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import Ontology
 
@@ -30,6 +38,7 @@ from owlapy.owl_ontology import Ontology
 # A compatible metaclass that combines dspy.Module's metaclass with ABCMeta
 class GraphExtractorMeta(type(dspy.Module), type(ABC)):
     """Metaclass that resolves conflicts between dspy.Module and ABC."""
+
     pass
 
 
@@ -75,6 +84,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         self.entity_merger = dspy.Predict(IncrementalEntityMerger)
         self.triple_merger = dspy.Predict(IncrementalTripleMerger)
         self.type_merger = dspy.Predict(IncrementalTypeMerger)
+        # Generation of rdfs:comment annotations
+        self.batch_rdfs_comment_generator = dspy.Predict(BatchRdfsCommentGenerator)
 
         self.text_loader = UniversalTextLoader(enable_logging=enable_logging)
         # Default text chunker - can be configured via configure_chunking()
@@ -82,7 +93,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             chunk_size=6000,  # ~1500 tokens
             overlap=300,
             strategy="paragraph",
-            enable_logging=enable_logging
+            enable_logging=enable_logging,
         )
         # Threshold for automatic chunking (in characters)
         self.auto_chunk_threshold = 4000  # ~1000 tokens
@@ -99,8 +110,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
     @staticmethod
     def snake_case(text):
         # Normalize whitespace and special chars
-        text = re.sub(r'[^\w\s]', '', text)  # Remove special chars
-        text = re.sub(r'\s+', '_', text.strip())  # Multiple spaces -> single underscore
+        text = re.sub(r"[^\w\s]", "", text)  # Remove special chars
+        text = re.sub(r"\s+", "_", text.strip())  # Multiple spaces -> single underscore
         return text.lower()
 
     @staticmethod
@@ -116,14 +127,54 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             Formatted type name with capital first letter and lowercase rest.
         """
         # Normalize whitespace and special chars
-        text = re.sub(r'[^\w\s]', '', text)  # Remove special chars
-        text = re.sub(r'\s+', '_', text.strip())  # Multiple spaces -> single underscore
+        text = re.sub(r"[^\w\s]", "", text)  # Remove special chars
+        text = re.sub(r"\s+", "_", text.strip())  # Multiple spaces -> single underscore
         # Convert to lowercase first, then capitalize first letter
         text = text.lower()
         if text:
             text = text[0].upper() + text[1:]
         return text
 
+    @staticmethod
+    def format_rdfs_label(label: str, is_property: bool = False) -> str:
+        """
+        Convert a raw entity identifier into a clean rdfs:label suitable for RDF annotation.
+
+        This method normalizes the input string by removing special characters,
+        standardizing whitespace, and applying consistent casing rules. For non-property
+        labels, it produces a title-cased form with a capitalized first character and
+        lowercase remainder. For properties, it produces a fully lowercase form to
+        preserve relational readability conventions.
+
+        After normalization, underscores are replaced with spaces to produce a
+        human-readable label.
+
+        Examples:
+            - 'PERSON' -> 'Person'
+            - 'person_type' -> 'Person type'
+            - 'PERSON TYPE' -> 'Person type'
+            - is_property=True: 'has_name' -> 'has name'
+
+        Args:
+            label:
+                Raw entity identifier string.
+
+            is_property:
+                If True, formats the label as a property name (fully lowercase).
+                If False, formats it as a class/individual-style label.
+
+        Returns:
+            A cleaned rdfs:label string with:
+            - consistent casing rules applied
+            - underscores replaced with spaces
+            - improved human readability
+        """
+        if is_property:
+            formatted = label.lower()
+        else:
+            formatted = GraphExtractor.format_type_name(label)
+
+        return formatted.replace("_", " ")
 
     def plan_decompose(self, query: str):
         if query is None:
@@ -193,13 +244,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         return self.text_loader.supported_formats
 
     def configure_chunking(
-            self,
-            chunk_size: int = None,
-            overlap: int = None,
-            strategy: str = None,
-            auto_chunk_threshold: int = None,
-            summarization_threshold: int = None,
-            max_summary_length: int = None
+        self, chunk_size: int = None, overlap: int = None, strategy: str = None, auto_chunk_threshold: int = None, summarization_threshold: int = None, max_summary_length: int = None
     ):
         """
         Configure text chunking settings for handling large documents.
@@ -234,7 +279,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 chunk_size=chunk_size or self.text_chunker.chunk_size,
                 overlap=overlap if overlap is not None else self.text_chunker.overlap,
                 strategy=strategy or self.text_chunker.strategy,
-                enable_logging=self.logging
+                enable_logging=self.logging,
             )
 
         if auto_chunk_threshold is not None:
@@ -247,19 +292,17 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             self.max_summary_length = max_summary_length
 
         if self.logging:
-            print(f"{self.__class__.__name__}: INFO :: Chunking configured - "
-                  f"chunk_size={self.text_chunker.chunk_size}, "
-                  f"overlap={self.text_chunker.overlap}, "
-                  f"strategy={self.text_chunker.strategy}, "
-                  f"auto_threshold={self.auto_chunk_threshold}, "
-                  f"summarization_threshold={self.summarization_threshold}, "
-                  f"max_summary_length={self.max_summary_length}")
+            print(
+                f"{self.__class__.__name__}: INFO :: Chunking configured - "
+                f"chunk_size={self.text_chunker.chunk_size}, "
+                f"overlap={self.text_chunker.overlap}, "
+                f"strategy={self.text_chunker.strategy}, "
+                f"auto_threshold={self.auto_chunk_threshold}, "
+                f"summarization_threshold={self.summarization_threshold}, "
+                f"max_summary_length={self.max_summary_length}"
+            )
 
-    def configure_chunking_for_model(
-            self,
-            max_context_tokens: int,
-            prompt_overhead_tokens: int = 1500
-    ):
+    def configure_chunking_for_model(self, max_context_tokens: int, prompt_overhead_tokens: int = 1500):
         """
         Automatically configure chunking based on model specifications.
 
@@ -280,16 +323,11 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             # For GPT-4-turbo (128K context)
             extractor.configure_chunking_for_model(128000, 2000)
         """
-        chunk_size = TextChunker.calculate_chunk_size_for_model(
-            max_context_tokens,
-            prompt_overhead_tokens
-        )
+        chunk_size = TextChunker.calculate_chunk_size_for_model(max_context_tokens, prompt_overhead_tokens)
         self.configure_chunking(chunk_size=chunk_size)
 
         if self.logging:
-            print(f"{self.__class__.__name__}: INFO :: Configured for model with "
-                  f"{max_context_tokens} token context window, "
-                  f"chunk_size={chunk_size} chars")
+            print(f"{self.__class__.__name__}: INFO :: Configured for model with {max_context_tokens} token context window, chunk_size={chunk_size} chars")
 
     def should_chunk_text(self, text: str) -> bool:
         """
@@ -412,11 +450,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         # Truncate if still too long
         if len(combined) > self.max_summary_length:
-            combined = combined[:self.max_summary_length]
+            combined = combined[: self.max_summary_length]
 
         if self.logging:
-            print(
-                f"{self.__class__.__name__}: INFO :: Combined {len(chunk_summaries)} summaries into {len(combined)} chars")
+            print(f"{self.__class__.__name__}: INFO :: Combined {len(chunk_summaries)} summaries into {len(combined)} chars")
 
         return combined
 
@@ -437,13 +474,12 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         # For small texts, use the text directly
         if not self.should_use_summarization(text):
             if len(text) > self.max_summary_length:
-                return text[:self.max_summary_length]
+                return text[: self.max_summary_length]
             return text
 
         # For large texts, generate summary
         if self.logging:
-            print(
-                f"{self.__class__.__name__}: INFO :: Text exceeds summarization threshold, generating summary for clustering")
+            print(f"{self.__class__.__name__}: INFO :: Text exceeds summarization threshold, generating summary for clustering")
 
         # Use provided chunks or create new ones
         if chunks is None:
@@ -487,8 +523,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             if len(self._chunk_summary_cache) > self._max_cache_size:
                 self.clear_summary_cache()
 
-    def _merge_entity_lists(self, entity_lists: List[List[str]], chunk_summaries: List[str] = None,
-                            use_llm_merge: bool = None) -> List[str]:
+    def _merge_entity_lists(self, entity_lists: List[List[str]], chunk_summaries: List[str] = None, use_llm_merge: bool = None) -> List[str]:
         """
         Merge entity lists from multiple chunks, removing duplicates.
 
@@ -575,7 +610,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 )
 
                 # Validate result
-                if not hasattr(result, 'merged_entities') or not result.merged_entities:
+                if not hasattr(result, "merged_entities") or not result.merged_entities:
                     if self.logging:
                         print(f"{self.__class__.__name__}: WARNING :: LLM returned empty result, using simple merge")
                     raise ValueError("Empty result from LLM")
@@ -583,7 +618,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 merged_entities = result.merged_entities
 
                 # Update global mapping with new mappings
-                if hasattr(result, 'entity_mapping') and result.entity_mapping:
+                if hasattr(result, "entity_mapping") and result.entity_mapping:
                     for original, canonical in result.entity_mapping:
                         global_mapping[original] = canonical
 
@@ -609,8 +644,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         return merged_entities
 
-    def _merge_triple_lists(self, triple_lists: List[List[tuple]], chunk_summaries: List[str] = None,
-                            use_llm_merge: bool = None) -> List[tuple]:
+    def _merge_triple_lists(self, triple_lists: List[List[tuple]], chunk_summaries: List[str] = None, use_llm_merge: bool = None) -> List[tuple]:
         """
         Merge triple lists from multiple chunks, removing duplicates.
 
@@ -689,7 +723,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 )
 
                 # Validate result
-                if not hasattr(result, 'merged_triples') or not result.merged_triples:
+                if not hasattr(result, "merged_triples") or not result.merged_triples:
                     if self.logging:
                         print(f"{self.__class__.__name__}: WARNING :: LLM returned empty result, using simple merge")
                     raise ValueError("Empty result from LLM")
@@ -704,8 +738,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
             except Exception as e:
                 if self.logging:
-                    print(
-                        f"{self.__class__.__name__}: WARNING :: LLM triple merge failed, falling back to simple merge: {e}")
+                    print(f"{self.__class__.__name__}: WARNING :: LLM triple merge failed, falling back to simple merge: {e}")
                 # Fallback to simple merge
                 seen = set((t[0].lower(), t[1].lower(), t[2].lower()) for t in merged_triples)
                 for triple in triple_lists[i]:
@@ -716,8 +749,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         return merged_triples
 
-    def _merge_type_assertions(self, assertion_lists: List[List[tuple]], chunk_summaries: List[str] = None,
-                               use_llm_merge: bool = None) -> List[tuple]:
+    def _merge_type_assertions(self, assertion_lists: List[List[tuple]], chunk_summaries: List[str] = None, use_llm_merge: bool = None) -> List[tuple]:
         """
         Merge type assertion lists from multiple chunks.
 
@@ -758,8 +790,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                     entity_types[entity_lower] = (entity, entity_type)
         return list(entity_types.values())
 
-    def _incremental_merge_type_assertions(self, assertion_lists: List[List[tuple]], chunk_summaries: List[str]) -> \
-    List[tuple]:
+    def _incremental_merge_type_assertions(self, assertion_lists: List[List[tuple]], chunk_summaries: List[str]) -> List[tuple]:
         """
         Incrementally merge type assertions using LLM to resolve conflicts.
         """
@@ -794,7 +825,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 )
 
                 # Validate result
-                if not hasattr(result, 'merged_types') or not result.merged_types:
+                if not hasattr(result, "merged_types") or not result.merged_types:
                     if self.logging:
                         print(f"{self.__class__.__name__}: WARNING :: LLM returned empty result, using simple merge")
                     raise ValueError("Empty result from LLM")
@@ -809,8 +840,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
             except Exception as e:
                 if self.logging:
-                    print(
-                        f"{self.__class__.__name__}: WARNING :: LLM type merge failed, falling back to simple merge: {e}")
+                    print(f"{self.__class__.__name__}: WARNING :: LLM type merge failed, falling back to simple merge: {e}")
                 # Fallback to simple merge
                 existing_entities = set(t[0].lower() for t in merged_types)
                 for entity, entity_type in assertion_lists[i]:
@@ -868,12 +898,11 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             # Get or create summary for deduplication context
             clustering_context = self.get_clustering_context(text)
             if self.logging:
-                print(
-                    f"{self.__class__.__name__}: INFO :: Using summary ({len(clustering_context)} chars) for entity deduplication")
+                print(f"{self.__class__.__name__}: INFO :: Using summary ({len(clustering_context)} chars) for entity deduplication")
             result = self.entity_deduplicator_with_summary(entities=entities, summary=clustering_context)
         else:
             # Use direct text (truncated if necessary)
-            context = text[:self.max_summary_length] if len(text) > self.max_summary_length else text
+            context = text[: self.max_summary_length] if len(text) > self.max_summary_length else text
             result = self.entity_deduplicator(entities=entities, text=context)
 
         # Get the filtered entities list
@@ -914,11 +943,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         if use_summary:
             clustering_context = self.get_clustering_context(text)
             if self.logging:
-                print(
-                    f"{self.__class__.__name__}: INFO :: Using summary ({len(clustering_context)} chars) for type clustering")
+                print(f"{self.__class__.__name__}: INFO :: Using summary ({len(clustering_context)} chars) for type clustering")
             result = self.type_clusterer_with_summary(types=types, summary=clustering_context)
         else:
-            context = text[:self.max_summary_length] if len(text) > self.max_summary_length else text
+            context = text[: self.max_summary_length] if len(text) > self.max_summary_length else text
             result = self.type_clusterer(types=types, text=context)
 
         type_mapping = {}
@@ -967,11 +995,10 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         if use_summary:
             clustering_context = self.get_clustering_context(text)
             if self.logging:
-                print(
-                    f"{self.__class__.__name__}: INFO :: Using summary ({len(clustering_context)} chars) for relation clustering")
+                print(f"{self.__class__.__name__}: INFO :: Using summary ({len(clustering_context)} chars) for relation clustering")
             result = self.relation_clusterer_with_summary(relations=relations, summary=clustering_context)
         else:
-            context = text[:self.max_summary_length] if len(text) > self.max_summary_length else text
+            context = text[: self.max_summary_length] if len(text) > self.max_summary_length else text
             result = self.relation_clusterer(relations=relations, text=context)
 
         relation_mapping = {}
@@ -992,8 +1019,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         return relation_mapping
 
-    def check_coherence(self, triples: List[tuple], text: str, task_instructions: str = None, batch_size: int = 50,
-                        threshold: int = 3, use_summary: bool = None) -> List[tuple]:
+    def check_coherence(self, triples: List[tuple], text: str, task_instructions: str = None, batch_size: int = 50, threshold: int = 3, use_summary: bool = None) -> List[tuple]:
         """
         Check coherence of extracted triples and filter out low-quality ones.
 
@@ -1026,21 +1052,20 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             if self.logging:
                 print(f"{self.__class__.__name__}: INFO :: Using summary ({len(context)} chars) for coherence checking")
         else:
-            context = text[:self.max_summary_length] if len(text) > self.max_summary_length else text
+            context = text[: self.max_summary_length] if len(text) > self.max_summary_length else text
 
         coherent_triples = []
 
         # Process triples in batches
         for i in range(0, len(triples), batch_size):
-            batch = triples[i:i + batch_size]
+            batch = triples[i : i + batch_size]
             result = self.coherence_checker(triples=batch, text=context, task_instructions=task_instructions)
 
             for triple, score, explanation in result.coherence_scores:
                 if score >= threshold:
                     coherent_triples.append(triple)
                 elif self.logging:
-                    print(
-                        f"{self.__class__.__name__}: INFO :: Filtered out triple {triple} (score: {score}/5): {explanation}")
+                    print(f"{self.__class__.__name__}: INFO :: Filtered out triple {triple} (score: {score}/5): {explanation}")
 
         if self.logging:
             filtered_count = len(triples) - len(coherent_triples)
@@ -1049,14 +1074,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         return coherent_triples
 
-    def _extract_entities_from_chunks(
-            self,
-            chunks: List[str],
-            examples_for_entity_extraction: str,
-            extractor_name: str = None,
-            use_llm_merge: bool = None,
-            task_instructions: str = None
-    ) -> tuple:
+    def _extract_entities_from_chunks(self, chunks: List[str], examples_for_entity_extraction: str, extractor_name: str = None, use_llm_merge: bool = None, task_instructions: str = None) -> tuple:
         """
         Extract entities from multiple text chunks and merge results.
         Generic method that works for all extractor subclasses.
@@ -1073,7 +1091,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             Tuple of (merged_entities, chunk_summaries) where chunk_summaries can be used
             for subsequent operations.
         """
-        if not hasattr(self, 'entity_extractor'):
+        if not hasattr(self, "entity_extractor"):
             raise AttributeError(f"{self.__class__.__name__} must define 'entity_extractor'")
 
         extractor_name = extractor_name or self.__class__.__name__
@@ -1089,12 +1107,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 print(f"{extractor_name}: INFO :: Extracting entities from chunk {i + 1}/{len(chunks)}")
 
             try:
-                result = self.entity_extractor(
-                    text=chunk,
-                    few_shot_examples=examples_for_entity_extraction,
-                    task_instructions=task_instructions
-                )
-                chunk_entities = result.entities if hasattr(result, 'entities') and result.entities else []
+                result = self.entity_extractor(text=chunk, few_shot_examples=examples_for_entity_extraction, task_instructions=task_instructions)
+                chunk_entities = result.entities if hasattr(result, "entities") and result.entities else []
             except Exception as e:
                 if self.logging:
                     print(f"{extractor_name}: WARNING :: Failed to extract entities from chunk {i + 1}: {e}")
@@ -1121,14 +1135,14 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         return merged_entities, chunk_summaries
 
     def _extract_triples_from_chunks(
-            self,
-            chunks: List[str],
-            entities: List[str],
-            examples_for_triples_extraction: str,
-            extractor_name: str = None,
-            chunk_summaries: List[str] = None,
-            use_llm_merge: bool = None,
-            task_instructions: str = None
+        self,
+        chunks: List[str],
+        entities: List[str],
+        examples_for_triples_extraction: str,
+        extractor_name: str = None,
+        chunk_summaries: List[str] = None,
+        use_llm_merge: bool = None,
+        task_instructions: str = None,
     ) -> List[tuple]:
         """
         Extract triples from multiple text chunks and merge results.
@@ -1147,7 +1161,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Returns:
             Merged list of triples from all chunks.
         """
-        if not hasattr(self, 'triples_extractor'):
+        if not hasattr(self, "triples_extractor"):
             raise AttributeError(f"{self.__class__.__name__} must define 'triples_extractor'")
 
         extractor_name = extractor_name or self.__class__.__name__
@@ -1166,13 +1180,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 print(f"{extractor_name}: INFO :: Extracting triples from chunk {i + 1}/{len(chunks)}")
 
             try:
-                result = self.triples_extractor(
-                    text=chunk,
-                    entities=entities,
-                    few_shot_examples=examples_for_triples_extraction,
-                    task_instructions=task_instructions
-                )
-                chunk_triples = result.triples if hasattr(result, 'triples') and result.triples else []
+                result = self.triples_extractor(text=chunk, entities=entities, few_shot_examples=examples_for_triples_extraction, task_instructions=task_instructions)
+                chunk_triples = result.triples if hasattr(result, "triples") and result.triples else []
             except Exception as e:
                 if self.logging:
                     print(f"{extractor_name}: WARNING :: Failed to extract triples from chunk {i + 1}: {e}")
@@ -1192,18 +1201,18 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         return merged_triples
 
     def _extract_types_from_chunks(
-            self,
-            chunks: List[str],
-            entities: List[str],
-            entity_types: List[str],
-            generate_types: bool,
-            examples_for_type_assertion: str,
-            examples_for_type_generation: str,
-            extractor_name: str = None,
-            chunk_summaries: List[str] = None,
-            use_llm_merge: bool = None,
-            task_instructions_assertion: str = None,
-            task_instructions_generation: str = None
+        self,
+        chunks: List[str],
+        entities: List[str],
+        entity_types: List[str],
+        generate_types: bool,
+        examples_for_type_assertion: str,
+        examples_for_type_generation: str,
+        extractor_name: str = None,
+        chunk_summaries: List[str] = None,
+        use_llm_merge: bool = None,
+        task_instructions_assertion: str = None,
+        task_instructions_generation: str = None,
     ) -> List[tuple]:
         """
         Extract type assertions from multiple text chunks and merge results.
@@ -1226,7 +1235,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Returns:
             Merged list of type assertions from all chunks.
         """
-        if not hasattr(self, 'type_asserter') or not hasattr(self, 'type_generator'):
+        if not hasattr(self, "type_asserter") or not hasattr(self, "type_generator"):
             raise AttributeError(f"{self.__class__.__name__} must define 'type_asserter' and 'type_generator'")
 
         extractor_name = extractor_name or self.__class__.__name__
@@ -1246,22 +1255,11 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
             try:
                 if entity_types is not None and not generate_types:
-                    result = self.type_asserter(
-                        text=chunk,
-                        entities=entities,
-                        entity_types=entity_types,
-                        task_instructions = task_instructions_assertion,
-                        few_shot_examples=examples_for_type_assertion
-                    )
-                    chunk_assertions = result.pairs if hasattr(result, 'pairs') and result.pairs else []
+                    result = self.type_asserter(text=chunk, entities=entities, entity_types=entity_types, task_instructions=task_instructions_assertion, few_shot_examples=examples_for_type_assertion)
+                    chunk_assertions = result.pairs if hasattr(result, "pairs") and result.pairs else []
                 else:  # generate_types
-                    result = self.type_generator(
-                        text=chunk,
-                        entities=entities,
-                        task_instructions = task_instructions_generation,
-                        few_shot_examples=examples_for_type_generation
-                    )
-                    chunk_assertions = result.pairs if hasattr(result, 'pairs') and result.pairs else []
+                    result = self.type_generator(text=chunk, entities=entities, task_instructions=task_instructions_generation, few_shot_examples=examples_for_type_generation)
+                    chunk_assertions = result.pairs if hasattr(result, "pairs") and result.pairs else []
             except Exception as e:
                 if self.logging:
                     print(f"{extractor_name}: WARNING :: Failed to extract types from chunk {i + 1}: {e}")
@@ -1280,13 +1278,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
         return merged_assertions
 
-    def _extract_literals_from_chunks(
-            self,
-            chunks: List[str],
-            examples_for_literal_extraction: str,
-            extractor_name: str = None,
-            task_instructions: str = None
-    ) -> List[str]:
+    def _extract_literals_from_chunks(self, chunks: List[str], examples_for_literal_extraction: str, extractor_name: str = None, task_instructions: str = None) -> List[str]:
         """
         Extract literals from multiple text chunks and merge results.
         Generic method that works for all extractor subclasses.
@@ -1300,7 +1292,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Returns:
             Merged list of literals from all chunks.
         """
-        if not hasattr(self, 'literal_extractor'):
+        if not hasattr(self, "literal_extractor"):
             raise AttributeError(f"{self.__class__.__name__} must define 'literal_extractor'")
 
         extractor_name = extractor_name or self.__class__.__name__
@@ -1311,12 +1303,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
                 print(f"{extractor_name}: INFO :: Extracting literals from chunk {i + 1}/{len(chunks)}")
 
             try:
-                result = self.literal_extractor(
-                    text=chunk,
-                    task_instructions=task_instructions,
-                    few_shot_examples=examples_for_literal_extraction
-                )
-                chunk_literals = result.l_values if hasattr(result, 'l_values') and result.l_values else []
+                result = self.literal_extractor(text=chunk, task_instructions=task_instructions, few_shot_examples=examples_for_literal_extraction)
+                chunk_literals = result.l_values if hasattr(result, "l_values") and result.l_values else []
             except Exception as e:
                 if self.logging:
                     print(f"{extractor_name}: WARNING :: Failed to extract literals from chunk {i + 1}: {e}")
@@ -1336,13 +1324,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         return merged_literals
 
     def _extract_spl_triples_from_chunks(
-            self,
-            chunks: List[str],
-            entities: List[str],
-            literals: List[str],
-            examples_for_spl_triples_extraction: str,
-            extractor_name: str = None,
-            task_instructions: str = None
+        self, chunks: List[str], entities: List[str], literals: List[str], examples_for_spl_triples_extraction: str, extractor_name: str = None, task_instructions: str = None
     ) -> List[tuple]:
         """
         Extract SPL triples from multiple text chunks and merge results.
@@ -1359,7 +1341,7 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Returns:
             Merged list of SPL triples from all chunks.
         """
-        if not hasattr(self, 'spl_triples_extractor'):
+        if not hasattr(self, "spl_triples_extractor"):
             raise AttributeError(f"{self.__class__.__name__} must define 'spl_triples_extractor'")
 
         extractor_name = extractor_name or self.__class__.__name__
@@ -1371,13 +1353,9 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
 
             try:
                 result = self.spl_triples_extractor(
-                    text=chunk,
-                    entities=entities,
-                    numeric_literals=literals,
-                    task_instructions= task_instructions,
-                    few_shot_examples=examples_for_spl_triples_extraction
+                    text=chunk, entities=entities, numeric_literals=literals, task_instructions=task_instructions, few_shot_examples=examples_for_spl_triples_extraction
                 )
-                chunk_triples = result.triples if hasattr(result, 'triples') and result.triples else []
+                chunk_triples = result.triples if hasattr(result, "triples") and result.triples else []
             except Exception as e:
                 if self.logging:
                     print(f"{extractor_name}: WARNING :: Failed to extract SPL triples from chunk {i + 1}: {e}")
@@ -1423,8 +1401,8 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         if literal is None:
             try:
                 str_value = str(value).lower().strip()
-                if str_value in ('true', 'false'):
-                    bool_value = str_value == 'true'
+                if str_value in ("true", "false"):
+                    bool_value = str_value == "true"
                     literal = OWLLiteral(bool_value)  # OWLLiteral will auto-detect bool type
             except (ValueError, TypeError, AttributeError):
                 pass
@@ -1469,3 +1447,86 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
             Generated Ontology object.
         """
         pass
+
+    def _get_annotation_assertion_axiom(self, entity_iri: IRI, annotation_iri: IRI, value: str) -> OWLAnnotationAssertionAxiom:
+        """
+        Create a basic OWL annotation assertion axiom for a given entity.
+
+        This is an internal helper method that wraps a string value into an
+        OWLLiteral and pairs it with the specified annotation property.
+
+        Args:
+            entity_iri (IRI): The IRI of the entity being annotated.
+            annotation_iri (IRI): The IRI of the annotation property (e.g., label, comment).
+            value (str): The string literal value to be assigned to the annotation.
+
+        Returns:
+            OWLAnnotationAssertionAxiom: A constructed OWL annotation assertion.
+        """
+        annotation_value = OWLLiteral(value)
+        annotation = OWLAnnotation(OWLAnnotationProperty(annotation_iri), annotation_value)
+        return OWLAnnotationAssertionAxiom(entity_iri, annotation)
+
+    def get_rdfs_label_axiom(self, entity_iri: IRI, label: str) -> OWLAnnotationAssertionAxiom:
+        """
+        Create an RDFS label annotation assertion axiom for an entity.
+
+        Utilizes the standard RDFS label IRI (http://www.w3.org/2000/01/rdf-schema#label)
+        to assign a human-readable name to the entity.
+
+        Args:
+            entity_iri (IRI): The IRI of the entity to receive the label.
+            label (str): The text for the rdfs:label.
+
+        Returns:
+            OWLAnnotationAssertionAxiom: An annotation assertion axiom for rdfs:label.
+        """
+        return self._get_annotation_assertion_axiom(entity_iri, RDFS_LABEL_IRI, label)
+
+    def generate_batch_rdfs_comment_axioms(self, entities_meta: list[tuple[IRI, Literal["class", "property", "individual"]]], context: str) -> list[OWLAnnotationAssertionAxiom]:
+        """
+        Generate RDFS comment annotation assertion axioms for multiple OWL entities.
+
+        This method sends a batch of (entity IRI, entity type) pairs to an LLM,
+        which returns (IRI, comment) pairs. Each generated comment is wrapped
+        into an `rdfs:comment` OWL annotation assertion axiom.
+
+        Only comments for entities whose IRIs are present in `entities_meta`
+        are converted into axioms. Returned IRIs are validated against the
+        input entity IRIs after converting them to strings.
+
+        Args:
+            entities_meta:
+                List of tuples:
+                    (
+                        entity_iri (IRI),
+                        entity_type (str): 'class' | 'property' | 'individual'
+                    )
+
+            context:
+                Shared ontology/domain context used to ground generated comments.
+
+        Returns:
+            List[OWLAnnotationAssertionAxiom]:
+                One annotation assertion axiom per valid entity that received
+                a comment.
+        """
+        iri_type_pairs: list[tuple[str, Literal["class", "property", "individual"]]] = [(iri.as_str(), entity_type) for iri, entity_type in entities_meta]
+
+        valid_iri_set: set[str] = {iri.as_str() for iri, _ in entities_meta}
+
+        result = self.batch_rdfs_comment_generator(iri_type_pairs=iri_type_pairs, context=context)
+
+        axioms: list[OWLAnnotationAssertionAxiom] = []
+
+        for iri_str, comment in result.entity_comment_pairs:
+            if comment is None or iri_str not in valid_iri_set:
+                continue
+
+            entity_iri = IRI.create(iri_str)
+
+            axiom = self._get_annotation_assertion_axiom(entity_iri, RDFS_COMMENT_IRI, comment)
+
+            axioms.append(axiom)
+
+        return axioms
