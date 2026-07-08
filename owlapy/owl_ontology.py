@@ -1368,6 +1368,11 @@ class SyncOntology(AbstractOWLOntology):
     def get_owlapi_ontology(self):
         return self.owlapi_ontology
 
+    def get_dl_expressivity(self) -> str:
+        """Compute the DL expressivity name of this ontology, e.g. "ALCHN(D)"."""
+        from owlapy.expressivity import get_dl_expressivity
+        return get_dl_expressivity(self)
+
     def get_ontology_id(self) -> OWLOntologyID:
         return self.mapper.map_(self.owlapi_ontology.getOntologyID())
 
