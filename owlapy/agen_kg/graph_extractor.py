@@ -1509,13 +1509,20 @@ class GraphExtractor(dspy.Module, ABC, metaclass=GraphExtractorMeta):
         Returns:
             List[OWLAnnotationAssertionAxiom]:
                 One annotation assertion axiom per valid entity that received
-                a comment.
+                a comment. Returns an empty list if the LLM call for this batch
+                fails, so a single failed batch does not abort the rest of the
+                pipeline (e.g. already-generated entities/triples/labels).
         """
         iri_type_pairs: list[tuple[str, Literal["class", "property", "individual"]]] = [(iri.as_str(), entity_type) for iri, entity_type in entities_meta]
 
         valid_iri_set: set[str] = {iri.as_str() for iri, _ in entities_meta}
 
-        result = self.batch_rdfs_comment_generator(iri_type_pairs=iri_type_pairs, context=context)
+        try:
+            result = self.batch_rdfs_comment_generator(iri_type_pairs=iri_type_pairs, context=context)
+        except Exception as e:
+            if self.logging:
+                print(f"{self.__class__.__name__}: WARNING :: Failed to generate rdfs:comment annotations for batch, skipping: {e}")
+            return []
 
         axioms: list[OWLAnnotationAssertionAxiom] = []
 
