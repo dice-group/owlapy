@@ -14,6 +14,7 @@ class TestExpressivity(unittest.TestCase):
     def test_biopax_ontology_expressivity(self):
         onto = SyncOntology("KGs/Biopax/biopax.owl")
         self.assertEqual(get_dl_expressivity(onto), "ALCHN(D)")
+        self.assertEqual(onto.get_dl_expressivity(), "ALCHN(D)")
 
     def test_top_level_and_submodule_exports_agree(self):
         onto = SyncOntology("KGs/Family/father.owl")
