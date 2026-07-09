@@ -213,12 +213,14 @@ class TextChunker:
 
             chunks.append(text[start:end].strip())
 
-            # Move start position with overlap
-            start = end - self.overlap if self.overlap > 0 else end
-
-            # Ensure we're making progress
-            if start >= text_length:
+            # Stop once this chunk reached the end of the text, otherwise
+            # start = end - overlap would never reach text_length and loop forever
+            if end >= text_length:
                 break
+
+            # Move start position with overlap, always making forward progress
+            next_start = end - self.overlap if self.overlap > 0 else end
+            start = next_start if next_start > start else end
 
         return chunks
 
