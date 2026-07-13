@@ -93,7 +93,7 @@ from owlapy.owl_axiom import (
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataRange, OWLDataUnionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLIndividual, OWLNamedIndividual
-from owlapy.owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype
+from owlapy.owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype, TopOWLDatatype
 from owlapy.owl_object import OWLObject
 from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
 from owlapy.static_funcs import startJVM
@@ -2132,7 +2132,11 @@ class FromOwlready2:
         elif type_ is Timedelta:
             return DurationOWLDatatype
         else:
-            raise ValueError(type_)
+            # Some ontologies contain invalid data-range fillers (e.g. owl:Thing used as the
+            # filler of a data property restriction). Degrade gracefully to the top datatype
+            # instead of raising, so a single malformed axiom doesn't abort hierarchy traversal.
+            logger.warning("Unrecognized data range filler %s, falling back to rdfs:Literal (top datatype)", type_)
+            return TopOWLDatatype
 
 
 def is_valid_entity(text_input: str):
