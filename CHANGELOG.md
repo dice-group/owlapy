@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `rdfs:label` annotations, deterministically computed from entity IRIs
   - `rdfs:comment` annotations, generated via LLM
 - Test coverage for `TextChunker` and `DomainExamplesCache` in `agen_kg` (#224)
+- `OWLAnonymousIndividual` class for representing anonymous (blank-node) individuals, with a `NodeID` helper for node-id generation/normalization, and OWLAPI bridge mapping so anonymous individuals no longer break `get_abox_axioms()`/class/property assertion retrieval (#217)
 
 ### Fixed
 - Guarded `rdfs:comment` batch generation against LLM call failures, so a single failed batch no longer aborts the whole ontology generation pipeline (#223)
