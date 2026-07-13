@@ -71,7 +71,7 @@ from owlapy.owl_axiom import (
 )
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf, OWLNaryDataRange
 from owlapy.owl_datatype import OWLDatatype
-from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_individual import OWLAnonymousIndividual, OWLNamedIndividual
 from owlapy.owl_literal import NegativeIntegerOWLDatatype, NonNegativeIntegerOWLDatatype, NonPositiveIntegerOWLDatatype, OWLLiteral, PositiveIntegerOWLDatatype
 from owlapy.owl_ontology import OWLOntologyID
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
@@ -83,6 +83,7 @@ if not jpype.isJVMStarted():
 from java.util import ArrayList, Collections, LinkedHashSet, List, Optional, Set
 from java.util.stream import Stream
 from org.semanticweb.owlapi.model import IRI as owlapi_IRI
+from org.semanticweb.owlapi.model import NodeID as owlapi_NodeID
 from org.semanticweb.owlapi.model import OWLOntologyID as owlapi_OWLOntologyID
 from org.semanticweb.owlapi.vocab import OWLFacet as owlapi_OWLFacet
 from uk.ac.manchester.cs.owl.owlapi import (
@@ -92,6 +93,7 @@ from uk.ac.manchester.cs.owl.owlapi import (
     OWLAnnotationPropertyDomainAxiomImpl,
     OWLAnnotationPropertyImpl,
     OWLAnnotationPropertyRangeAxiomImpl,
+    OWLAnonymousIndividualImpl,
     OWLAsymmetricObjectPropertyAxiomImpl,
     OWLClassAssertionAxiomImpl,
     OWLClassImpl,
@@ -220,6 +222,14 @@ class OWLAPIMapper:
     @map_.register(OWLClassImpl)
     def _(self, e):
         return init(e)(self.map_(e.getIRI()))
+
+    @map_.register(OWLAnonymousIndividual)
+    def _(self, e):
+        return OWLAnonymousIndividualImpl(owlapi_NodeID.getNodeID(e.node_id))
+
+    @map_.register(OWLAnonymousIndividualImpl)
+    def _(self, e):
+        return OWLAnonymousIndividual(str(e.getID().getID()))
 
     @map_.register(OWL2DatatypeImpl)
     def _(self, e):
