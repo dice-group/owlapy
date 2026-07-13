@@ -92,6 +92,11 @@ branches. Open PRs against `develop`, not `main`. Release process (version bump 
 both files, CHANGELOG.md update, merge develop → main, tag, build, `twine upload`)
 is documented in `.github/copilot-instructions.md` if you're driving a release.
 
+Update `CHANGELOG.md`'s `[Unreleased]` section (under `Added`/`Changed`/`Fixed` as
+appropriate, referencing the PR/issue number) as part of implementing any
+user-facing feature or fix — don't wait until release to record it. Only move
+`[Unreleased]` entries into a new dated version section during an actual release.
+
 ## Rules
 
 Domain-specific API patterns and constraints load automatically from
