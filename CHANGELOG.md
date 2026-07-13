@@ -8,9 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- The ontology generation pipeline now supports:
+- The ontology generation pipeline now supports (#219):
   - `rdfs:label` annotations, deterministically computed from entity IRIs
   - `rdfs:comment` annotations, generated via LLM
+- Test coverage for `TextChunker` and `DomainExamplesCache` in `agen_kg` (#224)
+
+### Fixed
+- Guarded `rdfs:comment` batch generation against LLM call failures, so a single failed batch no longer aborts the whole ontology generation pipeline (#223)
+- Fixed an infinite loop in `TextChunker`'s fixed-size chunking strategy that could occur with `overlap > 0` once the cursor reached the end of the text (#224)
+- `map_datarange` now degrades gracefully to the top datatype instead of raising `ValueError` on unrecognized data-range fillers (e.g. `owl:Thing` used where a datatype is expected), so a single malformed axiom no longer aborts hierarchy traversal in `super_classes`/`sub_classes`/`object_property_ranges` (#225, #226)
 
 ## [1.6.5] - 2026-05-26
 
