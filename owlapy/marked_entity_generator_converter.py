@@ -27,32 +27,32 @@ from rdflib.plugins.sparql.parser import parseQuery
 from owlapy.class_expression import (
     OWLClass,
     OWLClassExpression,
-    OWLObjectComplementOf,
-    OWLObjectIntersectionOf,
-    OWLObjectUnionOf,
-    OWLObjectSomeValuesFrom,
+    OWLDataAllValuesFrom,
+    OWLDataCardinalityRestriction,
+    OWLDataExactCardinality,
+    OWLDataHasValue,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
+    OWLDataOneOf,
+    OWLDataSomeValuesFrom,
+    OWLDatatypeRestriction,
     OWLObjectAllValuesFrom,
     OWLObjectCardinalityRestriction,
-    OWLObjectMinCardinality,
-    OWLObjectMaxCardinality,
+    OWLObjectComplementOf,
     OWLObjectExactCardinality,
-    OWLObjectHasValue,
     OWLObjectHasSelf,
+    OWLObjectHasValue,
+    OWLObjectIntersectionOf,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
     OWLObjectOneOf,
-    OWLDataSomeValuesFrom,
-    OWLDataAllValuesFrom,
-    OWLDataHasValue,
-    OWLDataCardinalityRestriction,
-    OWLDataMinCardinality,
-    OWLDataMaxCardinality,
-    OWLDataExactCardinality,
-    OWLDatatypeRestriction,
-    OWLDataOneOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
 )
 from owlapy.converter import Owl2SparqlConverter
 from owlapy.iri import IRI
-from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_datatype import OWLDatatype
+from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, TopOWLDatatype
 from owlapy.owl_property import OWLDataProperty
 from owlapy.vocab import OWLRDFVocabulary
@@ -165,6 +165,10 @@ class QueryGenerator(Owl2SparqlConverter):
             self.having_conditions = defaultdict(set)
             self.for_all_de_morgan = for_all_de_morgan
             self.named_individuals = named_individuals
+            # Mirrors Owl2SparqlConverter.convert(): restrict the root variable to owl:NamedIndividual
+            # instances when requested.
+            if named_individuals:
+                self.append_triple(root_variable, 'a', f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
             with self.stack_variable(root_variable):
                 with self.stack_parent(ce):
                     self.process(ce)
@@ -220,9 +224,10 @@ class QueryGenerator(Owl2SparqlConverter):
     def _(self, ce: OWLObjectComplementOf):
         subject = self.current_variable
 
-        if self.named_individuals:
-            self.append_triple(subject, "a", f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
-        else:
+        # If the complement is directly inside an intersection at the top level, the intersection
+        # already provides bindings, so we don't need the extra triple pattern (mirrors the fix in
+        # Owl2SparqlConverter.process(OWLObjectComplementOf) in converter.py).
+        if not (len(self.parent) > 0 and isinstance(self.parent[-1], OWLObjectIntersectionOf) and self.modal_depth == 1):
             self.append_triple(subject, self.mapping.new_individual_variable(),
                                self.mapping.new_individual_variable())
 
@@ -433,7 +438,9 @@ class QueryGenerator(Owl2SparqlConverter):
     @process.register
     def _(self, node: OWLDatatype):
         if node != TopOWLDatatype:
-            self.append(f" FILTER ( DATATYPE ( {self.current_variable} = <{node.to_string_id()}> ) ) ")
+            self.append(f" FILTER ( DATATYPE ( {self.current_variable} ) = <{node.to_string_id()}> ) ")
+        else:
+            self.append(f" FILTER ( isLiteral ( {self.current_variable} ) ) ")
 
     @process.register
     def _(self, node: OWLDataOneOf):

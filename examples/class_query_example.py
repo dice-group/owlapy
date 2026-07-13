@@ -204,7 +204,9 @@ try:
     response.raise_for_status()
     results = response.json()
     for row in results["results"]["bindings"]:
-        cls = row["class"]["value"]
+        # ?class is unbound (and thus absent from the row) whenever a solution matched via the
+        # non-marker branch of the UNION (e.g. "?pos a <Person>") rather than "?pos a ?class".
+        cls = row.get("class", {}).get("value", "<unbound>")
         pos_hits = row["posHits"]["value"]
         neg_hits = row["negHits"]["value"]
         print(f"  ?class = <{cls}>,  posHits = {pos_hits},  negHits = {neg_hits}")
@@ -247,7 +249,7 @@ try:
     response.raise_for_status()
     results = response.json()
     for row in results["results"]["bindings"]:
-        cls = row["class"]["value"]
+        cls = row.get("class", {}).get("value", "<unbound>")
         pos_hits = row["posHits"]["value"]
         neg_hits = row["negHits"]["value"]
         print(f"  ?class = <{cls}>,  posHits = {pos_hits},  negHits = {neg_hits}")
