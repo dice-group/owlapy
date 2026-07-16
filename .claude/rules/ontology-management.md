@@ -46,6 +46,19 @@ onto.save(path="output.owl", inplace=False)
 onto.save(path="output.ttl", rdf_format="ttl", inplace=False)
 ```
 
+## Prefix Management (SyncOntology only)
+
+```python
+onto.get_prefixes()                              # -> {"owl": "...", "rdf": "...", ...}
+onto.set_prefix("foaf", "http://xmlns.com/foaf/0.1/")
+onto.remove_prefix("foaf")
+```
+
+Custom prefixes are honoured by `save()` for both OWL API–backed formats that support them
+(RDF/XML, OWL/XML, Turtle, Functional Syntax, Manchester Syntax) and the rdflib-backed formats
+(`turtle2`, `n3`, `trig`, `json-ld`); without a registered prefix, entities from that namespace
+serialize as full IRIs.
+
 ## CSV -> RDF and Saving Class Expressions
 
 ```python
