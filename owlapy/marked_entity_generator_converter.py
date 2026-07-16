@@ -523,6 +523,7 @@ class QueryGenerator(Owl2SparqlConverter):
         for_all_de_morgan: bool = True,
         named_individuals: bool = False,
         filter_expression: Optional[OWLClassExpression] = None,
+        validate: bool = False,
     ) -> str:
         """Generate a SPARQL query that discovers OWL classes with hit-counts.
 
@@ -553,6 +554,8 @@ class QueryGenerator(Owl2SparqlConverter):
             named_individuals: Passed through to :meth:`convert`.
             filter_expression: Optional additional class expression used to
                 create a ``FILTER NOT EXISTS`` constraint on the root variable.
+            validate: If ``True``, validates the generated SPARQL query using
+                ``rdflib.parseQuery`` (slower but safer).
 
         Returns:
             A valid SPARQL SELECT query string.
@@ -656,8 +659,8 @@ class QueryGenerator(Owl2SparqlConverter):
             ]
         query = "".join(query_parts)
 
-        # Validate
-        parseQuery(query)
+        if validate:
+            parseQuery(query)
         return query
 
     # -- negated class query builder ------------------------------------------
@@ -672,6 +675,7 @@ class QueryGenerator(Owl2SparqlConverter):
         for_all_de_morgan: bool = True,
         named_individuals: bool = False,
         filter_expression: Optional[OWLClassExpression] = None,
+        validate: bool = False,
     ) -> str:
         """Generate a SPARQL query that discovers OWL classes the positives
         are **not** members of, with hit-counts.
@@ -710,6 +714,8 @@ class QueryGenerator(Owl2SparqlConverter):
             named_individuals: Passed through to :meth:`convert`.
             filter_expression: Optional additional class expression for
                 ``FILTER NOT EXISTS`` on the root variable.
+            validate: If ``True``, validates the generated SPARQL query using
+                ``rdflib.parseQuery`` (slower but safer).
 
         Returns:
             A valid SPARQL SELECT query string.
@@ -761,7 +767,8 @@ class QueryGenerator(Owl2SparqlConverter):
         ]
         query = "".join(query_parts)
 
-        parseQuery(query)
+        if validate:
+            parseQuery(query)
         return query
 
     # -- property query builder -----------------------------------------------
@@ -777,6 +784,7 @@ class QueryGenerator(Owl2SparqlConverter):
         named_individuals: bool = False,
         inverted: bool = False,
         filter_expression: Optional[OWLClassExpression] = None,
+        validate: bool = False,
     ) -> str:
         """Generate a SPARQL query that discovers OWL properties with hit-counts.
 
@@ -811,6 +819,8 @@ class QueryGenerator(Owl2SparqlConverter):
                 ``?var ?prop [] .`` at the marker position.
             filter_expression: Optional additional class expression for
                 ``FILTER NOT EXISTS`` on the root variable.
+            validate: If ``True``, validates the generated SPARQL query using
+                ``rdflib.parseQuery`` (slower but safer).
 
         Returns:
             A valid SPARQL SELECT query string.
@@ -915,7 +925,8 @@ class QueryGenerator(Owl2SparqlConverter):
             ]
         query = "".join(query_parts)
 
-        parseQuery(query)
+        if validate:
+            parseQuery(query)
         return query
 
 
@@ -935,6 +946,7 @@ def owl_expression_to_class_query(
     for_all_de_morgan: bool = True,
     named_individuals: bool = False,
     filter_expression: Optional[OWLClassExpression] = None,
+    validate: bool = False,
 ) -> str:
     """Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`
     into a SPARQL query that discovers OWL classes and counts how many
@@ -951,6 +963,8 @@ def owl_expression_to_class_query(
         for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.
         named_individuals: Restrict to ``owl:NamedIndividual`` instances.
         filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).
+        validate: If ``True``, validates the generated SPARQL query using
+            ``rdflib.parseQuery`` (slower but safer).
 
     Returns:
         A valid SPARQL SELECT query string.
@@ -964,6 +978,7 @@ def owl_expression_to_class_query(
         for_all_de_morgan=for_all_de_morgan,
         named_individuals=named_individuals,
         filter_expression=filter_expression,
+        validate=validate,
     )
 
 
@@ -977,6 +992,7 @@ def owl_expression_to_property_query(
     named_individuals: bool = False,
     inverted: bool = False,
     filter_expression: Optional[OWLClassExpression] = None,
+    validate: bool = False,
 ) -> str:
     """Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`
     into a SPARQL query that discovers OWL properties and counts how many
@@ -994,6 +1010,8 @@ def owl_expression_to_property_query(
         named_individuals: Restrict to ``owl:NamedIndividual`` instances.
         inverted: If ``True``, emits ``[] ?prop ?var .`` at the marker.
         filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).
+        validate: If ``True``, validates the generated SPARQL query using
+            ``rdflib.parseQuery`` (slower but safer).
 
     Returns:
         A valid SPARQL SELECT query string.
@@ -1008,6 +1026,7 @@ def owl_expression_to_property_query(
         named_individuals=named_individuals,
         inverted=inverted,
         filter_expression=filter_expression,
+        validate=validate,
     )
 
 
@@ -1020,6 +1039,7 @@ def owl_expression_to_negated_class_query(
     for_all_de_morgan: bool = True,
     named_individuals: bool = False,
     filter_expression: Optional[OWLClassExpression] = None,
+    validate: bool = False,
 ) -> str:
     """Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`
     into a SPARQL query that discovers OWL classes that the positive examples
@@ -1044,6 +1064,8 @@ def owl_expression_to_negated_class_query(
         for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.
         named_individuals: Restrict to ``owl:NamedIndividual`` instances.
         filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).
+        validate: If ``True``, validates the generated SPARQL query using
+            ``rdflib.parseQuery`` (slower but safer).
 
     Returns:
         A valid SPARQL SELECT query string.
@@ -1057,5 +1079,6 @@ def owl_expression_to_negated_class_query(
         for_all_de_morgan=for_all_de_morgan,
         named_individuals=named_individuals,
         filter_expression=filter_expression,
+        validate=validate,
     )
 
