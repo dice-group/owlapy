@@ -5,14 +5,32 @@ https://www.w3.org/TR/owl2-syntax/#Data_Ranges
 DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction
 """
 from abc import ABCMeta
-from typing import Final, Iterable, Sequence
+from typing import TYPE_CHECKING, Final, Iterable, Sequence, Set
 
 from .meta_classes import HasOperands
 from .owl_object import OWLObject
 
+if TYPE_CHECKING:
+    from .owl_object import OWLEntity
+
 
 class OWLPropertyRange(OWLObject, metaclass=ABCMeta):
     """OWL Objects that can be the ranges of properties."""
+
+    def signature(self) -> Set['OWLEntity']:
+        """Gets the set of named entities (classes, object/data properties, individuals, datatypes) that are
+        used in this class expression/data range.
+
+        Note:
+            Coverage is currently limited to a core set of constructs; see
+            :class:`owlapy.utils.SignatureExtractor` and
+            https://github.com/dice-group/owlapy/issues/231 for remaining gaps.
+
+        Returns:
+            The signature of this class expression/data range.
+        """
+        from owlapy.utils import SignatureExtractor
+        return SignatureExtractor().get_signature(self)
 
 
 class OWLDataRange(OWLPropertyRange, metaclass=ABCMeta):
