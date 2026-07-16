@@ -1,7 +1,7 @@
 """OWL Axioms"""
 from abc import ABCMeta, abstractmethod
 from itertools import combinations
-from typing import Generic, Iterable, List, Optional, Sequence, TypeVar, Union
+from typing import Generic, Iterable, List, Optional, Sequence, Set, TypeVar, Union
 
 from owlapy.owl_annotation import OWLAnnotationSubject, OWLAnnotationValue
 
@@ -43,6 +43,21 @@ class OWLAxiom(OWLObject, metaclass=ABCMeta):
 
     def is_annotation_axiom(self) -> bool:
         return False
+
+    def signature(self) -> Set['OWLEntity']:
+        """Gets the set of named entities (classes, object/data properties, individuals, datatypes) that are
+        used in this axiom.
+
+        Note:
+            Coverage is currently limited to a core set of axiom types; see
+            :class:`owlapy.utils.SignatureExtractor` and
+            https://github.com/dice-group/owlapy/issues/231 for the remaining axiom types.
+
+        Returns:
+            The signature of this axiom.
+        """
+        from owlapy.utils import SignatureExtractor
+        return SignatureExtractor().get_signature(self)
     # TODO: XXX
 
 

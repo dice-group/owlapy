@@ -280,8 +280,8 @@ def extract_classes(onto, class_iris: list):
     """Extract subontology containing only specified classes."""
     from owlapy.util_owl_static_funcs import create_ontology
     
-    # Create new ontology
-    new_onto = create_ontology("http://example.com/extracted")
+    # Create new ontology (with_owlapi=True: add_axiom/get_tbox_axioms need the OWLAPI-backed ontology)
+    new_onto = create_ontology("http://example.com/extracted", with_owlapi=True)
     
     # Get relevant axioms
     for cls_iri in class_iris:
