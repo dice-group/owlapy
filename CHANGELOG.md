@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `rdfs:comment` annotations, generated via LLM
 - Test coverage for `TextChunker` and `DomainExamplesCache` in `agen_kg` (#224)
 - `OWLAnonymousIndividual` class for representing anonymous (blank-node) individuals, with a `NodeID` helper for node-id generation/normalization, and OWLAPI bridge mapping so anonymous individuals no longer break `get_abox_axioms()`/class/property assertion retrieval (#217)
+- `owlapy.marked_entity_generator_converter`: `QueryGenerator` (subclass of `Owl2SparqlConverter`) and `owl_expression_to_class_query`/`owl_expression_to_negated_class_query`/`owl_expression_to_property_query` helpers, which generate SPARQL queries that *discover* classes/properties (with positive/negative hit counts) at a marked position in a class expression, ported from DL-Learner's Java `Suggestor`. Backs PruneCEL's oracle-based refinement operator.
 
 ### Fixed
 - Guarded `rdfs:comment` batch generation against LLM call failures, so a single failed batch no longer aborts the whole ontology generation pipeline (#223)
