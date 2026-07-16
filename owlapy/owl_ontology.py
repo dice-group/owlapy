@@ -1373,6 +1373,73 @@ class SyncOntology(AbstractOWLOntology):
         from owlapy.expressivity import get_dl_expressivity
         return get_dl_expressivity(self)
 
+    def _get_prefix_format(self):
+        """Return the OWL API document format currently associated with this ontology.
+
+        This is the live format object tracked by the OWL API manager, so mutating it
+        (via ``setPrefix``/``setPrefixManager``) persists across calls and is picked up
+        by ``save()`` whenever no explicit ``document_format`` override is requested.
+        """
+        return self.owlapi_manager.getOntologyFormat(self.owlapi_ontology)
+
+    def get_prefixes(self) -> Dict[str, str]:
+        """Get the prefix -> namespace IRI mappings currently registered for this ontology.
+
+        These prefixes are honoured by :meth:`save` both for the OWL API–backed formats
+        that support them (RDF/XML, OWL/XML, Turtle, Functional Syntax, Manchester Syntax)
+        and for the rdflib-backed formats (Turtle, N3, TriG, JSON-LD).
+
+        Returns:
+            Mapping of prefix name (without a trailing colon) to namespace IRI.
+        """
+        fmt = self._get_prefix_format()
+        if not hasattr(fmt, "getPrefixName2PrefixMap"):
+            return {}
+        return {
+            (str(name)[:-1] if str(name).endswith(":") else str(name)): str(ns)
+            for name, ns in fmt.getPrefixName2PrefixMap().items()
+        }
+
+    def set_prefix(self, prefix: str, namespace: str) -> None:
+        """Declare or update a prefix -> namespace IRI mapping for this ontology.
+
+        Args:
+            prefix: Short prefix name, e.g. ``"foaf"`` (no trailing colon).
+            namespace: Namespace IRI the prefix expands to, e.g.
+                ``"http://xmlns.com/foaf/0.1/"``.
+
+        Raises:
+            ValueError: If the ontology's current document format does not support
+                prefixes (e.g. LaTeX, DL Syntax, KRSS2, OBO).
+        """
+        fmt = self._get_prefix_format()
+        if not hasattr(fmt, "setPrefix"):
+            raise ValueError(f"The ontology's current document format ({fmt}) does not support prefixes.")
+        fmt.setPrefix(f"{prefix}:", namespace)
+
+    def remove_prefix(self, prefix: str) -> None:
+        """Remove a previously declared prefix mapping, if present.
+
+        Args:
+            prefix: Short prefix name to remove (no trailing colon).
+
+        Raises:
+            ValueError: If the ontology's current document format does not support
+                prefixes (e.g. LaTeX, DL Syntax, KRSS2, OBO).
+        """
+        # noinspection PyUnresolvedReferences
+        from org.semanticweb.owlapi.util import DefaultPrefixManager
+
+        fmt = self._get_prefix_format()
+        if not hasattr(fmt, "setPrefixManager"):
+            raise ValueError(f"The ontology's current document format ({fmt}) does not support prefixes.")
+        key = f"{prefix}:"
+        remaining = DefaultPrefixManager()
+        for name, ns in fmt.getPrefixName2PrefixMap().items():
+            if str(name) != key:
+                remaining.setPrefix(str(name), str(ns))
+        fmt.setPrefixManager(remaining)
+
     def get_ontology_id(self) -> OWLOntologyID:
         return self.mapper.map_(self.owlapi_ontology.getOntologyID())
 
@@ -1469,6 +1536,11 @@ class SyncOntology(AbstractOWLOntology):
                 )
             fmt_class = getattr(org.semanticweb.owlapi.formats, fmt_class_name)
             owlapi_format = fmt_class()
+            # Carry over any custom prefixes registered via set_prefix()/remove_prefix()
+            # onto the freshly created format instance.
+            current_format = self.owlapi_manager.getOntologyFormat(self.owlapi_ontology)
+            if hasattr(owlapi_format, "copyPrefixesFrom") and hasattr(current_format, "getPrefixName2PrefixMap"):
+                owlapi_format.copyPrefixesFrom(current_format)
         else:
             owlapi_format = self.owlapi_manager.getOntologyFormat(self.owlapi_ontology)
 
@@ -1520,6 +1592,10 @@ class SyncOntology(AbstractOWLOntology):
             else:
                 g = rdflib.Graph()
             g.parse(tmp_path, format="xml")
+            # Bind any custom prefixes registered via set_prefix() so the
+            # re-serialised output uses them instead of full IRIs / auto-generated ones.
+            for prefix, namespace in self.get_prefixes().items():
+                g.bind(prefix, rdflib.Namespace(namespace), override=True)
             # Step 3 – re-serialise
             g.serialize(destination=path, format=rdflib_format)
         finally:
