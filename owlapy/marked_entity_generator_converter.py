@@ -117,8 +117,7 @@ class QueryGenerator(Owl2SparqlConverter):
                 marker_mode: bool = False,
                 property_marker_mode: bool = False,
                 inverted: bool = False,
-                negated_class_marker_mode: bool = False,
-                _preserve_mapping: bool = False):
+                negated_class_marker_mode: bool = False):
         """Like the parent ``convert`` but accepts extra marker flags.
 
         When *marker_mode* is ``True`` the :data:`CONTEXT_POSITION_MARKER`
@@ -131,48 +130,15 @@ class QueryGenerator(Owl2SparqlConverter):
 
         When *property_marker_mode* is ``True`` the marker emits
         ``?var ?prop [] .`` (or ``[] ?prop ?var .`` when *inverted* is ``True``).
-
-        When *_preserve_mapping* is ``True``, the existing
-        :class:`VariablesMapping` counters are preserved so that a
-        subsequent conversion produces fresh intermediate variable names
-        (e.g. ``?s_3`` instead of ``?s_1``).  This is essential when the
-        positive and negative blocks appear in the same outer query scope.
         """
         self._marker_mode = marker_mode
         self._property_marker_mode = property_marker_mode
         self._negated_class_marker_mode = negated_class_marker_mode
         self._inverted = inverted
         self._inside_filter = False
-        if _preserve_mapping and hasattr(self, 'mapping') and self.mapping is not None:
-            # Inline the parent's convert() logic but keep the existing
-            # VariablesMapping so intermediate variable names continue from
-            # where the previous conversion left off.
-            from collections import defaultdict
-            self.ce = ce
-            self.sparql = []
-            self.variables = []
-            self.parent = []
-            self.parent_var = []
-            self.properties = defaultdict(list)
-            self.variable_entities = set()
-            self._intersection = defaultdict(bool)
-            self.cnt = 0
-            # Do NOT reset self.mapping – keep the existing counters so that
-            # new intermediate variables get fresh names.  But clear the
-            # entity-to-variable dict to avoid stale assignments.
-            self.mapping.dict = dict()
-            self.grouping_vars = defaultdict(set)
-            self.having_conditions = defaultdict(set)
-            self.for_all_de_morgan = for_all_de_morgan
-            self.named_individuals = named_individuals
-            with self.stack_variable(root_variable):
-                with self.stack_parent(ce):
-                    self.process(ce)
-            return self.sparql
-        else:
-            return super().convert(root_variable, ce,
-                                   for_all_de_morgan=for_all_de_morgan,
-                                   named_individuals=named_individuals)
+        return super().convert(root_variable, ce,
+                               for_all_de_morgan=for_all_de_morgan,
+                               named_individuals=named_individuals)
 
     # -- process overloads ----------------------------------------------------
     # We need to re-register the singledispatchmethod overloads because
@@ -477,33 +443,6 @@ class QueryGenerator(Owl2SparqlConverter):
             return QueryGenerator._contains_marker(ce.get_filler())
         return False
 
-    @staticmethod
-    def _contains_union_with_marker(ce: OWLClassExpression) -> bool:
-        """Return ``True`` if *ce* contains an ``OWLObjectUnionOf`` that has
-        the :data:`CONTEXT_POSITION_MARKER` as a descendant.
-
-        When a UNION involves the marker variable (``?class``), the standard
-        sub-query approach does not work because ``?class`` is only bound
-        inside one branch of the UNION.  In this case the query must
-        pre-enumerate ``?class`` via a selective ``SELECT DISTINCT ?class``
-        subquery scoped to the example individuals.
-        """
-        if isinstance(ce, OWLClass):
-            return False
-        if isinstance(ce, OWLObjectComplementOf):
-            return QueryGenerator._contains_union_with_marker(ce.get_operand())
-        if isinstance(ce, OWLObjectUnionOf):
-            # This IS a union – check if the marker is anywhere inside it
-            if QueryGenerator._contains_marker(ce):
-                return True
-            # Also recurse into operands to find nested unions-with-marker
-            return any(QueryGenerator._contains_union_with_marker(op) for op in ce.operands())
-        if isinstance(ce, OWLObjectIntersectionOf):
-            return any(QueryGenerator._contains_union_with_marker(op) for op in ce.operands())
-        if isinstance(ce, (OWLObjectSomeValuesFrom, OWLObjectAllValuesFrom)):
-            return QueryGenerator._contains_union_with_marker(ce.get_filler())
-        return False
-
     # -- main query builder ---------------------------------------------------
 
     def as_class_query(
@@ -574,83 +513,32 @@ class QueryGenerator(Owl2SparqlConverter):
         context_parts.extend(tp)
         context_string = "".join(context_parts)
 
-        # -- 2. Build negative context string ---------------------------------
+        # -- 2. Build negative context string (variable replacement) ----------
         values_neg = _generate_values_stmt(root_variable_neg, negative_list)
-
-        has_union_marker = self._contains_union_with_marker(context)
-
-        if has_union_marker:
-            # When a UNION involves the marker, we must do a fresh conversion
-            # for the negative context so that intermediate variables (e.g.
-            # ?s_1, ?s_2) are independent between the positive and negative
-            # blocks.  We use _preserve_mapping=True so that the variable
-            # counter continues from where the positive conversion left off,
-            # producing distinct variable names (e.g. ?s_3, ?s_4).
-            neg_tp = self.convert(root_variable_neg, context,
-                                  for_all_de_morgan=for_all_de_morgan,
-                                  named_individuals=named_individuals,
-                                  marker_mode=True,
-                                  _preserve_mapping=True)
-            neg_context_parts = [values_neg]
-            if filter_expression is not None:
-                neg_filter_tp = self.convert(root_variable_neg, filter_expression,
-                                             for_all_de_morgan=for_all_de_morgan,
-                                             named_individuals=named_individuals,
-                                             marker_mode=False,
-                                             _preserve_mapping=True)
-                neg_context_parts.append(f"FILTER NOT EXISTS {{ {''.join(neg_filter_tp)} }} ")
-            neg_context_parts.extend(neg_tp)
-            neg_context = "".join(neg_context_parts)
-        else:
-            neg_context = re.sub(
-                r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
-                values_neg.rstrip(". "),
-                context_string,
-            )
-            # Replace remaining occurrences of the positive variable
-            neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
-            neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
+        neg_context = re.sub(
+            r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
+            values_neg.rstrip(". "),
+            context_string,
+        )
+        # Replace remaining occurrences of the positive variable
+        neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
+        neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
 
         # -- 3. Assemble final query ------------------------------------------
-        # When the context contains a UNION involving the marker, we need
-        # a different structure: pre-enumerate ?class with a selective
-        # ``SELECT DISTINCT ?class`` subquery scoped to the example
-        # individuals so that ?class is visible across UNION branches.
-        if has_union_marker:
-            binding_subquery = (
-                "  { SELECT DISTINCT ?class WHERE {\n"
-                "      { " + context_string + " }\n"
-                "      UNION\n"
-                "      { " + neg_context + " }\n"
-                "  } }\n"
-            )
-            query_parts = [
-                "SELECT ?class (COUNT(DISTINCT " + root_variable_pos + ") AS ?posHits) "
-                "(COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
-                binding_subquery,
-                "  {\n    ",
-                context_string,
-                "\n  }\n",
-                "  OPTIONAL {\n    ",
-                neg_context,
-                "\n  }\n",
-                "} GROUP BY ?class",
-            ]
-        else:
-            query_parts = [
-                "SELECT ?class (MAX(?tp) AS ?posHits) (COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
-                "  { SELECT ?class (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) WHERE {\n    ",
-                context_string,
-                "\n  } GROUP BY ?class }\n",
-                "  OPTIONAL {\n    ",
-                neg_context,
-                "\n  }\n",
-                "} GROUP BY ?class",
-            ]
+        query_parts = [
+            "SELECT ?class (MAX(?tp) AS ?posHits) (COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
+            "  { SELECT ?class (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) WHERE {\n    ",
+            context_string,
+            "\n  } GROUP BY ?class }\n",
+            "  OPTIONAL {\n    ",
+            neg_context,
+            "\n  }\n",
+            "} GROUP BY ?class",
+        ]
         query = "".join(query_parts)
 
         # Validate
-        parseQuery(query)
+        # parseQuery(query)  # removed: validation-only, ~7ms overhead per call
         return query
 
     # -- negated class query builder ------------------------------------------
@@ -754,7 +642,7 @@ class QueryGenerator(Owl2SparqlConverter):
         ]
         query = "".join(query_parts)
 
-        parseQuery(query)
+        # parseQuery(query)  # removed: validation-only, ~7ms overhead per call
         return query
 
     # -- property query builder -----------------------------------------------
@@ -830,85 +718,32 @@ class QueryGenerator(Owl2SparqlConverter):
         context_parts.extend(tp)
         context_string = "".join(context_parts)
 
-        # -- 2. Build negative context string ---------------------------------
+        # -- 2. Build negative context string (variable replacement) ----------
         values_neg = _generate_values_stmt(root_variable_neg, negative_list)
+        neg_context = re.sub(
+            r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
+            values_neg.rstrip(". "),
+            context_string,
+        )
+        neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
+        neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
 
-        has_union_marker = self._contains_union_with_marker(context)
-
-        if has_union_marker:
-            # When a UNION involves the marker, we must do a fresh conversion
-            # for the negative context so that intermediate variables (e.g.
-            # ?s_1, ?s_2) are independent between the positive and negative
-            # blocks.  We use _preserve_mapping=True so that the variable
-            # counter continues from where the positive conversion left off.
-            neg_tp = self.convert(root_variable_neg, context,
-                                  for_all_de_morgan=for_all_de_morgan,
-                                  named_individuals=named_individuals,
-                                  property_marker_mode=True,
-                                  inverted=inverted,
-                                  _preserve_mapping=True)
-            neg_context_parts = [values_neg]
-            if filter_expression is not None:
-                neg_filter_tp = self.convert(root_variable_neg, filter_expression,
-                                             for_all_de_morgan=for_all_de_morgan,
-                                             named_individuals=named_individuals,
-                                             _preserve_mapping=True)
-                neg_context_parts.append(f"FILTER NOT EXISTS {{ {''.join(neg_filter_tp)} }} ")
-            neg_context_parts.extend(neg_tp)
-            neg_context = "".join(neg_context_parts)
-        else:
-            neg_context = re.sub(
-                r"VALUES\s+" + re.escape(root_variable_pos) + r"\s+\{[^}]*}",
-                values_neg.rstrip(". "),
-                context_string,
-            )
-            neg_context = neg_context.replace(f"{root_variable_pos} ", f"{root_variable_neg} ")
-            neg_context = neg_context.replace(f"{root_variable_pos})", f"{root_variable_neg})")
-
-        # -- 3. Assemble final query -------------------------------------------
-        # When the context contains a UNION involving the marker, we need
-        # a different structure: pre-enumerate ?prop with a selective
-        # ``SELECT DISTINCT ?prop`` subquery scoped to the example
-        # individuals so that ?prop is visible across UNION branches.
-        if has_union_marker:
-            # Use a selective subquery to pre-enumerate only ?prop values
-            # that appear among the example individuals, avoiding a full
-            # graph scan that ``?anything ?prop [] .`` would cause.
-            binding_subquery = (
-                "  { SELECT DISTINCT ?prop WHERE {\n"
-                "      { " + context_string + " }\n"
-                "      UNION\n"
-                "      { " + neg_context + " }\n"
-                "  } }\n"
-            )
-            query_parts = [
-                "SELECT ?prop (COUNT(DISTINCT " + root_variable_pos + ") AS ?posHits) "
-                "(COUNT(DISTINCT " + root_variable_neg + ") AS ?negHits) WHERE {\n",
-                binding_subquery,
-                "  {\n    ",
-                context_string,
-                "\n  }\n",
-                "  OPTIONAL {\n    ",
-                neg_context,
-                "\n  }\n",
-                "} GROUP BY ?prop",
-            ]
-        else:
-            query_parts = [
-                "SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {\n",
-                "  { SELECT ?prop (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) (0 AS ?fp) WHERE {\n    ",
-                context_string,
-                "\n  } GROUP BY ?prop }\n",
-                "  UNION {\n",
-                "    SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT " + root_variable_neg + ") AS ?fp) WHERE {\n    ",
-                neg_context,
-                "\n    } GROUP BY ?prop\n",
-                "  }\n",
-                "} GROUP BY ?prop",
-            ]
+        # -- 3. Assemble final query (UNION pattern) --------------------------
+        query_parts = [
+            "SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {\n",
+            "  { SELECT ?prop (COUNT(DISTINCT " + root_variable_pos + ") AS ?tp) (0 AS ?fp) WHERE {\n    ",
+            context_string,
+            "\n  } GROUP BY ?prop }\n",
+            "  UNION {\n",
+            "    SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT " + root_variable_neg + ") AS ?fp) WHERE {\n    ",
+            neg_context,
+            "\n    } GROUP BY ?prop\n",
+            "  }\n",
+            "} GROUP BY ?prop",
+        ]
         query = "".join(query_parts)
 
-        parseQuery(query)
+        # parseQuery(query)  # removed: validation-only, ~7ms overhead per call
         return query
 
 

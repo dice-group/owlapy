@@ -632,7 +632,7 @@ class Owl2SparqlConverter:
 
 
         query = "\n".join(qs)
-        parseQuery(query)
+        # parseQuery(query)
         return query
 
     def as_confusion_matrix_query(self,
@@ -687,7 +687,7 @@ class Owl2SparqlConverter:
                        }}
                     }}
                     """
-        parseQuery(sparql_str)
+        # parseQuery(sparql_str)
         return sparql_str
 
 
