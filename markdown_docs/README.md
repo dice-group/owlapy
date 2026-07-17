@@ -14,17 +14,21 @@ owlapy is a production-ready Python framework for OWL ontology engineering, know
 ### Core Concepts
 - [02_core_concepts.md](02_core_concepts.md) - OWL fundamentals, ontologies, reasoners, class expressions
 - [03_ontology_management.md](03_ontology_management.md) - Creating, loading, saving, and modifying ontologies
-- [04_class_expressions.md](04_class_expressions.md) - Building and using OWL class expressions
+
+  Building and using OWL class expressions specifically: see "Class Expressions" in
+  [02_core_concepts.md](02_core_concepts.md#3-class-expressions) and
+  [09_api_reference.md](09_api_reference.md#class-expressions).
 
 ### Advanced Features
 - [05_reasoning.md](05_reasoning.md) - Semantic reasoning with StructuralReasoner, RDFLibReasoner, and SyncReasoner
-- [06_syntax_conversion.md](06_syntax_conversion.md) - Converting between DL syntax, Manchester syntax, and SPARQL
-- [07_knowledge_graph_generation.md](07_knowledge_graph_generation.md) - LLM-based ontology generation with AGenKG
+
+  Syntax conversion (DL / Manchester / SPARQL) and LLM-based KG generation (AGenKG) don't
+  have dedicated deep-dive docs yet -- see "Syntax Conversion" and "AGenKG" in
+  [09_api_reference.md](09_api_reference.md) for what's covered so far.
 
 ### Practical Guides
 - [08_common_patterns.md](08_common_patterns.md) - Common use cases, patterns, and anti-patterns
 - [09_api_reference.md](09_api_reference.md) - Quick reference for all key classes and functions
-- [10_migration_guide.md](10_migration_guide.md) - Migrating from other OWL libraries and upgrading owlapy
 
 ## Key Features
 
@@ -38,7 +42,7 @@ owlapy is a production-ready Python framework for OWL ontology engineering, know
 
 ```python
 from owlapy.owl_ontology import SyncOntology
-from owlapy.owl_reasoner import RDFLibReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 from owlapy.class_expression import OWLClass
 
 # Load ontology

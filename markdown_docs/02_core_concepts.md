@@ -78,12 +78,11 @@ has_name = OWLDataProperty("http://example.com/onto#hasName")
 Literals are data values (strings, numbers, dates, etc.).
 
 ```python
-from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_datatype import IntegerOWLDatatype, DoubleOWLDatatype, StringOWLDatatype
+from owlapy.owl_literal import OWLLiteral, IntegerOWLDatatype, DoubleOWLDatatype, StringOWLDatatype
 
-age = OWLLiteral(value=25, datatype=IntegerOWLDatatype)
-height = OWLLiteral(value=1.75, datatype=DoubleOWLDatatype)
-name = OWLLiteral(value="John", datatype=StringOWLDatatype)
+age = OWLLiteral(25, IntegerOWLDatatype)
+height = OWLLiteral(1.75, DoubleOWLDatatype)
+name = OWLLiteral("John", StringOWLDatatype)
 ```
 
 ### 3. Class Expressions
@@ -154,11 +153,11 @@ from owlapy.class_expression import (
     OWLObjectExactCardinality
 )
 
-# ≥2 hasChild (at least 2 children)
-at_least_two_children = OWLObjectMinCardinality(2, has_child)
+# ≥2 hasChild.⊤ (at least 2 children) -- filler is required, OWLThing for "any"
+at_least_two_children = OWLObjectMinCardinality(2, has_child, OWLThing)
 
-# ≤1 hasSpouse (at most 1 spouse)
-at_most_one_spouse = OWLObjectMaxCardinality(1, has_spouse)
+# ≤1 hasSpouse.⊤ (at most 1 spouse)
+at_most_one_spouse = OWLObjectMaxCardinality(1, has_spouse, OWLThing)
 
 # =3 hasChild.Male (exactly 3 male children)
 exactly_three_sons = OWLObjectExactCardinality(3, has_child, male)
@@ -251,7 +250,7 @@ from owlapy.owl_reasoner import StructuralReasoner
 reasoner = StructuralReasoner(ontology)
 
 # RDFLibReasoner - Pure Python, SPARQL-based, no circular dependencies
-from owlapy.owl_reasoner import RDFLibReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 reasoner = RDFLibReasoner(ontology)
 
 # SyncReasoner - Complete OWL 2 DL reasoning, Java-based
@@ -362,10 +361,10 @@ ontology.add_axiom(disjoint)
 ### Pattern 3: Property Chains
 
 ```python
-from owlapy.owl_axiom import OWLSubPropertyChainOfAxiom
+from owlapy.owl_axiom import OWLSubPropertyChainAxiom
 
-# hasGrandparent ← hasParent ∘ hasParent
-chain = OWLSubPropertyChainOfAxiom([has_parent, has_parent], has_grandparent)
+# hasParent ∘ hasParent ⊑ hasGrandparent
+chain = OWLSubPropertyChainAxiom([has_parent, has_parent], has_grandparent)
 ontology.add_axiom(chain)
 ```
 

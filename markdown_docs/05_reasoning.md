@@ -20,7 +20,7 @@ Pure Python reasoner using RDFLib and SPARQL queries. No circular dependencies, 
 
 ```python
 from owlapy.owl_ontology import SyncOntology
-from owlapy.owl_reasoner import RDFLibReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 from owlapy.class_expression import OWLClass
 
 # Load ontology
@@ -118,6 +118,14 @@ finally:
     stopJVM()
 ```
 
+`instances()` (and `is_entailed()`, `create_axiom_justifications()`) accept a `timeout`
+in seconds (default 1000) and cooperatively cancel the underlying Java reasoning task if
+it's exceeded, returning whatever partial results were already found rather than hanging:
+
+```python
+instances = list(reasoner.instances(male, timeout=30))
+```
+
 ### Advanced Features
 
 #### Consistency Checking
@@ -136,41 +144,56 @@ stopJVM()
 
 #### Infer and Save New Axioms
 
-```python
-from owlapy.util_owl_static_funcs import infer_axioms_and_save
+`infer_axioms_and_save()` is a method on `SyncReasoner` itself (not a standalone
+function) -- it materializes inferred axioms via the OWL API's `InferredOntologyGenerator`
+and saves them onto the reasoner's own ontology.
 
+```python
 startJVM()
 
-# Infer axioms and save to new file
-infer_axioms_and_save(
-    ontology_path="family.owl",
-    reasoner_name="HermiT",
+reasoner = SyncReasoner("family.owl", reasoner="HermiT")
+
+# Infer new class assertions and save to a new file
+reasoner.infer_axioms_and_save(
     output_path="inferred_family.owl",
-    output_format="rdfxml"
+    output_format="rdfxml",
+    inference_types=["InferredClassAssertionAxiomGenerator"],
 )
 
 stopJVM()
 ```
 
+Other `inference_types` include `"InferredSubClassAxiomGenerator"`,
+`"InferredDisjointClassesAxiomGenerator"`, `"InferredEquivalentClassAxiomGenerator"`, and
+more -- see the method's docstring for the full list. A shortcut for the most common case:
+`reasoner.generate_and_save_inferred_class_assertion_axioms(output="inferred.ttl")`.
+
 #### Get Justifications (Why is this true?)
+
+Justifications are generated directly on the reasoner via `create_axiom_justifications()`
+(there is no `get_justifications()` on the ontology):
 
 ```python
 from owlapy.owl_axiom import OWLSubClassOfAxiom
 
 startJVM()
-reasoner = SyncReasoner(onto, "HermiT")
+reasoner = SyncReasoner(onto, reasoner="HermiT")
 
-# Why is Student a subclass of Person?
+# Why is Student a subclass of Person? (axiom must actually be entailed)
 axiom = OWLSubClassOfAxiom(student, person)
-justifications = reasoner.get_root_ontology().get_justifications(axiom)
+justifications = reasoner.create_axiom_justifications(axiom, n_max_justifications=10)
 
 for i, justification in enumerate(justifications, 1):
     print(f"Justification {i}:")
     for ax in justification:
         print(f"  - {ax}")
-        
+
 stopJVM()
 ```
+
+`create_laconic_axiom_justifications()` has the same signature but returns minimized
+("laconic") justifications. Both accept a `timeout` (seconds, default 1000) for
+cooperative cancellation of long-running searches.
 
 ### Choosing a Java Reasoner
 
@@ -248,12 +271,12 @@ ages = list(reasoner.data_property_values(john, has_age))
 ### Equivalence and Disjointness
 
 ```python
-# Check if classes are equivalent
-are_equiv = reasoner.equivalent_classes(male, 
-    OWLObjectIntersectionOf([person, OWLObjectComplementOf(female)]))
+# equivalent_classes()/disjoint_classes() take a single class expression and return
+# everything equivalent/disjoint to it -- check membership to answer "are X and Y ...?"
+not_female = OWLObjectComplementOf(female)
+are_equiv = male in reasoner.equivalent_classes(not_female)
 
-# Check if classes are disjoint
-are_disjoint = reasoner.disjoint_classes(male, female)
+are_disjoint = female in reasoner.disjoint_classes(male)
 ```
 
 ## Performance Optimization
@@ -311,7 +334,7 @@ stopJVM()
 
 ```python
 from owlapy.owl_ontology import SyncOntology
-from owlapy.owl_reasoner import RDFLibReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 from owlapy.class_expression import *
 from owlapy.owl_property import OWLObjectProperty
 
