@@ -1,6 +1,6 @@
 """String to OWL parsers."""
 from types import MappingProxyType
-from typing import Final, List, Optional, Union
+from typing import Final, List, Mapping, Optional, Union
 
 from parsimonious.grammar import Grammar
 from parsimonious.nodes import Node, NodeVisitor
@@ -36,7 +36,7 @@ from owlapy.class_expression import (
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataRange, OWLDataUnionOf
 
 from .iri import IRI
-from .namespaces import Namespaces
+from .namespaces import OWL, RDF, RDFS, XSD, Namespaces
 from .owl_datatype import OWLDatatype
 from .owl_individual import OWLNamedIndividual
 from .owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype
@@ -152,6 +152,40 @@ def _node_text(node) -> str:
     return node.text.strip()
 
 
+# Well-known prefixes resolved out of the box, without requiring the caller to pass
+# them in via the parser's `prefixes` argument -- mirrors the prefixes OWL API/rdflib
+# writers emit by default when serialising an ontology.
+_DEFAULT_PREFIXES: Final = MappingProxyType({ns.prefix: ns.ns for ns in (OWL, RDF, RDFS, XSD)})
+
+
+def _resolve_abbreviated_iri(text: str, prefixes: Mapping[str, Union[str, Namespaces]],
+                             default_ns: Optional[Union[str, Namespaces]]) -> IRI:
+    """Resolve a ``prefix:localName`` string (as matched by the ``abbreviated_iri`` grammar rule) to an IRI.
+
+    Args:
+        text: The raw matched text, e.g. ``"foaf:Agent"`` or ``":Agent"`` (empty prefix).
+        prefixes: Caller-supplied prefix -> namespace IRI mapping, checked before the built-in
+            well-known ones (``owl:``, ``rdf:``, ``rdfs:``, ``xsd:``) so callers can override them.
+        default_ns: Namespace used to resolve an empty prefix (``:Agent``) if it isn't in *prefixes*.
+
+    Raises:
+        ValueError: If the prefix is not registered anywhere and can't be resolved.
+    """
+    prefix, sep, local_name = text.partition(":")
+    if not sep:
+        raise ValueError(f"Malformed abbreviated IRI: {text!r}")
+    if prefix in prefixes:
+        return IRI(prefixes[prefix], local_name)
+    if prefix in _DEFAULT_PREFIXES:
+        return IRI(_DEFAULT_PREFIXES[prefix], local_name)
+    if not prefix and default_ns is not None:
+        return IRI(default_ns, local_name)
+    raise ValueError(
+        f"Unknown prefix '{prefix}:' in {text!r}. Register it via the parser's `prefixes` "
+        f"argument, e.g. prefixes={{{prefix!r}: '<namespace-iri>'}}."
+    )
+
+
 _STRING_TO_DATATYPE: Final = MappingProxyType({
     "integer": IntegerOWLDatatype,
     "double": DoubleOWLDatatype,
@@ -205,23 +239,29 @@ class ManchesterOWLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_Manches
     """Manchester Syntax parser to parse strings to OWLClassExpressions.
        Following: https://www.w3.org/TR/owl2-manchester-syntax."""
 
-    slots = 'ns', 'grammar'
+    slots = 'ns', 'grammar', 'prefixes'
 
     ns: Optional[Union[str, Namespaces]]
+    prefixes: Mapping[str, Union[str, Namespaces]]
 
-    def __init__(self, namespace: Optional[Union[str, Namespaces]] = None, grammar=None):
-        """Create a new Manchester Syntax parser. Names (entities) can be given as full IRIs enclosed in < and >
-           or as simple strings, in that case the namespace attribute of the parser has to be set to resolve them.
+    def __init__(self, namespace: Optional[Union[str, Namespaces]] = None, grammar=None,
+                 prefixes: Optional[Mapping[str, Union[str, Namespaces]]] = None):
+        """Create a new Manchester Syntax parser. Names (entities) can be given as full IRIs enclosed in < and >,
+           as ``prefix:localName`` (e.g. ``foaf:Agent``, resolved via *prefixes*), or as simple strings, in
+           which case the namespace attribute of the parser has to be set to resolve them.
            See https://www.w3.org/TR/owl2-manchester-syntax/#IRIs.2C_Integers.2C_Literals.2C_and_Entities
            for more information.
-           Prefixes are currently not supported, except for datatypes.
+           ``owl:``, ``rdf:``, ``rdfs:`` and ``xsd:`` are resolved out of the box; an empty prefix
+           (``:localName``) falls back to *namespace* if not registered in *prefixes*.
 
         Args:
             namespace: Namespace to resolve names that were given without one.
             grammar: Grammar (defaults to MANCHESTERGRAMMAR).
+            prefixes: Prefix -> namespace IRI mapping used to resolve ``prefix:localName`` entities.
         """
         self.ns = namespace
         self.grammar = grammar
+        self.prefixes = dict(prefixes) if prefixes else {}
 
         if self.grammar is None:
             self.grammar = MANCHESTER_GRAMMAR
@@ -420,9 +460,8 @@ class ManchesterOWLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_Manches
         except IndexError:
             raise ValueError(f"{iri} is not a valid IRI.")
 
-    def visit_abbreviated_iri(self, node, children):
-        # TODO: Add support for prefixes
-        raise NotImplementedError(f"Parsing of prefixes is not supported yet: {_node_text(node)}")
+    def visit_abbreviated_iri(self, node, children) -> IRI:
+        return _resolve_abbreviated_iri(_node_text(node), self.prefixes, self.ns)
 
     def visit_simple_iri(self, node, children) -> IRI:
         simple_iri = _node_text(node)
@@ -547,21 +586,27 @@ class _DLSyntaxParserMeta(type(NodeVisitor), type(OWLObjectParser)):
 class DLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_DLSyntaxParserMeta):
     """Description Logic Syntax parser to parse strings to OWLClassExpressions."""
 
-    slots = 'ns', 'grammar'
+    slots = 'ns', 'grammar', 'prefixes'
 
     ns: Optional[Union[str, Namespaces]]
+    prefixes: Mapping[str, Union[str, Namespaces]]
 
-    def __init__(self, namespace: Optional[Union[str, Namespaces]] = None, grammar=None):
-        """Create a new Description Logic Syntax parser. Names (entities) can be given as full IRIs enclosed in < and >
-           or as simple strings, in that case the namespace attribute of the parser has to be set to resolve them.
-           Prefixes are currently not supported, except for datatypes.
+    def __init__(self, namespace: Optional[Union[str, Namespaces]] = None, grammar=None,
+                 prefixes: Optional[Mapping[str, Union[str, Namespaces]]] = None):
+        """Create a new Description Logic Syntax parser. Names (entities) can be given as full IRIs enclosed in
+           < and >, as ``prefix:localName`` (e.g. ``foaf:Agent``, resolved via *prefixes*), or as simple strings,
+           in which case the namespace attribute of the parser has to be set to resolve them.
+           ``owl:``, ``rdf:``, ``rdfs:`` and ``xsd:`` are resolved out of the box; an empty prefix
+           (``:localName``) falls back to *namespace* if not registered in *prefixes*.
 
         Args:
             namespace: Namespace to resolve names that were given without one.
             grammar: Grammar (defaults to DL_GRAMMAR).
+            prefixes: Prefix -> namespace IRI mapping used to resolve ``prefix:localName`` entities.
         """
         self.ns = namespace
         self.grammar = grammar
+        self.prefixes = dict(prefixes) if prefixes else {}
 
         if self.grammar is None:
             self.grammar = DL_GRAMMAR
@@ -771,9 +816,8 @@ class DLSyntaxParser(NodeVisitor, OWLObjectParser, metaclass=_DLSyntaxParserMeta
         except IndexError:
             raise ValueError(f"{_node_text(node)[1:-1]} is not a valid IRI.")
 
-    def visit_abbreviated_iri(self, node, children):
-        # TODO: Add support for prefixes
-        raise NotImplementedError(f"Parsing of prefixes is not supported yet: {_node_text(node)}")
+    def visit_abbreviated_iri(self, node, children) -> IRI:
+        return _resolve_abbreviated_iri(_node_text(node), self.prefixes, self.ns)
 
     def visit_simple_iri(self, node, children) -> IRI:
         simple_iri = _node_text(node)
@@ -795,11 +839,15 @@ DLparser = DLSyntaxParser()
 ManchesterParser = ManchesterOWLSyntaxParser()
 
 
-def dl_to_owl_expression(dl_expression: str, namespace: str):
+def dl_to_owl_expression(dl_expression: str, namespace: str,
+                         prefixes: Optional[Mapping[str, Union[str, Namespaces]]] = None):
     DLparser.ns = namespace
+    DLparser.prefixes = dict(prefixes) if prefixes else {}
     return DLparser.parse_expression(dl_expression)
 
 
-def manchester_to_owl_expression(manchester_expression: str, namespace: str):
+def manchester_to_owl_expression(manchester_expression: str, namespace: str,
+                                 prefixes: Optional[Mapping[str, Union[str, Namespaces]]] = None):
     ManchesterParser.ns = namespace
+    ManchesterParser.prefixes = dict(prefixes) if prefixes else {}
     return ManchesterParser.parse_expression(manchester_expression)

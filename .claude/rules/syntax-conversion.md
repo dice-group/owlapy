@@ -33,6 +33,21 @@ ce = manchester_to_owl_expression("hasChild some Female", "http://www.benchmark.
 
 `namespace` is a base prefix string ending in `#` or `/`; parsers append the class/property name to it to build full IRIs.
 
+### Prefixed names (`prefix:localName`)
+
+`owl:`, `rdf:`, `rdfs:` and `xsd:` resolve out of the box; register any other prefix via
+`prefixes=`:
+
+```python
+ce = dl_to_owl_expression("foaf:Agent ⊓ Person", "http://example.com/family#",
+                          prefixes={"foaf": "http://xmlns.com/foaf/0.1/"})
+```
+
+An empty prefix (`:Person`) falls back to `namespace`. `DLSyntaxParser`/`ManchesterOWLSyntaxParser`
+accept the same `prefixes=` constructor argument if you're instantiating a parser directly instead
+of using the module-level singletons. Unregistered prefixes raise a `ValueError` (wrapped in
+`parsimonious.exceptions.VisitationError` since it's raised from inside a grammar visitor method).
+
 ## Symbol Reference
 
 | Symbol | Meaning | Class |
