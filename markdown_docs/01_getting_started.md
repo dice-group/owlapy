@@ -66,7 +66,7 @@ ontology = SyncOntology("http://example.com/ontology.owl")
 ### 2. Create a Reasoner
 
 ```python
-from owlapy.owl_reasoner import RDFLibReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 
 # Pure Python reasoner (recommended for most use cases)
 reasoner = RDFLibReasoner(ontology)
@@ -134,7 +134,7 @@ print(f"Manchester: {manchester}")
 
 ```python
 from owlapy.owl_ontology import SyncOntology
-from owlapy.owl_reasoner import RDFLibReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 from owlapy.class_expression import (
     OWLClass,
     OWLObjectSomeValuesFrom,

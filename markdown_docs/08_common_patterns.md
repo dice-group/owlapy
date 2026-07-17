@@ -78,6 +78,7 @@ for axiom in axioms:
 
 ```python
 from owlapy.class_expression import *
+from owlapy.class_expression import OWLThing  # not exported by * (excluded from __all__)
 from owlapy.owl_property import OWLObjectProperty
 
 NS = "http://example.com/onto#"
@@ -89,11 +90,11 @@ def cls(name: str) -> OWLClass:
 def prop(name: str) -> OWLObjectProperty:
     return OWLObjectProperty(NS + name)
 
-# Build: Teacher ⊓ (∃ teaches.Graduate) ⊓ (≥2 hasPublication)
+# Build: Teacher ⊓ (∃ teaches.Graduate) ⊓ (≥2 hasPublication.⊤)
 expression = OWLObjectIntersectionOf([
     cls("Teacher"),
     OWLObjectSomeValuesFrom(prop("teaches"), cls("Graduate")),
-    OWLObjectMinCardinality(2, prop("hasPublication"))
+    OWLObjectMinCardinality(2, prop("hasPublication"), OWLThing)
 ])
 ```
 
@@ -164,7 +165,8 @@ simplified = simplifier.simplify(complex_expr)
 ### Pattern: Reasoner Factory
 
 ```python
-from owlapy.owl_reasoner import RDFLibReasoner, StructuralReasoner, SyncReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
+from owlapy.owl_reasoner import StructuralReasoner, SyncReasoner
 from owlapy.static_funcs import startJVM, stopJVM
 
 class ReasonerFactory:
@@ -314,13 +316,12 @@ expr = parse_expression(user_input, "http://example.com/onto#")
 ```python
 from owlapy.util_owl_static_funcs import csv_to_rdf_kg
 
-# Convert CSV to RDF
+# Convert CSV to RDF: each row becomes an individual, each column becomes a data
+# property named after the column header, scoped under `namespace`.
 csv_to_rdf_kg(
-    csv_file="data.csv",
-    output_file="knowledge_graph.owl",
+    path_csv="data.csv",
+    path_kg="knowledge_graph.owl",
     namespace="http://example.com/data#",
-    class_name="DataPoint",
-    delimiter=","
 )
 ```
 
@@ -332,8 +333,7 @@ from owlapy.owl_axiom import (
     OWLObjectPropertyAssertionAxiom,
     OWLDataPropertyAssertionAxiom
 )
-from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_datatype import IntegerOWLDatatype
+from owlapy.owl_literal import OWLLiteral, IntegerOWLDatatype
 
 def add_individual_from_dict(onto, ind_data: dict, namespace: str):
     """Add individual with properties from dictionary."""

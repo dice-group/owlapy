@@ -103,17 +103,20 @@ onto = safe_load_ontology("family.owl")
 ```python
 # RDF/XML format (default)
 onto.save("output.owl")
-onto.save("output.owl", format="rdfxml")
+onto.save("output.owl", document_format="rdfxml")
 
-# Turtle format
-onto.save("output.ttl", format="turtle")
+# Turtle format (OWL API writer)
+onto.save("output.ttl", document_format="turtle")
 
-# N-Triples format
-onto.save("output.nt", format="ntriples")
+# N-Triples format (rdflib writer)
+onto.save("output.nt", document_format="ntriples")
 
-# N3 format
-onto.save("output.n3", format="n3")
+# N3 format (rdflib writer)
+onto.save("output.n3", document_format="n3")
 ```
+
+`document_format` accepts many more values (`"owlxml"`, `"functional"`, `"manchester"`,
+`"trig"`, `"json-ld"`, ...) — see `SyncOntology.save()`'s docstring for the full table.
 
 ### Save with Compression
 
@@ -126,6 +129,27 @@ with open("ontology.owl", "rb") as f_in:
     with gzip.open("ontology.owl.gz", "wb") as f_out:
         f_out.writelines(f_in)
 ```
+
+### Prefix Management (`SyncOntology` only)
+
+By default, entities from namespaces owlapy doesn't already know about (`owl:`, `rdf:`,
+`rdfs:`, `xsd:`, and the ontology's own IRI) serialize as full IRIs instead of a short
+`prefix:name`. Declare a prefix to get the abbreviated form back:
+
+```python
+onto.set_prefix("foaf", "http://xmlns.com/foaf/0.1/")
+
+onto.get_prefixes()
+# {"owl": "...", "rdf": "...", "rdfs": "...", "xsd": "...", "foaf": "http://xmlns.com/foaf/0.1/"}
+
+onto.remove_prefix("foaf")  # back to full IRIs on the next save()
+```
+
+Prefixes are honoured by `save()` for both the OWL API–backed formats that support them
+(RDF/XML, OWL/XML, Turtle, Functional Syntax, Manchester Syntax) and the rdflib-backed
+formats (`turtle2`, `n3`, `trig`, `json-ld`). `set_prefix`/`remove_prefix` raise
+`ValueError` if the ontology's current document format doesn't support prefixes at all
+(LaTeX, DL Syntax, KRSS2, OBO).
 
 ## Inspecting Ontologies
 
@@ -330,12 +354,13 @@ print(f"Found {len(students)} students")
 ```python
 from owlapy.util_owl_static_funcs import csv_to_rdf_kg
 
-# Convert CSV file to RDF knowledge graph
+# Convert CSV file to RDF knowledge graph.
+# Each row becomes an individual; each column becomes a data property named after
+# the column header, scoped under the given namespace.
 csv_to_rdf_kg(
-    csv_file="data.csv",
-    output_file="knowledge_graph.owl",
+    path_csv="data.csv",
+    path_kg="knowledge_graph.owl",
     namespace="http://example.com/data#",
-    class_name="DataPoint"
 )
 ```
 
@@ -357,8 +382,7 @@ from owlapy.class_expression import OWLClass
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_property import OWLDataProperty
 from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom
-from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_datatype import IntegerOWLDatatype, StringOWLDatatype
+from owlapy.owl_literal import OWLLiteral, IntegerOWLDatatype, StringOWLDatatype
 
 NS = "http://example.com/university#"
 
@@ -430,7 +454,7 @@ stats = ontology_statistics(onto)
 ### Check for Empty Classes
 
 ```python
-from owlapy.owl_reasoner import RDFLibReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 
 def find_empty_classes(onto):
     """Find classes with no instances."""

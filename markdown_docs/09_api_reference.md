@@ -82,7 +82,9 @@ SyncOntology(iri: IRI)
 - `data_properties_in_signature() -> Iterable[OWLDataProperty]` - Get all data properties
 - `add_axiom(axiom: OWLAxiom)` - Add axiom to ontology
 - `remove_axiom(axiom: OWLAxiom)` - Remove axiom
-- `save(path: str, format: str = 'rdfxml')` - Save ontology
+- `save(path: str, document_format: str = None)` - Save ontology (keeps current format if `document_format` is omitted; see the format table in `03_ontology_management.md`)
+- `get_dl_expressivity() -> str` - Compute the DL expressivity name of the ontology, e.g. `"ALCHN(D)"`
+- `get_prefixes() -> Dict[str, str]` / `set_prefix(prefix: str, namespace: str)` / `remove_prefix(prefix: str)` - Manage prefix -> namespace IRI mappings used by `save()`
 
 **Example:**
 ```python
@@ -115,7 +117,7 @@ onto = NeuralOntology("ontology.owl", "embeddings.pkl")
 ### `RDFLibReasoner` (Recommended)
 
 ```python
-from owlapy.owl_reasoner import RDFLibReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 ```
 
 Pure Python reasoner using SPARQL queries. No circular dependencies, efficient caching.
@@ -167,8 +169,11 @@ stopJVM()
 
 **Additional Methods:**
 - `has_consistent_ontology() -> bool` - Check consistency
-- `is_entailed(axiom: OWLAxiom) -> bool` - Check entailment
-- `get_root_ontology() -> Ontology` - Get underlying ontology with justification support
+- `is_entailed(axiom: OWLAxiom, timeout: int = 1000) -> bool` - Check entailment
+- `get_root_ontology() -> AbstractOWLOntology` - Get the underlying ontology
+- `create_axiom_justifications(axiom, n_max_justifications=10, timeout=1000, save=False) -> List[Set[OWLAxiom]]` - Explain why an axiom is entailed
+- `create_laconic_axiom_justifications(axiom, ...) -> List[Set[OWLAxiom]]` - Same, but each justification is minimized/laconic
+- `infer_axioms_and_save(output_path, output_format=None, inference_types=[...])` - Materialize inferred axioms (e.g. `["InferredClassAssertionAxiomGenerator"]`) and save them
 
 ## Class Expressions
 
@@ -271,21 +276,21 @@ from owlapy.class_expression import (
 )
 ```
 
-#### `OWLObjectMinCardinality(cardinality: int, property, filler=None)`
-Minimum cardinality (≥).
+#### `OWLObjectMinCardinality(cardinality: int, property, filler)`
+Minimum cardinality (≥). `filler` is required -- use `OWLThing` for "any".
 
 ```python
-at_least_two_children = OWLObjectMinCardinality(2, has_child_prop)  # ≥2 hasChild
+at_least_two_children = OWLObjectMinCardinality(2, has_child_prop, OWLThing)  # ≥2 hasChild.⊤
 ```
 
-#### `OWLObjectMaxCardinality(cardinality: int, property, filler=None)`
-Maximum cardinality (≤).
+#### `OWLObjectMaxCardinality(cardinality: int, property, filler)`
+Maximum cardinality (≤). `filler` is required -- use `OWLThing` for "any".
 
 ```python
-at_most_one_spouse = OWLObjectMaxCardinality(1, has_spouse_prop)  # ≤1 hasSpouse
+at_most_one_spouse = OWLObjectMaxCardinality(1, has_spouse_prop, OWLThing)  # ≤1 hasSpouse.⊤
 ```
 
-#### `OWLObjectExactCardinality(cardinality: int, property, filler=None)`
+#### `OWLObjectExactCardinality(cardinality: int, property, filler)`
 Exact cardinality (=).
 
 ```python
@@ -368,11 +373,22 @@ Named individual (instance).
 john = OWLNamedIndividual("http://example.com/onto#John")
 ```
 
+#### `OWLAnonymousIndividual(node_id: str = None)`
+Blank-node individual, identified by a local node ID instead of an IRI. Generates a
+fresh, unused node ID if none is given.
+
+```python
+from owlapy.owl_individual import OWLAnonymousIndividual
+
+anon = OWLAnonymousIndividual()          # auto-generated node id
+anon2 = OWLAnonymousIndividual("_:b0")   # explicit node id
+```
+
 ## Literals
 
 ```python
-from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_datatype import (
+from owlapy.owl_literal import (
+    OWLLiteral,
     IntegerOWLDatatype,
     DoubleOWLDatatype,
     BooleanOWLDatatype,
@@ -382,8 +398,8 @@ from owlapy.owl_datatype import (
 )
 ```
 
-#### `OWLLiteral(value, datatype=StringOWLDatatype)`
-Literal value.
+#### `OWLLiteral(value, type_: OWLDatatype = None)`
+Literal value. `type_` is inferred from `value`'s Python type if omitted.
 
 ```python
 age = OWLLiteral(25, IntegerOWLDatatype)
@@ -393,6 +409,17 @@ is_student = OWLLiteral(True, BooleanOWLDatatype)
 ```
 
 ## Axioms
+
+Every `OWLAxiom` has a `.signature() -> Set[OWLEntity]` method returning the named
+classes/object properties/data properties/individuals/datatypes it references (class
+expressions and data ranges have the same method). Coverage is limited to declaration,
+class/property assertions, sub-class-of, equivalent/disjoint classes, and property
+domain/range axioms; other axiom types raise `NotImplementedError` (tracked in #231).
+
+```python
+axiom = OWLSubClassOfAxiom(student, person)
+axiom.signature()  # {student, person}
+```
 
 ### Class Axioms
 
@@ -491,15 +518,15 @@ Create empty ontology.
 onto = create_ontology("http://example.com/my-ontology")
 ```
 
-#### `csv_to_rdf_kg(csv_file, output_file, namespace, class_name, delimiter=',')`
-Convert CSV to RDF knowledge graph.
+#### `csv_to_rdf_kg(path_csv, path_kg, namespace)`
+Convert CSV to RDF knowledge graph. Each row becomes an individual; each column becomes
+a data property named after the column header, scoped under `namespace`.
 
 ```python
 csv_to_rdf_kg(
-    csv_file="data.csv",
-    output_file="kg.owl",
+    path_csv="data.csv",
+    path_kg="kg.owl",
     namespace="http://example.com/data#",
-    class_name="DataPoint"
 )
 ```
 
@@ -578,8 +605,10 @@ similarity = f1_set_similarity(instances1, instances2)
 
 ## AGenKG (LLM-based Generation)
 
+Requires `dspy` (`pip install owlapy[agentic]`).
+
 ```python
-from owlapy.agen_kg import AGenKG, DomainGraphExtractor, OpenGraphExtractor
+from owlapy.agen_kg import AGenKG
 ```
 
 ### `AGenKG`
@@ -590,13 +619,21 @@ Generate ontologies from text using LLMs.
 ```python
 AGenKG(
     model: str = "gpt-4o",
-    api_key: str = None,
-    api_base: str = "https://api.openai.com/v1"
+    api_key: str = "<YOUR_GITHUB_PAT>",
+    api_base: str = "https://models.github.ai/inference",
+    temperature: float = 0.1,
+    seed: int = 42,
+    cache: bool = False,
+    enable_logging: bool = False,
+    max_tokens: int = 4000,
 )
 ```
 
+Any OpenAI-compatible endpoint works (OpenAI, Azure OpenAI, GitHub Models, Ollama, vLLM) -- just swap `api_base`/`model`.
+
 **Methods:**
-- `generate_ontology(text: str, ontology_type: str = "domain", save_path: str = None) -> SyncOntology`
+
+- `generate_ontology(text, ontology_type: str = "domain", query=None, **kwargs) -> Ontology` -- `save_path` (must end in `.owl`) is a supported `**kwargs` entry
 
 **Example:**
 ```python
@@ -613,22 +650,20 @@ ontology = agent.generate_ontology(
 )
 ```
 
-### `DomainGraphExtractor`
+### `DomainGraphExtractor` / `OpenGraphExtractor`
 
-Extract domain-specific knowledge graph.
-
-```python
-extractor = DomainGraphExtractor(model="gpt-4o", api_key="key")
-kg = extractor.extract(text="Medical records...")
-```
-
-### `OpenGraphExtractor`
-
-Extract open-domain knowledge graph.
+Lower-level building blocks that `AGenKG` wraps internally (`ontology_type="domain"` vs
+`"open"`) -- construct one directly only if you need to bypass `AGenKG`. They reuse
+whichever LLM was last configured via `dspy.configure(lm=...)` (which `AGenKG.__init__`
+does for you), rather than taking their own `model`/`api_key`.
 
 ```python
-extractor = OpenGraphExtractor(model="gpt-4o", api_key="key")
-kg = extractor.extract(text="General text...")
+from owlapy.agen_kg.graph_extracting_models import DomainGraphExtractor, OpenGraphExtractor
+
+AGenKG(model="gpt-4o", api_key="your-key")  # configures dspy's LM as a side effect
+
+extractor = DomainGraphExtractor(enable_logging=True)
+kg = extractor.generate_ontology(text="Medical records...", ontology_type="domain")
 ```
 
 ## IRI
@@ -694,7 +729,8 @@ rule = Rule(
 from owlapy.owl_ontology import SyncOntology, Ontology, NeuralOntology
 
 # Reasoners
-from owlapy.owl_reasoner import RDFLibReasoner, StructuralReasoner, SyncReasoner
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
+from owlapy.owl_reasoner import StructuralReasoner, SyncReasoner
 
 # Class Expressions
 from owlapy.class_expression import (
@@ -710,8 +746,7 @@ from owlapy.owl_property import OWLObjectProperty, OWLDataProperty, OWLObjectInv
 
 # Individuals & Literals
 from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_datatype import IntegerOWLDatatype, DoubleOWLDatatype, StringOWLDatatype
+from owlapy.owl_literal import OWLLiteral, IntegerOWLDatatype, DoubleOWLDatatype, StringOWLDatatype
 
 # Axioms
 from owlapy.owl_axiom import (
