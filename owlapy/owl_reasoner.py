@@ -1189,8 +1189,6 @@ class StructuralReasoner(AbstractOWLReasoner):
             yield from self._ontology.individuals_in_signature()
         elif isinstance(c, OWLClass):
             c_x: owlready2.ThingClass = self._world[c.str]
-            if c_x is None:
-                return
             for i in c_x.instances(world=self._world):
                 if isinstance(i, owlready2.Thing) and hasattr(i, "iri"):
                     yield OWLNamedIndividual(IRI.create(i.iri))
