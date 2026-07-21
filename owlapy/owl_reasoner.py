@@ -250,7 +250,8 @@ class StructuralReasoner(AbstractOWLReasoner):
             # for the case when there are equivalent object properties. At least until this is fixed on owlready2.
             retieval_func = p._get_values_for_individual if direct else p._get_indirect_values_for_individual
             for val in retieval_func(i):
-                yield OWLNamedIndividual(IRI.create(val.iri))
+                if hasattr(val, "iri"):
+                    yield OWLNamedIndividual(IRI.create(val.iri))
         elif isinstance(pe, OWLObjectInverseOf):
             p: owlready2.ObjectPropertyClass = self._world[pe.get_named_property().str]
             inverse_p = p.inverse_property
@@ -1188,8 +1189,12 @@ class StructuralReasoner(AbstractOWLReasoner):
             yield from self._ontology.individuals_in_signature()
         elif isinstance(c, OWLClass):
             c_x: owlready2.ThingClass = self._world[c.str]
+
+            if c_x is None:
+                return
+            
             for i in c_x.instances(world=self._world):
-                if isinstance(i, owlready2.Thing):
+                if isinstance(i, owlready2.Thing) and hasattr(i, "iri"):
                     yield OWLNamedIndividual(IRI.create(i.iri))
 
     def _retrieve_triples(self, pe: OWLPropertyExpression) -> Iterable:
