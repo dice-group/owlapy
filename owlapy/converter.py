@@ -271,10 +271,15 @@ class Owl2SparqlConverter:
         # as a result, we need to comment out the if-clause of the following line
         # if not self.in_intersection and self.modal_depth == 1:
         # if namedIndividual is set to True, do not use variables --> restrict the subject to instances of NamedIndividual
-        if self.named_individuals:
-            self.append_triple(subject, "a", f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
-        else:
-            self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
+        # if self.named_individuals:
+        #     self.append_triple(subject, "a", f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
+        # else:
+        #     # However, if the complement is directly inside an intersection at the top level,
+        #     # the intersection already provides bindings, so we don't need the extra triple pattern
+        if not (len(self.parent) > 0 and isinstance(self.parent[-1],
+                                                    OWLObjectIntersectionOf) and self.modal_depth == 1):
+            self.append_triple(subject, self.mapping.new_individual_variable(),
+                               self.mapping.new_individual_variable())
 
         self.append("FILTER NOT EXISTS { ")
         # process the concept after the ¬
@@ -558,6 +563,8 @@ class Owl2SparqlConverter:
     def _(self, node: OWLDatatype):
         if node != TopOWLDatatype:
             self.append(f" FILTER ( DATATYPE ( {self.current_variable} = <{node.to_string_id()}> ) ) ")
+        else:
+            self.append(f" FILTER ( isLiteral ( {self.current_variable} ) ) ")
 
     @process.register
     def _(self, node: OWLDataOneOf):
