@@ -1,7 +1,8 @@
 import unittest
+from unittest.mock import MagicMock
 
 from owlapy.agen_kg.graph_extracting_models.domain_graph_extractor import DomainGraphExtractor
-from owlapy.agen_kg.helper import RDFS_LABEL_IRI, chunked_iterator
+from owlapy.agen_kg.helper import RDFS_COMMENT_IRI, RDFS_LABEL_IRI, chunked_iterator
 from owlapy.iri import IRI
 from owlapy.owl_axiom import (
     OWLAnnotation,
@@ -91,6 +92,108 @@ class TestGraphExtractor(unittest.TestCase):
         """Test formatting empty label"""
         result = DomainGraphExtractor.format_rdfs_label("")
         self.assertEqual(result, "")
+
+    def test_snake_case_removes_special_chars_and_lowercases(self):
+        self.assertEqual(DomainGraphExtractor.snake_case("Hello, World!"), "hello_world")
+
+    def test_snake_case_collapses_multiple_spaces(self):
+        self.assertEqual(DomainGraphExtractor.snake_case("Person   Type"), "person_type")
+
+    def test_snake_case_already_lowercase_single_word(self):
+        self.assertEqual(DomainGraphExtractor.snake_case("vehicle"), "vehicle")
+
+    def test_plan_decompose_stores_task_instructions(self):
+        results = MagicMock(
+            entity_extraction_task="extract entities",
+            triple_extraction_task="extract triples",
+            type_generation_task="generate types",
+            type_assertion_task="assert types",
+            literal_extraction_task="extract literals",
+            triple_with_literal_extraction_task="extract spl triples",
+            fact_checking_task="check facts",
+        )
+        self.graph_extractor.plan_decomposer = MagicMock(return_value=results)
+
+        self.graph_extractor.plan_decompose("Extract info about companies")
+
+        self.graph_extractor.plan_decomposer.assert_called_once_with(user_request="Extract info about companies")
+        self.assertEqual(self.graph_extractor.entity_extraction_instructions, "extract entities")
+        self.assertEqual(self.graph_extractor.triple_extraction_instructions, "extract triples")
+        self.assertEqual(self.graph_extractor.type_generation_instructions, "generate types")
+        self.assertEqual(self.graph_extractor.type_assertion_instructions, "assert types")
+        self.assertEqual(self.graph_extractor.literal_extraction_instructions, "extract literals")
+        self.assertEqual(self.graph_extractor.triple_with_literal_extraction_instructions, "extract spl triples")
+        self.assertEqual(self.graph_extractor.fact_checking_instructions, "check facts")
+
+    def test_plan_decompose_defaults_query_when_none(self):
+        results = MagicMock(
+            entity_extraction_task="e", triple_extraction_task="t", type_generation_task="tg",
+            type_assertion_task="ta", literal_extraction_task="l", triple_with_literal_extraction_task="spl",
+            fact_checking_task="fc",
+        )
+        self.graph_extractor.plan_decomposer = MagicMock(return_value=results)
+
+        self.graph_extractor.plan_decompose(None)
+
+        _, call_kwargs = self.graph_extractor.plan_decomposer.call_args
+        self.assertIn("Extract knowledge graph relevant information", call_kwargs["user_request"])
+
+
+class TestGenerateBatchRdfsCommentAxioms(unittest.TestCase):
+    def setUp(self):
+        self.graph_extractor = DomainGraphExtractor()
+        self.class_iri = IRI.create("http://example.org/TestClass")
+        self.prop_iri = IRI.create("http://example.org/testProperty")
+
+    def test_generates_axioms_for_valid_entities(self):
+        self.graph_extractor.batch_rdfs_comment_generator = MagicMock(return_value=MagicMock(
+            entity_comment_pairs=[
+                (self.class_iri.as_str(), "A test class."),
+                (self.prop_iri.as_str(), "A test property."),
+            ]
+        ))
+        axioms = self.graph_extractor.generate_batch_rdfs_comment_axioms(
+            entities_meta=[(self.class_iri, "class"), (self.prop_iri, "property")],
+            context="some ontology context",
+        )
+        self.assertEqual(len(axioms), 2)
+        expected = OWLAnnotationAssertionAxiom(
+            self.class_iri, OWLAnnotation(OWLAnnotationProperty(IRI.create(RDFS_COMMENT_IRI)), OWLLiteral("A test class."))
+        )
+        self.assertIn(expected, axioms)
+
+    def test_skips_entities_not_in_input_set(self):
+        self.graph_extractor.batch_rdfs_comment_generator = MagicMock(return_value=MagicMock(
+            entity_comment_pairs=[("http://example.org/Unknown", "unexpected comment")]
+        ))
+        axioms = self.graph_extractor.generate_batch_rdfs_comment_axioms(
+            entities_meta=[(self.class_iri, "class")], context="context"
+        )
+        self.assertEqual(axioms, [])
+
+    def test_skips_none_comments(self):
+        self.graph_extractor.batch_rdfs_comment_generator = MagicMock(return_value=MagicMock(
+            entity_comment_pairs=[(self.class_iri.as_str(), None)]
+        ))
+        axioms = self.graph_extractor.generate_batch_rdfs_comment_axioms(
+            entities_meta=[(self.class_iri, "class")], context="context"
+        )
+        self.assertEqual(axioms, [])
+
+    def test_llm_failure_returns_empty_list(self):
+        self.graph_extractor.batch_rdfs_comment_generator = MagicMock(side_effect=RuntimeError("LLM error"))
+        axioms = self.graph_extractor.generate_batch_rdfs_comment_axioms(
+            entities_meta=[(self.class_iri, "class")], context="context"
+        )
+        self.assertEqual(axioms, [])
+
+    def test_llm_failure_logs_when_enabled(self):
+        extractor = DomainGraphExtractor(enable_logging=True)
+        extractor.batch_rdfs_comment_generator = MagicMock(side_effect=RuntimeError("LLM error"))
+        axioms = extractor.generate_batch_rdfs_comment_axioms(
+            entities_meta=[(self.class_iri, "class")], context="context"
+        )
+        self.assertEqual(axioms, [])
 
 
 class TestGraphExtractorHelpers(unittest.TestCase):

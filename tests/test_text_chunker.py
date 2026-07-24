@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 
 from owlapy.agen_kg.chunking_models.simple_chunker import TextChunker
 
@@ -62,6 +63,34 @@ class TestChunkBySentences(unittest.TestCase):
         for chunk in chunks:
             self.assertLessEqual(len(chunk), chunker.chunk_size + 5)
 
+    def test_overlap_carries_short_sentences_that_fit_the_budget(self):
+        # Unlike test_overlap_included_between_chunks (overlap=15 < any single
+        # sentence there), here overlap (15) is bigger than a single short
+        # sentence's length+1, so walking backwards through current_chunk finds
+        # a sentence that fits (inserted into the overlap) before hitting one
+        # that doesn't (which breaks the loop).
+        chunker = TextChunker(chunk_size=20, overlap=15, strategy="sentence")
+        text = "One is here. Two is here. Three is here. Four is here."
+        chunks = chunker._chunk_by_sentences(text)
+        self.assertGreater(len(chunks), 1)
+        # The second chunk should start with the carried-over overlap sentence.
+        self.assertIn("Two is here.", chunks[1])
+
+    def test_empty_sentence_after_split_is_skipped(self):
+        # The sentence-boundary regex (?<=[.!?])\s+(?=[A-Z]) cannot produce an
+        # empty element via re.split() in practice (\s+ requires real whitespace,
+        # so two matches can never be adjacent with nothing between them) -- the
+        # `if not sentence: continue` guard is defensive. re.Pattern is a C type
+        # whose methods can't be patched directly, so swap the whole compiled
+        # pattern for a stub that injects an empty/whitespace-only element, and
+        # verify it's skipped rather than breaking chunk assembly.
+        chunker = TextChunker(chunk_size=100, overlap=0, strategy="sentence")
+        chunker._sentence_end_pattern = SimpleNamespace(
+            split=lambda text: ["First.", "  ", "Second."]
+        )
+        chunks = chunker._chunk_by_sentences("First.  Second.")
+        self.assertEqual(chunks, ["First. Second."])
+
 
 class TestChunkByParagraphs(unittest.TestCase):
     def test_splits_multiple_paragraphs_into_chunks(self):
@@ -81,6 +110,18 @@ class TestChunkByParagraphs(unittest.TestCase):
         text = "Short para A.\n\nShort para B.\n\nShort para C.\n\nShort para D."
         chunks = chunker.chunk_text(text)
         self.assertGreater(len(chunks), 1)
+
+    def test_overlap_drops_last_paragraph_when_it_does_not_fit(self):
+        # overlap (10) is smaller than any single paragraph's length here, so the
+        # "last_para fits in overlap" branch is never taken -- exercises the else
+        # branch that resets current_chunk to empty instead.
+        chunker = TextChunker(chunk_size=25, overlap=10, strategy="paragraph")
+        text = "Short para A here.\n\nShort para B here.\n\nShort para C here."
+        chunks = chunker._chunk_by_paragraphs(text)
+        self.assertGreater(len(chunks), 1)
+        # Since the overlap didn't carry over, each chunk holds exactly one paragraph.
+        for chunk in chunks:
+            self.assertNotIn("\n\n", chunk)
 
     def test_oversized_single_paragraph_is_split_by_sentences(self):
         chunker = TextChunker(chunk_size=30, overlap=0, strategy="paragraph")

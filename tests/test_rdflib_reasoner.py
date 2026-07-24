@@ -269,5 +269,147 @@ class TestRDFLibReasonerPerformance(unittest.TestCase):
         self.assertIsInstance(all_subs, list)
 
 
+class TestRDFLibReasonerConstruction(unittest.TestCase):
+    """Cover the constructor branches that TestRDFLibReasoner's shared setUpClass
+    (always a pre-built SyncOntology) never exercises."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kg_path = Path("KGs/Family/family-benchmark_rich_background.owl")
+        if not cls.kg_path.exists():
+            raise unittest.SkipTest("Family ontology not available")
+        cls.NS = "http://www.benchmark.org/family#"
+
+    def test_construction_from_string_path(self):
+        # Passing a raw path string exercises the `isinstance(ontology, str)` branch.
+        reasoner = RDFLibReasoner(str(self.kg_path))
+        self.assertIsInstance(reasoner._ontology, SyncOntology)
+        self.assertGreater(len(reasoner._graph), 0)
+
+    def test_construction_from_plain_ontology(self):
+        from owlapy.owl_ontology import Ontology
+
+        onto = Ontology(str(self.kg_path))
+        reasoner = RDFLibReasoner(onto)
+        self.assertGreater(len(reasoner._graph), 0)
+        male = OWLClass(IRI(self.NS, "Male"))
+        self.assertGreater(len(set(reasoner.instances(male))), 0)
+
+
+class TestRDFLibReasonerComplexExpressionsAndStubs(unittest.TestCase):
+    """Cover branches for non-OWLClass class expressions, complex property
+    expressions, and the many not-fully-implemented stub methods."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kg_path = Path("KGs/Family/family-benchmark_rich_background.owl")
+        if not cls.kg_path.exists():
+            raise unittest.SkipTest("Family ontology not available")
+
+        cls.onto = SyncOntology(str(cls.kg_path))
+        cls.reasoner = RDFLibReasoner(cls.onto)
+
+        cls.NS = "http://www.benchmark.org/family#"
+        cls.male = OWLClass(IRI(cls.NS, "Male"))
+        cls.female = OWLClass(IRI(cls.NS, "Female"))
+        cls.person = OWLClass(IRI(cls.NS, "Person"))
+        cls.has_child = OWLObjectProperty(IRI(cls.NS, "hasChild"))
+
+    def test_instances_with_complex_class_expression(self):
+        from owlapy.class_expression import OWLObjectSomeValuesFrom
+
+        ce = OWLObjectSomeValuesFrom(self.has_child, self.person)
+        result = set(self.reasoner.instances(ce))
+        self.assertIsInstance(result, set)
+
+    def test_instances_manual_fallback_returns_empty(self):
+        from owlapy.class_expression import OWLObjectSomeValuesFrom
+
+        ce = OWLObjectSomeValuesFrom(self.has_child, self.person)
+        result = list(self.reasoner._instances_manual(ce))
+        self.assertEqual(result, [])
+
+    def test_instances_direct_true_logs_warning_and_still_returns(self):
+        result = set(self.reasoner.instances(self.male, direct=True))
+        self.assertGreater(len(result), 0)
+
+    def test_sub_classes_with_complex_expression_returns_empty(self):
+        from owlapy.class_expression import OWLObjectSomeValuesFrom
+
+        ce = OWLObjectSomeValuesFrom(self.has_child, self.person)
+        self.assertEqual(list(self.reasoner.sub_classes(ce, direct=True)), [])
+        self.assertEqual(list(self.reasoner.sub_classes(ce, direct=False)), [])
+
+    def test_super_classes_with_complex_expression_returns_empty(self):
+        from owlapy.class_expression import OWLObjectSomeValuesFrom
+
+        ce = OWLObjectSomeValuesFrom(self.has_child, self.person)
+        self.assertEqual(list(self.reasoner.super_classes(ce, direct=True)), [])
+        self.assertEqual(list(self.reasoner.super_classes(ce, direct=False)), [])
+
+    def test_equivalent_classes_with_complex_expression_returns_empty(self):
+        from owlapy.class_expression import OWLObjectSomeValuesFrom
+
+        ce = OWLObjectSomeValuesFrom(self.has_child, self.person)
+        self.assertEqual(list(self.reasoner.equivalent_classes(ce)), [])
+
+    def test_disjoint_classes_with_complex_expression_returns_empty(self):
+        from owlapy.class_expression import OWLObjectSomeValuesFrom
+
+        ce = OWLObjectSomeValuesFrom(self.has_child, self.person)
+        self.assertEqual(list(self.reasoner.disjoint_classes(ce)), [])
+
+    def test_object_property_values_with_complex_property_returns_empty(self):
+        from owlapy.owl_property import OWLObjectInverseOf
+
+        fathers = list(self.reasoner.instances(self.male))
+        self.assertGreater(len(fathers), 0)
+        inverse = OWLObjectInverseOf(self.has_child)
+        result = list(self.reasoner.object_property_values(fathers[0], inverse))
+        self.assertEqual(result, [])
+
+    def test_get_root_ontology(self):
+        self.assertIs(self.reasoner.get_root_ontology(), self.onto)
+
+    def test_types_returns_all_and_direct(self):
+        males = list(self.reasoner.instances(self.male))
+        self.assertGreater(len(males), 0)
+        ind = males[0]
+
+        all_types = set(self.reasoner.types(ind, direct=False))
+        self.assertIn(self.male, all_types)
+
+        direct_types = set(self.reasoner.types(ind, direct=True))
+        self.assertIsInstance(direct_types, set)
+        # Direct types are a subset of all types.
+        self.assertTrue(direct_types.issubset(all_types))
+
+    def test_same_individuals_returns_iterable(self):
+        males = list(self.reasoner.instances(self.male))
+        result = set(self.reasoner.same_individuals(males[0]))
+        self.assertIsInstance(result, set)
+
+    def test_not_implemented_stub_methods_return_empty_iterators(self):
+        males = list(self.reasoner.instances(self.male))
+        ind = males[0]
+
+        self.assertEqual(list(self.reasoner.data_property_domains(None)), [])
+        self.assertEqual(list(self.reasoner.object_property_domains(None)), [])
+        self.assertEqual(list(self.reasoner.object_property_ranges(None)), [])
+        self.assertEqual(list(self.reasoner.data_property_values(ind, None)), [])
+        self.assertEqual(list(self.reasoner.different_individuals(ind)), [])
+        self.assertEqual(list(self.reasoner.equivalent_object_properties(self.has_child)), [])
+        self.assertEqual(list(self.reasoner.equivalent_data_properties(None)), [])
+        self.assertEqual(list(self.reasoner.disjoint_object_properties(self.has_child)), [])
+        self.assertEqual(list(self.reasoner.disjoint_data_properties(None)), [])
+        self.assertEqual(list(self.reasoner.sub_data_properties(None)), [])
+        self.assertEqual(list(self.reasoner.super_data_properties(None)), [])
+        self.assertEqual(list(self.reasoner.sub_object_properties(self.has_child)), [])
+        self.assertEqual(list(self.reasoner.super_object_properties(self.has_child)), [])
+
+    def test_repr(self):
+        self.assertIn("RDFLibReasoner(", repr(self.reasoner))
+
+
 if __name__ == '__main__':
     unittest.main()

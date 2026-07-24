@@ -2,6 +2,7 @@ import json
 import shutil
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 from owlapy.agen_kg.domain_examples_cache import EXAMPLE_TYPE_MAPPING, DomainExamplesCache
@@ -94,6 +95,21 @@ class TestDomainExamplesCache(unittest.TestCase):
 
     def test_list_cached_domains_empty_when_no_cache_files(self):
         self.assertEqual(self.cache.list_cached_domains(), [])
+
+    def test_clear_domain_cache_returns_false_on_exception(self):
+        self.cache.save_examples("physics", _make_valid_examples())
+        with unittest.mock.patch.object(Path, "unlink", side_effect=OSError("permission denied")):
+            self.assertFalse(self.cache.clear_domain_cache("physics"))
+
+    def test_clear_all_caches_returns_false_on_exception(self):
+        self.cache.save_examples("biology", _make_valid_examples())
+        with unittest.mock.patch.object(Path, "glob", side_effect=OSError("permission denied")):
+            self.assertFalse(self.cache.clear_all_caches())
+
+    def test_list_cached_domains_returns_empty_list_on_exception(self):
+        self.cache.save_examples("zoology", _make_valid_examples())
+        with unittest.mock.patch.object(Path, "glob", side_effect=OSError("permission denied")):
+            self.assertEqual(self.cache.list_cached_domains(), [])
 
 
 if __name__ == "__main__":

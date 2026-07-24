@@ -1,23 +1,21 @@
-from sklearn.datasets import load_iris
-import rdflib
-import unittest
-import os
 import json
+import os
 import tempfile
+import unittest
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
-from owlapy.util_owl_static_funcs import (
-    save_owl_class_expressions, csv_to_rdf_kg, rdf_kg_to_csv,
-    create_ontology, generate_ontology, make_kb_incomplete,
-    make_kb_incomplete_ass
-)
-from owlapy.class_expression import (
-    OWLClass, OWLObjectIntersectionOf, OWLObjectUnionOf,
-    OWLObjectSomeValuesFrom
-)
-from owlapy.owl_property import OWLObjectProperty
-from owlapy.owl_individual import OWLNamedIndividual
-from owlapy.owl_ontology import SyncOntology, Ontology
+import rdflib
+from sklearn.datasets import load_iris
+
+from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectUnionOf
 from owlapy.iri import IRI
+from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, OWLDeclarationAxiom, OWLObjectPropertyAssertionAxiom
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLLiteral
+from owlapy.owl_ontology import Ontology, SyncOntology
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
+from owlapy.util_owl_static_funcs import create_ontology, csv_to_rdf_kg, generate_ontology, make_kb_incomplete, make_kb_incomplete_ass, make_kb_inconsistent, rdf_kg_to_csv, save_owl_class_expressions
 
 
 class TestRunningExamples:
@@ -574,6 +572,204 @@ class TestAssertions(unittest.TestCase):
                 )
         finally:
             os.remove(temp_path)
+
+
+class TestRdfKgToCsvEdgeCases(unittest.TestCase):
+    """Cover the NaN-skip, non-numeric-index, and float-parsing branches of rdf_kg_to_csv,
+    which need a hand-built ontology since csv_to_rdf_kg always produces numeric row indices."""
+
+    def setUp(self):
+        self.test_files = []
+
+    def tearDown(self):
+        for file_path in self.test_files:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+    def test_rdf_kg_to_csv_skips_nan_and_parses_non_numeric_index_and_float(self):
+        kg_path = "test_edge_kg.owl"
+        csv_path = "test_edge_reconstructed.csv"
+        self.test_files.extend([kg_path, csv_path])
+
+        ns = "http://example.com/edge#"
+        onto = SyncOntology(ns, load=False)
+        score = OWLDataProperty(IRI.create(ns, "score"))
+
+        # Non-numeric individual remainder -> hits the ValueError/row_index-as-string branch.
+        row_a = OWLNamedIndividual(IRI.create(ns, "rowA"))
+        onto.add_axiom(OWLDataPropertyAssertionAxiom(row_a, score, OWLLiteral(3.14)))  # float value -> '.' branch
+
+        # NaN literal -> hits the "Skipping ... NaN value" branch.
+        row_nan = OWLNamedIndividual(IRI.create(ns, "0"))
+        onto.add_axiom(OWLDataPropertyAssertionAxiom(row_nan, score, OWLLiteral(float("nan"))))
+
+        onto.save(path=kg_path)
+
+        rdf_kg_to_csv(path_kg=kg_path, path_csv=csv_path)
+
+        self.assertTrue(os.path.exists(csv_path))
+        df = pd.read_csv(csv_path)
+        # Only rowA's assertion should survive; the NaN one is skipped entirely.
+        self.assertEqual(len(df), 1)
+        self.assertAlmostEqual(df["score"].iloc[0], 3.14)
+
+
+class TestGenerateOntologyObjectProperties(unittest.TestCase):
+    """Cover generate_ontology's object-property branch (an object that is also used as
+    a subject elsewhere), and the generate_classes=True argument-validation assertion."""
+
+    def setUp(self):
+        self.test_files = []
+
+    def tearDown(self):
+        for file_path in self.test_files:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+    def test_generate_ontology_detects_object_property_from_shared_entity(self):
+        json_path = "test_obj_prop_graph.json"
+        output_path = "test_obj_prop_generated.owl"
+        self.test_files.extend([json_path, output_path])
+
+        graph_data = {
+            "graphs": [
+                {
+                    "quadruples": [
+                        {"subject": "Alice", "predicate": "knows", "object": "Bob"},
+                        {"subject": "Bob", "predicate": "knows", "object": "Charlie"},
+                    ]
+                }
+            ]
+        }
+        with open(json_path, 'w') as f:
+            json.dump(graph_data, f)
+
+        generate_ontology(
+            graph_as_json=json_path,
+            output_path=output_path,
+            output_format="xml",
+            namespace="http://example.com/test/",
+            generate_classes=False,
+        )
+
+        g = rdflib.Graph().parse(output_path)
+        knows = rdflib.URIRef("http://example.com/test/knows")
+        self.assertIn((knows, rdflib.RDF.type, rdflib.OWL.ObjectProperty), g)
+        self.assertIn(
+            (rdflib.URIRef("http://example.com/test/Alice"), knows, rdflib.URIRef("http://example.com/test/Bob")),
+            g,
+        )
+
+    def test_generate_ontology_requires_llm_args_when_generating_classes(self):
+        json_path = "test_missing_llm_args.json"
+        self.test_files.append(json_path)
+        with open(json_path, 'w') as f:
+            json.dump({"graphs": [{"quadruples": []}]}, f)
+
+        with self.assertRaises(AssertionError):
+            generate_ontology(
+                graph_as_json=json_path,
+                output_path="unused.owl",
+                generate_classes=True,
+            )
+
+    def test_generate_ontology_with_mocked_llm_class_generation(self):
+        json_path = "test_llm_graph.json"
+        output_path = "test_llm_generated.owl"
+        self.test_files.extend([json_path, output_path])
+
+        graph_data = {
+            "graphs": [
+                {"quadruples": [{"subject": "Alice", "predicate": "age", "object": "30"}]}
+            ]
+        }
+        with open(json_path, 'w') as f:
+            json.dump(graph_data, f)
+
+        mock_response = MagicMock()
+        mock_response.choices[0].message.content = "Person"
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = mock_response
+
+        with patch("openai.OpenAI", return_value=mock_client):
+            generate_ontology(
+                graph_as_json=json_path,
+                output_path=output_path,
+                namespace="http://example.com/test/",
+                generate_classes=True,
+                base_url="http://fake-llm.local",
+                api_key="fake-key",
+                model="fake-model",
+            )
+
+        mock_client.chat.completions.create.assert_called_once()
+        g = rdflib.Graph().parse(output_path)
+        person_cls = rdflib.URIRef("http://example.com/test/Person")
+        self.assertIn((person_cls, rdflib.RDF.type, rdflib.OWL.Class), g)
+        self.assertIn(
+            (rdflib.URIRef("http://example.com/test/Alice"), rdflib.RDF.type, person_cls), g
+        )
+
+
+class TestMakeKbInconsistent(unittest.TestCase):
+    """Test make_kb_inconsistent, which isn't exercised anywhere else in the suite."""
+
+    def setUp(self):
+        self.test_files = []
+        self.kb_path = "test_inconsistent_kb.owl"
+        self.test_files.append(self.kb_path)
+
+        ns = "http://example.com/inconsistent#"
+        onto = SyncOntology(ns, load=False)
+
+        person = OWLClass(IRI.create(ns, "Person"))
+        animal = OWLClass(IRI.create(ns, "Animal"))
+        alice = OWLNamedIndividual(IRI.create(ns, "Alice"))
+        bob = OWLNamedIndividual(IRI.create(ns, "Bob"))
+        knows = OWLObjectProperty(IRI.create(ns, "knows"))
+        age = OWLDataProperty(IRI.create(ns, "age"))
+
+        onto.add_axiom(OWLClassAssertionAxiom(alice, person))
+        onto.add_axiom(OWLClassAssertionAxiom(bob, person))
+        onto.add_axiom(OWLObjectPropertyAssertionAxiom(alice, knows, bob))
+        onto.add_axiom(OWLDataPropertyAssertionAxiom(alice, age, OWLLiteral(30)))
+        # A second, declared-but-unasserted class so generate_incorrect_class_assertion has a candidate.
+        onto.add_axiom(OWLDeclarationAxiom(animal))
+
+        onto.save(path=self.kb_path)
+
+    def tearDown(self):
+        for file_path in self.test_files:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+    def test_make_kb_inconsistent_introduces_incorrect_statements(self):
+        output_path = "test_inconsistent_output.owl"
+        self.test_files.append(output_path)
+
+        inconsistencies = make_kb_inconsistent(
+            kb_path=self.kb_path,
+            output_path=output_path,
+            rate=50,
+            seed=42,
+        )
+
+        self.assertTrue(os.path.exists(output_path))
+        self.assertIsInstance(inconsistencies, list)
+
+    def test_make_kb_inconsistent_zero_rate_returns_empty_list(self):
+        output_path = "test_inconsistent_zero.owl"
+        self.test_files.append(output_path)
+
+        inconsistencies = make_kb_inconsistent(
+            kb_path=self.kb_path,
+            output_path=output_path,
+            rate=0,
+            seed=42,
+        )
+
+        self.assertEqual(inconsistencies, [])
+        self.assertTrue(os.path.exists(output_path))
 
 
 if __name__ == '__main__':
