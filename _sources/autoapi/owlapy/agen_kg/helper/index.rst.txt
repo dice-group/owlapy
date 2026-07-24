@@ -9,8 +9,11 @@ Attributes
 
 .. autoapisummary::
 
+   owlapy.agen_kg.helper.RDFS_COMMENT_IRI
+   owlapy.agen_kg.helper.RDFS_LABEL_IRI
    owlapy.agen_kg.helper.american_to_british
    owlapy.agen_kg.helper.task_example_mapping
+   owlapy.agen_kg.helper.T
 
 
 Functions
@@ -21,10 +24,19 @@ Functions
    owlapy.agen_kg.helper.configure_dspy
    owlapy.agen_kg.helper.run_query
    owlapy.agen_kg.helper.extract_hierarchy_from_dbpedia
+   owlapy.agen_kg.helper.chunked_iterator
 
 
 Module Contents
 ---------------
+
+.. py:data:: RDFS_COMMENT_IRI
+   :value: 'http://www.w3.org/2000/01/rdf-schema#comment'
+
+
+.. py:data:: RDFS_LABEL_IRI
+   :value: 'http://www.w3.org/2000/01/rdf-schema#label'
+
 
 .. py:data:: american_to_british
 
@@ -50,5 +62,25 @@ Module Contents
                  - superclasses: List of superclasses of the entity.
                  - subclasses: List of subclasses of the entity.
    :rtype: tuple
+
+
+.. py:data:: T
+
+.. py:function:: chunked_iterator(seq: Iterable[T], size: int = 20) -> Iterator[list[T]]
+
+   Splits an iterable into fixed-size chunks and yields them sequentially.
+
+   This function consumes the input iterable lazily and groups its elements
+   into lists of a maximum given size. It is useful for batching data for
+   processing, such as API calls or LLM requests.
+
+   :param seq: The input iterable to be chunked.
+   :type seq: Iterable[T]
+   :param size: The maximum number of elements per chunk. Defaults to 50.
+   :type size: int
+
+   :returns: An iterator over lists, where each list contains
+             up to `size` elements from the input iterable.
+   :rtype: Iterator[list[T]]
 
 

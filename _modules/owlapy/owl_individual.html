@@ -83,9 +83,10 @@
   <h1>Source code for owlapy.owl_individual</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;OWL Individuals&quot;&quot;&quot;</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.owl_annotation</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">OWLObject</span>
 
 
@@ -95,6 +96,39 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a named or anonymous individual.&quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
     <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="NodeID">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.NodeID">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NodeID</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates and normalizes the node IDs used to identify :class:`OWLAnonymousIndividual` instances,</span>
+<span class="sd">    loosely modeled after OWLAPI&#39;s ``org.semanticweb.owlapi.model.NodeID``.</span>
+
+<span class="sd">    Node IDs are local to an ontology document: they let one distinguish different anonymous individuals</span>
+<span class="sd">    without asserting any particular identity for them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">_counter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="NodeID.get_node_id">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.NodeID.get_node_id">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_node_id</span><span class="p">(</span><span class="n">id_</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize a node id, generating a fresh, unused one if none is given.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            id_: A string identifying an anonymous individual, optionally prefixed with &quot;_:&quot; (as blank node</span>
+<span class="sd">                labels are written in Turtle/N-Triples). If None, a fresh node id is generated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The normalized node id string, without a &quot;_:&quot; prefix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">id_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">NodeID</span><span class="o">.</span><span class="n">_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;genid-</span><span class="si">{</span><span class="n">NodeID</span><span class="o">.</span><span class="n">_counter</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">id_</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="k">if</span> <span class="n">id_</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_:&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">id_</span></div>
+</div>
 
 
 
@@ -133,6 +167,80 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">remainder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iri</span><span class="o">.</span><span class="n">remainder</span></div>
+
+
+
+<div class="viewcode-block" id="OWLAnonymousIndividual">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.OWLAnonymousIndividual">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OWLAnonymousIndividual</span><span class="p">(</span><span class="n">OWLIndividual</span><span class="p">,</span> <span class="n">OWLAnnotationSubject</span><span class="p">,</span> <span class="n">OWLAnnotationValue</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Anonymous individuals are identified using a node ID rather than an IRI. Node IDs are local to an</span>
+<span class="sd">    ontology document: they allow different anonymous individuals to be distinguished from one another</span>
+<span class="sd">    without asserting any particular identity for them.</span>
+
+<span class="sd">    (https://www.w3.org/TR/owl2-syntax/#Anonymous_Individuals)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_node_id&#39;</span>
+    <span class="n">type_index</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="mi">1006</span>
+
+    <span class="n">_node_id</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets an instance of OWLAnonymousIndividual identified by the given node id, generating a fresh,</span>
+<span class="sd">        unused one if none is given.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node_id: A string identifying this anonymous individual, or None to generate a fresh one.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            An OWLAnonymousIndividual identified by the given (or a freshly generated) node id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_node_id</span> <span class="o">=</span> <span class="n">NodeID</span><span class="o">.</span><span class="n">get_node_id</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">node_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span>
+
+<div class="viewcode-block" id="OWLAnonymousIndividual.to_string_id">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.OWLAnonymousIndividual.to_string_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_string_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;_:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_node_id</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="OWLAnonymousIndividual.is_anonymous">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.OWLAnonymousIndividual.is_anonymous">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_anonymous</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="OWLAnonymousIndividual.as_anonymous_individual">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.OWLAnonymousIndividual.as_anonymous_individual">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_anonymous_individual</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OWLAnonymousIndividual&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="OWLAnonymousIndividual.__eq__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.OWLAnonymousIndividual.__eq__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node_id</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_node_id</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="OWLAnonymousIndividual.__hash__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.OWLAnonymousIndividual.__hash__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="s2">&quot;OWLAnonymousIndividual&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node_id</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OWLAnonymousIndividual.__repr__">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_individual/index.html#owlapy.owl_individual.OWLAnonymousIndividual.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;OWLAnonymousIndividual(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_node_id</span><span class="si">!r}</span><span class="s2">)&quot;</span></div>
+</div>
 
 </pre></div>
 

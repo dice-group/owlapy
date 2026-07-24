@@ -30,6 +30,7 @@ Classes
    owlapy.utils.HasIndex
    owlapy.utils.OrderedOWLObject
    owlapy.utils.NNF
+   owlapy.utils.SignatureExtractor
    owlapy.utils.LRUCache
 
 
@@ -421,6 +422,35 @@ Module Contents
       :param negated: Whether the result should be negated.
 
       :returns: Class Expression in Negation Normal Form.
+
+
+
+.. py:class:: SignatureExtractor
+
+   Computes the signature of an axiom or class expression/data range: the set of named entities
+   (:class:`OWLClass`, :class:`OWLObjectProperty`, :class:`OWLDataProperty`, :class:`OWLNamedIndividual`,
+   :class:`OWLDatatype`) that it references, collected recursively.
+
+   Mirrors the ``signature()`` method of OWLAPI's ``OWLObject`` interface. :class:`OWLAnonymousIndividual`
+   is intentionally excluded (it is not an :class:`OWLEntity`, per the OWL 2 specification).
+
+   Coverage is currently limited to the axiom types listed below (chosen to cover what
+   ``SyncOntology.get_tbox_axioms()``/``get_abox_axioms()`` return for the ontologies in this repo's test
+   suite) plus the full set of class expression/data range constructs. Extending coverage to the remaining
+   :class:`OWLAxiom` subtypes (property characteristics, property chains, has-key, disjoint union, datatype
+   definition, (un)equal individuals, annotation assertions, ...) is tracked in
+   https://github.com/dice-group/owlapy/issues/231.
+
+
+   .. py:method:: get_signature(o: owlapy.owl_object.OWLObject) -> Set[owlapy.owl_object.OWLEntity]
+      :abstractmethod:
+
+
+      Compute the signature of *o*.
+
+      :param o: An axiom, class expression, data range, property expression, individual or literal.
+
+      :returns: The set of named entities referenced by *o*.
 
 
 

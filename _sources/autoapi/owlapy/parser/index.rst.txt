@@ -43,7 +43,7 @@ Module Contents
 
 .. py:data:: MANCHESTER_GRAMMAR
 
-.. py:class:: ManchesterOWLSyntaxParser(namespace: Optional[Union[str, owlapy.namespaces.Namespaces]] = None, grammar=None)
+.. py:class:: ManchesterOWLSyntaxParser(namespace: Optional[Union[str, owlapy.namespaces.Namespaces]] = None, grammar=None, prefixes: Optional[Mapping[str, Union[str, owlapy.namespaces.Namespaces]]] = None)
 
    Bases: :py:obj:`parsimonious.nodes.NodeVisitor`, :py:obj:`owlapy.owl_object.OWLObjectParser`
 
@@ -53,12 +53,16 @@ Module Contents
 
 
    .. py:attribute:: slots
-      :value: ('ns', 'grammar')
+      :value: ('ns', 'grammar', 'prefixes')
 
 
 
    .. py:attribute:: ns
       :type:  Optional[Union[str, owlapy.namespaces.Namespaces]]
+
+
+   .. py:attribute:: prefixes
+      :type:  Mapping[str, Union[str, owlapy.namespaces.Namespaces]]
 
 
    .. py:attribute:: grammar
@@ -208,9 +212,7 @@ Module Contents
    .. py:method:: visit_full_iri(node, children) -> owlapy.iri.IRI
 
 
-   .. py:method:: visit_abbreviated_iri(node, children)
-      :abstractmethod:
-
+   .. py:method:: visit_abbreviated_iri(node, children) -> owlapy.iri.IRI
 
 
    .. py:method:: visit_simple_iri(node, children) -> owlapy.iri.IRI
@@ -236,7 +238,7 @@ Module Contents
 
 .. py:data:: DL_GRAMMAR
 
-.. py:class:: DLSyntaxParser(namespace: Optional[Union[str, owlapy.namespaces.Namespaces]] = None, grammar=None)
+.. py:class:: DLSyntaxParser(namespace: Optional[Union[str, owlapy.namespaces.Namespaces]] = None, grammar=None, prefixes: Optional[Mapping[str, Union[str, owlapy.namespaces.Namespaces]]] = None)
 
    Bases: :py:obj:`parsimonious.nodes.NodeVisitor`, :py:obj:`owlapy.owl_object.OWLObjectParser`
 
@@ -245,12 +247,16 @@ Module Contents
 
 
    .. py:attribute:: slots
-      :value: ('ns', 'grammar')
+      :value: ('ns', 'grammar', 'prefixes')
 
 
 
    .. py:attribute:: ns
       :type:  Optional[Union[str, owlapy.namespaces.Namespaces]]
+
+
+   .. py:attribute:: prefixes
+      :type:  Mapping[str, Union[str, owlapy.namespaces.Namespaces]]
 
 
    .. py:attribute:: grammar
@@ -400,9 +406,7 @@ Module Contents
    .. py:method:: visit_full_iri(node, children) -> owlapy.iri.IRI
 
 
-   .. py:method:: visit_abbreviated_iri(node, children)
-      :abstractmethod:
-
+   .. py:method:: visit_abbreviated_iri(node, children) -> owlapy.iri.IRI
 
 
    .. py:method:: visit_simple_iri(node, children) -> owlapy.iri.IRI
@@ -430,7 +434,7 @@ Module Contents
 
 .. py:data:: ManchesterParser
 
-.. py:function:: dl_to_owl_expression(dl_expression: str, namespace: str)
+.. py:function:: dl_to_owl_expression(dl_expression: str, namespace: str, prefixes: Optional[Mapping[str, Union[str, owlapy.namespaces.Namespaces]]] = None)
 
-.. py:function:: manchester_to_owl_expression(manchester_expression: str, namespace: str)
+.. py:function:: manchester_to_owl_expression(manchester_expression: str, namespace: str, prefixes: Optional[Mapping[str, Union[str, owlapy.namespaces.Namespaces]]] = None)
 

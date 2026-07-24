@@ -118,6 +118,9 @@ Module Contents
    .. py:attribute:: type_merger
 
 
+   .. py:attribute:: batch_rdfs_comment_generator
+
+
    .. py:attribute:: text_loader
 
 
@@ -154,6 +157,40 @@ Module Contents
       :param text: The type name to format.
 
       :returns: Formatted type name with capital first letter and lowercase rest.
+
+
+
+   .. py:method:: format_rdfs_label(label: str, is_property: bool = False) -> str
+      :staticmethod:
+
+
+      Convert a raw entity identifier into a clean rdfs:label suitable for RDF annotation.
+
+      This method normalizes the input string by removing special characters,
+      standardizing whitespace, and applying consistent casing rules. For non-property
+      labels, it produces a title-cased form with a capitalized first character and
+      lowercase remainder. For properties, it produces a fully lowercase form to
+      preserve relational readability conventions.
+
+      After normalization, underscores are replaced with spaces to produce a
+      human-readable label.
+
+      .. rubric:: Examples
+
+      - 'PERSON' -> 'Person'
+      - 'person_type' -> 'Person type'
+      - 'PERSON TYPE' -> 'Person type'
+      - is_property=True: 'has_name' -> 'has name'
+
+      :param label: Raw entity identifier string.
+      :param is_property: If True, formats the label as a property name (fully lowercase).
+                          If False, formats it as a class/individual-style label.
+
+      :returns: label string with:
+                - consistent casing rules applied
+                - underscores replaced with spaces
+                - improved human readability
+      :rtype: A cleaned rdfs
 
 
 
@@ -464,6 +501,51 @@ Module Contents
       :param \*\*kwargs: Additional arguments specific to the extractor type.
 
       :returns: Generated Ontology object.
+
+
+
+   .. py:method:: get_rdfs_label_axiom(entity_iri: owlapy.iri.IRI, label: str) -> owlapy.owl_axiom.OWLAnnotationAssertionAxiom
+
+      Create an RDFS label annotation assertion axiom for an entity.
+
+      Utilizes the standard RDFS label IRI (http://www.w3.org/2000/01/rdf-schema#label)
+      to assign a human-readable name to the entity.
+
+      :param entity_iri: The IRI of the entity to receive the label.
+      :type entity_iri: IRI
+      :param label: The text for the rdfs:label.
+      :type label: str
+
+      :returns: An annotation assertion axiom for rdfs:label.
+      :rtype: OWLAnnotationAssertionAxiom
+
+
+
+   .. py:method:: generate_batch_rdfs_comment_axioms(entities_meta: list[tuple[owlapy.iri.IRI, Literal['class', 'property', 'individual']]], context: str) -> list[owlapy.owl_axiom.OWLAnnotationAssertionAxiom]
+
+      Generate RDFS comment annotation assertion axioms for multiple OWL entities.
+
+      This method sends a batch of (entity IRI, entity type) pairs to an LLM,
+      which returns (IRI, comment) pairs. Each generated comment is wrapped
+      into an `rdfs:comment` OWL annotation assertion axiom.
+
+      Only comments for entities whose IRIs are present in `entities_meta`
+      are converted into axioms. Returned IRIs are validated against the
+      input entity IRIs after converting them to strings.
+
+      :param entities_meta:
+                            List of tuples:
+                                (
+                                    entity_iri (IRI),
+                                    entity_type (str): 'class' | 'property' | 'individual'
+                                )
+      :param context: Shared ontology/domain context used to ground generated comments.
+
+      :returns:     One annotation assertion axiom per valid entity that received
+                    a comment. Returns an empty list if the LLM call for this batch
+                    fails, so a single failed batch does not abort the rest of the
+                    pipeline (e.g. already-generated entities/triples/labels).
+      :rtype: List[OWLAnnotationAssertionAxiom]
 
 
 

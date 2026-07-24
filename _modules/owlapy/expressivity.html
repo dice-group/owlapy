@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.expressivity &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.expressivity</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.expressivity</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Compute the DL (Description Logic) expressivity of a loaded ontology.</span>
+
+<span class="sd">Feature detection is delegated to OWLAPI&#39;s ``DLExpressivityChecker``</span>
+<span class="sd">(already bundled for the Java reasoners in ``owlapy/jar_dependencies/``),</span>
+<span class="sd">since its subsumption handling (e.g. full existential subsuming limited</span>
+<span class="sd">existential, qualified cardinality subsuming unqualified) is mature and</span>
+<span class="sd">battle-tested. The canonical DL name (e.g. ``&quot;ALC&quot;``, ``&quot;SHIQ(D)&quot;``) is</span>
+<span class="sd">assembled here rather than via OWLAPI&#39;s own ``getDescriptionLogicName()``,</span>
+<span class="sd">whose ``Construct.toString()`` returns internal debug labels</span>
+<span class="sd">(``&quot;RRESTR&quot;``, ``&quot;CINT&quot;``, ...) instead of standard DL letters.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;get_dl_expressivity&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="get_dl_expressivity">
+<a class="viewcode-back" href="../../autoapi/owlapy/index.html#owlapy.expressivity.get_dl_expressivity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_dl_expressivity</span><span class="p">(</span><span class="n">ontology</span><span class="p">:</span> <span class="n">SyncOntology</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the DL expressivity name of an ontology, e.g. ``&quot;ALCHN(D)&quot;``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ontology: A :class:`~owlapy.owl_ontology.SyncOntology` instance.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The standard Description Logic name for the ontology&#39;s expressivity.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If ``ontology`` is not backed by OWLAPI (only</span>
+<span class="sd">            :class:`~owlapy.owl_ontology.SyncOntology` is supported, since</span>
+<span class="sd">            it is the only ontology backend that exposes RBox axioms).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">SyncOntology</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;get_dl_expressivity() requires a SyncOntology (OWLAPI-backed); &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. Load the ontology with &quot;</span>
+            <span class="s2">&quot;owlapy.owl_ontology.SyncOntology instead.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># noinspection PyUnresolvedReferences</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">org.semanticweb.owlapi.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">DLExpressivityChecker</span>
+
+    <span class="n">checker</span> <span class="o">=</span> <span class="n">DLExpressivityChecker</span><span class="p">([</span><span class="n">ontology</span><span class="o">.</span><span class="n">owlapi_ontology</span><span class="p">])</span>
+    <span class="n">constructs</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">())</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">checker</span><span class="o">.</span><span class="n">getConstructs</span><span class="p">()}</span>
+
+    <span class="n">has_complex_negation</span> <span class="o">=</span> <span class="s2">&quot;CONCEPT_COMPLEX_NEGATION&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_union</span> <span class="o">=</span> <span class="s2">&quot;CONCEPT_UNION&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_full_existential</span> <span class="o">=</span> <span class="s2">&quot;FULL_EXISTENTIAL&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_role_hierarchy</span> <span class="o">=</span> <span class="s2">&quot;ROLE_HIERARCHY&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_transitive</span> <span class="o">=</span> <span class="s2">&quot;ROLE_TRANSITIVE&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_complex_roles</span> <span class="o">=</span> <span class="s2">&quot;ROLE_REFLEXIVITY_CHAINS&quot;</span> <span class="ow">in</span> <span class="n">constructs</span> <span class="ow">or</span> <span class="s2">&quot;ROLE_COMPLEX&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_nominals</span> <span class="o">=</span> <span class="s2">&quot;NOMINALS&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_inverse</span> <span class="o">=</span> <span class="s2">&quot;ROLE_INVERSE&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_functional</span> <span class="o">=</span> <span class="s2">&quot;F&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_unqualified_cardinality</span> <span class="o">=</span> <span class="s2">&quot;N&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_qualified_cardinality</span> <span class="o">=</span> <span class="s2">&quot;Q&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+    <span class="n">has_datatypes</span> <span class="o">=</span> <span class="s2">&quot;D&quot;</span> <span class="ow">in</span> <span class="n">constructs</span>
+
+    <span class="c1"># S is shorthand for ALC + transitive roles and replaces the AL[C] prefix.</span>
+    <span class="k">if</span> <span class="n">has_transitive</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;S&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;AL&quot;</span>
+        <span class="k">if</span> <span class="n">has_complex_negation</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;C&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># U and E are redundant once C is present (De Morgan&#39;s laws).</span>
+            <span class="k">if</span> <span class="n">has_union</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;U&quot;</span>
+            <span class="k">if</span> <span class="n">has_full_existential</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;E&quot;</span>
+
+    <span class="k">if</span> <span class="n">has_role_hierarchy</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;H&quot;</span>
+    <span class="k">if</span> <span class="n">has_complex_roles</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;R&quot;</span>
+    <span class="k">if</span> <span class="n">has_nominals</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;O&quot;</span>
+    <span class="k">if</span> <span class="n">has_inverse</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;I&quot;</span>
+
+    <span class="c1"># Q (qualified cardinality) subsumes N (unqualified); show only one.</span>
+    <span class="k">if</span> <span class="n">has_qualified_cardinality</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;Q&quot;</span>
+    <span class="k">elif</span> <span class="n">has_unqualified_cardinality</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;N&quot;</span>
+
+    <span class="c1"># F (functional) is redundant once N/Q is present (functional == &lt;=1).</span>
+    <span class="k">if</span> <span class="n">has_functional</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">has_unqualified_cardinality</span> <span class="ow">or</span> <span class="n">has_qualified_cardinality</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;F&quot;</span>
+
+    <span class="k">if</span> <span class="n">has_datatypes</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;(D)&quot;</span>
+
+    <span class="k">return</span> <span class="n">name</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

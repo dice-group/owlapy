@@ -301,12 +301,14 @@
 
             <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 
-            <span class="c1"># Move start position with overlap</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">end</span>
-
-            <span class="c1"># Ensure we&#39;re making progress</span>
-            <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">text_length</span><span class="p">:</span>
+            <span class="c1"># Stop once this chunk reached the end of the text, otherwise</span>
+            <span class="c1"># start = end - overlap would never reach text_length and loop forever</span>
+            <span class="k">if</span> <span class="n">end</span> <span class="o">&gt;=</span> <span class="n">text_length</span><span class="p">:</span>
                 <span class="k">break</span>
+
+            <span class="c1"># Move start position with overlap, always making forward progress</span>
+            <span class="n">next_start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">end</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">next_start</span> <span class="k">if</span> <span class="n">next_start</span> <span class="o">&gt;</span> <span class="n">start</span> <span class="k">else</span> <span class="n">end</span>
 
         <span class="k">return</span> <span class="n">chunks</span>
 

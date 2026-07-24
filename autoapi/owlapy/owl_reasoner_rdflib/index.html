@@ -1,0 +1,471 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.owl_reasoner_rdflib &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="owlapy.owlapi_dlsyntax" href="../owlapi_dlsyntax/index.html" />
+    <link rel="prev" title="owlapy.owl_reasoner" href="../owl_reasoner/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../agen_kg/index.html">owlapy.agen_kg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../expressivity/index.html">owlapy.expressivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.owl_reasoner_rdflib</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.instances"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.instances()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_classes"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.sub_classes()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_classes"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.super_classes()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_classes"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.equivalent_classes()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_classes"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.disjoint_classes()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_values"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.object_property_values()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.flush"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.flush()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.get_root_ontology"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.get_root_ontology()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.types"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.types()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.data_property_domains"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.data_property_domains()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_domains"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.object_property_domains()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_ranges"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.object_property_ranges()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.data_property_values"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.data_property_values()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.different_individuals"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.different_individuals()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.same_individuals"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.same_individuals()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_object_properties"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.equivalent_object_properties()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_data_properties"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.equivalent_data_properties()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_object_properties"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.disjoint_object_properties()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_data_properties"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.disjoint_data_properties()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_data_properties"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.sub_data_properties()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_data_properties"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.super_data_properties()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_object_properties"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.sub_object_properties()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_object_properties"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.super_object_properties()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.__repr__"><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner.__repr__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scripts/index.html">owlapy.scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#classes">Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy</a></li>
+      <li class="breadcrumb-item active">owlapy.owl_reasoner_rdflib</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/owlapy/owl_reasoner_rdflib/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.owl_reasoner_rdflib">
+<span id="owlapy-owl-reasoner-rdflib"></span><h1>owlapy.owl_reasoner_rdflib<a class="headerlink" href="#module-owlapy.owl_reasoner_rdflib" title="Link to this heading"></a></h1>
+<p>RDFLib-based OWL Reasoner - Pure Python implementation.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.logger" title="owlapy.owl_reasoner_rdflib.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner" title="owlapy.owl_reasoner_rdflib.RDFLibReasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RDFLibReasoner</span></code></a></p></td>
+<td><p>A pure Python OWL reasoner based on RDFLib.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.logger">
+<span class="sig-prename descclassname"><span class="pre">owlapy.owl_reasoner_rdflib.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.owl_reasoner_rdflib.</span></span><span class="sig-name descname"><span class="pre">RDFLibReasoner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ontology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_property_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_data_property_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../abstracts/abstract_owl_reasoner/index.html#owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner" title="owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner</span></code></a></p>
+<p>A pure Python OWL reasoner based on RDFLib.</p>
+<p>This reasoner uses SPARQL queries over an RDF graph to perform reasoning tasks.
+It’s designed as a drop-in replacement for StructuralReasoner with better
+predictability and no owlready2/Java dependencies for basic operations.</p>
+<p>Features:
+- Pure Python implementation using RDFLib
+- SPARQL-based reasoning
+- Efficient graph traversal with caching
+- Support for basic OWL 2 class expressions
+- Direct and indirect hierarchy navigation</p>
+<p>Limitations:
+- Does not perform OWL 2 DL inference (use HermiT/Pellet via SyncReasoner for that)
+- Best suited for ontology navigation and simple instance retrieval
+- Does not handle all complex class expressions (nominals, cardinalities may be limited)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.instances">
+<span class="sig-name descname"><span class="pre">instances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.instances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.instances" title="Link to this definition"></a></dt>
+<dd><p>Get individuals that are instances of the specified class expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression whose instances are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – If True, retrieve only direct instances (not implemented - returns all).</p></li>
+<li><p><strong>timeout</strong> – Timeout in milliseconds (for compatibility, not enforced).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of named individuals that are instances of ce.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_classes">
+<span class="sig-name descname"><span class="pre">sub_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_named</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.sub_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_classes" title="Link to this definition"></a></dt>
+<dd><p>Get subclasses of the specified class expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression whose subclasses are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – If True, only direct subclasses; if False, all descendant subclasses.</p></li>
+<li><p><strong>only_named</strong> – If True, only return named classes (OWLClass instances).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of subclass expressions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_classes">
+<span class="sig-name descname"><span class="pre">super_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_named</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.super_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_classes" title="Link to this definition"></a></dt>
+<dd><p>Get superclasses of the specified class expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression whose superclasses are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – If True, only direct superclasses; if False, all ancestor superclasses.</p></li>
+<li><p><strong>only_named</strong> – If True, only return named classes (OWLClass instances).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of superclass expressions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_classes">
+<span class="sig-name descname"><span class="pre">equivalent_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_named</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.equivalent_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_classes" title="Link to this definition"></a></dt>
+<dd><p>Get classes equivalent to the specified class expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression.</p></li>
+<li><p><strong>only_named</strong> – If True, only return named classes.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of equivalent class expressions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_classes">
+<span class="sig-name descname"><span class="pre">disjoint_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_named</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.disjoint_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_classes" title="Link to this definition"></a></dt>
+<dd><p>Get classes disjoint with the specified class expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – The class expression.</p></li>
+<li><p><strong>only_named</strong> – If True, only return named classes.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of disjoint class expressions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_values">
+<span class="sig-name descname"><span class="pre">object_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_property/index.html#owlapy.owl_property.OWLObjectPropertyExpression" title="owlapy.owl_property.OWLObjectPropertyExpression"><span class="pre">owlapy.owl_property.OWLObjectPropertyExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.object_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_values" title="Link to this definition"></a></dt>
+<dd><p>Get object property values for an individual.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ind</strong> – The individual.</p></li>
+<li><p><strong>pe</strong> – The object property expression.</p></li>
+<li><p><strong>direct</strong> – Whether to consider only direct assertions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of individuals that are values of the property for ind.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.flush">
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.flush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.flush" title="Link to this definition"></a></dt>
+<dd><p>Flush all cached data and reload the ontology.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.get_root_ontology">
+<span class="sig-name descname"><span class="pre">get_root_ontology</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../abstracts/abstract_owl_ontology/index.html#owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology" title="owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology"><span class="pre">owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.get_root_ontology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.get_root_ontology" title="Link to this definition"></a></dt>
+<dd><p>Gets the root ontology that is loaded into this reasoner.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.types">
+<span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass" title="owlapy.class_expression.OWLClass"><span class="pre">owlapy.class_expression.OWLClass</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.types" title="Link to this definition"></a></dt>
+<dd><p>Gets the named classes which are (potentially direct) types of the specified named individual.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ind</strong> – The individual whose types are to be retrieved.</p></li>
+<li><p><strong>direct</strong> – If True, only direct types; if False, all types.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterable of OWLClass representing the types of the individual.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.data_property_domains">
+<span class="sig-name descname"><span class="pre">data_property_domains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.data_property_domains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.data_property_domains" title="Link to this definition"></a></dt>
+<dd><p>Gets the class expressions that are the domains of this data property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_domains">
+<span class="sig-name descname"><span class="pre">object_property_domains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.object_property_domains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_domains" title="Link to this definition"></a></dt>
+<dd><p>Gets the class expressions that are the domains of this object property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_ranges">
+<span class="sig-name descname"><span class="pre">object_property_ranges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.object_property_ranges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.object_property_ranges" title="Link to this definition"></a></dt>
+<dd><p>Gets the class expressions that are the ranges of this object property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.data_property_values">
+<span class="sig-name descname"><span class="pre">data_property_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.data_property_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.data_property_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the data property values for the specified entity and data property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.different_individuals">
+<span class="sig-name descname"><span class="pre">different_individuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.different_individuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.different_individuals" title="Link to this definition"></a></dt>
+<dd><p>Gets the individuals that are different from the specified individual.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.same_individuals">
+<span class="sig-name descname"><span class="pre">same_individuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.same_individuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.same_individuals" title="Link to this definition"></a></dt>
+<dd><p>Gets the individuals that are the same as the specified individual.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_object_properties">
+<span class="sig-name descname"><span class="pre">equivalent_object_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.equivalent_object_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_object_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the object properties that are equivalent to the specified object property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_data_properties">
+<span class="sig-name descname"><span class="pre">equivalent_data_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.equivalent_data_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.equivalent_data_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the data properties that are equivalent to the specified data property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_object_properties">
+<span class="sig-name descname"><span class="pre">disjoint_object_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.disjoint_object_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_object_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the object properties that are disjoint with the specified object property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_data_properties">
+<span class="sig-name descname"><span class="pre">disjoint_data_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.disjoint_data_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.disjoint_data_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the data properties that are disjoint with the specified data property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_data_properties">
+<span class="sig-name descname"><span class="pre">sub_data_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.sub_data_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_data_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the sub data properties of the specified data property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_data_properties">
+<span class="sig-name descname"><span class="pre">super_data_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.super_data_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_data_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the super data properties of the specified data property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_object_properties">
+<span class="sig-name descname"><span class="pre">sub_object_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.sub_object_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.sub_object_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the sub object properties of the specified object property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_object_properties">
+<span class="sig-name descname"><span class="pre">super_object_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.super_object_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.super_object_properties" title="Link to this definition"></a></dt>
+<dd><p>Gets the super object properties of the specified object property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.owl_reasoner_rdflib.RDFLibReasoner.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/owl_reasoner_rdflib.html#RDFLibReasoner.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.owl_reasoner_rdflib.RDFLibReasoner.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../owl_reasoner/index.html" class="btn btn-neutral float-left" title="owlapy.owl_reasoner" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../owlapi_dlsyntax/index.html" class="btn btn-neutral float-right" title="owlapy.owlapi_dlsyntax" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

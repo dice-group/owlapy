@@ -30,6 +30,7 @@ Classes
    owlapy.agen_kg.signatures.IncrementalTripleMerger
    owlapy.agen_kg.signatures.IncrementalTypeMerger
    owlapy.agen_kg.signatures.PlanDecomposer
+   owlapy.agen_kg.signatures.BatchRdfsCommentGenerator
 
 
 Module Contents
@@ -1051,6 +1052,60 @@ Module Contents
 
    .. py:attribute:: fact_checking_task
       :type:  str
+      :value: None
+
+
+
+.. py:class:: BatchRdfsCommentGenerator(/, **data: Any)
+
+   Bases: :py:obj:`dspy.Signature`
+
+
+   .. py:attribute:: __doc__
+      :value: Multiline-String
+
+      .. raw:: html
+
+         <details><summary>Show Value</summary>
+
+      .. code-block:: python
+
+         """We want to generate rdfs:comment annotations for OWL ontology entities.
+         
+             ENTITY SEMANTICS:
+             - class: TBox concept (universal category).
+             - property: TBox relation (no concrete values allowed).
+             - individual: ABox instance (named individual in the ontology).
+         
+             CRITICAL RULES:
+             - NEVER invent facts not present in the context or IRI.
+             - For classes and properties: describe ONLY general meaning (TBox level).
+             - For individuals: describe their role according to the context's content.
+             - If no grounded description exists, return null.
+             - For each comment, internally identify which phrases from the context support it; do not include unsupported concepts.
+             - Keep comments concise and ontology-style, not narrative."""
+
+      .. raw:: html
+
+         </details>
+
+
+
+
+   .. py:attribute:: context
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: iri_type_pairs
+      :type:  list[tuple[str, str]]
+      :value: None
+
+
+
+   .. py:attribute:: entity_comment_pairs
+      :type:  list[tuple[str, str | None]]
       :value: None
 
 

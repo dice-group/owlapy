@@ -1,0 +1,236 @@
+owlapy.owl_reasoner_rdflib
+==========================
+
+.. py:module:: owlapy.owl_reasoner_rdflib
+
+.. autoapi-nested-parse::
+
+   RDFLib-based OWL Reasoner - Pure Python implementation.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.owl_reasoner_rdflib.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.owl_reasoner_rdflib.RDFLibReasoner
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: RDFLibReasoner(ontology: Union[owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology, str], *, class_cache: bool = True, property_cache: bool = True, infer_property_values: bool = False, infer_data_property_values: bool = False)
+
+   Bases: :py:obj:`owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner`
+
+
+   A pure Python OWL reasoner based on RDFLib.
+
+   This reasoner uses SPARQL queries over an RDF graph to perform reasoning tasks.
+   It's designed as a drop-in replacement for StructuralReasoner with better
+   predictability and no owlready2/Java dependencies for basic operations.
+
+   Features:
+   - Pure Python implementation using RDFLib
+   - SPARQL-based reasoning
+   - Efficient graph traversal with caching
+   - Support for basic OWL 2 class expressions
+   - Direct and indirect hierarchy navigation
+
+   Limitations:
+   - Does not perform OWL 2 DL inference (use HermiT/Pellet via SyncReasoner for that)
+   - Best suited for ontology navigation and simple instance retrieval
+   - Does not handle all complex class expressions (nominals, cardinalities may be limited)
+
+
+   .. py:method:: instances(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, timeout: int = 1000) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+
+      Get individuals that are instances of the specified class expression.
+
+      :param ce: The class expression whose instances are to be retrieved.
+      :param direct: If True, retrieve only direct instances (not implemented - returns all).
+      :param timeout: Timeout in milliseconds (for compatibility, not enforced).
+
+      :returns: Iterable of named individuals that are instances of ce.
+
+
+
+   .. py:method:: sub_classes(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Get subclasses of the specified class expression.
+
+      :param ce: The class expression whose subclasses are to be retrieved.
+      :param direct: If True, only direct subclasses; if False, all descendant subclasses.
+      :param only_named: If True, only return named classes (OWLClass instances).
+
+      :returns: Iterable of subclass expressions.
+
+
+
+   .. py:method:: super_classes(ce: owlapy.class_expression.OWLClassExpression, direct: bool = False, only_named: bool = True) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Get superclasses of the specified class expression.
+
+      :param ce: The class expression whose superclasses are to be retrieved.
+      :param direct: If True, only direct superclasses; if False, all ancestor superclasses.
+      :param only_named: If True, only return named classes (OWLClass instances).
+
+      :returns: Iterable of superclass expressions.
+
+
+
+   .. py:method:: equivalent_classes(ce: owlapy.class_expression.OWLClassExpression, only_named: bool = True) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Get classes equivalent to the specified class expression.
+
+      :param ce: The class expression.
+      :param only_named: If True, only return named classes.
+
+      :returns: Iterable of equivalent class expressions.
+
+
+
+   .. py:method:: disjoint_classes(ce: owlapy.class_expression.OWLClassExpression, only_named: bool = True) -> Iterable[owlapy.class_expression.OWLClassExpression]
+
+      Get classes disjoint with the specified class expression.
+
+      :param ce: The class expression.
+      :param only_named: If True, only return named classes.
+
+      :returns: Iterable of disjoint class expressions.
+
+
+
+   .. py:method:: object_property_values(ind: owlapy.owl_individual.OWLNamedIndividual, pe: owlapy.owl_property.OWLObjectPropertyExpression, direct: bool = True) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
+
+      Get object property values for an individual.
+
+      :param ind: The individual.
+      :param pe: The object property expression.
+      :param direct: Whether to consider only direct assertions.
+
+      :returns: Iterable of individuals that are values of the property for ind.
+
+
+
+   .. py:method:: flush() -> None
+
+      Flush all cached data and reload the ontology.
+
+
+
+   .. py:method:: get_root_ontology() -> owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology
+
+      Gets the root ontology that is loaded into this reasoner.
+
+
+
+   .. py:method:: types(ind: owlapy.owl_individual.OWLNamedIndividual, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClass]
+
+      Gets the named classes which are (potentially direct) types of the specified named individual.
+
+      :param ind: The individual whose types are to be retrieved.
+      :param direct: If True, only direct types; if False, all types.
+
+      :returns: Iterable of OWLClass representing the types of the individual.
+
+
+
+   .. py:method:: data_property_domains(pe, direct: bool = False)
+
+      Gets the class expressions that are the domains of this data property.
+
+
+
+   .. py:method:: object_property_domains(pe, direct: bool = False)
+
+      Gets the class expressions that are the domains of this object property.
+
+
+
+   .. py:method:: object_property_ranges(pe, direct: bool = False)
+
+      Gets the class expressions that are the ranges of this object property.
+
+
+
+   .. py:method:: data_property_values(e, pe)
+
+      Gets the data property values for the specified entity and data property.
+
+
+
+   .. py:method:: different_individuals(ind: owlapy.owl_individual.OWLNamedIndividual)
+
+      Gets the individuals that are different from the specified individual.
+
+
+
+   .. py:method:: same_individuals(ind: owlapy.owl_individual.OWLNamedIndividual)
+
+      Gets the individuals that are the same as the specified individual.
+
+
+
+   .. py:method:: equivalent_object_properties(op)
+
+      Gets the object properties that are equivalent to the specified object property.
+
+
+
+   .. py:method:: equivalent_data_properties(dp)
+
+      Gets the data properties that are equivalent to the specified data property.
+
+
+
+   .. py:method:: disjoint_object_properties(op)
+
+      Gets the object properties that are disjoint with the specified object property.
+
+
+
+   .. py:method:: disjoint_data_properties(dp)
+
+      Gets the data properties that are disjoint with the specified data property.
+
+
+
+   .. py:method:: sub_data_properties(dp, direct: bool = False)
+
+      Gets the sub data properties of the specified data property.
+
+
+
+   .. py:method:: super_data_properties(dp, direct: bool = False)
+
+      Gets the super data properties of the specified data property.
+
+
+
+   .. py:method:: sub_object_properties(op, direct: bool = False)
+
+      Gets the sub object properties of the specified object property.
+
+
+
+   .. py:method:: super_object_properties(op, direct: bool = False)
+
+      Gets the super object properties of the specified object property.
+
+
+
+   .. py:method:: __repr__()
+
+

@@ -63,7 +63,9 @@
 <li class="toctree-l3"><a class="reference internal" href="../class_expression/index.html">owlapy.class_expression</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../converter/index.html">owlapy.converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../expressivity/index.html">owlapy.expressivity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
@@ -77,6 +79,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
@@ -168,6 +171,10 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.NNF.get_class_nnf"><code class="docutils literal notranslate"><span class="pre">NNF.get_class_nnf()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.SignatureExtractor"><code class="docutils literal notranslate"><span class="pre">SignatureExtractor</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.SignatureExtractor.get_signature"><code class="docutils literal notranslate"><span class="pre">SignatureExtractor.get_signature()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.combine_nary_expressions"><code class="docutils literal notranslate"><span class="pre">combine_nary_expressions()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.iter_count"><code class="docutils literal notranslate"><span class="pre">iter_count()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.as_index"><code class="docutils literal notranslate"><span class="pre">as_index()</span></code></a></li>
@@ -201,6 +208,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#classes">Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
 </ul>
@@ -273,7 +281,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.NNF" title="owlapy.utils.NNF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NNF</span></code></a></p></td>
 <td><p>This class contains functions to transform a Class Expression into Negation Normal Form.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.LRUCache" title="owlapy.utils.LRUCache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LRUCache</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.SignatureExtractor" title="owlapy.utils.SignatureExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignatureExtractor</span></code></a></p></td>
+<td><p>Computes the signature of an axiom or class expression/data range: the set of named entities</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.LRUCache" title="owlapy.utils.LRUCache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LRUCache</span></code></a></p></td>
 <td><p>Constants shares by all lru cache instances.</p></td>
 </tr>
 </tbody>
@@ -803,6 +814,36 @@ OWL Object.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Class Expression in Negation Normal Form.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.SignatureExtractor">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">SignatureExtractor</span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#SignatureExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.SignatureExtractor" title="Link to this definition"></a></dt>
+<dd><p>Computes the signature of an axiom or class expression/data range: the set of named entities
+(<code class="xref py py-class docutils literal notranslate"><span class="pre">OWLClass</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLObjectProperty</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLDataProperty</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLNamedIndividual</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">OWLDatatype</span></code>) that it references, collected recursively.</p>
+<p>Mirrors the <code class="docutils literal notranslate"><span class="pre">signature()</span></code> method of OWLAPI’s <code class="docutils literal notranslate"><span class="pre">OWLObject</span></code> interface. <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLAnonymousIndividual</span></code>
+is intentionally excluded (it is not an <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLEntity</span></code>, per the OWL 2 specification).</p>
+<p>Coverage is currently limited to the axiom types listed below (chosen to cover what
+<code class="docutils literal notranslate"><span class="pre">SyncOntology.get_tbox_axioms()</span></code>/<code class="docutils literal notranslate"><span class="pre">get_abox_axioms()</span></code> return for the ontologies in this repo’s test
+suite) plus the full set of class expression/data range constructs. Extending coverage to the remaining
+<code class="xref py py-class docutils literal notranslate"><span class="pre">OWLAxiom</span></code> subtypes (property characteristics, property chains, has-key, disjoint union, datatype
+definition, (un)equal individuals, annotation assertions, …) is tracked in
+<a class="reference external" href="https://github.com/dice-group/owlapy/issues/231">https://github.com/dice-group/owlapy/issues/231</a>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.SignatureExtractor.get_signature">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><span class="pre">owlapy.owl_object.OWLObject</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#SignatureExtractor.get_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.SignatureExtractor.get_signature" title="Link to this definition"></a></dt>
+<dd><p>Compute the signature of <em>o</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>o</strong> – An axiom, class expression, data range, property expression, individual or literal.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The set of named entities referenced by <em>o</em>.</p>
 </dd>
 </dl>
 </dd></dl>

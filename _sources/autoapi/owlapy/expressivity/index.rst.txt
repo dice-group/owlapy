@@ -1,0 +1,44 @@
+owlapy.expressivity
+===================
+
+.. py:module:: owlapy.expressivity
+
+.. autoapi-nested-parse::
+
+   Compute the DL (Description Logic) expressivity of a loaded ontology.
+
+   Feature detection is delegated to OWLAPI's ``DLExpressivityChecker``
+   (already bundled for the Java reasoners in ``owlapy/jar_dependencies/``),
+   since its subsumption handling (e.g. full existential subsuming limited
+   existential, qualified cardinality subsuming unqualified) is mature and
+   battle-tested. The canonical DL name (e.g. ``"ALC"``, ``"SHIQ(D)"``) is
+   assembled here rather than via OWLAPI's own ``getDescriptionLogicName()``,
+   whose ``Construct.toString()`` returns internal debug labels
+   (``"RRESTR"``, ``"CINT"``, ...) instead of standard DL letters.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.expressivity.get_dl_expressivity
+
+
+Module Contents
+---------------
+
+.. py:function:: get_dl_expressivity(ontology: owlapy.owl_ontology.SyncOntology) -> str
+
+   Compute the DL expressivity name of an ontology, e.g. ``"ALCHN(D)"``.
+
+   :param ontology: A :class:`~owlapy.owl_ontology.SyncOntology` instance.
+
+   :returns: The standard Description Logic name for the ontology's expressivity.
+
+   :raises TypeError: If ``ontology`` is not backed by OWLAPI (only
+       :class:`~owlapy.owl_ontology.SyncOntology` is supported, since
+       it is the only ontology backend that exposes RBox axioms).
+
+

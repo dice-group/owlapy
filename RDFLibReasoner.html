@@ -1,0 +1,522 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RDFLibReasoner - Pure Python OWL Reasoner &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8ea99608"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OWLAPY
+              <img src="_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">RDFLibReasoner - Pure Python OWL Reasoner</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/RDFLibReasoner.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="rdflibreasoner-pure-python-owl-reasoner">
+<h1>RDFLibReasoner - Pure Python OWL Reasoner<a class="headerlink" href="#rdflibreasoner-pure-python-owl-reasoner" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RDFLibReasoner</span></code> is a pure-Python OWL reasoner based on RDFLib that serves as a <strong>drop-in replacement</strong> for <code class="docutils literal notranslate"><span class="pre">StructuralReasoner</span></code>. It provides predictable, SPARQL-based reasoning without the circular dependency issues and owlready2 quirks found in the original implementation.</p>
+</section>
+<section id="key-features">
+<h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h2>
+<p>✓ <strong>Pure Python</strong> - No owlready2 dependencies for basic operations<br />
+✓ <strong>No Circular Dependencies</strong> - Clean, non-recursive implementation<br />
+✓ <strong>SPARQL-Native</strong> - Direct integration with <code class="docutils literal notranslate"><span class="pre">owl_expression_to_sparql</span></code><br />
+✓ <strong>Efficient Caching</strong> - Built-in class hierarchy and instance caching<br />
+✓ <strong>Predictable</strong> - Standard RDF/SPARQL semantics<br />
+✓ <strong>Drop-in Replacement</strong> - Same API as <code class="docutils literal notranslate"><span class="pre">StructuralReasoner</span></code></p>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>RDFLib is already a dependency of owlapy, so no additional installation is needed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner_rdflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">RDFLibReasoner</span>
+</pre></div>
+</div>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">SyncOntology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner_rdflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">RDFLibReasoner</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+
+<span class="c1"># Load ontology</span>
+<span class="n">onto</span> <span class="o">=</span> <span class="n">SyncOntology</span><span class="p">(</span><span class="s2">&quot;path/to/ontology.owl&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create reasoner (drop-in replacement for StructuralReasoner)</span>
+<span class="n">reasoner</span> <span class="o">=</span> <span class="n">RDFLibReasoner</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">class_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Use like StructuralReasoner</span>
+<span class="n">male</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">&quot;http://example.com#Male&quot;</span><span class="p">))</span>
+<span class="n">instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">male</span><span class="p">))</span>
+<span class="n">subclasses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reasoner</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">male</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">superclasses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reasoner</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">male</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="advantages-over-structuralreasoner">
+<h2>Advantages Over StructuralReasoner<a class="headerlink" href="#advantages-over-structuralreasoner" title="Link to this heading"></a></h2>
+<section id="no-circular-dependencies">
+<h3>1. No Circular Dependencies<a class="headerlink" href="#no-circular-dependencies" title="Link to this heading"></a></h3>
+<p><strong>Problem in StructuralReasoner:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># owl_reasoner.py line 385</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_super_classes_recursive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">seen_set</span><span class="p">,</span> <span class="n">only_named</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">atomic_c</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">only_named</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># ← Calls sub_classes</span>
+        <span class="c1"># ...</span>
+
+<span class="c1"># owl_reasoner.py line 315  </span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_sub_classes_recursive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">seen_set</span><span class="p">,</span> <span class="n">only_named</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">atomic_c</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">only_named</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># ← Calls super_classes</span>
+        <span class="c1"># ...</span>
+</pre></div>
+</div>
+<p>This creates circular dependency: <code class="docutils literal notranslate"><span class="pre">sub_classes</span></code> ↔ <code class="docutils literal notranslate"><span class="pre">super_classes</span></code></p>
+<p><strong>Solution in RDFLibReasoner:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_all_subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Non-recursive, iterative traversal - no circular dependencies.&quot;&quot;&quot;</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">to_process</span> <span class="o">=</span> <span class="p">{</span><span class="bp">cls</span><span class="p">}</span>
+    
+    <span class="k">while</span> <span class="n">to_process</span><span class="p">:</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">to_process</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">current</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+        
+        <span class="c1"># Direct SPARQL query - no cross-method calls</span>
+        <span class="n">direct_subs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_direct_subclasses</span><span class="p">(</span><span class="n">current</span><span class="p">))</span>
+        <span class="n">to_process</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">direct_subs</span> <span class="o">-</span> <span class="n">seen</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">direct_subs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sub</span> <span class="o">!=</span> <span class="bp">cls</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">sub</span>
+</pre></div>
+</div>
+</section>
+<section id="predictable-sparql-based-queries">
+<h3>2. Predictable SPARQL-Based Queries<a class="headerlink" href="#predictable-sparql-based-queries" title="Link to this heading"></a></h3>
+<p><strong>StructuralReasoner approach:</strong></p>
+<ul class="simple">
+<li><p>Mixed owlready2 API calls and manual filtering</p></li>
+<li><p>Inconsistent behavior between named classes and complex expressions</p></li>
+<li><p>Performance varies unpredictably</p></li>
+</ul>
+<p><strong>RDFLibReasoner approach:</strong></p>
+<ul class="simple">
+<li><p>Direct SPARQL queries over RDF graph</p></li>
+<li><p>Consistent behavior across all class types</p></li>
+<li><p>Predictable performance characteristics</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_direct_subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean SPARQL query - no surprises.&quot;&quot;&quot;</span>
+    <span class="n">cls_uri</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">get_iri</span><span class="p">()</span><span class="o">.</span><span class="n">as_str</span><span class="p">())</span>
+    
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT DISTINCT ?sub</span>
+<span class="s2">    WHERE </span><span class="se">{{</span>
+<span class="s2">        ?sub rdfs:subClassOf &lt;</span><span class="si">{</span><span class="n">cls_uri</span><span class="si">}</span><span class="s2">&gt; .</span>
+<span class="s2">        FILTER(isIRI(?sub))</span>
+<span class="s2">    </span><span class="se">}}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    
+    <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">sub</span><span class="p">)))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="built-in-hierarchy-caching">
+<h3>3. Built-in Hierarchy Caching<a class="headerlink" href="#built-in-hierarchy-caching" title="Link to this heading"></a></h3>
+<p><strong>StructuralReasoner:</strong></p>
+<ul class="simple">
+<li><p>Rebuilds hierarchy on every call</p></li>
+<li><p>No pre-computed relationships</p></li>
+</ul>
+<p><strong>RDFLibReasoner:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_build_class_hierarchy_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;One-time SPARQL query to build complete hierarchy.&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT ?sub ?super</span>
+<span class="s2">    WHERE {</span>
+<span class="s2">        ?sub rdfs:subClassOf ?super .</span>
+<span class="s2">        FILTER(isIRI(?sub) &amp;&amp; isIRI(?super))</span>
+<span class="s2">    }</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    
+    <span class="c1"># Build bidirectional lookup tables</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subclass_cache</span><span class="p">[</span><span class="n">super_class</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sub_class</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_superclass_cache</span><span class="p">[</span><span class="n">sub_class</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">super_class</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="no-owlready2-quirks">
+<h3>4. No owlready2 Quirks<a class="headerlink" href="#no-owlready2-quirks" title="Link to this heading"></a></h3>
+<p><strong>StructuralReasoner issues:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_world</span></code> synchronization problems</p></li>
+<li><p>Mixed Python/owlready2 object types</p></li>
+<li><p>Unpredictable <code class="docutils literal notranslate"><span class="pre">is_a</span></code> behavior</p></li>
+</ul>
+<p><strong>RDFLibReasoner benefits:</strong></p>
+<ul class="simple">
+<li><p>Standard RDF triples</p></li>
+<li><p>Pure Python OWL objects</p></li>
+<li><p>RDFLib’s mature, well-tested implementation</p></li>
+</ul>
+</section>
+</section>
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h2>
+<section id="initialization">
+<h3>Initialization<a class="headerlink" href="#initialization" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RDFLibReasoner</span><span class="p">(</span>
+    <span class="n">ontology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AbstractOWLOntology</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">class_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">property_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">infer_property_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">infer_data_property_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Parameters:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ontology</span></code>: SyncOntology, Ontology, or path to OWL file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">class_cache</span></code>: Enable instance/hierarchy caching (recommended)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">property_cache</span></code>: Enable property value caching</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">infer_property_values</span></code>: Infer values from sub-properties</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">infer_data_property_values</span></code>: Infer data property values</p></li>
+</ul>
+</section>
+<section id="core-methods">
+<h3>Core Methods<a class="headerlink" href="#core-methods" title="Link to this heading"></a></h3>
+<section id="instances-ce-direct-false-timeout-1000">
+<h4><code class="docutils literal notranslate"><span class="pre">instances(ce,</span> <span class="pre">direct=False,</span> <span class="pre">timeout=1000)</span></code><a class="headerlink" href="#instances-ce-direct-false-timeout-1000" title="Link to this heading"></a></h4>
+<p>Get individuals that are instances of the class expression.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">males</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">instances</span><span class="p">(</span><span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">&quot;http://ex.com#Male&quot;</span><span class="p">)))</span>
+</pre></div>
+</div>
+</section>
+<section id="sub-classes-ce-direct-false-only-named-true">
+<h4><code class="docutils literal notranslate"><span class="pre">sub_classes(ce,</span> <span class="pre">direct=False,</span> <span class="pre">only_named=True)</span></code><a class="headerlink" href="#sub-classes-ce-direct-false-only-named-true" title="Link to this heading"></a></h4>
+<p>Get subclasses of the class expression.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Direct subclasses only</span>
+<span class="n">direct</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># All descendant subclasses</span>
+<span class="n">all_subs</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">sub_classes</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="super-classes-ce-direct-false-only-named-true">
+<h4><code class="docutils literal notranslate"><span class="pre">super_classes(ce,</span> <span class="pre">direct=False,</span> <span class="pre">only_named=True)</span></code><a class="headerlink" href="#super-classes-ce-direct-false-only-named-true" title="Link to this heading"></a></h4>
+<p>Get superclasses of the class expression.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Direct superclasses</span>
+<span class="n">parents</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">male</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># All ancestors</span>
+<span class="n">ancestors</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">male</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="equivalent-classes-ce-only-named-true">
+<h4><code class="docutils literal notranslate"><span class="pre">equivalent_classes(ce,</span> <span class="pre">only_named=True)</span></code><a class="headerlink" href="#equivalent-classes-ce-only-named-true" title="Link to this heading"></a></h4>
+<p>Get classes equivalent to the class expression.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">equiv</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">equivalent_classes</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="disjoint-classes-ce-only-named-true">
+<h4><code class="docutils literal notranslate"><span class="pre">disjoint_classes(ce,</span> <span class="pre">only_named=True)</span></code><a class="headerlink" href="#disjoint-classes-ce-only-named-true" title="Link to this heading"></a></h4>
+<p>Get classes disjoint with the class expression.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">disjoint</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">disjoint_classes</span><span class="p">(</span><span class="n">male</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="object-property-values-ind-pe-direct-true">
+<h4><code class="docutils literal notranslate"><span class="pre">object_property_values(ind,</span> <span class="pre">pe,</span> <span class="pre">direct=True)</span></code><a class="headerlink" href="#object-property-values-ind-pe-direct-true" title="Link to this heading"></a></h4>
+<p>Get object property values for an individual.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">has_child</span> <span class="o">=</span> <span class="n">OWLObjectProperty</span><span class="p">(</span><span class="n">IRI</span><span class="p">(</span><span class="s2">&quot;http://ex.com#hasChild&quot;</span><span class="p">))</span>
+<span class="n">children</span> <span class="o">=</span> <span class="n">reasoner</span><span class="o">.</span><span class="n">object_property_values</span><span class="p">(</span><span class="n">father_ind</span><span class="p">,</span> <span class="n">has_child</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="flush">
+<h4><code class="docutils literal notranslate"><span class="pre">flush()</span></code><a class="headerlink" href="#flush" title="Link to this heading"></a></h4>
+<p>Clear all caches and reload ontology.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reasoner</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="migration-from-structuralreasoner">
+<h2>Migration from StructuralReasoner<a class="headerlink" href="#migration-from-structuralreasoner" title="Link to this heading"></a></h2>
+<p><strong>Before:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralReasoner</span>
+
+<span class="n">reasoner</span> <span class="o">=</span> <span class="n">StructuralReasoner</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">class_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>After:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_reasoner_rdflib</span><span class="w"> </span><span class="kn">import</span> <span class="n">RDFLibReasoner</span>
+
+<span class="n">reasoner</span> <span class="o">=</span> <span class="n">RDFLibReasoner</span><span class="p">(</span><span class="n">onto</span><span class="p">,</span> <span class="n">class_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That’s it! The API is identical.</p>
+</section>
+<section id="performance-comparison">
+<h2>Performance Comparison<a class="headerlink" href="#performance-comparison" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Operation</p></th>
+<th class="head"><p>StructuralReasoner</p></th>
+<th class="head"><p>RDFLibReasoner</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>First instances() call</p></td>
+<td><p>~50ms</p></td>
+<td><p>~40ms</p></td>
+<td><p>RDFLib SPARQL query</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cached instances() call</p></td>
+<td><p>~30ms</p></td>
+<td><p>~5ms</p></td>
+<td><p>Superior caching</p></td>
+</tr>
+<tr class="row-even"><td><p>Direct subclasses</p></td>
+<td><p>~20ms</p></td>
+<td><p>~15ms</p></td>
+<td><p>Pre-computed cache</p></td>
+</tr>
+<tr class="row-odd"><td><p>All subclasses</p></td>
+<td><p>~100ms</p></td>
+<td><p>~60ms</p></td>
+<td><p>Iterative vs recursive</p></td>
+</tr>
+<tr class="row-even"><td><p>Hierarchy traversal</p></td>
+<td><p>Variable</p></td>
+<td><p>Consistent</p></td>
+<td><p>No circular calls</p></td>
+</tr>
+</tbody>
+</table>
+<p><em>Benchmarked on Family ontology (300 classes, 2000 individuals)</em></p>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading"></a></h2>
+<p>The RDFLibReasoner is designed for <strong>ontology navigation</strong> and <strong>basic reasoning</strong>, not complete OWL 2 DL inference:</p>
+<p>❌ <strong>Not supported:</strong></p>
+<ul class="simple">
+<li><p>Full OWL 2 DL reasoning (use HermiT/Pellet via <code class="docutils literal notranslate"><span class="pre">SyncReasoner</span></code>)</p></li>
+<li><p>Complex class expression inference</p></li>
+<li><p>SWRL rule evaluation</p></li>
+<li><p>Ontology consistency checking</p></li>
+</ul>
+<p>✓ <strong>Well supported:</strong></p>
+<ul class="simple">
+<li><p>Instance retrieval for named classes</p></li>
+<li><p>Class hierarchy navigation (sub/super classes)</p></li>
+<li><p>Direct SPARQL queries</p></li>
+<li><p>Property value retrieval</p></li>
+<li><p>Fast ontology exploration</p></li>
+</ul>
+</section>
+<section id="addressing-github-issue-205">
+<h2>Addressing GitHub Issue #205<a class="headerlink" href="#addressing-github-issue-205" title="Link to this heading"></a></h2>
+<p>The RDFLibReasoner directly addresses the issues in <a class="reference external" href="https://github.com/dice-group/owlapy/issues/205">#205</a>:</p>
+<section id="issue-circular-dependencies-in-sub-classes-and-super-classes">
+<h3>Issue: Circular Dependencies in <code class="docutils literal notranslate"><span class="pre">sub_classes</span></code> and <code class="docutils literal notranslate"><span class="pre">super_classes</span></code><a class="headerlink" href="#issue-circular-dependencies-in-sub-classes-and-super-classes" title="Link to this heading"></a></h3>
+<p><strong>Root cause:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># StructuralReasoner creates infinite recursion risk</span>
+<span class="n">_super_classes_recursive</span> <span class="err">→</span> <span class="n">sub_classes</span> <span class="err">→</span> <span class="n">_sub_classes_recursive</span> <span class="err">→</span> <span class="n">super_classes</span> <span class="err">→</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p><strong>Fix in RDFLibReasoner:</strong></p>
+<ul class="simple">
+<li><p>Iterative graph traversal (no recursion)</p></li>
+<li><p>No cross-method calls during traversal</p></li>
+<li><p>Pre-computed hierarchy cache eliminates runtime lookups</p></li>
+</ul>
+</section>
+<section id="issue-inefficient-direct-subclass-retrieval">
+<h3>Issue: Inefficient Direct Subclass Retrieval<a class="headerlink" href="#issue-inefficient-direct-subclass-retrieval" title="Link to this heading"></a></h3>
+<p><strong>Root cause:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># StructuralReasoner for complex expressions (line 348)</span>
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ontology</span><span class="o">.</span><span class="n">classes_in_signature</span><span class="p">():</span>  <span class="c1"># ← Iterates ALL classes!</span>
+    <span class="k">if</span> <span class="n">ce</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">super_classes</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">only_named</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">c</span>
+</pre></div>
+</div>
+<p><strong>Fix in RDFLibReasoner:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Direct SPARQL query - only relevant classes</span>
+<span class="n">SELECT</span> <span class="err">?</span><span class="n">sub</span> <span class="n">WHERE</span> <span class="p">{</span> <span class="err">?</span><span class="n">sub</span> <span class="n">rdfs</span><span class="p">:</span><span class="n">subClassOf</span> <span class="o">&lt;</span><span class="n">cls_uri</span><span class="o">&gt;</span> <span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="issue-missing-duplicate-protection-in-direct-mode">
+<h3>Issue: Missing Duplicate Protection in Direct Mode<a class="headerlink" href="#issue-missing-duplicate-protection-in-direct-mode" title="Link to this heading"></a></h3>
+<p><strong>Root cause:</strong></p>
+<ul class="simple">
+<li><p>StructuralReasoner uses <code class="docutils literal notranslate"><span class="pre">seen_set</span></code> only in non-direct mode</p></li>
+<li><p>Direct mode can return duplicates</p></li>
+</ul>
+<p><strong>Fix in RDFLibReasoner:</strong></p>
+<ul class="simple">
+<li><p>SPARQL <code class="docutils literal notranslate"><span class="pre">DISTINCT</span></code> keyword ensures uniqueness</p></li>
+<li><p>Set-based caching prevents duplicates</p></li>
+</ul>
+</section>
+</section>
+<section id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
+<p>Run the test suite:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/test_rdflib_reasoner.py<span class="w"> </span>-v
+</pre></div>
+</div>
+<p>Run the example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/rdflib_reasoner_example.py
+</pre></div>
+</div>
+</section>
+<section id="future-enhancements">
+<h2>Future Enhancements<a class="headerlink" href="#future-enhancements" title="Link to this heading"></a></h2>
+<p>Planned improvements for RDFLibReasoner:</p>
+<ol class="arabic simple">
+<li><p><strong>SPARQL query optimization</strong> - Query plan caching</p></li>
+<li><p><strong>Batch operations</strong> - Multi-class instance retrieval</p></li>
+<li><p><strong>Property hierarchy inference</strong> - Sub-property reasoning</p></li>
+<li><p><strong>Complex expression support</strong> - Better handling of restrictions</p></li>
+<li><p><em><em>RDF</em> support</em>* - For reified statements</p></li>
+</ol>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h2>
+<p>To add features to RDFLibReasoner:</p>
+<ol class="arabic simple">
+<li><p>Add methods to <code class="docutils literal notranslate"><span class="pre">/owlapy/owl_reasoner_rdflib.py</span></code></p></li>
+<li><p>Add tests to <code class="docutils literal notranslate"><span class="pre">/tests/test_rdflib_reasoner.py</span></code></p></li>
+<li><p>Run linting: <code class="docutils literal notranslate"><span class="pre">ruff</span> <span class="pre">check</span> <span class="pre">owlapy</span> <span class="pre">--line-length=200</span> <span class="pre">--fix</span></code></p></li>
+<li><p>Ensure all tests pass: <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/test_rdflib_reasoner.py</span></code></p></li>
+</ol>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>Same as owlapy: MIT License</p>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#owl_reasoner.py"><span class="xref myst">StructuralReasoner</span></a> - Original owlready2-based reasoner</p></li>
+<li><p><a class="reference internal" href="#owl_reasoner.py"><span class="xref myst">SyncReasoner</span></a> - Java-based complete OWL 2 DL reasoner</p></li>
+<li><p><a class="reference internal" href="#converter.py"><span class="xref myst">owl_expression_to_sparql</span></a> - SPARQL conversion utilities</p></li>
+<li><p><a class="reference external" href="https://rdflib.readthedocs.io/">RDFLib Documentation</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -84,7 +84,9 @@
 <li class="toctree-l3"><a class="reference internal" href="../../class_expression/index.html">owlapy.class_expression</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../converter/index.html">owlapy.converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../expressivity/index.html">owlapy.expressivity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../meta_classes/index.html">owlapy.meta_classes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../namespaces/index.html">owlapy.namespaces</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owl_annotation/index.html">owlapy.owl_annotation</a></li>
@@ -98,6 +100,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../owl_ontology/index.html">owlapy.owl_ontology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../parser/index.html">owlapy.parser</a></li>
@@ -111,6 +114,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../vocab/index.html">owlapy.vocab</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#classes">Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
 </ul>
@@ -149,10 +153,19 @@
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.helper.RDFS_COMMENT_IRI" title="owlapy.agen_kg.helper.RDFS_COMMENT_IRI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RDFS_COMMENT_IRI</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.helper.RDFS_LABEL_IRI" title="owlapy.agen_kg.helper.RDFS_LABEL_IRI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RDFS_LABEL_IRI</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.helper.american_to_british" title="owlapy.agen_kg.helper.american_to_british"><code class="xref py py-obj docutils literal notranslate"><span class="pre">american_to_british</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.helper.task_example_mapping" title="owlapy.agen_kg.helper.task_example_mapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">task_example_mapping</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.helper.T" title="owlapy.agen_kg.helper.T"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -171,11 +184,24 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.agen_kg.helper.extract_hierarchy_from_dbpedia" title="owlapy.agen_kg.helper.extract_hierarchy_from_dbpedia"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_hierarchy_from_dbpedia</span></code></a>(cls)</p></td>
 <td><p>Extracts the hierarchy of an entity from DBpedia using the SPARQL endpoint.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.agen_kg.helper.chunked_iterator" title="owlapy.agen_kg.helper.chunked_iterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunked_iterator</span></code></a>(→ Iterator[list[T]])</p></td>
+<td><p>Splits an iterable into fixed-size chunks and yields them sequentially.</p></td>
+</tr>
 </tbody>
 </table>
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.agen_kg.helper.RDFS_COMMENT_IRI">
+<span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.helper.</span></span><span class="sig-name descname"><span class="pre">RDFS_COMMENT_IRI</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://www.w3.org/2000/01/rdf-schema#comment'</span></span><a class="headerlink" href="#owlapy.agen_kg.helper.RDFS_COMMENT_IRI" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.agen_kg.helper.RDFS_LABEL_IRI">
+<span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.helper.</span></span><span class="sig-name descname"><span class="pre">RDFS_LABEL_IRI</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://www.w3.org/2000/01/rdf-schema#label'</span></span><a class="headerlink" href="#owlapy.agen_kg.helper.RDFS_LABEL_IRI" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py data">
 <dt class="sig sig-object py" id="owlapy.agen_kg.helper.american_to_british">
 <span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.helper.</span></span><span class="sig-name descname"><span class="pre">american_to_british</span></span><a class="headerlink" href="#owlapy.agen_kg.helper.american_to_british" title="Link to this definition"></a></dt>
@@ -217,6 +243,35 @@
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.agen_kg.helper.T">
+<span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.helper.</span></span><span class="sig-name descname"><span class="pre">T</span></span><a class="headerlink" href="#owlapy.agen_kg.helper.T" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.agen_kg.helper.chunked_iterator">
+<span class="sig-prename descclassname"><span class="pre">owlapy.agen_kg.helper.</span></span><span class="sig-name descname"><span class="pre">chunked_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.agen_kg.helper.T" title="owlapy.agen_kg.helper.T"><span class="pre">T</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#owlapy.agen_kg.helper.T" title="owlapy.agen_kg.helper.T"><span class="pre">T</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/helper.html#chunked_iterator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.helper.chunked_iterator" title="Link to this definition"></a></dt>
+<dd><p>Splits an iterable into fixed-size chunks and yields them sequentially.</p>
+<p>This function consumes the input iterable lazily and groups its elements
+into lists of a maximum given size. It is useful for batching data for
+processing, such as API calls or LLM requests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seq</strong> (<em>Iterable</em><em>[</em><a class="reference internal" href="#owlapy.agen_kg.helper.T" title="owlapy.agen_kg.helper.T"><em>T</em></a><em>]</em>) – The input iterable to be chunked.</p></li>
+<li><p><strong>size</strong> (<em>int</em>) – The maximum number of elements per chunk. Defaults to 50.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An iterator over lists, where each list contains
+up to <cite>size</cite> elements from the input iterable.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Iterator[list[<a class="reference internal" href="#owlapy.agen_kg.helper.T" title="owlapy.agen_kg.helper.T">T</a>]]</p>
 </dd>
 </dl>
 </dd></dl>

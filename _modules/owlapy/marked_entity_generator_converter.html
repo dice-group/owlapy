@@ -1,0 +1,1224 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.marked_entity_generator_converter &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.marked_entity_generator_converter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.marked_entity_generator_converter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Class &amp; property generator converter – port of the Java generateClassQuery /</span>
+<span class="sd">generatePropertyQuery / SparqlBuildingVisitor.</span>
+
+<span class="sd">This module provides a subclass of :class:`Owl2SparqlConverter` that supports a</span>
+<span class="sd">*context position marker*.  When the marker appears in a class expression the</span>
+<span class="sd">converter emits ``?variable a ?class .`` instead of a concrete class IRI, which</span>
+<span class="sd">makes it possible to generate SPARQL queries that *discover* classes rather</span>
+<span class="sd">than retrieving instances of a fixed class.</span>
+
+<span class="sd">For property discovery the same marker triggers ``?variable ?prop [] .``</span>
+<span class="sd">(or ``[] ?prop ?variable .`` when inverted), mirroring the Java</span>
+<span class="sd">``Suggestor.generatePropertyQuery``.</span>
+
+<span class="sd">The top-level helpers :func:`owl_expression_to_class_query` and</span>
+<span class="sd">:func:`owl_expression_to_property_query` mirror :func:`owl_expression_to_sparql`</span>
+<span class="sd">but produce queries of the form produced by the Java suggestor.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdflib.plugins.sparql.parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parseQuery</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OWLClass</span><span class="p">,</span>
+    <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDataCardinalityRestriction</span><span class="p">,</span>
+    <span class="n">OWLDataExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataHasValue</span><span class="p">,</span>
+    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataOneOf</span><span class="p">,</span>
+    <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDatatypeRestriction</span><span class="p">,</span>
+    <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectCardinalityRestriction</span><span class="p">,</span>
+    <span class="n">OWLObjectComplementOf</span><span class="p">,</span>
+    <span class="n">OWLObjectExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectHasSelf</span><span class="p">,</span>
+    <span class="n">OWLObjectHasValue</span><span class="p">,</span>
+    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span>
+    <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectOneOf</span><span class="p">,</span>
+    <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectUnionOf</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Owl2SparqlConverter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLNamedIndividual</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span><span class="p">,</span> <span class="n">TopOWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.vocab</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLRDFVocabulary</span>
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Marker – a well-known OWLClass instance that will never collide with real</span>
+<span class="c1"># ontology classes.  Use it in a class expression to mark the position where</span>
+<span class="c1"># ``?variable a ?class .`` should be injected.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="n">CONTEXT_POSITION_MARKER</span> <span class="o">=</span> <span class="n">OWLClass</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;http://owlapy.internal/CONTEXT_POSITION_MARKER&quot;</span><span class="p">))</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Helper</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_generate_values_stmt</span><span class="p">(</span><span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">individuals</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a SPARQL ``VALUES`` clause binding *variable* to *individuals*.</span>
+
+<span class="sd">    Example output::</span>
+
+<span class="sd">        VALUES ?pos { &lt;http://ex.org/a&gt; &lt;http://ex.org/b&gt; } .</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">iris</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">ind</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">individuals</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;VALUES </span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2"> </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="n">iris</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2"> . &quot;</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Converter subclass</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="QueryGenerator">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.QueryGenerator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueryGenerator</span><span class="p">(</span><span class="n">Owl2SparqlConverter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extends :class:`Owl2SparqlConverter` with *marker-aware* conversion and</span>
+<span class="sd">    the ability to generate ``generateClassQuery``-style SPARQL queries that</span>
+<span class="sd">    discover OWL classes with their positive/negative hit counts.</span>
+
+<span class="sd">    The marker concept :data:`CONTEXT_POSITION_MARKER` can be placed anywhere</span>
+<span class="sd">    inside a class expression tree.  When the converter encounters it the</span>
+<span class="sd">    emitted triple pattern becomes ``?currentVar a ?class .`` instead of the</span>
+<span class="sd">    usual ``?currentVar a &lt;SomeConcreteIRI&gt; .``.  If the marker appears inside</span>
+<span class="sd">    a negation (``OWLObjectComplementOf``) the triple pattern is additionally</span>
+<span class="sd">    wrapped in ``FILTER NOT EXISTS { … }``, and a type axiom for ``?class`` is</span>
+<span class="sd">    added (``?class a owl:Class .``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">Owl2SparqlConverter</span><span class="o">.</span><span class="vm">__slots__</span><span class="p">,</span> <span class="s1">&#39;_marker_mode&#39;</span><span class="p">,</span> <span class="s1">&#39;_inside_filter&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_property_marker_mode&#39;</span><span class="p">,</span> <span class="s1">&#39;_inverted&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_negated_class_marker_mode&#39;</span><span class="p">)</span>
+
+    <span class="n">_marker_mode</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">_inside_filter</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">_property_marker_mode</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">_inverted</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">_negated_class_marker_mode</span><span class="p">:</span> <span class="nb">bool</span>
+
+    <span class="c1"># -- override convert to reset extra flags --------------------------------</span>
+
+<div class="viewcode-block" id="QueryGenerator.convert">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.QueryGenerator.convert">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">marker_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">property_marker_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">inverted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">negated_class_marker_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">_preserve_mapping</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Like the parent ``convert`` but accepts extra marker flags.</span>
+
+<span class="sd">        When *marker_mode* is ``True`` the :data:`CONTEXT_POSITION_MARKER`</span>
+<span class="sd">        class is treated specially – emitting ``?var a ?class .``.</span>
+
+<span class="sd">        When *negated_class_marker_mode* is ``True`` the marker emits</span>
+<span class="sd">        ``?class a owl:Class . FILTER NOT EXISTS { ?var a ?class . }``</span>
+<span class="sd">        instead, which discovers classes that the individual is **not** a</span>
+<span class="sd">        member of.  This mirrors the Java ``generateNegatedClassQuery``.</span>
+
+<span class="sd">        When *property_marker_mode* is ``True`` the marker emits</span>
+<span class="sd">        ``?var ?prop [] .`` (or ``[] ?prop ?var .`` when *inverted* is ``True``).</span>
+
+<span class="sd">        When *_preserve_mapping* is ``True``, the existing</span>
+<span class="sd">        :class:`VariablesMapping` counters are preserved so that a</span>
+<span class="sd">        subsequent conversion produces fresh intermediate variable names</span>
+<span class="sd">        (e.g. ``?s_3`` instead of ``?s_1``).  This is essential when the</span>
+<span class="sd">        positive and negative blocks appear in the same outer query scope.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_marker_mode</span> <span class="o">=</span> <span class="n">marker_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property_marker_mode</span> <span class="o">=</span> <span class="n">property_marker_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_negated_class_marker_mode</span> <span class="o">=</span> <span class="n">negated_class_marker_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inverted</span> <span class="o">=</span> <span class="n">inverted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inside_filter</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">_preserve_mapping</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;mapping&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Inline the parent&#39;s convert() logic but keep the existing</span>
+            <span class="c1"># VariablesMapping so intermediate variable names continue from</span>
+            <span class="c1"># where the previous conversion left off.</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="n">ce</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sparql</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent_var</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variable_entities</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_intersection</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># Do NOT reset self.mapping – keep the existing counters so that</span>
+            <span class="c1"># new intermediate variables get fresh names.  But clear the</span>
+            <span class="c1"># entity-to-variable dict to avoid stale assignments.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grouping_vars</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">having_conditions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">for_all_de_morgan</span> <span class="o">=</span> <span class="n">for_all_de_morgan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">named_individuals</span> <span class="o">=</span> <span class="n">named_individuals</span>
+            <span class="c1"># Mirrors Owl2SparqlConverter.convert(): restrict the root variable to owl:NamedIndividual</span>
+            <span class="c1"># instances when requested.</span>
+            <span class="k">if</span> <span class="n">named_individuals</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">OWLRDFVocabulary</span><span class="o">.</span><span class="n">OWL_NAMED_INDIVIDUAL</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">root_variable</span><span class="p">):</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_parent</span><span class="p">(</span><span class="n">ce</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparql</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span>
+                                   <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                   <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">)</span></div>
+
+
+    <span class="c1"># -- process overloads ----------------------------------------------------</span>
+    <span class="c1"># We need to re-register the singledispatchmethod overloads because</span>
+    <span class="c1"># singledispatchmethod does not participate in normal inheritance; the</span>
+    <span class="c1"># base-class registrations are inherited, but we override only the ones</span>
+    <span class="c1"># that need marker-aware behaviour.</span>
+
+<div class="viewcode-block" id="QueryGenerator.process">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.QueryGenerator.process">[docs]</a>
+    <span class="nd">@singledispatchmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
+        <span class="c1"># Delegate unknown types to the parent implementation.</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span></div>
+
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_marker_mode</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_marker_mode</span>
+                <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_negated_class_marker_mode</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ce</span> <span class="o">==</span> <span class="n">CONTEXT_POSITION_MARKER</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_marker_mode</span><span class="p">:</span>
+                <span class="c1"># Property marker – emit ``?var ?prop [] .`` or ``[] ?prop ?var .``</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverted</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[] ?prop </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> . &quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> ?prop [] . &quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_negated_class_marker_mode</span><span class="p">:</span>
+                <span class="c1"># Negated class marker – emit:</span>
+                <span class="c1">#   ?class a owl:Class .</span>
+                <span class="c1">#   FILTER NOT EXISTS { ?var a ?class . }</span>
+                <span class="c1"># This discovers classes the individual is NOT a member of.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;?class a &lt;http://www.w3.org/2002/07/owl#Class&gt; . &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;FILTER NOT EXISTS </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> a ?class . </span><span class="se">}}</span><span class="s2"> &quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Class marker – emit ``?var a ?class .``</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> a ?class . &quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fall back to the base-class logic.</span>
+            <span class="c1"># Inline the parent implementation because singledispatch doesn&#39;t</span>
+            <span class="c1"># allow calling super() for a registered type directly.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">==</span> <span class="n">ce</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">ce</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;http://www.w3.org/2002/07/owl#Thing&gt;&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+
+        <span class="c1"># If the complement is directly inside an intersection at the top level, the intersection</span>
+        <span class="c1"># already provides bindings, so we don&#39;t need the extra triple pattern (mirrors the fix in</span>
+        <span class="c1"># Owl2SparqlConverter.process(OWLObjectComplementOf) in converter.py).</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">modal_depth</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
+
+        <span class="n">old_inside</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inside_filter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inside_filter</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_operand</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; }&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If the marker was inside this negation, add type constraint</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contains_marker</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_operand</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_marker_mode</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_negated_class_marker_mode</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; ?class a &lt;http://www.w3.org/2002/07/owl#Class&gt; . &quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_marker_mode</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; ?prop a &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#Property&gt; . &quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inside_filter</span> <span class="o">=</span> <span class="n">old_inside</span>
+
+    <span class="c1"># Re-register all other CE types so they are part of *this* singledispatch</span>
+    <span class="c1"># family (otherwise Python would fall through to the base-class dispatch</span>
+    <span class="c1"># which doesn&#39;t know about our overridden ``process`` root).</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; UNION &quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;{ &quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_parent</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; }&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">):</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">object_variable</span><span class="p">)</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">for_all_de_morgan</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forAllDeMorgan</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forAll</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectHasValue</span><span class="p">):</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">(),</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectCardinalityRestriction</span><span class="p">):</span>
+        <span class="n">subject_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="n">cardinality</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectMinCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;&gt;=&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;&lt;=&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectExactCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;=&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">comparator</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span> <span class="ow">or</span> <span class="n">cardinality</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject_variable</span><span class="si">}</span><span class="s2"> WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">subject_variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">object_variable</span><span class="p">)</span>
+
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject_variable</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; HAVING ( COUNT ( </span><span class="si">{</span><span class="n">object_variable</span><span class="si">}</span><span class="s2"> ) </span><span class="si">{</span><span class="n">comparator</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cardinality</span><span class="si">}</span><span class="s2"> ) </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">comparator</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span> <span class="ow">or</span> <span class="n">cardinality</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;} UNION {&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject_variable</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">(),</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;FILTER NOT EXISTS { &quot;</span><span class="p">)</span>
+            <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">object_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">object_variable</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; } }&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataCardinalityRestriction</span><span class="p">):</span>
+        <span class="n">subject_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">property_expression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
+        <span class="n">cardinality</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataMinCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;&gt;=&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataMaxCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;&lt;=&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLDataExactCardinality</span><span class="p">):</span>
+            <span class="n">comparator</span> <span class="o">=</span> <span class="s2">&quot;=&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject_variable</span><span class="si">}</span><span class="s2"> WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="p">,</span> <span class="n">object_variable</span><span class="p">)</span>
+
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject_variable</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; HAVING ( COUNT ( </span><span class="si">{</span><span class="n">object_variable</span><span class="si">}</span><span class="s2"> ) </span><span class="si">{</span><span class="n">comparator</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cardinality</span><span class="si">}</span><span class="s2"> ) </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectHasSelf</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">(),</span> <span class="n">subject</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">modal_depth</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="s2">&quot;?p&quot;</span><span class="p">,</span> <span class="s2">&quot;?o&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> IN ( &quot;</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">individuals</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">ind</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; ) )&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">):</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">property_expression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="p">,</span> <span class="n">object_variable</span><span class="p">)</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">object_variable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="n">object_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">property_expression</span><span class="p">,</span> <span class="n">OWLDataProperty</span><span class="p">)</span>
+        <span class="n">predicate</span> <span class="o">=</span> <span class="n">property_expression</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">object_variable</span><span class="p">)</span>
+
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">cnt_var1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_count_var</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> ( COUNT( </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> ) AS </span><span class="si">{</span><span class="n">cnt_var1</span><span class="si">}</span><span class="s2"> ) WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_variable</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">filler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">new_individual_variable</span><span class="p">()</span>
+        <span class="n">cnt_var2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_count_var</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2"> SELECT </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> ( COUNT( </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> ) AS </span><span class="si">{</span><span class="n">cnt_var2</span><span class="si">}</span><span class="s2"> ) WHERE </span><span class="se">{{</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">predicate</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="se">}}</span><span class="s2"> GROUP BY </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER( </span><span class="si">{</span><span class="n">cnt_var1</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">cnt_var2</span><span class="si">}</span><span class="s2"> )&quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataHasValue</span><span class="p">):</span>
+        <span class="n">property_expression</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">OWLLiteral</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="p">,</span> <span class="n">property_expression</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="o">!=</span> <span class="n">TopOWLDatatype</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( DATATYPE ( </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> ) = &lt;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt; ) &quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( isLiteral ( </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s2"> ) ) &quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">OWLDataOneOf</span><span class="p">):</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">modal_depth</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append_triple</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="s2">&quot;?p&quot;</span><span class="p">,</span> <span class="s2">&quot;?o&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; FILTER ( </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2"> IN ( &quot;</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; ) ) &quot;</span><span class="p">)</span>
+
+    <span class="nd">@process</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">OWLDatatypeRestriction</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">_Variable_facet_comp</span>
+        <span class="n">frs</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_facet_restrictions</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">fr</span> <span class="ow">in</span> <span class="n">frs</span><span class="p">:</span>
+            <span class="n">facet</span> <span class="o">=</span> <span class="n">fr</span><span class="o">.</span><span class="n">get_facet</span><span class="p">()</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">fr</span><span class="o">.</span><span class="n">get_facet_value</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">facet</span> <span class="ow">in</span> <span class="n">_Variable_facet_comp</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39; FILTER ( </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_variable</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">_Variable_facet_comp</span><span class="p">[</span><span class="n">facet</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39; &quot;</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">get_literal</span><span class="p">()</span><span class="si">}</span><span class="s1">&quot;^^&lt;</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">()</span><span class="o">.</span><span class="n">to_string_id</span><span class="p">()</span><span class="si">}</span><span class="s1">&gt; ) &#39;</span><span class="p">)</span>
+
+    <span class="c1"># -- helper: check whether a CE tree contains the marker ------------------</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_contains_marker</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return ``True`` if *ce* (or any sub-expression) is the marker.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ce</span> <span class="o">==</span> <span class="n">CONTEXT_POSITION_MARKER</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">QueryGenerator</span><span class="o">.</span><span class="n">_contains_marker</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_operand</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">QueryGenerator</span><span class="o">.</span><span class="n">_contains_marker</span><span class="p">(</span><span class="n">op</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">QueryGenerator</span><span class="o">.</span><span class="n">_contains_marker</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_contains_union_with_marker</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return ``True`` if *ce* contains an ``OWLObjectUnionOf`` that has</span>
+<span class="sd">        the :data:`CONTEXT_POSITION_MARKER` as a descendant.</span>
+
+<span class="sd">        When a UNION involves the marker variable (``?class``), the standard</span>
+<span class="sd">        sub-query approach does not work because ``?class`` is only bound</span>
+<span class="sd">        inside one branch of the UNION.  In this case the query must</span>
+<span class="sd">        pre-enumerate ``?class`` via a selective ``SELECT DISTINCT ?class``</span>
+<span class="sd">        subquery scoped to the example individuals.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClass</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">QueryGenerator</span><span class="o">.</span><span class="n">_contains_union_with_marker</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_operand</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">):</span>
+            <span class="c1"># This IS a union – check if the marker is anywhere inside it</span>
+            <span class="k">if</span> <span class="n">QueryGenerator</span><span class="o">.</span><span class="n">_contains_marker</span><span class="p">(</span><span class="n">ce</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="c1"># Also recurse into operands to find nested unions-with-marker</span>
+            <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">QueryGenerator</span><span class="o">.</span><span class="n">_contains_union_with_marker</span><span class="p">(</span><span class="n">op</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">QueryGenerator</span><span class="o">.</span><span class="n">_contains_union_with_marker</span><span class="p">(</span><span class="n">op</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="p">(</span><span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">QueryGenerator</span><span class="o">.</span><span class="n">_contains_union_with_marker</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># -- main query builder ---------------------------------------------------</span>
+
+<div class="viewcode-block" id="QueryGenerator.as_class_query">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.QueryGenerator.as_class_query">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_class_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+        <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+        <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+        <span class="n">root_variable_pos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?pos&quot;</span><span class="p">,</span>
+        <span class="n">root_variable_neg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?neg&quot;</span><span class="p">,</span>
+        <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">filter_expression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a SPARQL query that discovers OWL classes with hit-counts.</span>
+
+<span class="sd">        The generated query mirrors the Java ``Suggestor.generateClassQuery``:</span>
+
+<span class="sd">        .. code-block:: sparql</span>
+
+<span class="sd">            SELECT ?class (MAX(?tp) AS ?posHits) (COUNT(DISTINCT ?neg) AS ?negHits) WHERE {</span>
+<span class="sd">                { SELECT ?class (COUNT(DISTINCT ?pos) AS ?tp) WHERE {</span>
+<span class="sd">                    VALUES ?pos { ... }</span>
+<span class="sd">                    &lt;context pattern with ?pos as root and ?class at marker&gt;</span>
+<span class="sd">                } GROUP BY ?class }</span>
+<span class="sd">                OPTIONAL {</span>
+<span class="sd">                    VALUES ?neg { ... }</span>
+<span class="sd">                    &lt;same context pattern but with ?neg&gt;</span>
+<span class="sd">                }</span>
+<span class="sd">            } GROUP BY ?class</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context: A class expression that **must** contain</span>
+<span class="sd">                :data:`CONTEXT_POSITION_MARKER` at the position where</span>
+<span class="sd">                ``?variable a ?class .`` should be injected.</span>
+<span class="sd">            positive_examples: Positive example individuals.</span>
+<span class="sd">            negative_examples: Negative example individuals.</span>
+<span class="sd">            root_variable_pos: Variable name for positive examples (default ``?pos``).</span>
+<span class="sd">            root_variable_neg: Variable name for negative examples (default ``?neg``).</span>
+<span class="sd">            for_all_de_morgan: Passed through to :meth:`convert`.</span>
+<span class="sd">            named_individuals: Passed through to :meth:`convert`.</span>
+<span class="sd">            filter_expression: Optional additional class expression used to</span>
+<span class="sd">                create a ``FILTER NOT EXISTS`` constraint on the root variable.</span>
+<span class="sd">            validate: If ``True``, validates the generated SPARQL query using</span>
+<span class="sd">                ``rdflib.parseQuery`` (slower but safer).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A valid SPARQL SELECT query string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># -- 1. Build positive context string ---------------------------------</span>
+        <span class="n">positive_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">positive_examples</span><span class="p">)</span>
+        <span class="n">negative_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">negative_examples</span><span class="p">)</span>
+
+        <span class="n">values_pos</span> <span class="o">=</span> <span class="n">_generate_values_stmt</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">positive_list</span><span class="p">)</span>
+
+        <span class="c1"># Convert the context CE with marker mode enabled</span>
+        <span class="n">tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                          <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                          <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                          <span class="n">marker_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">context_parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">values_pos</span><span class="p">]</span>
+
+        <span class="c1"># Optional filter expression (mirrors Java createNotExistsFilter)</span>
+        <span class="k">if</span> <span class="n">filter_expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filter_tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">filter_expression</span><span class="p">,</span>
+                                     <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                     <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                                     <span class="n">marker_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">context_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FILTER NOT EXISTS </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filter_tp</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2"> &quot;</span><span class="p">)</span>
+
+        <span class="n">context_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+        <span class="n">context_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">context_parts</span><span class="p">)</span>
+
+        <span class="c1"># -- 2. Build negative context string ---------------------------------</span>
+        <span class="n">values_neg</span> <span class="o">=</span> <span class="n">_generate_values_stmt</span><span class="p">(</span><span class="n">root_variable_neg</span><span class="p">,</span> <span class="n">negative_list</span><span class="p">)</span>
+
+        <span class="n">has_union_marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contains_union_with_marker</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">has_union_marker</span><span class="p">:</span>
+            <span class="c1"># When a UNION involves the marker, we must do a fresh conversion</span>
+            <span class="c1"># for the negative context so that intermediate variables (e.g.</span>
+            <span class="c1"># ?s_1, ?s_2) are independent between the positive and negative</span>
+            <span class="c1"># blocks.  We use _preserve_mapping=True so that the variable</span>
+            <span class="c1"># counter continues from where the positive conversion left off,</span>
+            <span class="c1"># producing distinct variable names (e.g. ?s_3, ?s_4).</span>
+            <span class="n">neg_tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_neg</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                                  <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                  <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                                  <span class="n">marker_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                  <span class="n">_preserve_mapping</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">neg_context_parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">values_neg</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">filter_expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">neg_filter_tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_neg</span><span class="p">,</span> <span class="n">filter_expression</span><span class="p">,</span>
+                                             <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                             <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                                             <span class="n">marker_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                             <span class="n">_preserve_mapping</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">neg_context_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FILTER NOT EXISTS </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">neg_filter_tp</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2"> &quot;</span><span class="p">)</span>
+            <span class="n">neg_context_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">neg_tp</span><span class="p">)</span>
+            <span class="n">neg_context</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">neg_context_parts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">neg_context</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s2">&quot;VALUES\s+&quot;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;\s+\{[^}]*}&quot;</span><span class="p">,</span>
+                <span class="n">values_neg</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;. &quot;</span><span class="p">),</span>
+                <span class="n">context_string</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># Replace remaining occurrences of the positive variable</span>
+            <span class="n">neg_context</span> <span class="o">=</span> <span class="n">neg_context</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_pos</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_neg</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+            <span class="n">neg_context</span> <span class="o">=</span> <span class="n">neg_context</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_pos</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_neg</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># -- 3. Assemble final query ------------------------------------------</span>
+        <span class="c1"># When the context contains a UNION involving the marker, we need</span>
+        <span class="c1"># a different structure: pre-enumerate ?class with a selective</span>
+        <span class="c1"># ``SELECT DISTINCT ?class`` subquery scoped to the example</span>
+        <span class="c1"># individuals so that ?class is visible across UNION branches.</span>
+        <span class="k">if</span> <span class="n">has_union_marker</span><span class="p">:</span>
+            <span class="n">binding_subquery</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;  { SELECT DISTINCT ?class WHERE {</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;      { &quot;</span> <span class="o">+</span> <span class="n">context_string</span> <span class="o">+</span> <span class="s2">&quot; }</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;      UNION</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;      { &quot;</span> <span class="o">+</span> <span class="n">neg_context</span> <span class="o">+</span> <span class="s2">&quot; }</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;  } }</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">query_parts</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;SELECT ?class (COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_pos</span> <span class="o">+</span> <span class="s2">&quot;) AS ?posHits) &quot;</span>
+                <span class="s2">&quot;(COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_neg</span> <span class="o">+</span> <span class="s2">&quot;) AS ?negHits) WHERE {</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">binding_subquery</span><span class="p">,</span>
+                <span class="s2">&quot;  {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+                <span class="n">context_string</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;  OPTIONAL {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+                <span class="n">neg_context</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;} GROUP BY ?class&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query_parts</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;SELECT ?class (MAX(?tp) AS ?posHits) (COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_neg</span> <span class="o">+</span> <span class="s2">&quot;) AS ?negHits) WHERE {</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;  { SELECT ?class (COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_pos</span> <span class="o">+</span> <span class="s2">&quot;) AS ?tp) WHERE {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+                <span class="n">context_string</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  } GROUP BY ?class }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;  OPTIONAL {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+                <span class="n">neg_context</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;} GROUP BY ?class&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">query_parts</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="n">parseQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">query</span></div>
+
+
+    <span class="c1"># -- negated class query builder ------------------------------------------</span>
+
+<div class="viewcode-block" id="QueryGenerator.as_negated_class_query">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.QueryGenerator.as_negated_class_query">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_negated_class_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+        <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+        <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+        <span class="n">root_variable_pos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?pos&quot;</span><span class="p">,</span>
+        <span class="n">root_variable_neg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?neg&quot;</span><span class="p">,</span>
+        <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">filter_expression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a SPARQL query that discovers OWL classes the positives</span>
+<span class="sd">        are **not** members of, with hit-counts.</span>
+
+<span class="sd">        The generated query mirrors the Java</span>
+<span class="sd">        ``Suggestor.generateNegatedClassQuery``:</span>
+
+<span class="sd">        .. code-block:: sparql</span>
+
+<span class="sd">            SELECT ?class (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {</span>
+<span class="sd">                { SELECT ?class (COUNT(DISTINCT ?pos) AS ?tp) (0 AS ?fp) WHERE {</span>
+<span class="sd">                    VALUES ?pos { ... }</span>
+<span class="sd">                    ?class a owl:Class .</span>
+<span class="sd">                    FILTER NOT EXISTS { ?pos a ?class . }</span>
+<span class="sd">                } GROUP BY ?class }</span>
+<span class="sd">                UNION {</span>
+<span class="sd">                    SELECT ?class (0 AS ?tp) (COUNT(DISTINCT ?neg) AS ?fp) WHERE {</span>
+<span class="sd">                        VALUES ?neg { ... }</span>
+<span class="sd">                        ?class a owl:Class .</span>
+<span class="sd">                        FILTER NOT EXISTS { ?neg a ?class . }</span>
+<span class="sd">                    } GROUP BY ?class</span>
+<span class="sd">                }</span>
+<span class="sd">            } GROUP BY ?class</span>
+
+<span class="sd">        At the marker position the converter emits</span>
+<span class="sd">        ``?class a owl:Class . FILTER NOT EXISTS { ?var a ?class . }``</span>
+<span class="sd">        instead of ``?var a ?class .``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context: A class expression containing :data:`CONTEXT_POSITION_MARKER`.</span>
+<span class="sd">            positive_examples: Positive example individuals.</span>
+<span class="sd">            negative_examples: Negative example individuals.</span>
+<span class="sd">            root_variable_pos: Variable name for positive examples (default ``?pos``).</span>
+<span class="sd">            root_variable_neg: Variable name for negative examples (default ``?neg``).</span>
+<span class="sd">            for_all_de_morgan: Passed through to :meth:`convert`.</span>
+<span class="sd">            named_individuals: Passed through to :meth:`convert`.</span>
+<span class="sd">            filter_expression: Optional additional class expression for</span>
+<span class="sd">                ``FILTER NOT EXISTS`` on the root variable.</span>
+<span class="sd">            validate: If ``True``, validates the generated SPARQL query using</span>
+<span class="sd">                ``rdflib.parseQuery`` (slower but safer).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A valid SPARQL SELECT query string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># -- 1. Build positive context string ---------------------------------</span>
+        <span class="n">positive_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">positive_examples</span><span class="p">)</span>
+        <span class="n">negative_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">negative_examples</span><span class="p">)</span>
+
+        <span class="n">values_pos</span> <span class="o">=</span> <span class="n">_generate_values_stmt</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">positive_list</span><span class="p">)</span>
+
+        <span class="n">tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                          <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                          <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                          <span class="n">negated_class_marker_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">context_parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">values_pos</span><span class="p">]</span>
+
+        <span class="c1"># Optional filter expression (mirrors Java createNotExistsFilter)</span>
+        <span class="k">if</span> <span class="n">filter_expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filter_tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">filter_expression</span><span class="p">,</span>
+                                     <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                     <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">)</span>
+            <span class="n">context_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FILTER NOT EXISTS </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filter_tp</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2"> &quot;</span><span class="p">)</span>
+
+        <span class="n">context_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+        <span class="n">context_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">context_parts</span><span class="p">)</span>
+
+        <span class="c1"># -- 2. Build negative context string (variable replacement) ----------</span>
+        <span class="n">values_neg</span> <span class="o">=</span> <span class="n">_generate_values_stmt</span><span class="p">(</span><span class="n">root_variable_neg</span><span class="p">,</span> <span class="n">negative_list</span><span class="p">)</span>
+        <span class="n">neg_context</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+            <span class="sa">r</span><span class="s2">&quot;VALUES\s+&quot;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;\s+\{[^}]*}&quot;</span><span class="p">,</span>
+            <span class="n">values_neg</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;. &quot;</span><span class="p">),</span>
+            <span class="n">context_string</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">neg_context</span> <span class="o">=</span> <span class="n">neg_context</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_pos</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_neg</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="n">neg_context</span> <span class="o">=</span> <span class="n">neg_context</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_pos</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_neg</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># -- 3. Assemble final query (UNION pattern) --------------------------</span>
+        <span class="n">query_parts</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;SELECT ?class (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;  { SELECT ?class (COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_pos</span> <span class="o">+</span> <span class="s2">&quot;) AS ?tp) (0 AS ?fp) WHERE {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+            <span class="n">context_string</span><span class="p">,</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  } GROUP BY ?class }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;  UNION {</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;    SELECT ?class (0 AS ?tp) (COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_neg</span> <span class="o">+</span> <span class="s2">&quot;) AS ?fp) WHERE {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+            <span class="n">neg_context</span><span class="p">,</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    } GROUP BY ?class</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;  }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;} GROUP BY ?class&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">query_parts</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="n">parseQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">query</span></div>
+
+
+    <span class="c1"># -- property query builder -----------------------------------------------</span>
+
+<div class="viewcode-block" id="QueryGenerator.as_property_query">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.QueryGenerator.as_property_query">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_property_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+        <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+        <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+        <span class="n">root_variable_pos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?pos&quot;</span><span class="p">,</span>
+        <span class="n">root_variable_neg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?neg&quot;</span><span class="p">,</span>
+        <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">inverted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">filter_expression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a SPARQL query that discovers OWL properties with hit-counts.</span>
+
+<span class="sd">        The generated query mirrors the Java ``Suggestor.generatePropertyQuery``</span>
+<span class="sd">        (UNION pattern):</span>
+
+<span class="sd">        .. code-block:: sparql</span>
+
+<span class="sd">            SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {</span>
+<span class="sd">                { SELECT ?prop (COUNT(DISTINCT ?pos) AS ?tp) (0 AS ?fp) WHERE {</span>
+<span class="sd">                    VALUES ?pos { ... }</span>
+<span class="sd">                    &lt;context pattern with ?prop at marker&gt;</span>
+<span class="sd">                } GROUP BY ?prop }</span>
+<span class="sd">                UNION {</span>
+<span class="sd">                    SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT ?neg) AS ?fp) WHERE {</span>
+<span class="sd">                        VALUES ?neg { ... }</span>
+<span class="sd">                        &lt;same pattern with ?neg&gt;</span>
+<span class="sd">                    } GROUP BY ?prop</span>
+<span class="sd">                }</span>
+<span class="sd">            } GROUP BY ?prop</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context: A class expression containing :data:`CONTEXT_POSITION_MARKER`</span>
+<span class="sd">                at the position where ``?var ?prop [] .`` should be injected.</span>
+<span class="sd">            positive_examples: Positive example individuals.</span>
+<span class="sd">            negative_examples: Negative example individuals.</span>
+<span class="sd">            root_variable_pos: Variable name for positive examples (default ``?pos``).</span>
+<span class="sd">            root_variable_neg: Variable name for negative examples (default ``?neg``).</span>
+<span class="sd">            for_all_de_morgan: Passed through to :meth:`convert`.</span>
+<span class="sd">            named_individuals: Passed through to :meth:`convert`.</span>
+<span class="sd">            inverted: If ``True``, emits ``[] ?prop ?var .`` instead of</span>
+<span class="sd">                ``?var ?prop [] .`` at the marker position.</span>
+<span class="sd">            filter_expression: Optional additional class expression for</span>
+<span class="sd">                ``FILTER NOT EXISTS`` on the root variable.</span>
+<span class="sd">            validate: If ``True``, validates the generated SPARQL query using</span>
+<span class="sd">                ``rdflib.parseQuery`` (slower but safer).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A valid SPARQL SELECT query string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># -- 1. Build positive context string ---------------------------------</span>
+        <span class="n">positive_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">positive_examples</span><span class="p">)</span>
+        <span class="n">negative_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">negative_examples</span><span class="p">)</span>
+
+        <span class="n">values_pos</span> <span class="o">=</span> <span class="n">_generate_values_stmt</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">positive_list</span><span class="p">)</span>
+
+        <span class="n">tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                          <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                          <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                          <span class="n">property_marker_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">inverted</span><span class="o">=</span><span class="n">inverted</span><span class="p">)</span>
+        <span class="n">context_parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">values_pos</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">filter_expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filter_tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">,</span> <span class="n">filter_expression</span><span class="p">,</span>
+                                     <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                     <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">)</span>
+            <span class="n">context_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FILTER NOT EXISTS </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filter_tp</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2"> &quot;</span><span class="p">)</span>
+
+        <span class="n">context_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span>
+        <span class="n">context_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">context_parts</span><span class="p">)</span>
+
+        <span class="c1"># -- 2. Build negative context string ---------------------------------</span>
+        <span class="n">values_neg</span> <span class="o">=</span> <span class="n">_generate_values_stmt</span><span class="p">(</span><span class="n">root_variable_neg</span><span class="p">,</span> <span class="n">negative_list</span><span class="p">)</span>
+
+        <span class="n">has_union_marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contains_union_with_marker</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">has_union_marker</span><span class="p">:</span>
+            <span class="c1"># When a UNION involves the marker, we must do a fresh conversion</span>
+            <span class="c1"># for the negative context so that intermediate variables (e.g.</span>
+            <span class="c1"># ?s_1, ?s_2) are independent between the positive and negative</span>
+            <span class="c1"># blocks.  We use _preserve_mapping=True so that the variable</span>
+            <span class="c1"># counter continues from where the positive conversion left off.</span>
+            <span class="n">neg_tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_neg</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                                  <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                  <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                                  <span class="n">property_marker_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                  <span class="n">inverted</span><span class="o">=</span><span class="n">inverted</span><span class="p">,</span>
+                                  <span class="n">_preserve_mapping</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">neg_context_parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">values_neg</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">filter_expression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">neg_filter_tp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">root_variable_neg</span><span class="p">,</span> <span class="n">filter_expression</span><span class="p">,</span>
+                                             <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+                                             <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+                                             <span class="n">_preserve_mapping</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">neg_context_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FILTER NOT EXISTS </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">neg_filter_tp</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2"> &quot;</span><span class="p">)</span>
+            <span class="n">neg_context_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">neg_tp</span><span class="p">)</span>
+            <span class="n">neg_context</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">neg_context_parts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">neg_context</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s2">&quot;VALUES\s+&quot;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">root_variable_pos</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;\s+\{[^}]*}&quot;</span><span class="p">,</span>
+                <span class="n">values_neg</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;. &quot;</span><span class="p">),</span>
+                <span class="n">context_string</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">neg_context</span> <span class="o">=</span> <span class="n">neg_context</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_pos</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_neg</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+            <span class="n">neg_context</span> <span class="o">=</span> <span class="n">neg_context</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_pos</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_variable_neg</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># -- 3. Assemble final query -------------------------------------------</span>
+        <span class="c1"># When the context contains a UNION involving the marker, we need</span>
+        <span class="c1"># a different structure: pre-enumerate ?prop with a selective</span>
+        <span class="c1"># ``SELECT DISTINCT ?prop`` subquery scoped to the example</span>
+        <span class="c1"># individuals so that ?prop is visible across UNION branches.</span>
+        <span class="k">if</span> <span class="n">has_union_marker</span><span class="p">:</span>
+            <span class="c1"># Use a selective subquery to pre-enumerate only ?prop values</span>
+            <span class="c1"># that appear among the example individuals, avoiding a full</span>
+            <span class="c1"># graph scan that ``?anything ?prop [] .`` would cause.</span>
+            <span class="n">binding_subquery</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;  { SELECT DISTINCT ?prop WHERE {</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;      { &quot;</span> <span class="o">+</span> <span class="n">context_string</span> <span class="o">+</span> <span class="s2">&quot; }</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;      UNION</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;      { &quot;</span> <span class="o">+</span> <span class="n">neg_context</span> <span class="o">+</span> <span class="s2">&quot; }</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;  } }</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">query_parts</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;SELECT ?prop (COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_pos</span> <span class="o">+</span> <span class="s2">&quot;) AS ?posHits) &quot;</span>
+                <span class="s2">&quot;(COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_neg</span> <span class="o">+</span> <span class="s2">&quot;) AS ?negHits) WHERE {</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">binding_subquery</span><span class="p">,</span>
+                <span class="s2">&quot;  {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+                <span class="n">context_string</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;  OPTIONAL {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+                <span class="n">neg_context</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;} GROUP BY ?prop&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query_parts</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;  { SELECT ?prop (COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_pos</span> <span class="o">+</span> <span class="s2">&quot;) AS ?tp) (0 AS ?fp) WHERE {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+                <span class="n">context_string</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  } GROUP BY ?prop }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;  UNION {</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;    SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT &quot;</span> <span class="o">+</span> <span class="n">root_variable_neg</span> <span class="o">+</span> <span class="s2">&quot;) AS ?fp) WHERE {</span><span class="se">\n</span><span class="s2">    &quot;</span><span class="p">,</span>
+                <span class="n">neg_context</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    } GROUP BY ?prop</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;  }</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;} GROUP BY ?prop&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">query_parts</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="n">parseQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">query</span></div>
+</div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Module-level singleton &amp; convenience function</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="n">generator</span> <span class="o">=</span> <span class="n">QueryGenerator</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="owl_expression_to_class_query">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.owl_expression_to_class_query">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_expression_to_class_query</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+    <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+    <span class="n">root_variable_pos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?pos&quot;</span><span class="p">,</span>
+    <span class="n">root_variable_neg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?neg&quot;</span><span class="p">,</span>
+    <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">filter_expression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`</span>
+<span class="sd">    into a SPARQL query that discovers OWL classes and counts how many</span>
+<span class="sd">    positive / negative examples each class covers within the given context.</span>
+
+<span class="sd">    This is the Python equivalent of the Java ``Suggestor.generateClassQuery``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        context: Class expression containing :data:`CONTEXT_POSITION_MARKER`.</span>
+<span class="sd">        positive_examples: Positive example individuals.</span>
+<span class="sd">        negative_examples: Negative example individuals.</span>
+<span class="sd">        root_variable_pos: SPARQL variable for positives (default ``?pos``).</span>
+<span class="sd">        root_variable_neg: SPARQL variable for negatives (default ``?neg``).</span>
+<span class="sd">        for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.</span>
+<span class="sd">        named_individuals: Restrict to ``owl:NamedIndividual`` instances.</span>
+<span class="sd">        filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).</span>
+<span class="sd">        validate: If ``True``, validates the generated SPARQL query using</span>
+<span class="sd">            ``rdflib.parseQuery`` (slower but safer).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A valid SPARQL SELECT query string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">generator</span><span class="o">.</span><span class="n">as_class_query</span><span class="p">(</span>
+        <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+        <span class="n">positive_examples</span><span class="o">=</span><span class="n">positive_examples</span><span class="p">,</span>
+        <span class="n">negative_examples</span><span class="o">=</span><span class="n">negative_examples</span><span class="p">,</span>
+        <span class="n">root_variable_pos</span><span class="o">=</span><span class="n">root_variable_pos</span><span class="p">,</span>
+        <span class="n">root_variable_neg</span><span class="o">=</span><span class="n">root_variable_neg</span><span class="p">,</span>
+        <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+        <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+        <span class="n">filter_expression</span><span class="o">=</span><span class="n">filter_expression</span><span class="p">,</span>
+        <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="owl_expression_to_property_query">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.owl_expression_to_property_query">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_expression_to_property_query</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+    <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+    <span class="n">root_variable_pos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?pos&quot;</span><span class="p">,</span>
+    <span class="n">root_variable_neg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?neg&quot;</span><span class="p">,</span>
+    <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">inverted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">filter_expression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`</span>
+<span class="sd">    into a SPARQL query that discovers OWL properties and counts how many</span>
+<span class="sd">    positive / negative examples each property covers within the given context.</span>
+
+<span class="sd">    This is the Python equivalent of the Java ``Suggestor.generatePropertyQuery``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        context: Class expression containing :data:`CONTEXT_POSITION_MARKER`.</span>
+<span class="sd">        positive_examples: Positive example individuals.</span>
+<span class="sd">        negative_examples: Negative example individuals.</span>
+<span class="sd">        root_variable_pos: SPARQL variable for positives (default ``?pos``).</span>
+<span class="sd">        root_variable_neg: SPARQL variable for negatives (default ``?neg``).</span>
+<span class="sd">        for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.</span>
+<span class="sd">        named_individuals: Restrict to ``owl:NamedIndividual`` instances.</span>
+<span class="sd">        inverted: If ``True``, emits ``[] ?prop ?var .`` at the marker.</span>
+<span class="sd">        filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).</span>
+<span class="sd">        validate: If ``True``, validates the generated SPARQL query using</span>
+<span class="sd">            ``rdflib.parseQuery`` (slower but safer).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A valid SPARQL SELECT query string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">generator</span><span class="o">.</span><span class="n">as_property_query</span><span class="p">(</span>
+        <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+        <span class="n">positive_examples</span><span class="o">=</span><span class="n">positive_examples</span><span class="p">,</span>
+        <span class="n">negative_examples</span><span class="o">=</span><span class="n">negative_examples</span><span class="p">,</span>
+        <span class="n">root_variable_pos</span><span class="o">=</span><span class="n">root_variable_pos</span><span class="p">,</span>
+        <span class="n">root_variable_neg</span><span class="o">=</span><span class="n">root_variable_neg</span><span class="p">,</span>
+        <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+        <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+        <span class="n">inverted</span><span class="o">=</span><span class="n">inverted</span><span class="p">,</span>
+        <span class="n">filter_expression</span><span class="o">=</span><span class="n">filter_expression</span><span class="p">,</span>
+        <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="owl_expression_to_negated_class_query">
+<a class="viewcode-back" href="../../autoapi/owlapy/marked_entity_generator_converter/index.html#owlapy.marked_entity_generator_converter.owl_expression_to_negated_class_query">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">owl_expression_to_negated_class_query</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">positive_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+    <span class="n">negative_examples</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">],</span>
+    <span class="n">root_variable_pos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?pos&quot;</span><span class="p">,</span>
+    <span class="n">root_variable_neg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?neg&quot;</span><span class="p">,</span>
+    <span class="n">for_all_de_morgan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">named_individuals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">filter_expression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OWLClassExpression</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`</span>
+<span class="sd">    into a SPARQL query that discovers OWL classes that the positive examples</span>
+<span class="sd">    are **not** members of, together with positive / negative hit counts.</span>
+
+<span class="sd">    This is the Python equivalent of the Java</span>
+<span class="sd">    ``Suggestor.generateNegatedClassQuery``.</span>
+
+<span class="sd">    At the marker position the converter emits::</span>
+
+<span class="sd">        ?class a owl:Class .</span>
+<span class="sd">        FILTER NOT EXISTS { ?var a ?class . }</span>
+
+<span class="sd">    instead of ``?var a ?class .``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        context: Class expression containing :data:`CONTEXT_POSITION_MARKER`.</span>
+<span class="sd">        positive_examples: Positive example individuals.</span>
+<span class="sd">        negative_examples: Negative example individuals.</span>
+<span class="sd">        root_variable_pos: SPARQL variable for positives (default ``?pos``).</span>
+<span class="sd">        root_variable_neg: SPARQL variable for negatives (default ``?neg``).</span>
+<span class="sd">        for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.</span>
+<span class="sd">        named_individuals: Restrict to ``owl:NamedIndividual`` instances.</span>
+<span class="sd">        filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).</span>
+<span class="sd">        validate: If ``True``, validates the generated SPARQL query using</span>
+<span class="sd">            ``rdflib.parseQuery`` (slower but safer).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A valid SPARQL SELECT query string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">generator</span><span class="o">.</span><span class="n">as_negated_class_query</span><span class="p">(</span>
+        <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+        <span class="n">positive_examples</span><span class="o">=</span><span class="n">positive_examples</span><span class="p">,</span>
+        <span class="n">negative_examples</span><span class="o">=</span><span class="n">negative_examples</span><span class="p">,</span>
+        <span class="n">root_variable_pos</span><span class="o">=</span><span class="n">root_variable_pos</span><span class="p">,</span>
+        <span class="n">root_variable_neg</span><span class="o">=</span><span class="n">root_variable_neg</span><span class="p">,</span>
+        <span class="n">for_all_de_morgan</span><span class="o">=</span><span class="n">for_all_de_morgan</span><span class="p">,</span>
+        <span class="n">named_individuals</span><span class="o">=</span><span class="n">named_individuals</span><span class="p">,</span>
+        <span class="n">filter_expression</span><span class="o">=</span><span class="n">filter_expression</span><span class="p">,</span>
+        <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

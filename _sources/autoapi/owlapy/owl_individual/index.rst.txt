@@ -15,7 +15,9 @@ Classes
 .. autoapisummary::
 
    owlapy.owl_individual.OWLIndividual
+   owlapy.owl_individual.NodeID
    owlapy.owl_individual.OWLNamedIndividual
+   owlapy.owl_individual.OWLAnonymousIndividual
 
 
 Module Contents
@@ -31,6 +33,34 @@ Module Contents
 
    .. py:attribute:: __slots__
       :value: ()
+
+
+
+.. py:class:: NodeID
+
+   Generates and normalizes the node IDs used to identify :class:`OWLAnonymousIndividual` instances,
+   loosely modeled after OWLAPI's ``org.semanticweb.owlapi.model.NodeID``.
+
+   Node IDs are local to an ontology document: they let one distinguish different anonymous individuals
+   without asserting any particular identity for them.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: get_node_id(id_: Optional[str] = None) -> str
+      :staticmethod:
+
+
+      Normalize a node id, generating a fresh, unused one if none is given.
+
+      :param id_: A string identifying an anonymous individual, optionally prefixed with "_:" (as blank node
+                  labels are written in Turtle/N-Triples). If None, a fresh node id is generated.
+
+      :returns: " prefix.
+      :rtype: The normalized node id string, without a "_
 
 
 
@@ -73,5 +103,59 @@ Module Contents
 
 
    .. py:property:: remainder
+
+
+.. py:class:: OWLAnonymousIndividual(node_id: Optional[str] = None)
+
+   Bases: :py:obj:`OWLIndividual`, :py:obj:`owlapy.owl_annotation.OWLAnnotationSubject`, :py:obj:`owlapy.owl_annotation.OWLAnnotationValue`
+
+
+   Anonymous individuals are identified using a node ID rather than an IRI. Node IDs are local to an
+   ontology document: they allow different anonymous individuals to be distinguished from one another
+   without asserting any particular identity for them.
+
+   (https://www.w3.org/TR/owl2-syntax/#Anonymous_Individuals)
+
+
+   .. py:attribute:: __slots__
+      :value: '_node_id'
+
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 1006
+
+
+
+   .. py:property:: node_id
+      :type: str
+
+
+
+   .. py:property:: str
+      :type: str
+
+
+
+   .. py:method:: to_string_id() -> str
+
+
+   .. py:method:: is_anonymous() -> bool
+
+
+   .. py:method:: as_anonymous_individual() -> OWLAnonymousIndividual
+
+      :returns: if the value is an anonymous, return it. Return None otherwise.
+
+
+
+   .. py:method:: __eq__(other)
+
+
+   .. py:method:: __hash__()
+
+
+   .. py:method:: __repr__()
 
 

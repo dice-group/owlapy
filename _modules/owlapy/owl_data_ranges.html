@@ -88,16 +88,37 @@
 <span class="sd">DataRange := Datatype | DataIntersectionOf | DataUnionOf | DataComplementOf | DataOneOf | DatatypeRestriction</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Final</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Set</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.meta_classes</span><span class="w"> </span><span class="kn">import</span> <span class="n">HasOperands</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLObject</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span>
 
 
 <div class="viewcode-block" id="OWLPropertyRange">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLPropertyRange">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OWLPropertyRange</span><span class="p">(</span><span class="n">OWLObject</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;OWL Objects that can be the ranges of properties.&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;OWL Objects that can be the ranges of properties.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OWLPropertyRange.signature">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLPropertyRange.signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="s1">&#39;OWLEntity&#39;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the set of named entities (classes, object/data properties, individuals, datatypes) that are</span>
+<span class="sd">        used in this class expression/data range.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Coverage is currently limited to a core set of constructs; see</span>
+<span class="sd">            :class:`owlapy.utils.SignatureExtractor` and</span>
+<span class="sd">            https://github.com/dice-group/owlapy/issues/231 for remaining gaps.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The signature of this class expression/data range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignatureExtractor</span>
+        <span class="k">return</span> <span class="n">SignatureExtractor</span><span class="p">()</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+</div>
 
 
 

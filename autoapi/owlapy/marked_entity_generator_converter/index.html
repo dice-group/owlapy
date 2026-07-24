@@ -1,0 +1,521 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.marked_entity_generator_converter &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="owlapy.meta_classes" href="../meta_classes/index.html" />
+    <link rel="prev" title="owlapy.iri" href="../iri/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">owlapy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../abstracts/index.html">owlapy.abstracts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../agen_kg/index.html">owlapy.agen_kg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../class_expression/index.html">owlapy.class_expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../converter/index.html">owlapy.converter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../expressivity/index.html">owlapy.expressivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.marked_entity_generator_converter</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator"><code class="docutils literal notranslate"><span class="pre">QueryGenerator</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.__slots__"><code class="docutils literal notranslate"><span class="pre">QueryGenerator.__slots__</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.convert"><code class="docutils literal notranslate"><span class="pre">QueryGenerator.convert()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.process"><code class="docutils literal notranslate"><span class="pre">QueryGenerator.process()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.as_class_query"><code class="docutils literal notranslate"><span class="pre">QueryGenerator.as_class_query()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.as_negated_class_query"><code class="docutils literal notranslate"><span class="pre">QueryGenerator.as_negated_class_query()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.as_property_query"><code class="docutils literal notranslate"><span class="pre">QueryGenerator.as_property_query()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.generator"><code class="docutils literal notranslate"><span class="pre">generator</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.owl_expression_to_class_query"><code class="docutils literal notranslate"><span class="pre">owl_expression_to_class_query()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.owl_expression_to_property_query"><code class="docutils literal notranslate"><span class="pre">owl_expression_to_property_query()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.marked_entity_generator_converter.owl_expression_to_negated_class_query"><code class="docutils literal notranslate"><span class="pre">owl_expression_to_negated_class_query()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../meta_classes/index.html">owlapy.meta_classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../namespaces/index.html">owlapy.namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_annotation/index.html">owlapy.owl_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_axiom/index.html">owlapy.owl_axiom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_data_ranges/index.html">owlapy.owl_data_ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_datatype/index.html">owlapy.owl_datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_hierarchy/index.html">owlapy.owl_hierarchy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_individual/index.html">owlapy.owl_individual</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_literal/index.html">owlapy.owl_literal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_object/index.html">owlapy.owl_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_ontology/index.html">owlapy.owl_ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_property/index.html">owlapy.owl_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../parser/index.html">owlapy.parser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../providers/index.html">owlapy.providers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../render/index.html">owlapy.render</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scripts/index.html">owlapy.scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../static_funcs/index.html">owlapy.static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils/index.html">owlapy.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../vocab/index.html">owlapy.vocab</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#classes">Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">owlapy</a></li>
+      <li class="breadcrumb-item active">owlapy.marked_entity_generator_converter</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/owlapy/marked_entity_generator_converter/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-owlapy.marked_entity_generator_converter">
+<span id="owlapy-marked-entity-generator-converter"></span><h1>owlapy.marked_entity_generator_converter<a class="headerlink" href="#module-owlapy.marked_entity_generator_converter" title="Link to this heading"></a></h1>
+<p>Class &amp; property generator converter – port of the Java generateClassQuery /
+generatePropertyQuery / SparqlBuildingVisitor.</p>
+<p>This module provides a subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">Owl2SparqlConverter</span></code> that supports a
+<em>context position marker</em>.  When the marker appears in a class expression the
+converter emits <code class="docutils literal notranslate"><span class="pre">?variable</span> <span class="pre">a</span> <span class="pre">?class</span> <span class="pre">.</span></code> instead of a concrete class IRI, which
+makes it possible to generate SPARQL queries that <em>discover</em> classes rather
+than retrieving instances of a fixed class.</p>
+<p>For property discovery the same marker triggers <code class="docutils literal notranslate"><span class="pre">?variable</span> <span class="pre">?prop</span> <span class="pre">[]</span> <span class="pre">.</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">[]</span> <span class="pre">?prop</span> <span class="pre">?variable</span> <span class="pre">.</span></code> when inverted), mirroring the Java
+<code class="docutils literal notranslate"><span class="pre">Suggestor.generatePropertyQuery</span></code>.</p>
+<p>The top-level helpers <a class="reference internal" href="#owlapy.marked_entity_generator_converter.owl_expression_to_class_query" title="owlapy.marked_entity_generator_converter.owl_expression_to_class_query"><code class="xref py py-func docutils literal notranslate"><span class="pre">owl_expression_to_class_query()</span></code></a> and
+<a class="reference internal" href="#owlapy.marked_entity_generator_converter.owl_expression_to_property_query" title="owlapy.marked_entity_generator_converter.owl_expression_to_property_query"><code class="xref py py-func docutils literal notranslate"><span class="pre">owl_expression_to_property_query()</span></code></a> mirror <code class="xref py py-func docutils literal notranslate"><span class="pre">owl_expression_to_sparql()</span></code>
+but produce queries of the form produced by the Java suggestor.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.marked_entity_generator_converter.generator" title="owlapy.marked_entity_generator_converter.generator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generator</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator" title="owlapy.marked_entity_generator_converter.QueryGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueryGenerator</span></code></a></p></td>
+<td><p>Extends <code class="xref py py-class docutils literal notranslate"><span class="pre">Owl2SparqlConverter</span></code> with <em>marker-aware</em> conversion and</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.marked_entity_generator_converter.owl_expression_to_class_query" title="owlapy.marked_entity_generator_converter.owl_expression_to_class_query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owl_expression_to_class_query</span></code></a>(→ str)</p></td>
+<td><p>Convert an OWL class expression with a <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.marked_entity_generator_converter.owl_expression_to_property_query" title="owlapy.marked_entity_generator_converter.owl_expression_to_property_query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owl_expression_to_property_query</span></code></a>(→ str)</p></td>
+<td><p>Convert an OWL class expression with a <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.marked_entity_generator_converter.owl_expression_to_negated_class_query" title="owlapy.marked_entity_generator_converter.owl_expression_to_negated_class_query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owl_expression_to_negated_class_query</span></code></a>(→ str)</p></td>
+<td><p>Convert an OWL class expression with a <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER">
+<span class="sig-prename descclassname"><span class="pre">owlapy.marked_entity_generator_converter.</span></span><span class="sig-name descname"><span class="pre">CONTEXT_POSITION_MARKER</span></span><a class="headerlink" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.QueryGenerator">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.marked_entity_generator_converter.</span></span><span class="sig-name descname"><span class="pre">QueryGenerator</span></span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#QueryGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.QueryGenerator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../converter/index.html#owlapy.converter.Owl2SparqlConverter" title="owlapy.converter.Owl2SparqlConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.converter.Owl2SparqlConverter</span></code></a></p>
+<p>Extends <code class="xref py py-class docutils literal notranslate"><span class="pre">Owl2SparqlConverter</span></code> with <em>marker-aware</em> conversion and
+the ability to generate <code class="docutils literal notranslate"><span class="pre">generateClassQuery</span></code>-style SPARQL queries that
+discover OWL classes with their positive/negative hit counts.</p>
+<p>The marker concept <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a> can be placed anywhere
+inside a class expression tree.  When the converter encounters it the
+emitted triple pattern becomes <code class="docutils literal notranslate"><span class="pre">?currentVar</span> <span class="pre">a</span> <span class="pre">?class</span> <span class="pre">.</span></code> instead of the
+usual <code class="docutils literal notranslate"><span class="pre">?currentVar</span> <span class="pre">a</span> <span class="pre">&lt;SomeConcreteIRI&gt;</span> <span class="pre">.</span></code>.  If the marker appears inside
+a negation (<code class="docutils literal notranslate"><span class="pre">OWLObjectComplementOf</span></code>) the triple pattern is additionally
+wrapped in <code class="docutils literal notranslate"><span class="pre">FILTER</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span> <span class="pre">{</span> <span class="pre">…</span> <span class="pre">}</span></code>, and a type axiom for <code class="docutils literal notranslate"><span class="pre">?class</span></code> is
+added (<code class="docutils literal notranslate"><span class="pre">?class</span> <span class="pre">a</span> <span class="pre">owl:Class</span> <span class="pre">.</span></code>).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.QueryGenerator.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('ce',</span> <span class="pre">'sparql',</span> <span class="pre">'variables',</span> <span class="pre">'parent',</span> <span class="pre">'parent_var',</span> <span class="pre">'properties',</span> <span class="pre">'variable_entities',</span> <span class="pre">'cnt',...</span></span><a class="headerlink" href="#owlapy.marked_entity_generator_converter.QueryGenerator.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.QueryGenerator.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">for_all_de_morgan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_marker_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negated_class_marker_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_preserve_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#QueryGenerator.convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.QueryGenerator.convert" title="Link to this definition"></a></dt>
+<dd><p>Like the parent <code class="docutils literal notranslate"><span class="pre">convert</span></code> but accepts extra marker flags.</p>
+<p>When <em>marker_mode</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>
+class is treated specially – emitting <code class="docutils literal notranslate"><span class="pre">?var</span> <span class="pre">a</span> <span class="pre">?class</span> <span class="pre">.</span></code>.</p>
+<p>When <em>negated_class_marker_mode</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the marker emits
+<code class="docutils literal notranslate"><span class="pre">?class</span> <span class="pre">a</span> <span class="pre">owl:Class</span> <span class="pre">.</span> <span class="pre">FILTER</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span> <span class="pre">{</span> <span class="pre">?var</span> <span class="pre">a</span> <span class="pre">?class</span> <span class="pre">.</span> <span class="pre">}</span></code>
+instead, which discovers classes that the individual is <strong>not</strong> a
+member of.  This mirrors the Java <code class="docutils literal notranslate"><span class="pre">generateNegatedClassQuery</span></code>.</p>
+<p>When <em>property_marker_mode</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the marker emits
+<code class="docutils literal notranslate"><span class="pre">?var</span> <span class="pre">?prop</span> <span class="pre">[]</span> <span class="pre">.</span></code> (or <code class="docutils literal notranslate"><span class="pre">[]</span> <span class="pre">?prop</span> <span class="pre">?var</span> <span class="pre">.</span></code> when <em>inverted</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code>).</p>
+<p>When <em>_preserve_mapping</em> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the existing
+<code class="xref py py-class docutils literal notranslate"><span class="pre">VariablesMapping</span></code> counters are preserved so that a
+subsequent conversion produces fresh intermediate variable names
+(e.g. <code class="docutils literal notranslate"><span class="pre">?s_3</span></code> instead of <code class="docutils literal notranslate"><span class="pre">?s_1</span></code>).  This is essential when the
+positive and negative blocks appear in the same outer query scope.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.QueryGenerator.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#QueryGenerator.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.QueryGenerator.process" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.QueryGenerator.as_class_query">
+<span class="sig-name descname"><span class="pre">as_class_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negative_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?pos'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_neg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?neg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">for_all_de_morgan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#QueryGenerator.as_class_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.QueryGenerator.as_class_query" title="Link to this definition"></a></dt>
+<dd><p>Generate a SPARQL query that discovers OWL classes with hit-counts.</p>
+<p>The generated query mirrors the Java <code class="docutils literal notranslate"><span class="pre">Suggestor.generateClassQuery</span></code>:</p>
+<div class="highlight-sparql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="nv">?class</span> <span class="p">(</span><span class="nf">MAX</span><span class="p">(</span><span class="nv">?tp</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?posHits</span><span class="p">)</span> <span class="p">(</span><span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="nv">?neg</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?negHits</span><span class="p">)</span> <span class="k">WHERE</span> <span class="p">{</span>
+    <span class="p">{</span> <span class="k">SELECT</span> <span class="nv">?class</span> <span class="p">(</span><span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="nv">?pos</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?tp</span><span class="p">)</span> <span class="k">WHERE</span> <span class="p">{</span>
+        <span class="k">VALUES</span> <span class="nv">?pos</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+        <span class="o">&lt;</span><span class="err">context</span> <span class="err">pattern</span> <span class="k">with</span> <span class="nv">?pos</span> <span class="k">as</span> <span class="err">root</span> <span class="err">and</span> <span class="nv">?class</span> <span class="err">at</span> <span class="err">marker</span><span class="o">&gt;</span>
+    <span class="p">}</span> <span class="k">GROUP BY</span> <span class="nv">?class</span> <span class="p">}</span>
+    <span class="k">OPTIONAL</span> <span class="p">{</span>
+        <span class="k">VALUES</span> <span class="nv">?neg</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+        <span class="o">&lt;</span><span class="err">same</span> <span class="err">context</span> <span class="err">pattern</span> <span class="err">but</span> <span class="k">with</span> <span class="nv">?neg</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+<span class="p">}</span> <span class="k">GROUP BY</span> <span class="nv">?class</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – A class expression that <strong>must</strong> contain
+<a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a> at the position where
+<code class="docutils literal notranslate"><span class="pre">?variable</span> <span class="pre">a</span> <span class="pre">?class</span> <span class="pre">.</span></code> should be injected.</p></li>
+<li><p><strong>positive_examples</strong> – Positive example individuals.</p></li>
+<li><p><strong>negative_examples</strong> – Negative example individuals.</p></li>
+<li><p><strong>root_variable_pos</strong> – Variable name for positive examples (default <code class="docutils literal notranslate"><span class="pre">?pos</span></code>).</p></li>
+<li><p><strong>root_variable_neg</strong> – Variable name for negative examples (default <code class="docutils literal notranslate"><span class="pre">?neg</span></code>).</p></li>
+<li><p><strong>for_all_de_morgan</strong> – Passed through to <a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.convert" title="owlapy.marked_entity_generator_converter.QueryGenerator.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a>.</p></li>
+<li><p><strong>named_individuals</strong> – Passed through to <a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.convert" title="owlapy.marked_entity_generator_converter.QueryGenerator.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a>.</p></li>
+<li><p><strong>filter_expression</strong> – Optional additional class expression used to
+create a <code class="docutils literal notranslate"><span class="pre">FILTER</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span></code> constraint on the root variable.</p></li>
+<li><p><strong>validate</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, validates the generated SPARQL query using
+<code class="docutils literal notranslate"><span class="pre">rdflib.parseQuery</span></code> (slower but safer).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A valid SPARQL SELECT query string.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.QueryGenerator.as_negated_class_query">
+<span class="sig-name descname"><span class="pre">as_negated_class_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negative_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?pos'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_neg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?neg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">for_all_de_morgan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#QueryGenerator.as_negated_class_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.QueryGenerator.as_negated_class_query" title="Link to this definition"></a></dt>
+<dd><p>Generate a SPARQL query that discovers OWL classes the positives
+are <strong>not</strong> members of, with hit-counts.</p>
+<p>The generated query mirrors the Java
+<code class="docutils literal notranslate"><span class="pre">Suggestor.generateNegatedClassQuery</span></code>:</p>
+<div class="highlight-sparql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="nv">?class</span> <span class="p">(</span><span class="nf">MAX</span><span class="p">(</span><span class="nv">?tp</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?posHits</span><span class="p">)</span> <span class="p">(</span><span class="nf">MAX</span><span class="p">(</span><span class="nv">?fp</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?negHits</span><span class="p">)</span> <span class="k">WHERE</span> <span class="p">{</span>
+    <span class="p">{</span> <span class="k">SELECT</span> <span class="nv">?class</span> <span class="p">(</span><span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="nv">?pos</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?tp</span><span class="p">)</span> <span class="p">(</span><span class="mi">0</span> <span class="k">AS</span> <span class="nv">?fp</span><span class="p">)</span> <span class="k">WHERE</span> <span class="p">{</span>
+        <span class="k">VALUES</span> <span class="nv">?pos</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+        <span class="nv">?class</span> <span class="k">a</span> <span class="nn">owl</span><span class="p">:</span><span class="nt">Class</span> <span class="p">.</span>
+        <span class="k">FILTER</span> <span class="nf">NOT EXISTS</span> <span class="p">{</span> <span class="nv">?pos</span> <span class="k">a</span> <span class="nv">?class</span> <span class="p">.</span> <span class="p">}</span>
+    <span class="p">}</span> <span class="k">GROUP BY</span> <span class="nv">?class</span> <span class="p">}</span>
+    <span class="k">UNION</span> <span class="p">{</span>
+        <span class="k">SELECT</span> <span class="nv">?class</span> <span class="p">(</span><span class="mi">0</span> <span class="k">AS</span> <span class="nv">?tp</span><span class="p">)</span> <span class="p">(</span><span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="nv">?neg</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?fp</span><span class="p">)</span> <span class="k">WHERE</span> <span class="p">{</span>
+            <span class="k">VALUES</span> <span class="nv">?neg</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+            <span class="nv">?class</span> <span class="k">a</span> <span class="nn">owl</span><span class="p">:</span><span class="nt">Class</span> <span class="p">.</span>
+            <span class="k">FILTER</span> <span class="nf">NOT EXISTS</span> <span class="p">{</span> <span class="nv">?neg</span> <span class="k">a</span> <span class="nv">?class</span> <span class="p">.</span> <span class="p">}</span>
+        <span class="p">}</span> <span class="k">GROUP BY</span> <span class="nv">?class</span>
+    <span class="p">}</span>
+<span class="p">}</span> <span class="k">GROUP BY</span> <span class="nv">?class</span>
+</pre></div>
+</div>
+<p>At the marker position the converter emits
+<code class="docutils literal notranslate"><span class="pre">?class</span> <span class="pre">a</span> <span class="pre">owl:Class</span> <span class="pre">.</span> <span class="pre">FILTER</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span> <span class="pre">{</span> <span class="pre">?var</span> <span class="pre">a</span> <span class="pre">?class</span> <span class="pre">.</span> <span class="pre">}</span></code>
+instead of <code class="docutils literal notranslate"><span class="pre">?var</span> <span class="pre">a</span> <span class="pre">?class</span> <span class="pre">.</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – A class expression containing <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>.</p></li>
+<li><p><strong>positive_examples</strong> – Positive example individuals.</p></li>
+<li><p><strong>negative_examples</strong> – Negative example individuals.</p></li>
+<li><p><strong>root_variable_pos</strong> – Variable name for positive examples (default <code class="docutils literal notranslate"><span class="pre">?pos</span></code>).</p></li>
+<li><p><strong>root_variable_neg</strong> – Variable name for negative examples (default <code class="docutils literal notranslate"><span class="pre">?neg</span></code>).</p></li>
+<li><p><strong>for_all_de_morgan</strong> – Passed through to <a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.convert" title="owlapy.marked_entity_generator_converter.QueryGenerator.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a>.</p></li>
+<li><p><strong>named_individuals</strong> – Passed through to <a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.convert" title="owlapy.marked_entity_generator_converter.QueryGenerator.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a>.</p></li>
+<li><p><strong>filter_expression</strong> – Optional additional class expression for
+<code class="docutils literal notranslate"><span class="pre">FILTER</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span></code> on the root variable.</p></li>
+<li><p><strong>validate</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, validates the generated SPARQL query using
+<code class="docutils literal notranslate"><span class="pre">rdflib.parseQuery</span></code> (slower but safer).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A valid SPARQL SELECT query string.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.QueryGenerator.as_property_query">
+<span class="sig-name descname"><span class="pre">as_property_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negative_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?pos'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_neg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?neg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">for_all_de_morgan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#QueryGenerator.as_property_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.QueryGenerator.as_property_query" title="Link to this definition"></a></dt>
+<dd><p>Generate a SPARQL query that discovers OWL properties with hit-counts.</p>
+<p>The generated query mirrors the Java <code class="docutils literal notranslate"><span class="pre">Suggestor.generatePropertyQuery</span></code>
+(UNION pattern):</p>
+<div class="highlight-sparql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="nv">?prop</span> <span class="p">(</span><span class="nf">MAX</span><span class="p">(</span><span class="nv">?tp</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?posHits</span><span class="p">)</span> <span class="p">(</span><span class="nf">MAX</span><span class="p">(</span><span class="nv">?fp</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?negHits</span><span class="p">)</span> <span class="k">WHERE</span> <span class="p">{</span>
+    <span class="p">{</span> <span class="k">SELECT</span> <span class="nv">?prop</span> <span class="p">(</span><span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="nv">?pos</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?tp</span><span class="p">)</span> <span class="p">(</span><span class="mi">0</span> <span class="k">AS</span> <span class="nv">?fp</span><span class="p">)</span> <span class="k">WHERE</span> <span class="p">{</span>
+        <span class="k">VALUES</span> <span class="nv">?pos</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+        <span class="o">&lt;</span><span class="err">context</span> <span class="err">pattern</span> <span class="k">with</span> <span class="nv">?prop</span> <span class="err">at</span> <span class="err">marker</span><span class="o">&gt;</span>
+    <span class="p">}</span> <span class="k">GROUP BY</span> <span class="nv">?prop</span> <span class="p">}</span>
+    <span class="k">UNION</span> <span class="p">{</span>
+        <span class="k">SELECT</span> <span class="nv">?prop</span> <span class="p">(</span><span class="mi">0</span> <span class="k">AS</span> <span class="nv">?tp</span><span class="p">)</span> <span class="p">(</span><span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="nv">?neg</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">?fp</span><span class="p">)</span> <span class="k">WHERE</span> <span class="p">{</span>
+            <span class="k">VALUES</span> <span class="nv">?neg</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+            <span class="o">&lt;</span><span class="err">same</span> <span class="err">pattern</span> <span class="k">with</span> <span class="nv">?neg</span><span class="o">&gt;</span>
+        <span class="p">}</span> <span class="k">GROUP BY</span> <span class="nv">?prop</span>
+    <span class="p">}</span>
+<span class="p">}</span> <span class="k">GROUP BY</span> <span class="nv">?prop</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – A class expression containing <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>
+at the position where <code class="docutils literal notranslate"><span class="pre">?var</span> <span class="pre">?prop</span> <span class="pre">[]</span> <span class="pre">.</span></code> should be injected.</p></li>
+<li><p><strong>positive_examples</strong> – Positive example individuals.</p></li>
+<li><p><strong>negative_examples</strong> – Negative example individuals.</p></li>
+<li><p><strong>root_variable_pos</strong> – Variable name for positive examples (default <code class="docutils literal notranslate"><span class="pre">?pos</span></code>).</p></li>
+<li><p><strong>root_variable_neg</strong> – Variable name for negative examples (default <code class="docutils literal notranslate"><span class="pre">?neg</span></code>).</p></li>
+<li><p><strong>for_all_de_morgan</strong> – Passed through to <a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.convert" title="owlapy.marked_entity_generator_converter.QueryGenerator.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a>.</p></li>
+<li><p><strong>named_individuals</strong> – Passed through to <a class="reference internal" href="#owlapy.marked_entity_generator_converter.QueryGenerator.convert" title="owlapy.marked_entity_generator_converter.QueryGenerator.convert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">convert()</span></code></a>.</p></li>
+<li><p><strong>inverted</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, emits <code class="docutils literal notranslate"><span class="pre">[]</span> <span class="pre">?prop</span> <span class="pre">?var</span> <span class="pre">.</span></code> instead of
+<code class="docutils literal notranslate"><span class="pre">?var</span> <span class="pre">?prop</span> <span class="pre">[]</span> <span class="pre">.</span></code> at the marker position.</p></li>
+<li><p><strong>filter_expression</strong> – Optional additional class expression for
+<code class="docutils literal notranslate"><span class="pre">FILTER</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span></code> on the root variable.</p></li>
+<li><p><strong>validate</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, validates the generated SPARQL query using
+<code class="docutils literal notranslate"><span class="pre">rdflib.parseQuery</span></code> (slower but safer).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A valid SPARQL SELECT query string.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.generator">
+<span class="sig-prename descclassname"><span class="pre">owlapy.marked_entity_generator_converter.</span></span><span class="sig-name descname"><span class="pre">generator</span></span><a class="headerlink" href="#owlapy.marked_entity_generator_converter.generator" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.owl_expression_to_class_query">
+<span class="sig-prename descclassname"><span class="pre">owlapy.marked_entity_generator_converter.</span></span><span class="sig-name descname"><span class="pre">owl_expression_to_class_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negative_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?pos'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_neg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?neg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">for_all_de_morgan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#owl_expression_to_class_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.owl_expression_to_class_query" title="Link to this definition"></a></dt>
+<dd><p>Convert an OWL class expression with a <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>
+into a SPARQL query that discovers OWL classes and counts how many
+positive / negative examples each class covers within the given context.</p>
+<p>This is the Python equivalent of the Java <code class="docutils literal notranslate"><span class="pre">Suggestor.generateClassQuery</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – Class expression containing <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>.</p></li>
+<li><p><strong>positive_examples</strong> – Positive example individuals.</p></li>
+<li><p><strong>negative_examples</strong> – Negative example individuals.</p></li>
+<li><p><strong>root_variable_pos</strong> – SPARQL variable for positives (default <code class="docutils literal notranslate"><span class="pre">?pos</span></code>).</p></li>
+<li><p><strong>root_variable_neg</strong> – SPARQL variable for negatives (default <code class="docutils literal notranslate"><span class="pre">?neg</span></code>).</p></li>
+<li><p><strong>for_all_de_morgan</strong> – Use De Morgan rewriting for universal quantifiers.</p></li>
+<li><p><strong>named_individuals</strong> – Restrict to <code class="docutils literal notranslate"><span class="pre">owl:NamedIndividual</span></code> instances.</p></li>
+<li><p><strong>filter_expression</strong> – Optional filter CE (wrapped in FILTER NOT EXISTS).</p></li>
+<li><p><strong>validate</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, validates the generated SPARQL query using
+<code class="docutils literal notranslate"><span class="pre">rdflib.parseQuery</span></code> (slower but safer).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A valid SPARQL SELECT query string.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.owl_expression_to_property_query">
+<span class="sig-prename descclassname"><span class="pre">owlapy.marked_entity_generator_converter.</span></span><span class="sig-name descname"><span class="pre">owl_expression_to_property_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negative_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?pos'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_neg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?neg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">for_all_de_morgan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#owl_expression_to_property_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.owl_expression_to_property_query" title="Link to this definition"></a></dt>
+<dd><p>Convert an OWL class expression with a <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>
+into a SPARQL query that discovers OWL properties and counts how many
+positive / negative examples each property covers within the given context.</p>
+<p>This is the Python equivalent of the Java <code class="docutils literal notranslate"><span class="pre">Suggestor.generatePropertyQuery</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – Class expression containing <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>.</p></li>
+<li><p><strong>positive_examples</strong> – Positive example individuals.</p></li>
+<li><p><strong>negative_examples</strong> – Negative example individuals.</p></li>
+<li><p><strong>root_variable_pos</strong> – SPARQL variable for positives (default <code class="docutils literal notranslate"><span class="pre">?pos</span></code>).</p></li>
+<li><p><strong>root_variable_neg</strong> – SPARQL variable for negatives (default <code class="docutils literal notranslate"><span class="pre">?neg</span></code>).</p></li>
+<li><p><strong>for_all_de_morgan</strong> – Use De Morgan rewriting for universal quantifiers.</p></li>
+<li><p><strong>named_individuals</strong> – Restrict to <code class="docutils literal notranslate"><span class="pre">owl:NamedIndividual</span></code> instances.</p></li>
+<li><p><strong>inverted</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, emits <code class="docutils literal notranslate"><span class="pre">[]</span> <span class="pre">?prop</span> <span class="pre">?var</span> <span class="pre">.</span></code> at the marker.</p></li>
+<li><p><strong>filter_expression</strong> – Optional filter CE (wrapped in FILTER NOT EXISTS).</p></li>
+<li><p><strong>validate</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, validates the generated SPARQL query using
+<code class="docutils literal notranslate"><span class="pre">rdflib.parseQuery</span></code> (slower but safer).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A valid SPARQL SELECT query string.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.marked_entity_generator_converter.owl_expression_to_negated_class_query">
+<span class="sig-prename descclassname"><span class="pre">owlapy.marked_entity_generator_converter.</span></span><span class="sig-name descname"><span class="pre">owl_expression_to_negated_class_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positive_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negative_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_individual/index.html#owlapy.owl_individual.OWLNamedIndividual" title="owlapy.owl_individual.OWLNamedIndividual"><span class="pre">owlapy.owl_individual.OWLNamedIndividual</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?pos'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_variable_neg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?neg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">for_all_de_morgan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_individuals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/marked_entity_generator_converter.html#owl_expression_to_negated_class_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.marked_entity_generator_converter.owl_expression_to_negated_class_query" title="Link to this definition"></a></dt>
+<dd><p>Convert an OWL class expression with a <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>
+into a SPARQL query that discovers OWL classes that the positive examples
+are <strong>not</strong> members of, together with positive / negative hit counts.</p>
+<p>This is the Python equivalent of the Java
+<code class="docutils literal notranslate"><span class="pre">Suggestor.generateNegatedClassQuery</span></code>.</p>
+<p>At the marker position the converter emits:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>?class a owl:Class .
+FILTER NOT EXISTS { ?var a ?class . }
+</pre></div>
+</div>
+<p>instead of <code class="docutils literal notranslate"><span class="pre">?var</span> <span class="pre">a</span> <span class="pre">?class</span> <span class="pre">.</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – Class expression containing <a class="reference internal" href="#owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER" title="owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER"><code class="xref py py-data docutils literal notranslate"><span class="pre">CONTEXT_POSITION_MARKER</span></code></a>.</p></li>
+<li><p><strong>positive_examples</strong> – Positive example individuals.</p></li>
+<li><p><strong>negative_examples</strong> – Negative example individuals.</p></li>
+<li><p><strong>root_variable_pos</strong> – SPARQL variable for positives (default <code class="docutils literal notranslate"><span class="pre">?pos</span></code>).</p></li>
+<li><p><strong>root_variable_neg</strong> – SPARQL variable for negatives (default <code class="docutils literal notranslate"><span class="pre">?neg</span></code>).</p></li>
+<li><p><strong>for_all_de_morgan</strong> – Use De Morgan rewriting for universal quantifiers.</p></li>
+<li><p><strong>named_individuals</strong> – Restrict to <code class="docutils literal notranslate"><span class="pre">owl:NamedIndividual</span></code> instances.</p></li>
+<li><p><strong>filter_expression</strong> – Optional filter CE (wrapped in FILTER NOT EXISTS).</p></li>
+<li><p><strong>validate</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, validates the generated SPARQL query using
+<code class="docutils literal notranslate"><span class="pre">rdflib.parseQuery</span></code> (slower but safer).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A valid SPARQL SELECT query string.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../iri/index.html" class="btn btn-neutral float-left" title="owlapy.iri" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../meta_classes/index.html" class="btn btn-neutral float-right" title="owlapy.meta_classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

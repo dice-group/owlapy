@@ -488,6 +488,48 @@ Module Contents
    .. py:method:: get_owlapi_ontology()
 
 
+   .. py:method:: get_dl_expressivity() -> str
+
+      Compute the DL expressivity name of this ontology, e.g. "ALCHN(D)".
+
+
+
+   .. py:method:: get_prefixes() -> Dict[str, str]
+
+      Get the prefix -> namespace IRI mappings currently registered for this ontology.
+
+      These prefixes are honoured by :meth:`save` both for the OWL API–backed formats
+      that support them (RDF/XML, OWL/XML, Turtle, Functional Syntax, Manchester Syntax)
+      and for the rdflib-backed formats (Turtle, N3, TriG, JSON-LD).
+
+      :returns: Mapping of prefix name (without a trailing colon) to namespace IRI.
+
+
+
+   .. py:method:: set_prefix(prefix: str, namespace: str) -> None
+
+      Declare or update a prefix -> namespace IRI mapping for this ontology.
+
+      :param prefix: Short prefix name, e.g. ``"foaf"`` (no trailing colon).
+      :param namespace: Namespace IRI the prefix expands to, e.g.
+                        ``"http://xmlns.com/foaf/0.1/"``.
+
+      :raises ValueError: If the ontology's current document format does not support
+          prefixes (e.g. LaTeX, DL Syntax, KRSS2, OBO).
+
+
+
+   .. py:method:: remove_prefix(prefix: str) -> None
+
+      Remove a previously declared prefix mapping, if present.
+
+      :param prefix: Short prefix name to remove (no trailing colon).
+
+      :raises ValueError: If the ontology's current document format does not support
+          prefixes (e.g. LaTeX, DL Syntax, KRSS2, OBO).
+
+
+
    .. py:method:: get_ontology_id() -> OWLOntologyID
 
       Gets the OWLOntologyID belonging to this object.

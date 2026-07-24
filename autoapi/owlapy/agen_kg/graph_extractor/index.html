@@ -83,7 +83,9 @@
 <li class="toctree-l3"><a class="reference internal" href="../../class_expression/index.html">owlapy.class_expression</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../converter/index.html">owlapy.converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../entities/index.html">owlapy.entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../expressivity/index.html">owlapy.expressivity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../iri/index.html">owlapy.iri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../marked_entity_generator_converter/index.html">owlapy.marked_entity_generator_converter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../meta_classes/index.html">owlapy.meta_classes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../namespaces/index.html">owlapy.namespaces</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owl_annotation/index.html">owlapy.owl_annotation</a></li>
@@ -97,6 +99,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../owl_ontology/index.html">owlapy.owl_ontology</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owl_property/index.html">owlapy.owl_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owl_reasoner/index.html">owlapy.owl_reasoner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../owl_reasoner_rdflib/index.html">owlapy.owl_reasoner_rdflib</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owlapi_dlsyntax/index.html">owlapy.owlapi_dlsyntax</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../owlapi_mapper/index.html">owlapy.owlapi_mapper</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../parser/index.html">owlapy.parser</a></li>
@@ -110,6 +113,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../vocab/index.html">owlapy.vocab</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#classes">Classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
 </ul>
@@ -284,6 +288,11 @@ text chunking for large documents, and utility methods shared across all extract
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.batch_rdfs_comment_generator">
+<span class="sig-name descname"><span class="pre">batch_rdfs_comment_generator</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.batch_rdfs_comment_generator" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.text_loader">
 <span class="sig-name descname"><span class="pre">text_loader</span></span><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.text_loader" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -324,6 +333,44 @@ E.g., ‘PERSON’ -&gt; ‘Person’, ‘person’ -&gt; ‘Person’, ‘PERSO
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Formatted type name with capital first letter and lowercase rest.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.format_rdfs_label">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">format_rdfs_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_property</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.format_rdfs_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.format_rdfs_label" title="Link to this definition"></a></dt>
+<dd><p>Convert a raw entity identifier into a clean rdfs:label suitable for RDF annotation.</p>
+<p>This method normalizes the input string by removing special characters,
+standardizing whitespace, and applying consistent casing rules. For non-property
+labels, it produces a title-cased form with a capitalized first character and
+lowercase remainder. For properties, it produces a fully lowercase form to
+preserve relational readability conventions.</p>
+<p>After normalization, underscores are replaced with spaces to produce a
+human-readable label.</p>
+<p class="rubric">Examples</p>
+<ul class="simple">
+<li><p>‘PERSON’ -&gt; ‘Person’</p></li>
+<li><p>‘person_type’ -&gt; ‘Person type’</p></li>
+<li><p>‘PERSON TYPE’ -&gt; ‘Person type’</p></li>
+<li><p>is_property=True: ‘has_name’ -&gt; ‘has name’</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> – Raw entity identifier string.</p></li>
+<li><p><strong>is_property</strong> – If True, formats the label as a property name (fully lowercase).
+If False, formats it as a class/individual-style label.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>label string with:
+- consistent casing rules applied
+- underscores replaced with spaces
+- improved human readability</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A cleaned rdfs</p>
 </dd>
 </dl>
 </dd></dl>
@@ -699,6 +746,66 @@ Supports files: .txt, .pdf, .docx, .doc, .rtf, .html, .htm</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Generated Ontology object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.get_rdfs_label_axiom">
+<span class="sig-name descname"><span class="pre">get_rdfs_label_axiom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entity_iri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../owl_axiom/index.html#owlapy.owl_axiom.OWLAnnotationAssertionAxiom" title="owlapy.owl_axiom.OWLAnnotationAssertionAxiom"><span class="pre">owlapy.owl_axiom.OWLAnnotationAssertionAxiom</span></a></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.get_rdfs_label_axiom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.get_rdfs_label_axiom" title="Link to this definition"></a></dt>
+<dd><p>Create an RDFS label annotation assertion axiom for an entity.</p>
+<p>Utilizes the standard RDFS label IRI (<a class="reference external" href="http://www.w3.org/2000/01/rdf-schema#label">http://www.w3.org/2000/01/rdf-schema#label</a>)
+to assign a human-readable name to the entity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>entity_iri</strong> (<a class="reference internal" href="../../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><em>IRI</em></a>) – The IRI of the entity to receive the label.</p></li>
+<li><p><strong>label</strong> (<a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><em>str</em></a>) – The text for the rdfs:label.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An annotation assertion axiom for rdfs:label.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../owl_axiom/index.html#owlapy.owl_axiom.OWLAnnotationAssertionAxiom" title="owlapy.owl_axiom.OWLAnnotationAssertionAxiom">OWLAnnotationAssertionAxiom</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.agen_kg.graph_extractor.GraphExtractor.generate_batch_rdfs_comment_axioms">
+<span class="sig-name descname"><span class="pre">generate_batch_rdfs_comment_axioms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entities_meta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><span class="pre">owlapy.iri.IRI</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../signatures/index.html#owlapy.agen_kg.signatures.Literal" title="owlapy.agen_kg.signatures.Literal"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'class'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'property'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'individual'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../class_expression/index.html#owlapy.class_expression.OWLClass.str" title="owlapy.class_expression.OWLClass.str"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../owl_axiom/index.html#owlapy.owl_axiom.OWLAnnotationAssertionAxiom" title="owlapy.owl_axiom.OWLAnnotationAssertionAxiom"><span class="pre">owlapy.owl_axiom.OWLAnnotationAssertionAxiom</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/owlapy/agen_kg/graph_extractor.html#GraphExtractor.generate_batch_rdfs_comment_axioms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.agen_kg.graph_extractor.GraphExtractor.generate_batch_rdfs_comment_axioms" title="Link to this definition"></a></dt>
+<dd><p>Generate RDFS comment annotation assertion axioms for multiple OWL entities.</p>
+<p>This method sends a batch of (entity IRI, entity type) pairs to an LLM,
+which returns (IRI, comment) pairs. Each generated comment is wrapped
+into an <cite>rdfs:comment</cite> OWL annotation assertion axiom.</p>
+<p>Only comments for entities whose IRIs are present in <cite>entities_meta</cite>
+are converted into axioms. Returned IRIs are validated against the
+input entity IRIs after converting them to strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>entities_meta</strong> – <dl>
+<dt>List of tuples:</dt><dd><dl class="simple">
+<dt>(</dt><dd><p>entity_iri (IRI),
+entity_type (str): ‘class’ | ‘property’ | ‘individual’</p>
+</dd>
+</dl>
+<p>)</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>context</strong> – Shared ontology/domain context used to ground generated comments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One annotation assertion axiom per valid entity that received
+a comment. Returns an empty list if the LLM call for this batch
+fails, so a single failed batch does not abort the rest of the
+pipeline (e.g. already-generated entities/triples/labels).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../../owl_axiom/index.html#owlapy.owl_axiom.OWLAnnotationAssertionAxiom" title="owlapy.owl_axiom.OWLAnnotationAssertionAxiom">OWLAnnotationAssertionAxiom</a>]</p>
 </dd>
 </dl>
 </dd></dl>

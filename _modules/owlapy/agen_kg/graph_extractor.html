@@ -85,12 +85,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dspy</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.chunking_models.simple_chunker</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextChunker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">RDFS_COMMENT_IRI</span><span class="p">,</span> <span class="n">RDFS_LABEL_IRI</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BatchRdfsCommentGenerator</span><span class="p">,</span>
     <span class="n">ChunkSummarizer</span><span class="p">,</span>
     <span class="n">CoherenceChecker</span><span class="p">,</span>
     <span class="n">EntityDeduplication</span><span class="p">,</span>
@@ -106,6 +108,12 @@
     <span class="n">TypeClusteringWithSummary</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.agen_kg.text_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">UniversalTextLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OWLAnnotation</span><span class="p">,</span>
+    <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">,</span>
+    <span class="n">OWLAnnotationProperty</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ontology</span>
 
@@ -115,6 +123,7 @@
 <a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractorMeta">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GraphExtractorMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">dspy</span><span class="o">.</span><span class="n">Module</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">ABC</span><span class="p">)):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Metaclass that resolves conflicts between dspy.Module and ABC.&quot;&quot;&quot;</span>
+
     <span class="k">pass</span></div>
 
 
@@ -163,6 +172,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">entity_merger</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">IncrementalEntityMerger</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">triple_merger</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">IncrementalTripleMerger</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type_merger</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">IncrementalTypeMerger</span><span class="p">)</span>
+        <span class="c1"># Generation of rdfs:comment annotations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_rdfs_comment_generator</span> <span class="o">=</span> <span class="n">dspy</span><span class="o">.</span><span class="n">Predict</span><span class="p">(</span><span class="n">BatchRdfsCommentGenerator</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">text_loader</span> <span class="o">=</span> <span class="n">UniversalTextLoader</span><span class="p">(</span><span class="n">enable_logging</span><span class="o">=</span><span class="n">enable_logging</span><span class="p">)</span>
         <span class="c1"># Default text chunker - can be configured via configure_chunking()</span>
@@ -170,7 +181,7 @@
             <span class="n">chunk_size</span><span class="o">=</span><span class="mi">6000</span><span class="p">,</span>  <span class="c1"># ~1500 tokens</span>
             <span class="n">overlap</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
             <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;paragraph&quot;</span><span class="p">,</span>
-            <span class="n">enable_logging</span><span class="o">=</span><span class="n">enable_logging</span>
+            <span class="n">enable_logging</span><span class="o">=</span><span class="n">enable_logging</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Threshold for automatic chunking (in characters)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">auto_chunk_threshold</span> <span class="o">=</span> <span class="mi">4000</span>  <span class="c1"># ~1000 tokens</span>
@@ -189,8 +200,8 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">snake_case</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
         <span class="c1"># Normalize whitespace and special chars</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>  <span class="c1"># Remove special chars</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>  <span class="c1"># Multiple spaces -&gt; single underscore</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^\w\s]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>  <span class="c1"># Remove special chars</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>  <span class="c1"># Multiple spaces -&gt; single underscore</span>
         <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
 
 
@@ -209,14 +220,57 @@
 <span class="sd">            Formatted type name with capital first letter and lowercase rest.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Normalize whitespace and special chars</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>  <span class="c1"># Remove special chars</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>  <span class="c1"># Multiple spaces -&gt; single underscore</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^\w\s]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>  <span class="c1"># Remove special chars</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>  <span class="c1"># Multiple spaces -&gt; single underscore</span>
         <span class="c1"># Convert to lowercase first, then capitalize first letter</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="n">text</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="k">return</span> <span class="n">text</span></div>
 
+
+<div class="viewcode-block" id="GraphExtractor.format_rdfs_label">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor.format_rdfs_label">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_rdfs_label</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_property</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a raw entity identifier into a clean rdfs:label suitable for RDF annotation.</span>
+
+<span class="sd">        This method normalizes the input string by removing special characters,</span>
+<span class="sd">        standardizing whitespace, and applying consistent casing rules. For non-property</span>
+<span class="sd">        labels, it produces a title-cased form with a capitalized first character and</span>
+<span class="sd">        lowercase remainder. For properties, it produces a fully lowercase form to</span>
+<span class="sd">        preserve relational readability conventions.</span>
+
+<span class="sd">        After normalization, underscores are replaced with spaces to produce a</span>
+<span class="sd">        human-readable label.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            - &#39;PERSON&#39; -&gt; &#39;Person&#39;</span>
+<span class="sd">            - &#39;person_type&#39; -&gt; &#39;Person type&#39;</span>
+<span class="sd">            - &#39;PERSON TYPE&#39; -&gt; &#39;Person type&#39;</span>
+<span class="sd">            - is_property=True: &#39;has_name&#39; -&gt; &#39;has name&#39;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label:</span>
+<span class="sd">                Raw entity identifier string.</span>
+
+<span class="sd">            is_property:</span>
+<span class="sd">                If True, formats the label as a property name (fully lowercase).</span>
+<span class="sd">                If False, formats it as a class/individual-style label.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A cleaned rdfs:label string with:</span>
+<span class="sd">            - consistent casing rules applied</span>
+<span class="sd">            - underscores replaced with spaces</span>
+<span class="sd">            - improved human readability</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_property</span><span class="p">:</span>
+            <span class="n">formatted</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">formatted</span> <span class="o">=</span> <span class="n">GraphExtractor</span><span class="o">.</span><span class="n">format_type_name</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">formatted</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GraphExtractor.plan_decompose">
@@ -298,13 +352,7 @@
 <div class="viewcode-block" id="GraphExtractor.configure_chunking">
 <a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor.configure_chunking">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">configure_chunking</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">overlap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">auto_chunk_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">summarization_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">max_summary_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">overlap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">auto_chunk_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">summarization_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_summary_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Configure text chunking settings for handling large documents.</span>
@@ -339,7 +387,7 @@
                 <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">,</span>
                 <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span> <span class="k">if</span> <span class="n">overlap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span>
                 <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">strategy</span><span class="p">,</span>
-                <span class="n">enable_logging</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logging</span>
+                <span class="n">enable_logging</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">auto_chunk_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -352,22 +400,20 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="o">=</span> <span class="n">max_summary_length</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Chunking configured - &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;chunk_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">chunk_size</span><span class="si">}</span><span class="s2">, &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;overlap=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">overlap</span><span class="si">}</span><span class="s2">, &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;strategy=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">strategy</span><span class="si">}</span><span class="s2">, &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;auto_threshold=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">auto_chunk_threshold</span><span class="si">}</span><span class="s2">, &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;summarization_threshold=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">summarization_threshold</span><span class="si">}</span><span class="s2">, &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;max_summary_length=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Chunking configured - &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;chunk_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">chunk_size</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;overlap=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">overlap</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;strategy=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_chunker</span><span class="o">.</span><span class="n">strategy</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;auto_threshold=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">auto_chunk_threshold</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;summarization_threshold=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">summarization_threshold</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;max_summary_length=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GraphExtractor.configure_chunking_for_model">
 <a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor.configure_chunking_for_model">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">configure_chunking_for_model</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">max_context_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-            <span class="n">prompt_overhead_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1500</span>
-    <span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure_chunking_for_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_context_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">prompt_overhead_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1500</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Automatically configure chunking based on model specifications.</span>
 
@@ -388,16 +434,11 @@
 <span class="sd">            # For GPT-4-turbo (128K context)</span>
 <span class="sd">            extractor.configure_chunking_for_model(128000, 2000)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">TextChunker</span><span class="o">.</span><span class="n">calculate_chunk_size_for_model</span><span class="p">(</span>
-            <span class="n">max_context_tokens</span><span class="p">,</span>
-            <span class="n">prompt_overhead_tokens</span>
-        <span class="p">)</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">TextChunker</span><span class="o">.</span><span class="n">calculate_chunk_size_for_model</span><span class="p">(</span><span class="n">max_context_tokens</span><span class="p">,</span> <span class="n">prompt_overhead_tokens</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">configure_chunking</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Configured for model with &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">max_context_tokens</span><span class="si">}</span><span class="s2"> token context window, &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;chunk_size=</span><span class="si">{</span><span class="n">chunk_size</span><span class="si">}</span><span class="s2"> chars&quot;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Configured for model with </span><span class="si">{</span><span class="n">max_context_tokens</span><span class="si">}</span><span class="s2"> token context window, chunk_size=</span><span class="si">{</span><span class="n">chunk_size</span><span class="si">}</span><span class="s2"> chars&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GraphExtractor.should_chunk_text">
@@ -541,11 +582,10 @@
 
         <span class="c1"># Truncate if still too long</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">:</span>
-            <span class="n">combined</span> <span class="o">=</span> <span class="n">combined</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span>
+            <span class="n">combined</span> <span class="o">=</span> <span class="n">combined</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Combined </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk_summaries</span><span class="p">)</span><span class="si">}</span><span class="s2"> summaries into </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Combined </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk_summaries</span><span class="p">)</span><span class="si">}</span><span class="s2"> summaries into </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">combined</span></div>
 
@@ -569,13 +609,12 @@
         <span class="c1"># For small texts, use the text directly</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">should_use_summarization</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">text</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">text</span>
 
         <span class="c1"># For large texts, generate summary</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Text exceeds summarization threshold, generating summary for clustering&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Text exceeds summarization threshold, generating summary for clustering&quot;</span><span class="p">)</span>
 
         <span class="c1"># Use provided chunks or create new ones</span>
         <span class="k">if</span> <span class="n">chunks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -626,8 +665,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">clear_summary_cache</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_entity_lists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                            <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_entity_lists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Merge entity lists from multiple chunks, removing duplicates.</span>
 
@@ -714,7 +752,7 @@
                 <span class="p">)</span>
 
                 <span class="c1"># Validate result</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;merged_entities&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">merged_entities</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;merged_entities&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">merged_entities</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: WARNING :: LLM returned empty result, using simple merge&quot;</span><span class="p">)</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Empty result from LLM&quot;</span><span class="p">)</span>
@@ -722,7 +760,7 @@
                 <span class="n">merged_entities</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">merged_entities</span>
 
                 <span class="c1"># Update global mapping with new mappings</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;entity_mapping&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">entity_mapping</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;entity_mapping&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">entity_mapping</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">original</span><span class="p">,</span> <span class="n">canonical</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entity_mapping</span><span class="p">:</span>
                         <span class="n">global_mapping</span><span class="p">[</span><span class="n">original</span><span class="p">]</span> <span class="o">=</span> <span class="n">canonical</span>
 
@@ -748,8 +786,7 @@
 
         <span class="k">return</span> <span class="n">merged_entities</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_triple_lists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">triple_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]],</span> <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                            <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_triple_lists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">triple_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]],</span> <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Merge triple lists from multiple chunks, removing duplicates.</span>
 
@@ -828,7 +865,7 @@
                 <span class="p">)</span>
 
                 <span class="c1"># Validate result</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;merged_triples&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">merged_triples</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;merged_triples&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">merged_triples</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: WARNING :: LLM returned empty result, using simple merge&quot;</span><span class="p">)</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Empty result from LLM&quot;</span><span class="p">)</span>
@@ -843,8 +880,7 @@
 
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: WARNING :: LLM triple merge failed, falling back to simple merge: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: WARNING :: LLM triple merge failed, falling back to simple merge: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="c1"># Fallback to simple merge</span>
                 <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">t</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">merged_triples</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">triple</span> <span class="ow">in</span> <span class="n">triple_lists</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
@@ -855,8 +891,7 @@
 
         <span class="k">return</span> <span class="n">merged_triples</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_type_assertions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assertion_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]],</span> <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                               <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_type_assertions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assertion_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]],</span> <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Merge type assertion lists from multiple chunks.</span>
 
@@ -897,8 +932,7 @@
                     <span class="n">entity_types</span><span class="p">[</span><span class="n">entity_lower</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">entity_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">entity_types</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_incremental_merge_type_assertions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assertion_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]],</span> <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> \
-    <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_incremental_merge_type_assertions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assertion_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]],</span> <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Incrementally merge type assertions using LLM to resolve conflicts.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -933,7 +967,7 @@
                 <span class="p">)</span>
 
                 <span class="c1"># Validate result</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;merged_types&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">merged_types</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;merged_types&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">merged_types</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: WARNING :: LLM returned empty result, using simple merge&quot;</span><span class="p">)</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Empty result from LLM&quot;</span><span class="p">)</span>
@@ -948,8 +982,7 @@
 
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: WARNING :: LLM type merge failed, falling back to simple merge: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: WARNING :: LLM type merge failed, falling back to simple merge: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="c1"># Fallback to simple merge</span>
                 <span class="n">existing_entities</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">merged_types</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">entity</span><span class="p">,</span> <span class="n">entity_type</span> <span class="ow">in</span> <span class="n">assertion_lists</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
@@ -1009,12 +1042,11 @@
             <span class="c1"># Get or create summary for deduplication context</span>
             <span class="n">clustering_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clustering_context</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Using summary (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">clustering_context</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars) for entity deduplication&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Using summary (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">clustering_context</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars) for entity deduplication&quot;</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_deduplicator_with_summary</span><span class="p">(</span><span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="n">clustering_context</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Use direct text (truncated if necessary)</span>
-            <span class="n">context</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="k">else</span> <span class="n">text</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="k">else</span> <span class="n">text</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_deduplicator</span><span class="p">(</span><span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
 
         <span class="c1"># Get the filtered entities list</span>
@@ -1058,11 +1090,10 @@
         <span class="k">if</span> <span class="n">use_summary</span><span class="p">:</span>
             <span class="n">clustering_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clustering_context</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Using summary (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">clustering_context</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars) for type clustering&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Using summary (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">clustering_context</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars) for type clustering&quot;</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_clusterer_with_summary</span><span class="p">(</span><span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="n">clustering_context</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">context</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="k">else</span> <span class="n">text</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="k">else</span> <span class="n">text</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_clusterer</span><span class="p">(</span><span class="n">types</span><span class="o">=</span><span class="n">types</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
 
         <span class="n">type_mapping</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1114,11 +1145,10 @@
         <span class="k">if</span> <span class="n">use_summary</span><span class="p">:</span>
             <span class="n">clustering_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clustering_context</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Using summary (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">clustering_context</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars) for relation clustering&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Using summary (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">clustering_context</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars) for relation clustering&quot;</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_clusterer_with_summary</span><span class="p">(</span><span class="n">relations</span><span class="o">=</span><span class="n">relations</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="n">clustering_context</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">context</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="k">else</span> <span class="n">text</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="k">else</span> <span class="n">text</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relation_clusterer</span><span class="p">(</span><span class="n">relations</span><span class="o">=</span><span class="n">relations</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
 
         <span class="n">relation_mapping</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1142,8 +1172,7 @@
 
 <div class="viewcode-block" id="GraphExtractor.check_coherence">
 <a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor.check_coherence">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">check_coherence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">triples</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">],</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
-                        <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">use_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_coherence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">triples</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">],</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">use_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check coherence of extracted triples and filter out low-quality ones.</span>
 
@@ -1176,21 +1205,20 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Using summary (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars) for coherence checking&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">context</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="k">else</span> <span class="n">text</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_summary_length</span> <span class="k">else</span> <span class="n">text</span>
 
         <span class="n">coherent_triples</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># Process triples in batches</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">triples</span><span class="p">),</span> <span class="n">batch_size</span><span class="p">):</span>
-            <span class="n">batch</span> <span class="o">=</span> <span class="n">triples</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">batch_size</span><span class="p">]</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="n">triples</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">batch_size</span><span class="p">]</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coherence_checker</span><span class="p">(</span><span class="n">triples</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">triple</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">explanation</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">coherence_scores</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">:</span>
                     <span class="n">coherent_triples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">triple</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Filtered out triple </span><span class="si">{</span><span class="n">triple</span><span class="si">}</span><span class="s2"> (score: </span><span class="si">{</span><span class="n">score</span><span class="si">}</span><span class="s2">/5): </span><span class="si">{</span><span class="n">explanation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: INFO :: Filtered out triple </span><span class="si">{</span><span class="n">triple</span><span class="si">}</span><span class="s2"> (score: </span><span class="si">{</span><span class="n">score</span><span class="si">}</span><span class="s2">/5): </span><span class="si">{</span><span class="n">explanation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
             <span class="n">filtered_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">triples</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">coherent_triples</span><span class="p">)</span>
@@ -1200,14 +1228,7 @@
         <span class="k">return</span> <span class="n">coherent_triples</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_entities_from_chunks</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">examples_for_entity_extraction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_entities_from_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">examples_for_entity_extraction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract entities from multiple text chunks and merge results.</span>
 <span class="sd">        Generic method that works for all extractor subclasses.</span>
@@ -1224,7 +1245,7 @@
 <span class="sd">            Tuple of (merged_entities, chunk_summaries) where chunk_summaries can be used</span>
 <span class="sd">            for subsequent operations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;entity_extractor&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;entity_extractor&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must define &#39;entity_extractor&#39;&quot;</span><span class="p">)</span>
 
         <span class="n">extractor_name</span> <span class="o">=</span> <span class="n">extractor_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
@@ -1240,12 +1261,8 @@
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extractor_name</span><span class="si">}</span><span class="s2">: INFO :: Extracting entities from chunk </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_extractor</span><span class="p">(</span>
-                    <span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
-                    <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_entity_extraction</span><span class="p">,</span>
-                    <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions</span>
-                <span class="p">)</span>
-                <span class="n">chunk_entities</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;entities&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span> <span class="k">else</span> <span class="p">[]</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_entity_extraction</span><span class="p">,</span> <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions</span><span class="p">)</span>
+                <span class="n">chunk_entities</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;entities&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span> <span class="k">else</span> <span class="p">[]</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extractor_name</span><span class="si">}</span><span class="s2">: WARNING :: Failed to extract entities from chunk </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1272,14 +1289,14 @@
         <span class="k">return</span> <span class="n">merged_entities</span><span class="p">,</span> <span class="n">chunk_summaries</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_extract_triples_from_chunks</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">examples_for_triples_extraction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">examples_for_triples_extraction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract triples from multiple text chunks and merge results.</span>
@@ -1298,7 +1315,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Merged list of triples from all chunks.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;triples_extractor&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;triples_extractor&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must define &#39;triples_extractor&#39;&quot;</span><span class="p">)</span>
 
         <span class="n">extractor_name</span> <span class="o">=</span> <span class="n">extractor_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
@@ -1317,13 +1334,8 @@
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extractor_name</span><span class="si">}</span><span class="s2">: INFO :: Extracting triples from chunk </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">triples_extractor</span><span class="p">(</span>
-                    <span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
-                    <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span>
-                    <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_triples_extraction</span><span class="p">,</span>
-                    <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions</span>
-                <span class="p">)</span>
-                <span class="n">chunk_triples</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;triples&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span> <span class="k">else</span> <span class="p">[]</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">triples_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_triples_extraction</span><span class="p">,</span> <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions</span><span class="p">)</span>
+                <span class="n">chunk_triples</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;triples&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span> <span class="k">else</span> <span class="p">[]</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extractor_name</span><span class="si">}</span><span class="s2">: WARNING :: Failed to extract triples from chunk </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1343,18 +1355,18 @@
         <span class="k">return</span> <span class="n">merged_triples</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_extract_types_from_chunks</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">entity_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">generate_types</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-            <span class="n">examples_for_type_assertion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">examples_for_type_generation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">task_instructions_assertion</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">task_instructions_generation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">entity_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">generate_types</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">examples_for_type_assertion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">examples_for_type_generation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk_summaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_llm_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_instructions_assertion</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_instructions_generation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract type assertions from multiple text chunks and merge results.</span>
@@ -1377,7 +1389,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Merged list of type assertions from all chunks.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;type_asserter&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;type_generator&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;type_asserter&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;type_generator&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must define &#39;type_asserter&#39; and &#39;type_generator&#39;&quot;</span><span class="p">)</span>
 
         <span class="n">extractor_name</span> <span class="o">=</span> <span class="n">extractor_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
@@ -1397,22 +1409,11 @@
 
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">entity_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">generate_types</span><span class="p">:</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_asserter</span><span class="p">(</span>
-                        <span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
-                        <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span>
-                        <span class="n">entity_types</span><span class="o">=</span><span class="n">entity_types</span><span class="p">,</span>
-                        <span class="n">task_instructions</span> <span class="o">=</span> <span class="n">task_instructions_assertion</span><span class="p">,</span>
-                        <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_type_assertion</span>
-                    <span class="p">)</span>
-                    <span class="n">chunk_assertions</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;pairs&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span> <span class="k">else</span> <span class="p">[]</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_asserter</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">entity_types</span><span class="o">=</span><span class="n">entity_types</span><span class="p">,</span> <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions_assertion</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_type_assertion</span><span class="p">)</span>
+                    <span class="n">chunk_assertions</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;pairs&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span> <span class="k">else</span> <span class="p">[]</span>
                 <span class="k">else</span><span class="p">:</span>  <span class="c1"># generate_types</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_generator</span><span class="p">(</span>
-                        <span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
-                        <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span>
-                        <span class="n">task_instructions</span> <span class="o">=</span> <span class="n">task_instructions_generation</span><span class="p">,</span>
-                        <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_type_generation</span>
-                    <span class="p">)</span>
-                    <span class="n">chunk_assertions</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;pairs&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span> <span class="k">else</span> <span class="p">[]</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_generator</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions_generation</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_type_generation</span><span class="p">)</span>
+                    <span class="n">chunk_assertions</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;pairs&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">pairs</span> <span class="k">else</span> <span class="p">[]</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extractor_name</span><span class="si">}</span><span class="s2">: WARNING :: Failed to extract types from chunk </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1431,13 +1432,7 @@
 
         <span class="k">return</span> <span class="n">merged_assertions</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_literals_from_chunks</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">examples_for_literal_extraction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_literals_from_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">examples_for_literal_extraction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract literals from multiple text chunks and merge results.</span>
 <span class="sd">        Generic method that works for all extractor subclasses.</span>
@@ -1451,7 +1446,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Merged list of literals from all chunks.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;literal_extractor&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;literal_extractor&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must define &#39;literal_extractor&#39;&quot;</span><span class="p">)</span>
 
         <span class="n">extractor_name</span> <span class="o">=</span> <span class="n">extractor_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
@@ -1462,12 +1457,8 @@
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extractor_name</span><span class="si">}</span><span class="s2">: INFO :: Extracting literals from chunk </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">literal_extractor</span><span class="p">(</span>
-                    <span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
-                    <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions</span><span class="p">,</span>
-                    <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_literal_extraction</span>
-                <span class="p">)</span>
-                <span class="n">chunk_literals</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">l_values</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;l_values&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">l_values</span> <span class="k">else</span> <span class="p">[]</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">literal_extractor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span> <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_literal_extraction</span><span class="p">)</span>
+                <span class="n">chunk_literals</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">l_values</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;l_values&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">l_values</span> <span class="k">else</span> <span class="p">[]</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extractor_name</span><span class="si">}</span><span class="s2">: WARNING :: Failed to extract literals from chunk </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1487,13 +1478,7 @@
         <span class="k">return</span> <span class="n">merged_literals</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_extract_spl_triples_from_chunks</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">literals</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-            <span class="n">examples_for_spl_triples_extraction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">literals</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">examples_for_spl_triples_extraction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extractor_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract SPL triples from multiple text chunks and merge results.</span>
@@ -1510,7 +1495,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Merged list of SPL triples from all chunks.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;spl_triples_extractor&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;spl_triples_extractor&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must define &#39;spl_triples_extractor&#39;&quot;</span><span class="p">)</span>
 
         <span class="n">extractor_name</span> <span class="o">=</span> <span class="n">extractor_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
@@ -1522,13 +1507,9 @@
 
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spl_triples_extractor</span><span class="p">(</span>
-                    <span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
-                    <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span>
-                    <span class="n">numeric_literals</span><span class="o">=</span><span class="n">literals</span><span class="p">,</span>
-                    <span class="n">task_instructions</span><span class="o">=</span> <span class="n">task_instructions</span><span class="p">,</span>
-                    <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_spl_triples_extraction</span>
+                    <span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span> <span class="n">entities</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span> <span class="n">numeric_literals</span><span class="o">=</span><span class="n">literals</span><span class="p">,</span> <span class="n">task_instructions</span><span class="o">=</span><span class="n">task_instructions</span><span class="p">,</span> <span class="n">few_shot_examples</span><span class="o">=</span><span class="n">examples_for_spl_triples_extraction</span>
                 <span class="p">)</span>
-                <span class="n">chunk_triples</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;triples&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span> <span class="k">else</span> <span class="p">[]</span>
+                <span class="n">chunk_triples</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;triples&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">triples</span> <span class="k">else</span> <span class="p">[]</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extractor_name</span><span class="si">}</span><span class="s2">: WARNING :: Failed to extract SPL triples from chunk </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1576,8 +1557,8 @@
         <span class="k">if</span> <span class="n">literal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">str_value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">str_value</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="s1">&#39;false&#39;</span><span class="p">):</span>
-                    <span class="n">bool_value</span> <span class="o">=</span> <span class="n">str_value</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span>
+                <span class="k">if</span> <span class="n">str_value</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">):</span>
+                    <span class="n">bool_value</span> <span class="o">=</span> <span class="n">str_value</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
                     <span class="n">literal</span> <span class="o">=</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">bool_value</span><span class="p">)</span>  <span class="c1"># OWLLiteral will auto-detect bool type</span>
             <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
                 <span class="k">pass</span>
@@ -1625,6 +1606,102 @@
 <span class="sd">            Generated Ontology object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_annotation_assertion_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span> <span class="n">annotation_iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a basic OWL annotation assertion axiom for a given entity.</span>
+
+<span class="sd">        This is an internal helper method that wraps a string value into an</span>
+<span class="sd">        OWLLiteral and pairs it with the specified annotation property.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entity_iri (IRI): The IRI of the entity being annotated.</span>
+<span class="sd">            annotation_iri (IRI): The IRI of the annotation property (e.g., label, comment).</span>
+<span class="sd">            value (str): The string literal value to be assigned to the annotation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            OWLAnnotationAssertionAxiom: A constructed OWL annotation assertion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">annotation_value</span> <span class="o">=</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">annotation</span> <span class="o">=</span> <span class="n">OWLAnnotation</span><span class="p">(</span><span class="n">OWLAnnotationProperty</span><span class="p">(</span><span class="n">annotation_iri</span><span class="p">),</span> <span class="n">annotation_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">(</span><span class="n">entity_iri</span><span class="p">,</span> <span class="n">annotation</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GraphExtractor.get_rdfs_label_axiom">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor.get_rdfs_label_axiom">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rdfs_label_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_iri</span><span class="p">:</span> <span class="n">IRI</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an RDFS label annotation assertion axiom for an entity.</span>
+
+<span class="sd">        Utilizes the standard RDFS label IRI (http://www.w3.org/2000/01/rdf-schema#label)</span>
+<span class="sd">        to assign a human-readable name to the entity.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entity_iri (IRI): The IRI of the entity to receive the label.</span>
+<span class="sd">            label (str): The text for the rdfs:label.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            OWLAnnotationAssertionAxiom: An annotation assertion axiom for rdfs:label.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_annotation_assertion_axiom</span><span class="p">(</span><span class="n">entity_iri</span><span class="p">,</span> <span class="n">RDFS_LABEL_IRI</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GraphExtractor.generate_batch_rdfs_comment_axioms">
+<a class="viewcode-back" href="../../../autoapi/owlapy/agen_kg/graph_extractor/index.html#owlapy.agen_kg.graph_extractor.GraphExtractor.generate_batch_rdfs_comment_axioms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_batch_rdfs_comment_axioms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entities_meta</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">IRI</span><span class="p">,</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">,</span> <span class="s2">&quot;property&quot;</span><span class="p">,</span> <span class="s2">&quot;individual&quot;</span><span class="p">]]],</span> <span class="n">context</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">OWLAnnotationAssertionAxiom</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate RDFS comment annotation assertion axioms for multiple OWL entities.</span>
+
+<span class="sd">        This method sends a batch of (entity IRI, entity type) pairs to an LLM,</span>
+<span class="sd">        which returns (IRI, comment) pairs. Each generated comment is wrapped</span>
+<span class="sd">        into an `rdfs:comment` OWL annotation assertion axiom.</span>
+
+<span class="sd">        Only comments for entities whose IRIs are present in `entities_meta`</span>
+<span class="sd">        are converted into axioms. Returned IRIs are validated against the</span>
+<span class="sd">        input entity IRIs after converting them to strings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entities_meta:</span>
+<span class="sd">                List of tuples:</span>
+<span class="sd">                    (</span>
+<span class="sd">                        entity_iri (IRI),</span>
+<span class="sd">                        entity_type (str): &#39;class&#39; | &#39;property&#39; | &#39;individual&#39;</span>
+<span class="sd">                    )</span>
+
+<span class="sd">            context:</span>
+<span class="sd">                Shared ontology/domain context used to ground generated comments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[OWLAnnotationAssertionAxiom]:</span>
+<span class="sd">                One annotation assertion axiom per valid entity that received</span>
+<span class="sd">                a comment. Returns an empty list if the LLM call for this batch</span>
+<span class="sd">                fails, so a single failed batch does not abort the rest of the</span>
+<span class="sd">                pipeline (e.g. already-generated entities/triples/labels).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">iri_type_pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">,</span> <span class="s2">&quot;property&quot;</span><span class="p">,</span> <span class="s2">&quot;individual&quot;</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">(),</span> <span class="n">entity_type</span><span class="p">)</span> <span class="k">for</span> <span class="n">iri</span><span class="p">,</span> <span class="n">entity_type</span> <span class="ow">in</span> <span class="n">entities_meta</span><span class="p">]</span>
+
+        <span class="n">valid_iri_set</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">iri</span><span class="o">.</span><span class="n">as_str</span><span class="p">()</span> <span class="k">for</span> <span class="n">iri</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">entities_meta</span><span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_rdfs_comment_generator</span><span class="p">(</span><span class="n">iri_type_pairs</span><span class="o">=</span><span class="n">iri_type_pairs</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: WARNING :: Failed to generate rdfs:comment annotations for batch, skipping: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">axioms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OWLAnnotationAssertionAxiom</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">iri_str</span><span class="p">,</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entity_comment_pairs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">comment</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">iri_str</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_iri_set</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">entity_iri</span> <span class="o">=</span> <span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">iri_str</span><span class="p">)</span>
+
+            <span class="n">axiom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_annotation_assertion_axiom</span><span class="p">(</span><span class="n">entity_iri</span><span class="p">,</span> <span class="n">RDFS_COMMENT_IRI</span><span class="p">,</span> <span class="n">comment</span><span class="p">)</span>
+
+            <span class="n">axioms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axiom</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">axioms</span></div>
 </div>
 
 </pre></div>

@@ -1,0 +1,307 @@
+owlapy.marked_entity_generator_converter
+========================================
+
+.. py:module:: owlapy.marked_entity_generator_converter
+
+.. autoapi-nested-parse::
+
+   Class & property generator converter – port of the Java generateClassQuery /
+   generatePropertyQuery / SparqlBuildingVisitor.
+
+   This module provides a subclass of :class:`Owl2SparqlConverter` that supports a
+   *context position marker*.  When the marker appears in a class expression the
+   converter emits ``?variable a ?class .`` instead of a concrete class IRI, which
+   makes it possible to generate SPARQL queries that *discover* classes rather
+   than retrieving instances of a fixed class.
+
+   For property discovery the same marker triggers ``?variable ?prop [] .``
+   (or ``[] ?prop ?variable .`` when inverted), mirroring the Java
+   ``Suggestor.generatePropertyQuery``.
+
+   The top-level helpers :func:`owl_expression_to_class_query` and
+   :func:`owl_expression_to_property_query` mirror :func:`owl_expression_to_sparql`
+   but produce queries of the form produced by the Java suggestor.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.marked_entity_generator_converter.CONTEXT_POSITION_MARKER
+   owlapy.marked_entity_generator_converter.generator
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.marked_entity_generator_converter.QueryGenerator
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.marked_entity_generator_converter.owl_expression_to_class_query
+   owlapy.marked_entity_generator_converter.owl_expression_to_property_query
+   owlapy.marked_entity_generator_converter.owl_expression_to_negated_class_query
+
+
+Module Contents
+---------------
+
+.. py:data:: CONTEXT_POSITION_MARKER
+
+.. py:class:: QueryGenerator
+
+   Bases: :py:obj:`owlapy.converter.Owl2SparqlConverter`
+
+
+   Extends :class:`Owl2SparqlConverter` with *marker-aware* conversion and
+   the ability to generate ``generateClassQuery``-style SPARQL queries that
+   discover OWL classes with their positive/negative hit counts.
+
+   The marker concept :data:`CONTEXT_POSITION_MARKER` can be placed anywhere
+   inside a class expression tree.  When the converter encounters it the
+   emitted triple pattern becomes ``?currentVar a ?class .`` instead of the
+   usual ``?currentVar a <SomeConcreteIRI> .``.  If the marker appears inside
+   a negation (``OWLObjectComplementOf``) the triple pattern is additionally
+   wrapped in ``FILTER NOT EXISTS { … }``, and a type axiom for ``?class`` is
+   added (``?class a owl:Class .``).
+
+
+   .. py:attribute:: __slots__
+      :value: ('ce', 'sparql', 'variables', 'parent', 'parent_var', 'properties', 'variable_entities', 'cnt',...
+
+
+
+   .. py:method:: convert(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, for_all_de_morgan: bool = True, named_individuals: bool = False, marker_mode: bool = False, property_marker_mode: bool = False, inverted: bool = False, negated_class_marker_mode: bool = False, _preserve_mapping: bool = False)
+
+      Like the parent ``convert`` but accepts extra marker flags.
+
+      When *marker_mode* is ``True`` the :data:`CONTEXT_POSITION_MARKER`
+      class is treated specially – emitting ``?var a ?class .``.
+
+      When *negated_class_marker_mode* is ``True`` the marker emits
+      ``?class a owl:Class . FILTER NOT EXISTS { ?var a ?class . }``
+      instead, which discovers classes that the individual is **not** a
+      member of.  This mirrors the Java ``generateNegatedClassQuery``.
+
+      When *property_marker_mode* is ``True`` the marker emits
+      ``?var ?prop [] .`` (or ``[] ?prop ?var .`` when *inverted* is ``True``).
+
+      When *_preserve_mapping* is ``True``, the existing
+      :class:`VariablesMapping` counters are preserved so that a
+      subsequent conversion produces fresh intermediate variable names
+      (e.g. ``?s_3`` instead of ``?s_1``).  This is essential when the
+      positive and negative blocks appear in the same outer query scope.
+
+
+
+   .. py:method:: process(ce: owlapy.class_expression.OWLClassExpression)
+
+
+   .. py:method:: as_class_query(context: owlapy.class_expression.OWLClassExpression, positive_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], negative_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], root_variable_pos: str = '?pos', root_variable_neg: str = '?neg', for_all_de_morgan: bool = True, named_individuals: bool = False, filter_expression: Optional[owlapy.class_expression.OWLClassExpression] = None, validate: bool = False) -> str
+
+      Generate a SPARQL query that discovers OWL classes with hit-counts.
+
+      The generated query mirrors the Java ``Suggestor.generateClassQuery``:
+
+      .. code-block:: sparql
+
+          SELECT ?class (MAX(?tp) AS ?posHits) (COUNT(DISTINCT ?neg) AS ?negHits) WHERE {
+              { SELECT ?class (COUNT(DISTINCT ?pos) AS ?tp) WHERE {
+                  VALUES ?pos { ... }
+                  <context pattern with ?pos as root and ?class at marker>
+              } GROUP BY ?class }
+              OPTIONAL {
+                  VALUES ?neg { ... }
+                  <same context pattern but with ?neg>
+              }
+          } GROUP BY ?class
+
+      :param context: A class expression that **must** contain
+                      :data:`CONTEXT_POSITION_MARKER` at the position where
+                      ``?variable a ?class .`` should be injected.
+      :param positive_examples: Positive example individuals.
+      :param negative_examples: Negative example individuals.
+      :param root_variable_pos: Variable name for positive examples (default ``?pos``).
+      :param root_variable_neg: Variable name for negative examples (default ``?neg``).
+      :param for_all_de_morgan: Passed through to :meth:`convert`.
+      :param named_individuals: Passed through to :meth:`convert`.
+      :param filter_expression: Optional additional class expression used to
+                                create a ``FILTER NOT EXISTS`` constraint on the root variable.
+      :param validate: If ``True``, validates the generated SPARQL query using
+                       ``rdflib.parseQuery`` (slower but safer).
+
+      :returns: A valid SPARQL SELECT query string.
+
+
+
+   .. py:method:: as_negated_class_query(context: owlapy.class_expression.OWLClassExpression, positive_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], negative_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], root_variable_pos: str = '?pos', root_variable_neg: str = '?neg', for_all_de_morgan: bool = True, named_individuals: bool = False, filter_expression: Optional[owlapy.class_expression.OWLClassExpression] = None, validate: bool = False) -> str
+
+      Generate a SPARQL query that discovers OWL classes the positives
+      are **not** members of, with hit-counts.
+
+      The generated query mirrors the Java
+      ``Suggestor.generateNegatedClassQuery``:
+
+      .. code-block:: sparql
+
+          SELECT ?class (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {
+              { SELECT ?class (COUNT(DISTINCT ?pos) AS ?tp) (0 AS ?fp) WHERE {
+                  VALUES ?pos { ... }
+                  ?class a owl:Class .
+                  FILTER NOT EXISTS { ?pos a ?class . }
+              } GROUP BY ?class }
+              UNION {
+                  SELECT ?class (0 AS ?tp) (COUNT(DISTINCT ?neg) AS ?fp) WHERE {
+                      VALUES ?neg { ... }
+                      ?class a owl:Class .
+                      FILTER NOT EXISTS { ?neg a ?class . }
+                  } GROUP BY ?class
+              }
+          } GROUP BY ?class
+
+      At the marker position the converter emits
+      ``?class a owl:Class . FILTER NOT EXISTS { ?var a ?class . }``
+      instead of ``?var a ?class .``.
+
+      :param context: A class expression containing :data:`CONTEXT_POSITION_MARKER`.
+      :param positive_examples: Positive example individuals.
+      :param negative_examples: Negative example individuals.
+      :param root_variable_pos: Variable name for positive examples (default ``?pos``).
+      :param root_variable_neg: Variable name for negative examples (default ``?neg``).
+      :param for_all_de_morgan: Passed through to :meth:`convert`.
+      :param named_individuals: Passed through to :meth:`convert`.
+      :param filter_expression: Optional additional class expression for
+                                ``FILTER NOT EXISTS`` on the root variable.
+      :param validate: If ``True``, validates the generated SPARQL query using
+                       ``rdflib.parseQuery`` (slower but safer).
+
+      :returns: A valid SPARQL SELECT query string.
+
+
+
+   .. py:method:: as_property_query(context: owlapy.class_expression.OWLClassExpression, positive_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], negative_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], root_variable_pos: str = '?pos', root_variable_neg: str = '?neg', for_all_de_morgan: bool = True, named_individuals: bool = False, inverted: bool = False, filter_expression: Optional[owlapy.class_expression.OWLClassExpression] = None, validate: bool = False) -> str
+
+      Generate a SPARQL query that discovers OWL properties with hit-counts.
+
+      The generated query mirrors the Java ``Suggestor.generatePropertyQuery``
+      (UNION pattern):
+
+      .. code-block:: sparql
+
+          SELECT ?prop (MAX(?tp) AS ?posHits) (MAX(?fp) AS ?negHits) WHERE {
+              { SELECT ?prop (COUNT(DISTINCT ?pos) AS ?tp) (0 AS ?fp) WHERE {
+                  VALUES ?pos { ... }
+                  <context pattern with ?prop at marker>
+              } GROUP BY ?prop }
+              UNION {
+                  SELECT ?prop (0 AS ?tp) (COUNT(DISTINCT ?neg) AS ?fp) WHERE {
+                      VALUES ?neg { ... }
+                      <same pattern with ?neg>
+                  } GROUP BY ?prop
+              }
+          } GROUP BY ?prop
+
+      :param context: A class expression containing :data:`CONTEXT_POSITION_MARKER`
+                      at the position where ``?var ?prop [] .`` should be injected.
+      :param positive_examples: Positive example individuals.
+      :param negative_examples: Negative example individuals.
+      :param root_variable_pos: Variable name for positive examples (default ``?pos``).
+      :param root_variable_neg: Variable name for negative examples (default ``?neg``).
+      :param for_all_de_morgan: Passed through to :meth:`convert`.
+      :param named_individuals: Passed through to :meth:`convert`.
+      :param inverted: If ``True``, emits ``[] ?prop ?var .`` instead of
+                       ``?var ?prop [] .`` at the marker position.
+      :param filter_expression: Optional additional class expression for
+                                ``FILTER NOT EXISTS`` on the root variable.
+      :param validate: If ``True``, validates the generated SPARQL query using
+                       ``rdflib.parseQuery`` (slower but safer).
+
+      :returns: A valid SPARQL SELECT query string.
+
+
+
+.. py:data:: generator
+
+.. py:function:: owl_expression_to_class_query(context: owlapy.class_expression.OWLClassExpression, positive_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], negative_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], root_variable_pos: str = '?pos', root_variable_neg: str = '?neg', for_all_de_morgan: bool = True, named_individuals: bool = False, filter_expression: Optional[owlapy.class_expression.OWLClassExpression] = None, validate: bool = False) -> str
+
+   Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`
+   into a SPARQL query that discovers OWL classes and counts how many
+   positive / negative examples each class covers within the given context.
+
+   This is the Python equivalent of the Java ``Suggestor.generateClassQuery``.
+
+   :param context: Class expression containing :data:`CONTEXT_POSITION_MARKER`.
+   :param positive_examples: Positive example individuals.
+   :param negative_examples: Negative example individuals.
+   :param root_variable_pos: SPARQL variable for positives (default ``?pos``).
+   :param root_variable_neg: SPARQL variable for negatives (default ``?neg``).
+   :param for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.
+   :param named_individuals: Restrict to ``owl:NamedIndividual`` instances.
+   :param filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).
+   :param validate: If ``True``, validates the generated SPARQL query using
+                    ``rdflib.parseQuery`` (slower but safer).
+
+   :returns: A valid SPARQL SELECT query string.
+
+
+.. py:function:: owl_expression_to_property_query(context: owlapy.class_expression.OWLClassExpression, positive_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], negative_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], root_variable_pos: str = '?pos', root_variable_neg: str = '?neg', for_all_de_morgan: bool = True, named_individuals: bool = False, inverted: bool = False, filter_expression: Optional[owlapy.class_expression.OWLClassExpression] = None, validate: bool = False) -> str
+
+   Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`
+   into a SPARQL query that discovers OWL properties and counts how many
+   positive / negative examples each property covers within the given context.
+
+   This is the Python equivalent of the Java ``Suggestor.generatePropertyQuery``.
+
+   :param context: Class expression containing :data:`CONTEXT_POSITION_MARKER`.
+   :param positive_examples: Positive example individuals.
+   :param negative_examples: Negative example individuals.
+   :param root_variable_pos: SPARQL variable for positives (default ``?pos``).
+   :param root_variable_neg: SPARQL variable for negatives (default ``?neg``).
+   :param for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.
+   :param named_individuals: Restrict to ``owl:NamedIndividual`` instances.
+   :param inverted: If ``True``, emits ``[] ?prop ?var .`` at the marker.
+   :param filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).
+   :param validate: If ``True``, validates the generated SPARQL query using
+                    ``rdflib.parseQuery`` (slower but safer).
+
+   :returns: A valid SPARQL SELECT query string.
+
+
+.. py:function:: owl_expression_to_negated_class_query(context: owlapy.class_expression.OWLClassExpression, positive_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], negative_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], root_variable_pos: str = '?pos', root_variable_neg: str = '?neg', for_all_de_morgan: bool = True, named_individuals: bool = False, filter_expression: Optional[owlapy.class_expression.OWLClassExpression] = None, validate: bool = False) -> str
+
+   Convert an OWL class expression with a :data:`CONTEXT_POSITION_MARKER`
+   into a SPARQL query that discovers OWL classes that the positive examples
+   are **not** members of, together with positive / negative hit counts.
+
+   This is the Python equivalent of the Java
+   ``Suggestor.generateNegatedClassQuery``.
+
+   At the marker position the converter emits::
+
+       ?class a owl:Class .
+       FILTER NOT EXISTS { ?var a ?class . }
+
+   instead of ``?var a ?class .``.
+
+   :param context: Class expression containing :data:`CONTEXT_POSITION_MARKER`.
+   :param positive_examples: Positive example individuals.
+   :param negative_examples: Negative example individuals.
+   :param root_variable_pos: SPARQL variable for positives (default ``?pos``).
+   :param root_variable_neg: SPARQL variable for negatives (default ``?neg``).
+   :param for_all_de_morgan: Use De Morgan rewriting for universal quantifiers.
+   :param named_individuals: Restrict to ``owl:NamedIndividual`` instances.
+   :param filter_expression: Optional filter CE (wrapped in FILTER NOT EXISTS).
+   :param validate: If ``True``, validates the generated SPARQL query using
+                    ``rdflib.parseQuery`` (slower but safer).
+
+   :returns: A valid SPARQL SELECT query string.
+
+
