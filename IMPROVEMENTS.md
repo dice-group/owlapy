@@ -18,18 +18,21 @@ effort estimates, and sequencing.
 ## 1. Code Readability
 
 ### 1.1 Replace `print()` with the `logging` module — *high impact*
-- **Where:** 154 `print()` calls across library code, concentrated in
-  `agen_kg/` (`graph_extractor.py` ~51, `domain_graph_extractor.py` ~32,
-  `open_graph_extractor.py` ~22) and `owl_ontology.py` (~21),
-  `util_owl_static_funcs.py` (~9), `owl_reasoner.py` (~5).
+- **Scope:** **Core library only.** The `agen_kg/` LLM pipeline (an optional,
+  `dspy`-gated extra, and not among the most-used modules) is explicitly **out
+  of scope** for this plan. That leaves ~38 core print sites:
+  `owl_ontology.py` (~21), `util_owl_static_funcs.py` (~9),
+  `owl_reasoner.py` (~5), `render.py` (~2), `utils.py` (~1). Genuine
+  user-facing CLI output in `scripts/` stays on `print`.
 - **Why:** The prints already emulate logging (`f"{cls}: INFO :: ..."`,
   `"... ERROR :: ..."`) but a library must **never** write to stdout
   unconditionally — it pollutes host applications, can't be silenced, and has no
   severity filtering. Only 4 modules currently use `logging.getLogger`.
-- **Approach:** Introduce a package logger (`logging.getLogger("owlapy")` per
-  module), map the ad-hoc `INFO`/`ERROR`/`WARNING` prefixes to real log levels,
-  and delete the manual prefix strings. Keep genuine user-facing CLI output in
-  `scripts/` on `print`. This is mechanical and can be scripted per-module.
+- **Approach:** Introduce a per-module logger (`logging.getLogger(__name__)`),
+  map the ad-hoc `INFO`/`ERROR`/`WARNING` prefixes to real log levels, and
+  delete the manual prefix strings. `ERROR` sites near `except` blocks become
+  `logger.exception(...)` (ties into 1.4). At ~38 sites in core modules this is
+  now a small, reviewable-in-one-PR change rather than a project.
 
 ### 1.2 Burn down the `TODO`/`FIXME` backlog — 63 markers
 - **Where:** e.g. `class_expression/restriction.py` (13 `@TODO: CD:` notes,
@@ -57,15 +60,13 @@ effort estimates, and sequencing.
   behind tests; no signature changes.
 
 ### 1.4 Tighten broad exception handling
-- **Where:** 33 `except Exception` blocks, heaviest in `agen_kg/`
-  (`graph_extractor.py` ~10, plus 5 each in several extractors/loaders) and
-  `owl_reasoner.py` (4).
-- **Why:** Broad catches hide root causes and can swallow `KeyboardInterrupt`
-  logic errors. In LLM extraction code they may silently drop data.
+- **Where (in-scope core):** `owl_reasoner.py` (~4 `except Exception`),
+  `owl_ontology.py` (~2), `owl_reasoner_rdflib.py` (~1). The bulk of the
+  remaining broad catches live in `agen_kg/`, which is out of scope (see 1.1).
+- **Why:** Broad catches hide root causes and can swallow logic errors.
 - **Approach:** Narrow to specific exception types where known; where a broad
-  catch is intentional (e.g. resilience around external LLM calls), log the
-  exception with `logger.exception(...)` and add a comment stating why it's
-  broad. **(verify)** each site.
+  catch is intentional, log with `logger.exception(...)` and add a comment
+  stating why it's broad. **(verify)** each site.
 
 ---
 
@@ -142,11 +143,10 @@ effort estimates, and sequencing.
 
 ## 4. Missing Features / Enhancements
 
-### 4.1 Structured logging & verbosity control for `agen_kg`
-- **Why:** The LLM pipeline is the noisiest part (100+ prints) yet has no
-  `verbose`/log-level knob (`grep verbose` → none).
-- **Approach:** Once 1.1 lands, expose a documented way to set the `owlapy`
-  logger level; add a `verbose`/`quiet` option to the extractor entry points.
+### 4.1 Structured logging & verbosity control for `agen_kg` — *out of scope*
+- **Status:** Deferred. `agen_kg` is the noisiest part (100+ prints) but is an
+  optional, `dspy`-gated, peripheral module and is excluded from this plan (see
+  1.1 scope). Revisit as a separate effort if/when the module sees more use.
 
 ### 4.2 First-class decimal / typed-literal support
 - **Why:** See 3.3 — `xsd:decimal` is currently coerced to float.
@@ -207,13 +207,14 @@ Phased so each phase is independently shippable and low-risk first.
 
 *Deliverable:* clean tree, accurate metadata, an issue backlog.
 
-### Phase 1 — Logging migration (1–2 days)
-5. Introduce package logger and migrate `agen_kg/` prints first (highest count),
-   then `owl_ontology.py`/`owl_reasoner.py` (1.1).
-6. Add verbosity control to `agen_kg` entry points (4.1).
-7. Narrow/annotate broad `except` blocks as you touch each module (1.4).
+### Phase 1 — Logging migration, core modules only (~half a day)
+5. Introduce per-module loggers and migrate the ~38 core-library prints
+   (`owl_ontology.py`, `util_owl_static_funcs.py`, `owl_reasoner.py`,
+   `render.py`, `utils.py`) to `logging` (1.1). `agen_kg` is out of scope.
+6. Narrow/annotate broad `except` blocks in those same core modules (1.4).
 
-*Deliverable:* library no longer writes to stdout; configurable logging.
+*Deliverable:* core library no longer writes to stdout; configurable logging.
+`scripts/` keep `print` for CLI output.
 
 ### Phase 2 — Documentation & correctness notes (1 day)
 8. Document decimal limitation + parser docstrings (3.3, 3.4).
