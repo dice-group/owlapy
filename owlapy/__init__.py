@@ -4,7 +4,7 @@ from .owl_reasoner_rdflib import RDFLibReasoner
 from .parser import dl_to_owl_expression, manchester_to_owl_expression
 from .render import owl_expression_to_dl, owl_expression_to_manchester
 
-__version__ = '1.6.5'
+__version__ = '1.6.6'
 
 __all__ = [
     'owl_expression_to_dl', 'owl_expression_to_manchester',
