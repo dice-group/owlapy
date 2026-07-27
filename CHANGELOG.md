@@ -18,7 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SyncOntology.get_prefixes()`/`set_prefix()`/`remove_prefix()` for declaring, modifying and removing prefix -> namespace IRI mappings, honoured by `save()` for both OWL API–backed formats (RDF/XML, OWL/XML, Turtle, Functional Syntax, Manchester Syntax) and rdflib-backed formats (Turtle, N3, TriG, JSON-LD) (#229)
 - `DLSyntaxParser`/`ManchesterOWLSyntaxParser` (and `dl_to_owl_expression`/`manchester_to_owl_expression`) now resolve prefixed names (`prefix:localName`), via a `prefixes` argument; `owl:`, `rdf:`, `rdfs:` and `xsd:` are resolved out of the box and an empty prefix (`:localName`) falls back to the parser's default namespace (#229)
 
+### Changed
+- Core library now emits diagnostics through the standard `logging` module instead of `print()`. Progress/status messages log at `INFO`, recoverable issues at `WARNING`, and low-level dumps at `DEBUG`, across `owl_ontology.py`, `owl_reasoner.py`, `render.py`, `utils.py`, and `util_owl_static_funcs.py`. A `NullHandler` is attached to the top-level `owlapy` logger so nothing is printed unless the host application configures logging (opt in via `logging.getLogger("owlapy").setLevel(logging.INFO)`). The `agen_kg` LLM pipeline is unchanged for now.
+- Added `IMPROVEMENTS.md`, a prioritized plan of readability, performance, documentation, and feature improvements for the library
+- Ignored generated/scratch artifacts (`demo.owl`, `inferred_axioms_ontology.owl`, `iris_dataset.csv`, `tests/saved_formats/`) that examples and tests write to the repo root
+
 ### Fixed
+- Corrupted (mojibake) emoji in the README "Documentation" and "Examples" section headers, and stale version badges (now 1.6.6)
 - Guarded `rdfs:comment` batch generation against LLM call failures, so a single failed batch no longer aborts the whole ontology generation pipeline (#223)
 - Fixed an infinite loop in `TextChunker`'s fixed-size chunking strategy that could occur with `overlap > 0` once the cursor reached the end of the text (#224)
 - `map_datarange` now degrades gracefully to the top datatype instead of raising `ValueError` on unrecognized data-range fillers (e.g. `owl:Thing` used where a datatype is expected), so a single malformed axiom no longer aborts hierarchy traversal in `super_classes`/`sub_classes`/`object_property_ranges` (#225, #226)

@@ -2,8 +2,8 @@
 [![Downloads](https://static.pepy.tech/badge/owlapy)](https://pepy.tech/project/owlapy)
 [![Downloads](https://img.shields.io/pypi/dm/owlapy)](https://pypi.org/project/owlapy/)
 [![Coverage](https://img.shields.io/badge/coverage-88%25-green)](https://dice-group.github.io/owlapy/usage/further_resources.html#coverage-report)
-[![Pypi](https://img.shields.io/badge/pypi-1.6.4-blue)](https://pypi.org/project/owlapy/1.6.4/)
-[![Docs](https://img.shields.io/badge/documentation-1.6.4-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
+[![Pypi](https://img.shields.io/badge/pypi-1.6.6-blue)](https://pypi.org/project/owlapy/1.6.6/)
+[![Docs](https://img.shields.io/badge/documentation-1.6.6-yellow)](https://dice-group.github.io/owlapy/usage/main.html)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dice-group/owlapy)
 ![GitHub License](https://img.shields.io/github/license/dice-group/owlapy)
 
@@ -81,7 +81,7 @@ wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && 
 PYTHONPATH=. pytest
 ```
 
-## � Documentation
+## 📚 Documentation
 
 ### LLM-Friendly Documentation
 
@@ -101,7 +101,7 @@ These docs are specifically formatted for LLM consumption and provide detailed e
 - **[Online Documentation](https://dice-group.github.io/owlapy/usage/main.html)** - Complete API reference and tutorials
 - **[DeepWiki Assistant](https://deepwiki.com/dice-group/owlapy)** - AI-powered documentation assistant
 
-## �📋 Examples
+## 📋 Examples
 
 ### Exploring OWL Ontology
 
