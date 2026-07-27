@@ -17,7 +17,12 @@ effort estimates, and sequencing.
 
 ## 1. Code Readability
 
-### 1.1 Replace `print()` with the `logging` module — *high impact*
+### 1.1 Replace `print()` with the `logging` module — ✅ *done (core), high impact*
+- **Status:** Implemented for the core library in the 1.6.6 cycle — all core
+  `print()` sites migrated to per-module loggers with a `NullHandler` on the
+  top-level `owlapy` logger (INFO for progress, WARNING for recoverable issues,
+  DEBUG for dumps). The two intentional exceptions (`owl_reasoner.py`'s
+  subprocess-IPC `print(json.dumps(...))` and docstring `>>>` examples) stay.
 - **Scope:** **Core library only.** The `agen_kg/` LLM pipeline (an optional,
   `dspy`-gated extra, and not among the most-used modules) is explicitly **out
   of scope** for this plan. That leaves ~38 core print sites:

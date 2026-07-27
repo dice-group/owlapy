@@ -2216,7 +2216,7 @@ class SyncReasoner(AbstractOWLReasoner):
             # Save to file
             save_path = "justifications.owl"
             just_ontology.save(save_path)
-            print(f"Justifications saved to {os.path.abspath(save_path)}")
+            logger.info(f"Justifications saved to {os.path.abspath(save_path)}")
 
         return justifications
 
@@ -2404,7 +2404,7 @@ class SyncReasoner(AbstractOWLReasoner):
             # Save to file
             save_path = "laconic_axiom_justifications.owl"
             just_ontology.save(save_path)
-            print(f"Laconic axiom justifications saved to {os.path.abspath(save_path)}")
+            logger.info(f"Laconic axiom justifications saved to {os.path.abspath(save_path)}")
         return justifications
 
     def create_inconsistency_justifications(self,
@@ -2488,7 +2488,7 @@ class SyncReasoner(AbstractOWLReasoner):
             # Save to file
             save_path = "inconsistency_justifications.owl"
             just_ontology.save(save_path)
-            print(f"Inconsistency justifications saved to {os.path.abspath(save_path)}")
+            logger.info(f"Inconsistency justifications saved to {os.path.abspath(save_path)}")
         return justifications
 
     def get_contrastive_explanation(
@@ -3003,7 +3003,7 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
                 return_subjects.append(OWLNamedIndividual(entity))
             except Exception as e:  # pragma: no cover
                 # Log the invalid IRI
-                print(f"Invalid IRI detected: {entity}, error: {e}")
+                logger.warning(f"Invalid IRI detected: {entity}, error: {e}")
                 continue
 
         return return_subjects

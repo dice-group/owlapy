@@ -380,11 +380,10 @@ def _(axiom: OWLEquivalentClassesAxiom, ontology: AbstractOWLOntology, world: ow
                 assert ce_1_x is not None, f"ce_1_x cannot be None: {ce_1_x}, {type(ce_1_x)}"
                 assert ce_2_x is not None, f"ce_2_x cannot be None: {ce_2_x}, {type(ce_2_x)}"
             except AssertionError:
-                print("function of ToOwlready2.map_concept() returns None")
-                print(ce_1, ce_1_x)
-                print(ce_2, ce_2_x)
-                print("Axiom:", axiom)
-                print("Temporary solution is reinitializing ce_1_x=ce_2_x\n\n")
+                logger.warning(
+                    f"ToOwlready2.map_concept() returned None; reinitializing ce_1_x=ce_2_x. "
+                    f"ce_1={ce_1} ce_1_x={ce_1_x} ce_2={ce_2} ce_2_x={ce_2_x} axiom={axiom}"
+                )
                 ce_1_x=ce_2_x
 
             if isinstance(ce_1_x, owlready2.ThingClass):
@@ -1146,13 +1145,13 @@ class Ontology(AbstractOWLOntology):
 
         if inplace:
             save_path = self._iri.as_str() if os.path.exists(self._iri.as_str()) else "demo.owl"
-            print(f"Saving {self} inplace to {save_path}...")
+            logger.info(f"Saving {self} inplace to {save_path}...")
             if owlready2_fmt is not None:
                 ont_x.save(file=save_path, format=owlready2_fmt)
             else:
                 self._save_via_rdflib_owlready2(ont_x, save_path, fmt_key)
         else:
-            print(f"Saving {path}..")
+            logger.info(f"Saving {path}..")
             if owlready2_fmt is not None:
                 ont_x.save(file=path, format=owlready2_fmt)
             else:
@@ -1195,7 +1194,7 @@ class Ontology(AbstractOWLOntology):
         tmp_fd, tmp_path = tempfile.mkstemp(suffix=".owl", prefix="_owlapy_tmp_")
         os.close(tmp_fd)
         try:
-            print(f"  (converting to '{rdflib_format}' via rdflib)")
+            logger.info(f"  (converting to '{rdflib_format}' via rdflib)")
             ont_x.save(file=tmp_path, format="rdfxml")
             # Step 2 – parse into the appropriate graph type
             if rdflib_format in _RDFLIB_CONJUNCTIVE_FORMATS:
@@ -1260,7 +1259,7 @@ class SyncOntology(AbstractOWLOntology):
                     self.owlapi_ontology = self.owlapi_manager.createOntology(Stream.empty(),
                                                                               owlapi_IRI.create(path))
                 except Exception as e:
-                    print(f"Error: {e}")
+                    logger.error(f"Error creating ontology from path: {e}")
                     raise NotImplementedError("Cant initialize a new ontology using path. Use IRI instead")
         else:  # means we are loading an existing ontology
             self.owlapi_ontology = self.owlapi_manager.loadOntologyFromOntologyDocument(File(file_path))
@@ -1544,7 +1543,7 @@ class SyncOntology(AbstractOWLOntology):
         else:
             owlapi_format = self.owlapi_manager.getOntologyFormat(self.owlapi_ontology)
 
-        print(f"Saving Ontology into {path}")
+        logger.info(f"Saving Ontology into {path}")
         # Always use FileOutputStream so that every format (including non-RDF
         # text-based storers like DL Syntax, KRSS2, LaTeX, Manchester) reliably
         # writes to the requested file rather than stdout.
@@ -1581,7 +1580,7 @@ class SyncOntology(AbstractOWLOntology):
         tmp_fd, tmp_path = tempfile.mkstemp(suffix=".owl", prefix="_owlapy_tmp_")
         os.close(tmp_fd)
         try:
-            print(f"Saving Ontology into {path} (via rdflib '{rdflib_format}')")
+            logger.info(f"Saving Ontology into {path} (via rdflib '{rdflib_format}')")
             with FileOutputStream(File(tmp_path)) as fos:
                 self.owlapi_manager.saveOntology(
                     self.owlapi_ontology, RDFXMLDocumentFormat(), fos
@@ -1702,7 +1701,7 @@ class RDFLibOntology(AbstractOWLOntology):
         raise NotImplementedError()
 
         for (s,p,o) in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
-            print(s,p,o)
+            logger.debug(f"{s} {p} {o}")
         # for i in self._onto.individuals():
         #    yield OWLNamedIndividual(IRI.create(i.iri))
 
@@ -1820,13 +1819,13 @@ class RDFLibOntology(AbstractOWLOntology):
 
         if inplace:
             if os.path.exists(self._iri.as_str()):
-                print(f"Saving {self} inplace...")
+                logger.info(f"Saving {self} inplace...")
                 ont_x.save(file=self._iri.as_str(), format=rdf_format)
             else:
-                print(f"Saving {self} inplace with name of demo.owl...")
+                logger.info(f"Saving {self} inplace with name of demo.owl...")
                 self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(file="demo.owl")
         else:
-            print(f"Saving {path}..")
+            logger.info(f"Saving {path}..")
             ont_x.save(file=path,format=rdf_format)
 
     def get_ontology_id(self):
@@ -1932,7 +1931,7 @@ class ToOwlready2:
         try:
             assert x is not None
         except AssertionError:
-            print(f"The world attribute{self._world} maps {c} into None")
+            logger.warning(f"The world attribute{self._world} maps {c} into None")
 
         return x
 
@@ -2264,13 +2263,12 @@ class NeuralOntology(AbstractOWLOntology):
 
         if device == "gpu" and torch.cuda.is_available():
             self.model.to("cuda")
-            print("EBR inference on GPU")
+            logger.info("EBR inference on GPU")
         elif device == "cpu":
             self.model.to("cpu")
-            print("EBR inference on CPU")
+            logger.info("EBR inference on CPU")
         else:
-            # warning
-            print(f"Device {device} not supported, EBR will use CPU")
+            logger.warning(f"Device {device} not supported, EBR will use CPU")
 
     def _train_model(self, path: str, training_params: Optional[Union[Dict[str, Any], str]] = None):
         """
@@ -2323,11 +2321,11 @@ class NeuralOntology(AbstractOWLOntology):
         if os.path.isdir(args.path_to_store_single_run) and \
            os.path.exists(os.path.join(args.path_to_store_single_run, "configuration.json")):
             # Load existing pretrained model
-            print(f"Loading existing model from {args.path_to_store_single_run}")
+            logger.info(f"Loading existing model from {args.path_to_store_single_run}")
             self.model = KGE(path=args.path_to_store_single_run)
         else:
             # Train the model
-            print(f"Training new model, will be saved to {args.path_to_store_single_run}")
+            logger.info(f"Training new model, will be saved to {args.path_to_store_single_run}")
             Execute(args).start()
             # Load the trained model
             self.model = KGE(path=args.path_to_store_single_run)

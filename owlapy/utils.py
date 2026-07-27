@@ -1,5 +1,6 @@
 """Owlapy utils."""
 import concurrent.futures
+import logging
 from collections import Counter
 from copy import copy
 from functools import singledispatchmethod, total_ordering
@@ -60,6 +61,8 @@ from .owl_literal import OWLLiteral
 from .owl_object import OWLEntity, OWLObject
 from .owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
 from .vocab import OWLFacet
+
+logger = logging.getLogger(__name__)
 
 
 def jaccard_similarity(set1, set2) -> float:
@@ -491,7 +494,7 @@ def _sort_by_ordered_owl_object(i: Iterable[_O]) -> Iterable[_O]:
     try:
         return sorted(i, key=OrderedOWLObject)
     except AttributeError:
-        print(i)
+        logger.debug(f"Could not sort by OrderedOWLObject: {i}")
 
 
 class ConceptOperandSorter:
