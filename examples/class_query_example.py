@@ -1,0 +1,257 @@
+"""Example: generate a class-discovery SPARQL query using ClassGeneratorConverter.
+
+This example mirrors the Java ``Suggestor.generateClassQuery`` functionality.
+The idea is:
+
+  - You have a *context* class expression that contains a special marker
+    (:data:`CONTEXT_POSITION_MARKER`) at the position where you want to
+    discover OWL classes.
+  - You provide positive and (optionally) negative example individuals.
+  - The generated query returns every ``?class`` that covers at least one
+    positive example inside the given context, together with
+    ``?posHits`` / ``?negHits`` counts.
+
+Run with::
+
+    python examples/class_query_example.py
+"""
+from owlapy import dl_to_owl_expression, owl_expression_to_dl
+from owlapy.class_expression import (
+    OWLClass,
+    OWLObjectComplementOf,
+    OWLObjectIntersectionOf,
+    OWLObjectSomeValuesFrom,
+    OWLObjectUnionOf,
+)
+from owlapy.marked_entity_generator_converter import (
+    CONTEXT_POSITION_MARKER,
+    owl_expression_to_class_query,
+)
+from owlapy.iri import IRI
+from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_property import OWLObjectProperty
+
+# ---------------------------------------------------------------------------
+# Shared vocabulary
+# ---------------------------------------------------------------------------
+NS = "http://www.benchmark.org/family#"
+
+Person   = OWLClass(IRI(NS, "Person"))
+Male     = OWLClass(IRI(NS, "Male"))
+Female   = OWLClass(IRI(NS, "Female"))
+hasChild = OWLObjectProperty(IRI(NS, "hasChild"))
+
+# Positive examples (individuals known to belong to the target concept)
+positives = [
+    OWLNamedIndividual(IRI(NS, "F2F14")),
+    OWLNamedIndividual(IRI(NS, "F2F12")),
+    OWLNamedIndividual(IRI(NS, "F2F19")),
+]
+
+# Negative examples (individuals known NOT to belong to the target concept)
+negatives = [
+    OWLNamedIndividual(IRI(NS, "F10F200")),
+    OWLNamedIndividual(IRI(NS, "F3F48")),
+]
+
+# ---------------------------------------------------------------------------
+# Example 1 – simplest context: just the marker itself
+#
+# Context CE:  MARKER
+# The marker is the root, so the generated triple pattern is simply:
+#     ?pos a ?class .
+# The query discovers every class that the positive examples are members of.
+# ---------------------------------------------------------------------------
+print("=" * 60)
+print("Example 1 – marker as root (discover all direct types)")
+print("=" * 60)
+
+context1 = CONTEXT_POSITION_MARKER
+query1 = owl_expression_to_class_query(
+    context=context1,
+    positive_examples=positives,
+    negative_examples=negatives,
+)
+print(query1)
+
+
+
+# ---------------------------------------------------------------------------
+# Example 2 – existential restriction context
+#
+# Context CE:  ∃hasChild.MARKER
+# Find all classes ?class such that the positive examples have at least one
+# child that is an instance of ?class.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Example 2 – ∃hasChild.MARKER (class of children)")
+print("=" * 60)
+
+context2 = OWLObjectSomeValuesFrom(hasChild, CONTEXT_POSITION_MARKER)
+query2 = owl_expression_to_class_query(
+    context=context2,
+    positive_examples=positives,
+    negative_examples=negatives,
+)
+print(query2)
+
+# ---------------------------------------------------------------------------
+# Example 3 – intersection context
+#
+# Context CE:  Person ⊓ MARKER
+# The positive examples must be Persons, and the discovered ?class is an
+# additional type they share.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Example 3 – Person ⊓ MARKER (subclasses of Person shared by positives)")
+print("=" * 60)
+
+context3 = OWLObjectIntersectionOf([Person, CONTEXT_POSITION_MARKER])
+query3 = owl_expression_to_class_query(
+    context=context3,
+    positive_examples=positives,
+    negative_examples=negatives,
+)
+print(query3)
+
+# ---------------------------------------------------------------------------
+# Example 4 – negated marker
+#
+# Context CE:  Person ⊓ ¬MARKER
+# Find classes that the positive examples are *not* members of (while still
+# being Persons).  The marker inside a negation generates:
+#     FILTER NOT EXISTS { ?pos a ?class . }
+#     ?class a owl:Class .
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Example 4 – Person ⊓ ¬MARKER (classes positives are NOT a member of)")
+print("=" * 60)
+
+context4 = OWLObjectIntersectionOf([Person, OWLObjectComplementOf(CONTEXT_POSITION_MARKER)])
+query4 = owl_expression_to_class_query(
+    context=context4,
+    positive_examples=positives,
+    negative_examples=negatives,
+)
+print(query4)
+
+# ---------------------------------------------------------------------------
+# Example 5 – with an extra filter expression
+#
+# The filter expression is wrapped in FILTER NOT EXISTS on the root variable,
+# effectively excluding individuals that also satisfy the filter CE.
+# Here we exclude Males from the positive match.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Example 5 – MARKER with filter_expression=Male (exclude Males)")
+print("=" * 60)
+
+query5 = owl_expression_to_class_query(
+    context=CONTEXT_POSITION_MARKER,
+    positive_examples=positives,
+    negative_examples=negatives,
+    filter_expression=Male,
+)
+print(query5)
+
+# ---------------------------------------------------------------------------
+# Example 6 – union context
+#
+# Context CE:  Person ⊔ MARKER
+# Find all classes ?class such that the positive examples are either a Person
+# OR an instance of ?class.  Because the marker appears inside a UNION, the
+# query uses a special structure that first binds ?class independently with
+#     ?anything a ?class .
+# and then checks both branches of the UNION:
+#     { ?pos a <Person> . } UNION { ?pos a ?class . }
+# This ensures that ?class is correctly scoped across both UNION branches.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Example 6 – Person ⊔ MARKER (union: Person or discovered class)")
+print("=" * 60)
+
+context6 = OWLObjectUnionOf([Person, CONTEXT_POSITION_MARKER])
+
+pos6 = [
+    OWLNamedIndividual(IRI(NS, "F9F164")),
+    OWLNamedIndividual(IRI(NS, "F10M188")),
+    OWLNamedIndividual(IRI(NS, "F9M159")),
+    OWLNamedIndividual(IRI(NS, "F10M176")),
+]
+
+neg6 = [
+    OWLNamedIndividual(IRI(NS, "F6F96")),
+    OWLNamedIndividual(IRI(NS, "F10M173")),
+    OWLNamedIndividual(IRI(NS, "F6F70")),
+    OWLNamedIndividual(IRI(NS, "F8F133")),
+]
+
+query6 = owl_expression_to_class_query(
+    context=context6,
+    positive_examples=pos6,
+    negative_examples=neg6,
+)
+print(query6)
+
+# Query the SPARQL endpoint to verify results
+import requests
+
+SPARQL_ENDPOINT = "http://localhost:3030/family/sparql"
+
+print("\nQuerying SPARQL endpoint for Person ⊔ MARKER results:")
+try:
+    response = requests.post(SPARQL_ENDPOINT, data={"query": query6}, timeout=10)
+    response.raise_for_status()
+    results = response.json()
+    for row in results["results"]["bindings"]:
+        # ?class is unbound (and thus absent from the row) whenever a solution matched via the
+        # non-marker branch of the UNION (e.g. "?pos a <Person>") rather than "?pos a ?class".
+        cls = row.get("class", {}).get("value", "<unbound>")
+        pos_hits = row["posHits"]["value"]
+        neg_hits = row["negHits"]["value"]
+        print(f"  ?class = <{cls}>,  posHits = {pos_hits},  negHits = {neg_hits}")
+except Exception as e:
+    print(f"  (Could not reach endpoint: {e})")
+
+# ---------------------------------------------------------------------------
+# Example 7 – nested union: ∃ hasParent.((∃ hasSibling.⊤) ⊔ MARKER)
+#
+# A more complex scenario where the union with the marker is nested inside
+# an existential restriction.  This tests that intermediate variables are
+# independent between the positive and negative blocks.
+# ---------------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Example 7 – ∃ hasParent.((∃ hasSibling.⊤) ⊔ MARKER)")
+print("=" * 60)
+
+hasParent = OWLObjectProperty(IRI(NS, "hasParent"))
+hasSibling = OWLObjectProperty(IRI(NS, "hasSibling"))
+
+context7 = OWLObjectSomeValuesFrom(
+    hasParent,
+    OWLObjectUnionOf([
+        OWLObjectSomeValuesFrom(hasSibling, OWLClass(IRI("http://www.w3.org/2002/07/owl#", "Thing"))),
+        CONTEXT_POSITION_MARKER,
+    ]),
+)
+print(f"Context DL: {owl_expression_to_dl(context7)}")
+
+query7 = owl_expression_to_class_query(
+    context=context7,
+    positive_examples=pos6,
+    negative_examples=neg6,
+)
+print(query7)
+
+print("\nQuerying SPARQL endpoint for ∃ hasParent.((∃ hasSibling.⊤) ⊔ MARKER) results:")
+try:
+    response = requests.post(SPARQL_ENDPOINT, data={"query": query7}, timeout=10)
+    response.raise_for_status()
+    results = response.json()
+    for row in results["results"]["bindings"]:
+        cls = row.get("class", {}).get("value", "<unbound>")
+        pos_hits = row["posHits"]["value"]
+        neg_hits = row["negHits"]["value"]
+        print(f"  ?class = <{cls}>,  posHits = {pos_hits},  negHits = {neg_hits}")
+except Exception as e:
+    print(f"  (Could not reach endpoint: {e})")

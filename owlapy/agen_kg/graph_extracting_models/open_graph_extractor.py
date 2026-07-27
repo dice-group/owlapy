@@ -17,7 +17,7 @@ from owlapy.agen_kg.few_shot_examples import (
     EXAMPLES_FOR_TYPE_GENERATION,
 )
 from owlapy.agen_kg.graph_extractor import GraphExtractor
-from owlapy.agen_kg.helper import extract_hierarchy_from_dbpedia
+from owlapy.agen_kg.helper import chunked_iterator, extract_hierarchy_from_dbpedia
 from owlapy.agen_kg.signatures import Entity, Literal, SPLTriples, Triple, TypeAssertion, TypeGeneration
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
@@ -44,23 +44,28 @@ class OpenGraphExtractor(GraphExtractor):
         self.literal_extractor = dspy.Predict(Literal)
         self.spl_triples_extractor = dspy.Predict(SPLTriples)
 
-    def generate_ontology(self, text: Union[str, Path], ontology_namespace=f"http://ontology.local/{uuid.uuid4()}#",
-                          query: str = None,
-                          entity_types: List[str] = None,
-                          generate_types=False,
-                          extract_spl_triples=False,
-                          create_class_hierarchy=False,
-                          entity_clustering=True,
-                          use_chunking: bool = None,
-                          use_incremental_merging: bool = False,
-                          examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,
-                          examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,
-                          examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,
-                          examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION,
-                          examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION,
-                          examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION,
-                          fact_reassurance=True,
-                          save_path="generated_ontology.owl") -> Ontology:
+    def generate_ontology(
+        self,
+        text: Union[str, Path],
+        ontology_namespace=f"http://ontology.local/{uuid.uuid4()}#",
+        query: str = None,
+        entity_types: List[str] = None,
+        generate_types=False,
+        extract_spl_triples=False,
+        create_class_hierarchy=False,
+        entity_clustering=True,
+        use_chunking: bool = None,
+        use_incremental_merging: bool = False,
+        examples_for_entity_extraction=EXAMPLES_FOR_ENTITY_EXTRACTION,
+        examples_for_triples_extraction=EXAMPLES_FOR_TRIPLES_EXTRACTION,
+        examples_for_type_assertion=EXAMPLES_FOR_TYPE_ASSERTION,
+        examples_for_type_generation=EXAMPLES_FOR_TYPE_GENERATION,
+        examples_for_literal_extraction=EXAMPLES_FOR_LITERAL_EXTRACTION,
+        examples_for_spl_triples_extraction=EXAMPLES_FOR_SPL_TRIPLES_EXTRACTION,
+        fact_reassurance=True,
+        generate_rdfs_annotations: bool = False,
+        save_path="generated_ontology.owl",
+    ) -> Ontology:
         """
         Generate an ontology from the given text or file.
 
@@ -114,8 +119,7 @@ class OpenGraphExtractor(GraphExtractor):
             if self.logging:
                 chunk_info = self.get_chunking_info(text)
                 print(f"OpenGraphExtractor: INFO :: Text will be processed in {chunk_info['num_chunks']} chunks")
-                print(f"OpenGraphExtractor: INFO :: Total chars: {chunk_info['total_chars']}, "
-                      f"Est. tokens: {chunk_info['estimated_tokens']}")
+                print(f"OpenGraphExtractor: INFO :: Total chars: {chunk_info['total_chars']}, Est. tokens: {chunk_info['estimated_tokens']}")
         else:
             chunks = [text]
 
@@ -126,13 +130,9 @@ class OpenGraphExtractor(GraphExtractor):
         # Step 1: Extract entities (from chunks if needed)
         chunk_summaries = None  # Will be populated during chunked extraction
         if use_chunking and len(chunks) > 1:
-            entities, chunk_summaries = self._extract_entities_from_chunks(chunks,
-                                                                           examples_for_entity_extraction,
-                                                                           task_instructions=self.entity_extraction_instructions)
+            entities, chunk_summaries = self._extract_entities_from_chunks(chunks, examples_for_entity_extraction, task_instructions=self.entity_extraction_instructions)
         else:
-            entities = self.entity_extractor(text=text,
-                                             few_shot_examples=examples_for_entity_extraction,
-                                             task_instructions=self.entity_extraction_instructions).entities
+            entities = self.entity_extractor(text=text, few_shot_examples=examples_for_entity_extraction, task_instructions=self.entity_extraction_instructions).entities
 
         if self.logging:
             print(f"GraphExtractor: INFO  :: Generated the following entities: {entities}")
@@ -153,14 +153,11 @@ class OpenGraphExtractor(GraphExtractor):
 
         # Step 3: Extract triples using canonical entities (from chunks if needed)
         if use_chunking and len(chunks) > 1:
-            triples = self._extract_triples_from_chunks(chunks, canonical_entities,
-                                                        examples_for_triples_extraction,
-                                                        chunk_summaries=chunk_summaries,
-                                                        task_instructions=self.triple_extraction_instructions)
+            triples = self._extract_triples_from_chunks(
+                chunks, canonical_entities, examples_for_triples_extraction, chunk_summaries=chunk_summaries, task_instructions=self.triple_extraction_instructions
+            )
         else:
-            triples = self.triples_extractor(text=text, entities=canonical_entities,
-                                             few_shot_examples=examples_for_triples_extraction,
-                                             task_instructions=self.triple_extraction_instructions).triples
+            triples = self.triples_extractor(text=text, entities=canonical_entities, few_shot_examples=examples_for_triples_extraction, task_instructions=self.triple_extraction_instructions).triples
 
         if self.logging:
             print(f"GraphExtractor: INFO  :: Generated the following triples: {triples}")
@@ -184,7 +181,6 @@ class OpenGraphExtractor(GraphExtractor):
             if self.logging:
                 print(f"OpenGraphExtractor: INFO :: Skipped coherence check, using all {len(coherent_triples)} triples")
 
-
         # Step 5: Create an ontology and load it with extracted triples
         onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen"), load=False)
         for triple in coherent_triples:
@@ -204,27 +200,23 @@ class OpenGraphExtractor(GraphExtractor):
             # Extract types (from chunks if needed)
             if use_chunking and len(chunks) > 1:
                 type_assertions = self._extract_types_from_chunks(
-                    chunks, canonical_entities, entity_types, generate_types,
-                    examples_for_type_assertion, examples_for_type_generation,
-                    chunk_summaries=chunk_summaries
+                    chunks, canonical_entities, entity_types, generate_types, examples_for_type_assertion, examples_for_type_generation, chunk_summaries=chunk_summaries
                 )
             else:
                 # The user has specified a preset list of types
                 if entity_types is not None and not generate_types:
-                    type_assertions = self.type_asserter(text=text, entities=canonical_entities,
-                                                         entity_types=entity_types,
-                                                         few_shot_examples=examples_for_type_assertion,
-                                                         task_instructions=self.type_assertion_instructions).pairs
+                    type_assertions = self.type_asserter(
+                        text=text, entities=canonical_entities, entity_types=entity_types, few_shot_examples=examples_for_type_assertion, task_instructions=self.type_assertion_instructions
+                    ).pairs
                     if self.logging:
                         print(f"GraphExtractor: INFO  :: Assigned types for entities as following: {type_assertions}")
                 # The user wishes to leave it to the LLM to generate and assign types
                 elif generate_types:
-                    type_assertions = self.type_generator(text=text, entities=canonical_entities,
-                                                          few_shot_examples=examples_for_type_generation,
-                                                          task_instructions=self.type_generation_instructions).pairs
+                    type_assertions = self.type_generator(
+                        text=text, entities=canonical_entities, few_shot_examples=examples_for_type_generation, task_instructions=self.type_generation_instructions
+                    ).pairs
                     if self.logging:
-                        print(
-                            f"GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: {type_assertions}")
+                        print(f"GraphExtractor: INFO  :: Finished generating types and assigned them to entities as following: {type_assertions}")
 
             # Cluster types and update type assertions programmatically
             types = list(set([pair[1] for pair in type_assertions]))
@@ -249,12 +241,9 @@ class OpenGraphExtractor(GraphExtractor):
         if extract_spl_triples:
             # Extract literals (from chunks if needed)
             if use_chunking and len(chunks) > 1:
-                literals = self._extract_literals_from_chunks(chunks, examples_for_literal_extraction,
-                                                              task_instructions=self.literal_extraction_instructions)
+                literals = self._extract_literals_from_chunks(chunks, examples_for_literal_extraction, task_instructions=self.literal_extraction_instructions)
             else:
-                literals = self.literal_extractor(text=text,
-                                                  few_shot_examples=examples_for_literal_extraction,
-                                                  task_instructions=self.literal_extraction_instructions).l_values
+                literals = self.literal_extractor(text=text, few_shot_examples=examples_for_literal_extraction, task_instructions=self.literal_extraction_instructions).l_values
 
             if self.logging:
                 print(f"GraphExtractor: INFO  :: Generated the following numeric literals: {literals}")
@@ -262,14 +251,16 @@ class OpenGraphExtractor(GraphExtractor):
             # Extract SPL triples (from chunks if needed)
             if use_chunking and len(chunks) > 1:
                 spl_triples = self._extract_spl_triples_from_chunks(
-                    chunks, canonical_entities, literals, examples_for_spl_triples_extraction,
-                    task_instructions=self.triple_with_literal_extraction_instructions
+                    chunks, canonical_entities, literals, examples_for_spl_triples_extraction, task_instructions=self.triple_with_literal_extraction_instructions
                 )
             else:
-                spl_triples = self.spl_triples_extractor(text=text, entities=canonical_entities,
-                                                         numeric_literals=literals,
-                                                         few_shot_examples=examples_for_spl_triples_extraction,
-                                                         task_instructions=self.triple_with_literal_extraction_instructions).triples
+                spl_triples = self.spl_triples_extractor(
+                    text=text,
+                    entities=canonical_entities,
+                    numeric_literals=literals,
+                    few_shot_examples=examples_for_spl_triples_extraction,
+                    task_instructions=self.triple_with_literal_extraction_instructions,
+                ).triples
 
             if self.logging:
                 print(f"GraphExtractor: INFO  :: Generated the following s-p-l triples: {spl_triples}")
@@ -278,11 +269,9 @@ class OpenGraphExtractor(GraphExtractor):
             spl_relations = list(set([triple[1] for triple in spl_triples]))
             spl_relation_mapping = self.cluster_relations(spl_relations, clustering_context)
             # Update SPL triples with canonical relations
-            spl_triples = [(triple[0], spl_relation_mapping.get(triple[1], triple[1]), triple[2])
-                           for triple in spl_triples]
+            spl_triples = [(triple[0], spl_relation_mapping.get(triple[1], triple[1]), triple[2]) for triple in spl_triples]
             if self.logging and len(spl_relations) != len(set(spl_relation_mapping.values())):
-                print(
-                    f"GraphExtractor: INFO  :: After SPL relation clustering: {list(set(spl_relation_mapping.values()))}")
+                print(f"GraphExtractor: INFO  :: After SPL relation clustering: {list(set(spl_relation_mapping.values()))}")
 
             for triple in spl_triples:
                 subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
@@ -303,7 +292,8 @@ class OpenGraphExtractor(GraphExtractor):
                     continue
                 if self.logging:
                     print(
-                        f"GraphExtractor: INFO  :: For class {cls.remainder} found superclasses: {[IRI.create(s).remainder for s in superclasses]} and subclasses: {[IRI.create(s).remainder for s in subclasses]}")
+                        f"GraphExtractor: INFO  :: For class {cls.remainder} found superclasses: {[IRI.create(s).remainder for s in superclasses]} and subclasses: {[IRI.create(s).remainder for s in subclasses]}"
+                    )
 
                 for superclass in superclasses:
                     dbpedia_class_remainder = IRI.create(superclass).remainder
@@ -321,6 +311,37 @@ class OpenGraphExtractor(GraphExtractor):
                         onto.add_axiom(ax)
                     except Exception:
                         pass
+
+        if generate_rdfs_annotations:
+            entities_meta = (
+                [(c.iri, "class") for c in onto.classes_in_signature()]
+                + [(p.iri, "property") for p in onto.properties_in_signature()]
+                + [(i.iri, "individual") for i in onto.individuals_in_signature()]
+            )
+
+            # Create and add rdfs:label annotations to the ontology
+            rdfs_label_axioms = []
+            for ent_iri, ent_type in entities_meta:
+                rdfs_label_axioms.append(self.get_rdfs_label_axiom(entity_iri=ent_iri, label=self.format_rdfs_label(label=ent_iri.remainder, is_property=(ent_type == "property"))))
+
+            if self.logging:
+                print(f"GraphExtractor: INFO :: Created {len(rdfs_label_axioms)} rdfs:label annotations")
+
+            if rdfs_label_axioms:
+                onto.add_axiom(rdfs_label_axioms)
+
+            # Generate and add rdfs:comment annotations to the ontology
+            # We are chunking entities to drastically reduce risk of hallucination
+            for idx, batch in enumerate(chunked_iterator(seq=entities_meta, size=35), start=1):
+                if self.logging:
+                    print(f"GraphExtractor: INFO :: Processing batch number {idx} for rdfs:comment generation")
+
+                rdfs_comment_axioms = self.generate_batch_rdfs_comment_axioms(entities_meta=batch, context=clustering_context)
+
+                if self.logging:
+                    print(f"GraphExtractor: INFO :: Generated {len(rdfs_comment_axioms)} rdfs:comment annotations for batch number {idx}")
+
+                onto.add_axiom(rdfs_comment_axioms)
 
         onto.save(path=save_path)
         if self.logging:

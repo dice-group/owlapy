@@ -93,7 +93,7 @@ from owlapy.owl_axiom import (
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataRange, OWLDataUnionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLIndividual, OWLNamedIndividual
-from owlapy.owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype
+from owlapy.owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype, TopOWLDatatype
 from owlapy.owl_object import OWLObject
 from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
 from owlapy.static_funcs import startJVM
@@ -1268,7 +1268,11 @@ class SyncOntology(AbstractOWLOntology):
 
     def __eq__(self, other):
         if isinstance(other, SyncOntology):
-            return other.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
+            try:
+                return self.owlapi_ontology.getOntologyID().equals(other.owlapi_ontology.getOntologyID())
+            except Exception:
+                # If JVM is not running, fall back to comparing IRI paths
+                return self.path == other.path
         return False
 
     def __hash__(self):
@@ -1363,6 +1367,78 @@ class SyncOntology(AbstractOWLOntology):
 
     def get_owlapi_ontology(self):
         return self.owlapi_ontology
+
+    def get_dl_expressivity(self) -> str:
+        """Compute the DL expressivity name of this ontology, e.g. "ALCHN(D)"."""
+        from owlapy.expressivity import get_dl_expressivity
+        return get_dl_expressivity(self)
+
+    def _get_prefix_format(self):
+        """Return the OWL API document format currently associated with this ontology.
+
+        This is the live format object tracked by the OWL API manager, so mutating it
+        (via ``setPrefix``/``setPrefixManager``) persists across calls and is picked up
+        by ``save()`` whenever no explicit ``document_format`` override is requested.
+        """
+        return self.owlapi_manager.getOntologyFormat(self.owlapi_ontology)
+
+    def get_prefixes(self) -> Dict[str, str]:
+        """Get the prefix -> namespace IRI mappings currently registered for this ontology.
+
+        These prefixes are honoured by :meth:`save` both for the OWL API–backed formats
+        that support them (RDF/XML, OWL/XML, Turtle, Functional Syntax, Manchester Syntax)
+        and for the rdflib-backed formats (Turtle, N3, TriG, JSON-LD).
+
+        Returns:
+            Mapping of prefix name (without a trailing colon) to namespace IRI.
+        """
+        fmt = self._get_prefix_format()
+        if not hasattr(fmt, "getPrefixName2PrefixMap"):
+            return {}
+        return {
+            (str(name)[:-1] if str(name).endswith(":") else str(name)): str(ns)
+            for name, ns in fmt.getPrefixName2PrefixMap().items()
+        }
+
+    def set_prefix(self, prefix: str, namespace: str) -> None:
+        """Declare or update a prefix -> namespace IRI mapping for this ontology.
+
+        Args:
+            prefix: Short prefix name, e.g. ``"foaf"`` (no trailing colon).
+            namespace: Namespace IRI the prefix expands to, e.g.
+                ``"http://xmlns.com/foaf/0.1/"``.
+
+        Raises:
+            ValueError: If the ontology's current document format does not support
+                prefixes (e.g. LaTeX, DL Syntax, KRSS2, OBO).
+        """
+        fmt = self._get_prefix_format()
+        if not hasattr(fmt, "setPrefix"):
+            raise ValueError(f"The ontology's current document format ({fmt}) does not support prefixes.")
+        fmt.setPrefix(f"{prefix}:", namespace)
+
+    def remove_prefix(self, prefix: str) -> None:
+        """Remove a previously declared prefix mapping, if present.
+
+        Args:
+            prefix: Short prefix name to remove (no trailing colon).
+
+        Raises:
+            ValueError: If the ontology's current document format does not support
+                prefixes (e.g. LaTeX, DL Syntax, KRSS2, OBO).
+        """
+        # noinspection PyUnresolvedReferences
+        from org.semanticweb.owlapi.util import DefaultPrefixManager
+
+        fmt = self._get_prefix_format()
+        if not hasattr(fmt, "setPrefixManager"):
+            raise ValueError(f"The ontology's current document format ({fmt}) does not support prefixes.")
+        key = f"{prefix}:"
+        remaining = DefaultPrefixManager()
+        for name, ns in fmt.getPrefixName2PrefixMap().items():
+            if str(name) != key:
+                remaining.setPrefix(str(name), str(ns))
+        fmt.setPrefixManager(remaining)
 
     def get_ontology_id(self) -> OWLOntologyID:
         return self.mapper.map_(self.owlapi_ontology.getOntologyID())
@@ -1460,6 +1536,11 @@ class SyncOntology(AbstractOWLOntology):
                 )
             fmt_class = getattr(org.semanticweb.owlapi.formats, fmt_class_name)
             owlapi_format = fmt_class()
+            # Carry over any custom prefixes registered via set_prefix()/remove_prefix()
+            # onto the freshly created format instance.
+            current_format = self.owlapi_manager.getOntologyFormat(self.owlapi_ontology)
+            if hasattr(owlapi_format, "copyPrefixesFrom") and hasattr(current_format, "getPrefixName2PrefixMap"):
+                owlapi_format.copyPrefixesFrom(current_format)
         else:
             owlapi_format = self.owlapi_manager.getOntologyFormat(self.owlapi_ontology)
 
@@ -1511,6 +1592,10 @@ class SyncOntology(AbstractOWLOntology):
             else:
                 g = rdflib.Graph()
             g.parse(tmp_path, format="xml")
+            # Bind any custom prefixes registered via set_prefix() so the
+            # re-serialised output uses them instead of full IRIs / auto-generated ones.
+            for prefix, namespace in self.get_prefixes().items():
+                g.bind(prefix, rdflib.Namespace(namespace), override=True)
             # Step 3 – re-serialise
             g.serialize(destination=path, format=rdflib_format)
         finally:
@@ -2123,7 +2208,11 @@ class FromOwlready2:
         elif type_ is Timedelta:
             return DurationOWLDatatype
         else:
-            raise ValueError(type_)
+            # Some ontologies contain invalid data-range fillers (e.g. owl:Thing used as the
+            # filler of a data property restriction). Degrade gracefully to the top datatype
+            # instead of raising, so a single malformed axiom doesn't abort hierarchy traversal.
+            logger.warning("Unrecognized data range filler %s, falling back to rdfs:Literal (top datatype)", type_)
+            return TopOWLDatatype
 
 
 def is_valid_entity(text_input: str):
@@ -2230,11 +2319,18 @@ class NeuralOntology(AbstractOWLOntology):
             for key, value in training_params.items():
                 setattr(args, key, value)
 
-        # Train the model
-        Execute(args).start()
-
-        # Load the trained model
-        self.model = KGE(path=args.path_to_store_single_run)
+        # Check if model already exists before training
+        if os.path.isdir(args.path_to_store_single_run) and \
+           os.path.exists(os.path.join(args.path_to_store_single_run, "configuration.json")):
+            # Load existing pretrained model
+            print(f"Loading existing model from {args.path_to_store_single_run}")
+            self.model = KGE(path=args.path_to_store_single_run)
+        else:
+            # Train the model
+            print(f"Training new model, will be saved to {args.path_to_store_single_run}")
+            Execute(args).start()
+            # Load the trained model
+            self.model = KGE(path=args.path_to_store_single_run)
 
     def predict(self, h: List[str] = None, r: List[str] = None, t: List[str] = None) -> List[Tuple[str, float]]:
         if r is None:

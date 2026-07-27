@@ -395,6 +395,31 @@ class ManchesterOWLSyntaxParserTest(unittest.TestCase):
                                     (OWLDatatypeRestriction(DoubleOWLDatatype, (f1, f2, f3)), IntegerOWLDatatype)))
         self.assertEqual(p, c)
 
+    def test_prefixes(self):
+        # well-known prefixes are resolved without any extra configuration
+        p = ManchesterOWLSyntaxParser(self.namespace)
+        self.assertEqual(p.parse_expression("owl:Thing"), OWLClass(OWLThing.iri))
+
+        # custom prefixes are resolved via the `prefixes` constructor argument
+        p = ManchesterOWLSyntaxParser(self.namespace, prefixes={"foaf": "http://xmlns.com/foaf/0.1/"})
+        foaf_agent = OWLClass(IRI.create("http://xmlns.com/foaf/0.1/", "Agent"))
+        self.assertEqual(p.parse_expression("foaf:Agent"), foaf_agent)
+
+        # custom prefixes and the default namespace can be mixed in one expression
+        self.assertEqual(p.parse_expression("foaf:Agent and Atom"),
+                         OWLObjectIntersectionOf((foaf_agent, self.atom)))
+
+        # an empty prefix falls back to the default namespace
+        self.assertEqual(p.parse_expression(":Atom"), self.atom)
+
+        # unknown prefixes raise instead of silently failing
+        with self.assertRaises(Exception):
+            p.parse_expression("bogus:Thing")
+
+        # a default prefix (owl:) can be overridden
+        p = ManchesterOWLSyntaxParser(self.namespace, prefixes={"owl": "http://custom.example/owl#"})
+        self.assertEqual(p.parse_expression("owl:Thing"), OWLClass(IRI.create("http://custom.example/owl#", "Thing")))
+
 
 class DLSyntaxParserTest(unittest.TestCase):
 
@@ -656,6 +681,30 @@ class DLSyntaxParserTest(unittest.TestCase):
                                     (OWLDatatypeRestriction(DoubleOWLDatatype, (f1, f2, f3)), IntegerOWLDatatype)))
         self.assertEqual(p, c)
 
+    def test_prefixes(self):
+        # well-known prefixes are resolved without any extra configuration
+        p = DLSyntaxParser(self.namespace)
+        self.assertEqual(p.parse_expression("owl:Thing"), OWLClass(OWLThing.iri))
+
+        # custom prefixes are resolved via the `prefixes` constructor argument
+        p = DLSyntaxParser(self.namespace, prefixes={"foaf": "http://xmlns.com/foaf/0.1/"})
+        foaf_agent = OWLClass(IRI.create("http://xmlns.com/foaf/0.1/", "Agent"))
+        self.assertEqual(p.parse_expression("foaf:Agent"), foaf_agent)
+
+        # custom prefixes and the default namespace can be mixed in one expression
+        self.assertEqual(p.parse_expression("foaf:Agent ⊓ Atom"),
+                         OWLObjectIntersectionOf((foaf_agent, self.atom)))
+
+        # an empty prefix falls back to the default namespace
+        self.assertEqual(p.parse_expression(":Atom"), self.atom)
+
+        # unknown prefixes raise instead of silently failing
+        with self.assertRaises(Exception):
+            p.parse_expression("bogus:Thing")
+
+        # a default prefix (owl:) can be overridden
+        p = DLSyntaxParser(self.namespace, prefixes={"owl": "http://custom.example/owl#"})
+        self.assertEqual(p.parse_expression("owl:Thing"), OWLClass(IRI.create("http://custom.example/owl#", "Thing")))
 
 
 class Owlapy_DLRenderer_Test(unittest.TestCase):
