@@ -17,18 +17,17 @@ effort estimates, and sequencing.
 
 ## 1. Code Readability
 
-### 1.1 Replace `print()` with the `logging` module — ✅ *done (core), high impact*
-- **Status:** Implemented for the core library in the 1.6.6 cycle — all core
-  `print()` sites migrated to per-module loggers with a `NullHandler` on the
-  top-level `owlapy` logger (INFO for progress, WARNING for recoverable issues,
-  DEBUG for dumps). The two intentional exceptions (`owl_reasoner.py`'s
-  subprocess-IPC `print(json.dumps(...))` and docstring `>>>` examples) stay.
-- **Scope:** **Core library only.** The `agen_kg/` LLM pipeline (an optional,
-  `dspy`-gated extra, and not among the most-used modules) is explicitly **out
-  of scope** for this plan. That leaves ~38 core print sites:
-  `owl_ontology.py` (~21), `util_owl_static_funcs.py` (~9),
-  `owl_reasoner.py` (~5), `render.py` (~2), `utils.py` (~1). Genuine
-  user-facing CLI output in `scripts/` stays on `print`.
+### 1.1 Replace `print()` with the `logging` module — ✅ *done (core + agen_kg), high impact*
+- **Status:** Implemented in the 1.6.6 cycle — all core `print()` sites migrated
+  to per-module loggers with a `NullHandler` on the top-level `owlapy` logger
+  (INFO for progress, WARNING for recoverable issues, DEBUG for dumps). The
+  `agen_kg/` pipeline (~115 sites) followed in a second pass: its
+  `enable_logging` flag now attaches a console handler to the `owlapy.agen_kg`
+  logger (see `agen_kg/logging_utils.py`) so the opt-in keeps producing visible
+  output, and `except`-block prints became `logger.exception(...)`. The two
+  intentional exceptions (`owl_reasoner.py`'s subprocess-IPC
+  `print(json.dumps(...))` and docstring `>>>` examples) stay, as does genuine
+  user-facing CLI output in `scripts/`.
 - **Why:** The prints already emulate logging (`f"{cls}: INFO :: ..."`,
   `"... ERROR :: ..."`) but a library must **never** write to stdout
   unconditionally — it pollutes host applications, can't be silenced, and has no
@@ -148,10 +147,12 @@ effort estimates, and sequencing.
 
 ## 4. Missing Features / Enhancements
 
-### 4.1 Structured logging & verbosity control for `agen_kg` — *out of scope*
-- **Status:** Deferred. `agen_kg` is the noisiest part (100+ prints) but is an
-  optional, `dspy`-gated, peripheral module and is excluded from this plan (see
-  1.1 scope). Revisit as a separate effort if/when the module sees more use.
+### 4.1 Structured logging & verbosity control for `agen_kg` — ✅ *done*
+- **Status:** Implemented alongside 1.1's second pass. All `agen_kg` prints now
+  route through per-module loggers under `owlapy.agen_kg`; the existing
+  `enable_logging` flag doubles as the verbosity knob (attaches a console
+  handler at INFO), and host applications can instead configure the `owlapy`
+  logger hierarchy directly for finer control.
 
 ### 4.2 First-class decimal / typed-literal support
 - **Why:** See 3.3 — `xsd:decimal` is currently coerced to float.
