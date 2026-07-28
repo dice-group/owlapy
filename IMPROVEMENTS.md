@@ -17,29 +17,11 @@ effort estimates, and sequencing.
 
 ## 1. Code Readability
 
-### 1.1 Replace `print()` with the `logging` module — ✅ *done (core), high impact*
-- **Status:** Implemented for the core library in the 1.6.6 cycle — all core
-  `print()` sites migrated to per-module loggers with a `NullHandler` on the
-  top-level `owlapy` logger (INFO for progress, WARNING for recoverable issues,
-  DEBUG for dumps). The two intentional exceptions (`owl_reasoner.py`'s
-  subprocess-IPC `print(json.dumps(...))` and docstring `>>>` examples) stay.
-- **Scope:** **Core library only.** The `agen_kg/` LLM pipeline (an optional,
-  `dspy`-gated extra, and not among the most-used modules) is explicitly **out
-  of scope** for this plan. That leaves ~38 core print sites:
-  `owl_ontology.py` (~21), `util_owl_static_funcs.py` (~9),
-  `owl_reasoner.py` (~5), `render.py` (~2), `utils.py` (~1). Genuine
-  user-facing CLI output in `scripts/` stays on `print`.
-- **Why:** The prints already emulate logging (`f"{cls}: INFO :: ..."`,
-  `"... ERROR :: ..."`) but a library must **never** write to stdout
-  unconditionally — it pollutes host applications, can't be silenced, and has no
-  severity filtering. Only 4 modules currently use `logging.getLogger`.
-- **Approach:** Introduce a per-module logger (`logging.getLogger(__name__)`),
-  map the ad-hoc `INFO`/`ERROR`/`WARNING` prefixes to real log levels, and
-  delete the manual prefix strings. `ERROR` sites near `except` blocks become
-  `logger.exception(...)` (ties into 1.4). At ~38 sites in core modules this is
-  now a small, reviewable-in-one-PR change rather than a project.
+> Completed items are removed from this plan once they ship; see
+> `CHANGELOG.md` for the record (e.g. the print-to-logging migration, done for
+> the core library and `agen_kg` in the 1.6.6 cycle).
 
-### 1.2 Burn down the `TODO`/`FIXME` backlog — 63 markers
+### 1.1 Burn down the `TODO`/`FIXME` backlog — 63 markers
 - **Where:** e.g. `class_expression/restriction.py` (13 `@TODO: CD:` notes,
   several asking to convert methods to `@property`), `render.py:323/517/544`,
   `owl_hierarchy.py:32/124` (unimplemented equivalence-set handling),
@@ -53,7 +35,7 @@ effort estimates, and sequencing.
   "property shows the in-built function" notes, which are a single consistent
   design decision that can be documented once instead of 13 times.
 
-### 1.3 Decompose the largest modules
+### 1.2 Decompose the largest modules
 - **Where:** `owl_reasoner.py` (3302 LOC), `owl_ontology.py` (2440),
   `utils.py` (1986), `agen_kg/graph_extractor.py` (1539), `owl_axiom.py` (1426).
 - **Why:** Files this size hurt navigation, review, and test isolation.
@@ -64,10 +46,12 @@ effort estimates, and sequencing.
   re-export from `utils.py` / `__init__` to preserve the public API. Do this
   behind tests; no signature changes.
 
-### 1.4 Tighten broad exception handling
+### 1.3 Tighten broad exception handling
 - **Where (in-scope core):** `owl_reasoner.py` (~4 `except Exception`),
   `owl_ontology.py` (~2), `owl_reasoner_rdflib.py` (~1). The bulk of the
-  remaining broad catches live in `agen_kg/`, which is out of scope (see 1.1).
+  remaining broad catches live in `agen_kg/` — the formerly-printing ones now
+  use `logger.exception(...)`, but several silent `except Exception: pass`
+  sites remain there.
 - **Why:** Broad catches hide root causes and can swallow logic errors.
 - **Approach:** Narrow to specific exception types where known; where a broad
   catch is intentional, log with `logger.exception(...)` and add a comment
@@ -148,24 +132,19 @@ effort estimates, and sequencing.
 
 ## 4. Missing Features / Enhancements
 
-### 4.1 Structured logging & verbosity control for `agen_kg` — *out of scope*
-- **Status:** Deferred. `agen_kg` is the noisiest part (100+ prints) but is an
-  optional, `dspy`-gated, peripheral module and is excluded from this plan (see
-  1.1 scope). Revisit as a separate effort if/when the module sees more use.
-
-### 4.2 First-class decimal / typed-literal support
+### 4.1 First-class decimal / typed-literal support
 - **Why:** See 3.3 — `xsd:decimal` is currently coerced to float.
 - **Approach:** Add an `OWLLiteral` path backed by `decimal.Decimal`; medium
   effort, touches `owl_literal.py`, `parser.py`, `render.py`.
 
-### 4.3 Equivalence-set handling in `OWLHierarchy`
+### 4.2 Equivalence-set handling in `OWLHierarchy`
 - **Why:** `owl_hierarchy.py:32,124` explicitly defers eq-set handling
   (`_eq_set` commented out, "TODO handling of eq_sets").
 - **Approach:** Implement equivalent-entity grouping so hierarchy queries return
   equivalence classes correctly. **(verify)** current behavior with a test on an
   ontology containing `EquivalentClasses` axioms first.
 
-### 4.4 Context-manager ergonomics for JVM reasoners
+### 4.3 Context-manager ergonomics for JVM reasoners
 - **Why:** See 2.3 — reduces the easy-to-forget `stopJVM()` footgun.
 - **Approach:** Add `__enter__`/`__exit__` to `SyncReasoner` / the OWLAPI adaptor.
 
@@ -208,35 +187,31 @@ Phased so each phase is independently shippable and low-risk first.
 1. Fix README mojibake headers (3.1).
 2. Sync version badges + add CI version-sync check (3.2, 5.2).
 3. Remove/ignore stray root artifacts (5.1).
-4. TODO triage pass: delete obsolete, convert real bugs to issues (1.2 part a).
+4. TODO triage pass: delete obsolete, convert real bugs to issues (1.1 part a).
 
 *Deliverable:* clean tree, accurate metadata, an issue backlog.
 
-### Phase 1 — Logging migration, core modules only (~half a day)
-5. Introduce per-module loggers and migrate the ~38 core-library prints
-   (`owl_ontology.py`, `util_owl_static_funcs.py`, `owl_reasoner.py`,
-   `render.py`, `utils.py`) to `logging` (1.1). `agen_kg` is out of scope.
-6. Narrow/annotate broad `except` blocks in those same core modules (1.4).
-
-*Deliverable:* core library no longer writes to stdout; configurable logging.
-`scripts/` keep `print` for CLI output.
+### Phase 1 — Logging migration ✅ *shipped* + exception tightening
+5. ✅ Per-module loggers now cover the core library and `agen_kg`; recorded in
+   `CHANGELOG.md` `[Unreleased]`. `scripts/` keep `print` for CLI output.
+6. Narrow/annotate broad `except` blocks in the core modules (1.3) — still open.
 
 ### Phase 2 — Documentation & correctness notes (1 day)
 8. Document decimal limitation + parser docstrings (3.3, 3.4).
 9. Fill TODO-flagged public docstrings; optionally enable ruff `D` on one module.
 
 ### Phase 3 — Structural refactor (2–4 days, behind tests)
-10. Split `utils.py` into a subpackage with re-exports (1.3).
-11. Split reasoner/ontology modules if tests give confidence (1.3).
-12. Add context-manager support to JVM reasoners (2.3, 4.4).
+10. Split `utils.py` into a subpackage with re-exports (1.2).
+11. Split reasoner/ontology modules if tests give confidence (1.2).
+12. Add context-manager support to JVM reasoners (2.3, 4.3).
 
 ### Phase 4 — Performance (data-driven, 2–3 days)
 13. Profile Family-KG reasoning; add memoization only to confirmed hot,
     pure functions (2.1); fix any re-materialized generators (2.2).
 
 ### Phase 5 — Features (scoped separately)
-14. Decimal/typed-literal support (4.2).
-15. Equivalence-set handling in `OWLHierarchy` (4.3).
+14. Decimal/typed-literal support (4.1).
+15. Equivalence-set handling in `OWLHierarchy` (4.2).
 
 ### Cross-cutting rules
 - Every change runs `ruff check owlapy --line-length=200` and the pytest suite

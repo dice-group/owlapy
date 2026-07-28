@@ -6,10 +6,15 @@ Also provides text chunking utilities for handling large documents
 that may not fit in an LLM's context window.
 """
 
+import logging
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
+
+from owlapy.agen_kg.logging_utils import enable_console_logging
+
+logger = logging.getLogger(__name__)
 
 
 class TextLoader(ABC):
@@ -207,6 +212,8 @@ class UniversalTextLoader:
             enable_logging: Whether to enable logging of loaded content info.
         """
         self.logging = enable_logging
+        if enable_logging:
+            enable_console_logging()
         self.loaders = {
             '.txt': TXTLoader(),
             '.pdf': PDFLoader(),
@@ -241,7 +248,7 @@ class UniversalTextLoader:
         if not is_file:
             # Source is raw text, not a file
             if self.logging:
-                print("UniversalTextLoader: INFO :: Treating input as raw text string")
+                logger.info("Treating input as raw text string")
             return RawTextLoader().load(source)
 
         # Source is a file path
@@ -264,14 +271,14 @@ class UniversalTextLoader:
         loader = self.loaders[file_type]
 
         if self.logging:
-            print(f"UniversalTextLoader: INFO :: Loading text from {file_type} file: {source_path.name}")
+            logger.info(f"Loading text from {file_type} file: {source_path.name}")
 
         try:
             text = loader.load(source_path)
             if self.logging:
                 word_count = len(text.split())
                 char_count = len(text)
-                print(f"UniversalTextLoader: INFO :: Successfully loaded {word_count} words ({char_count} characters)")
+                logger.info(f"Successfully loaded {word_count} words ({char_count} characters)")
             return text
         except Exception as e:
             raise ValueError(f"Error loading text from {source_path}: {str(e)}")
