@@ -36,15 +36,31 @@ effort estimates, and sequencing.
   design decision that can be documented once instead of 13 times.
 
 ### 1.2 Decompose the largest modules
-- **Where:** `owl_reasoner.py` (3302 LOC), `owl_ontology.py` (2440),
-  `utils.py` (1986), `agen_kg/graph_extractor.py` (1539), `owl_axiom.py` (1426).
+- **Where:** `owl_reasoner.py` (3302 LOC, holds both `StructuralReasoner` and
+  `SyncReasoner`) plus the sibling `owl_reasoner_rdflib.py` (841 LOC,
+  `RDFLibReasoner`), `owl_ontology.py` (2440), `utils.py` (1986),
+  `agen_kg/graph_extractor.py` (1539), `owl_axiom.py` (1426).
 - **Why:** Files this size hurt navigation, review, and test isolation.
-  `owl_reasoner.py` holds multiple reasoner implementations; `utils.py` is a
-  grab-bag (`CESimplifier`, NNF, similarity metrics, an lru_cache adaptation).
-- **Approach:** Non-breaking split — move cohesive groups into a subpackage
-  (e.g. `owlapy/utils/` with `simplify.py`, `nnf.py`, `similarity.py`) and
-  re-export from `utils.py` / `__init__` to preserve the public API. Do this
-  behind tests; no signature changes.
+  `owl_reasoner.py` holds multiple reasoner implementations, and
+  `RDFLibReasoner` living in a separate top-level module while conceptually
+  being a third reasoner backend is inconsistent; `utils.py` is a grab-bag
+  (`CESimplifier`, NNF, similarity metrics, an lru_cache adaptation).
+- **Approach:** Non-breaking split — for the reasoners specifically, turn
+  `owl_reasoner.py` into a package `owlapy/owl_reasoner/` with
+  `structural.py` (`StructuralReasoner`), `sync.py` (`SyncReasoner`), and
+  `rdflib_reasoner.py` (`RDFLibReasoner`, moved in from
+  `owl_reasoner_rdflib.py`), all re-exported from
+  `owlapy/owl_reasoner/__init__.py`. For `utils.py`: move cohesive groups into
+  a subpackage (e.g. `owlapy/utils/` with `simplify.py`, `nnf.py`,
+  `similarity.py`) and re-export from `utils.py`/`__init__`.
+  **Caveat:** `owlapy.owl_reasoner` is a public import path with at least one
+  known external consumer (Ontolearn — see the traceback in owlapy#242, which
+  reaches directly into `owl_reasoner.py`). The new package's `__init__.py`
+  must re-export every symbol currently importable from the module (not just
+  the 3 main classes), and it may be safer to keep `owl_reasoner.py` itself as
+  a thin re-export shim rather than deleting it, so nothing downstream breaks
+  silently. Do this as its own PR, separate from functional changes, behind
+  the existing test suite; no signature changes.
 
 ### 1.3 Tighten broad exception handling
 - **Where (in-scope core):** `owl_reasoner.py` (~4 `except Exception`),
@@ -147,6 +163,41 @@ effort estimates, and sequencing.
 ### 4.3 Context-manager ergonomics for JVM reasoners
 - **Why:** See 2.3 — reduces the easy-to-forget `stopJVM()` footgun.
 - **Approach:** Add `__enter__`/`__exit__` to `SyncReasoner` / the OWLAPI adaptor.
+
+### 4.4 `RDFLibReasoner` / `owl_expression_to_sparql`: remaining gaps found during owlapy#242 parity work
+- **Where:** `owlapy/converter.py`, `owlapy/owl_reasoner_rdflib.py`,
+  `tests/test_rdflib_reasoner_structural_parity.py` (module docstring documents
+  these live, in-code — this entry is the durable backlog pointer to them).
+- **Known remaining gap (correctness):** `OWLObjectComplementOf(OWLDataAllValuesFrom(p,
+  OWLDataComplementOf(C)))` does not agree with `OWLDataSomeValuesFrom(p, C)` — the De
+  Morgan equivalence `∃p.C ≡ ¬∀p.¬C` — for individuals with *zero* `p`-values. Root
+  cause is an interaction between the new `OWLDataComplementOf` handler and the
+  existing, untouched counting-based `OWLDataAllValuesFrom` implementation (which
+  treats "no values" as vacuously satisfying ∀, but the complement-of-complement
+  chain doesn't currently unwind that correctly). Needs its own investigation into
+  `OWLDataAllValuesFrom`'s counting logic, not just `OWLDataComplementOf`.
+- **Known remaining gap (scope):** the `_at_most_cardinality_instances` performance
+  fix (Python set-arithmetic instead of a correlated SPARQL `FILTER NOT
+  EXISTS`/`OPTIONAL`) only triggers when `OWLObjectMaxCardinality`/`cardinality==0`
+  is the *top-level* expression passed to `instances()`. The same restriction
+  *nested* inside a larger expression (e.g. an intersection) still goes through the
+  slow, generic SPARQL path and could time out on a large enough ontology. Extending
+  the special-casing to nested occurrences would need it to live in the shared
+  `Owl2SparqlConverter` rather than only in `RDFLibReasoner.instances()`.
+- **Cleanup:** `RDFLibReasoner.__init__`'s `infer_property_values`/
+  `infer_data_property_values` parameters have been dead code (stored, never read)
+  since before this session; their stated intent ("infer property values from
+  sub-properties") now fully overlaps with the real, working `sub_properties`
+  parameter added this session. Worth removing the two dead parameters in a
+  follow-up (a public API change, however trivial, so do it deliberately rather than
+  bundled with unrelated work).
+- **Gotchas for future SPARQL work in `converter.py`** (both confirmed by direct
+  testing against rdflib, not documented anywhere else): (1) a bare
+  `FILTER(false)`/`FILTER(0)` is silently ineffective in rdflib's SPARQL engine —
+  use a comparison like `FILTER(1=0)` instead; (2) a `UNION` branch containing
+  *exactly one* bare `FILTER` and no triples fails to correlate with
+  already-bound outer variables — add a leading no-op `FILTER(BOUND(?var))` to any
+  such branch (two or more filters in the group works fine).
 
 ---
 

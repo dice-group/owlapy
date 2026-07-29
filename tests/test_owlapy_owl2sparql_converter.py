@@ -57,24 +57,28 @@ class TestOwl2SparqlConverter(unittest.TestCase):
         root_var = "?x"
         query = cnv.as_query(root_var, ce, False)
         print(query)
+        # Note: OWLThing fillers no longer emit `?var a <owl:Thing>` (owlapy#242 follow-up) --
+        # owl:Thing tautologically matches every resource, and requiring individuals to be
+        # explicitly asserted rdf:type owl:Thing was a bug (real ontologies essentially never do
+        # that), so the nested `?s_2`/`?s_5`/`?s_6` type triples are correctly gone below.
+        # Note: the "<=" cardinality branch now uses OPTIONAL+!BOUND() with a cheap `?var a ?type`
+        # binding instead of FILTER NOT EXISTS with an "any triple, any predicate" binding -- the
+        # latter was catastrophically slow on non-trivial ontologies (see owlapy#242 follow-up).
         query_t = """SELECT
  DISTINCT ?x WHERE { 
 ?x <http://dl-learner.org/carcinogenesis#hasBond> ?s_1 . 
 {
 { SELECT ?s_1 WHERE { 
 ?s_1 <http://dl-learner.org/carcinogenesis#hasAtom> ?s_2 . 
-?s_2 a <http://www.w3.org/2002/07/owl#Thing> . 
  } GROUP BY ?s_1 HAVING ( COUNT ( ?s_2 ) <= 4 ) }
 } UNION {
-?s_1 ?s_3 ?s_4 . 
-FILTER NOT EXISTS { 
-?s_1 <http://dl-learner.org/carcinogenesis#hasAtom> ?s_5 . 
-?s_5 a <http://www.w3.org/2002/07/owl#Thing> . 
- } }
+?s_1 a ?s_3 . 
+ OPTIONAL { 
+?s_1 <http://dl-learner.org/carcinogenesis#hasAtom> ?s_4 . 
+ } FILTER ( !BOUND ( ?s_4 ) ) }
 { SELECT ?s_1 WHERE { 
-?s_1 <http://dl-learner.org/carcinogenesis#hasAtom> ?s_6 . 
-?s_6 a <http://www.w3.org/2002/07/owl#Thing> . 
- } GROUP BY ?s_1 HAVING ( COUNT ( ?s_6 ) >= 1 ) }
+?s_1 <http://dl-learner.org/carcinogenesis#hasAtom> ?s_5 . 
+ } GROUP BY ?s_1 HAVING ( COUNT ( ?s_5 ) >= 1 ) }
  }"""
 #         query_t = """SELECT
 #  DISTINCT ?x WHERE {

@@ -5,8 +5,9 @@ from pathlib import Path
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import SyncOntology
-from owlapy.owl_property import OWLObjectProperty
+from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 
 
@@ -359,14 +360,26 @@ class TestRDFLibReasonerComplexExpressionsAndStubs(unittest.TestCase):
         ce = OWLObjectSomeValuesFrom(self.has_child, self.person)
         self.assertEqual(list(self.reasoner.disjoint_classes(ce)), [])
 
-    def test_object_property_values_with_complex_property_returns_empty(self):
+    def test_object_property_values_with_inverse_property(self):
+        """OWLObjectInverseOf(has_child) applied to `child` returns child's parents -- i.e.
+        every x such that x hasChild child. Previously (a bug, fixed alongside owlapy#242)
+        object_property_values rejected any non-OWLObjectProperty input outright and always
+        returned an empty result, regardless of whether real triples existed to answer it."""
         from owlapy.owl_property import OWLObjectInverseOf
 
         fathers = list(self.reasoner.instances(self.male))
         self.assertGreater(len(fathers), 0)
+        child = fathers[0]
         inverse = OWLObjectInverseOf(self.has_child)
-        result = list(self.reasoner.object_property_values(fathers[0], inverse))
-        self.assertEqual(result, [])
+        result = set(self.reasoner.object_property_values(child, inverse))
+
+        # Cross-check against the direct forward relation: parents are exactly those persons p
+        # for which child is one of p's hasChild values.
+        expected = {
+            p for p in self.reasoner.instances(self.person)
+            if child in set(self.reasoner.object_property_values(p, self.has_child))
+        }
+        self.assertEqual(result, expected)
 
     def test_get_root_ontology(self):
         self.assertIs(self.reasoner.get_root_ontology(), self.onto)
@@ -389,26 +402,213 @@ class TestRDFLibReasonerComplexExpressionsAndStubs(unittest.TestCase):
         result = set(self.reasoner.same_individuals(males[0]))
         self.assertIsInstance(result, set)
 
-    def test_not_implemented_stub_methods_return_empty_iterators(self):
+    def test_property_axiom_methods_with_no_asserted_axioms_return_empty(self):
+        """`hasChild` in the Family benchmark ontology has no domain/range/subPropertyOf/
+        equivalentProperty/propertyDisjointWith axioms, and this ontology has no data
+        properties at all -- these methods should return empty results, not crash, when
+        given real (but axiom-free) property objects."""
         males = list(self.reasoner.instances(self.male))
         ind = males[0]
+        dummy_dp = OWLDataProperty(IRI(self.NS, "doesNotExist"))
 
-        self.assertEqual(list(self.reasoner.data_property_domains(None)), [])
-        self.assertEqual(list(self.reasoner.object_property_domains(None)), [])
-        self.assertEqual(list(self.reasoner.object_property_ranges(None)), [])
-        self.assertEqual(list(self.reasoner.data_property_values(ind, None)), [])
+        self.assertEqual(list(self.reasoner.data_property_domains(dummy_dp)), [])
+        self.assertEqual(list(self.reasoner.object_property_domains(self.has_child)), [])
+        self.assertEqual(list(self.reasoner.object_property_ranges(self.has_child)), [])
+        self.assertEqual(list(self.reasoner.data_property_values(ind, dummy_dp)), [])
         self.assertEqual(list(self.reasoner.different_individuals(ind)), [])
         self.assertEqual(list(self.reasoner.equivalent_object_properties(self.has_child)), [])
-        self.assertEqual(list(self.reasoner.equivalent_data_properties(None)), [])
+        self.assertEqual(list(self.reasoner.equivalent_data_properties(dummy_dp)), [])
         self.assertEqual(list(self.reasoner.disjoint_object_properties(self.has_child)), [])
-        self.assertEqual(list(self.reasoner.disjoint_data_properties(None)), [])
-        self.assertEqual(list(self.reasoner.sub_data_properties(None)), [])
-        self.assertEqual(list(self.reasoner.super_data_properties(None)), [])
+        self.assertEqual(list(self.reasoner.disjoint_data_properties(dummy_dp)), [])
+        self.assertEqual(list(self.reasoner.sub_data_properties(dummy_dp)), [])
+        self.assertEqual(list(self.reasoner.super_data_properties(dummy_dp)), [])
         self.assertEqual(list(self.reasoner.sub_object_properties(self.has_child)), [])
         self.assertEqual(list(self.reasoner.super_object_properties(self.has_child)), [])
 
     def test_repr(self):
         self.assertIn("RDFLibReasoner(", repr(self.reasoner))
+
+
+class TestRDFLibReasonerPropertyHierarchyAndDomainRange(unittest.TestCase):
+    """Cover sub/super object properties and domain/range, using
+    KGs/Family/father_with_rbox.owl (hasChild/hasBrother subPropertyOf hasFamilyMember, plus
+    domain/range on hasChild) and KGs/Mutagenesis/mutagenesis.owl (data property domain)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.father_path = Path("KGs/Family/father_with_rbox.owl")
+        cls.mutagenesis_path = Path("KGs/Mutagenesis/mutagenesis.owl")
+        if not cls.father_path.exists() or not cls.mutagenesis_path.exists():
+            raise unittest.SkipTest("Required test ontologies not available")
+
+        cls.father_onto = SyncOntology(str(cls.father_path))
+        cls.father_reasoner = RDFLibReasoner(cls.father_onto)
+        cls.FATHER_NS = "http://example.com/father#"
+        cls.has_child = OWLObjectProperty(IRI(cls.FATHER_NS, "hasChild"))
+        cls.has_brother = OWLObjectProperty(IRI(cls.FATHER_NS, "hasBrother"))
+        cls.has_family_member = OWLObjectProperty(IRI(cls.FATHER_NS, "hasFamilyMember"))
+        cls.person = OWLClass(IRI(cls.FATHER_NS, "person"))
+        cls.male = OWLClass(IRI(cls.FATHER_NS, "male"))
+        cls.female = OWLClass(IRI(cls.FATHER_NS, "female"))
+
+        cls.mut_onto = SyncOntology(str(cls.mutagenesis_path))
+        cls.mut_reasoner = RDFLibReasoner(cls.mut_onto)
+        cls.MUT_NS = "http://dl-learner.org/mutagenesis#"
+        cls.act = OWLDataProperty(IRI(cls.MUT_NS, "act"))
+        cls.compound = OWLClass(IRI(cls.MUT_NS, "Compound"))
+
+    def test_super_object_properties_direct(self):
+        supers = set(self.father_reasoner.super_object_properties(self.has_child, direct=True))
+        self.assertEqual(supers, {self.has_family_member})
+
+    def test_sub_object_properties_direct(self):
+        subs = set(self.father_reasoner.sub_object_properties(self.has_family_member, direct=True))
+        self.assertEqual(subs, {self.has_child, self.has_brother})
+
+    def test_sub_object_properties_leaf_is_empty(self):
+        self.assertEqual(list(self.father_reasoner.sub_object_properties(self.has_child)), [])
+
+    def test_object_property_domains_direct_vs_indirect(self):
+        direct = set(self.father_reasoner.object_property_domains(self.has_child, direct=True))
+        indirect = set(self.father_reasoner.object_property_domains(self.has_child, direct=False))
+        self.assertEqual(direct, {self.person})
+        self.assertEqual(indirect, {self.person, self.male, self.female})
+
+    def test_object_property_ranges_direct_vs_indirect(self):
+        direct = set(self.father_reasoner.object_property_ranges(self.has_child, direct=True))
+        indirect = set(self.father_reasoner.object_property_ranges(self.has_child, direct=False))
+        self.assertEqual(direct, {self.person})
+        self.assertEqual(indirect, {self.person, self.male, self.female})
+
+    def test_data_property_domains(self):
+        domains = set(self.mut_reasoner.data_property_domains(self.act, direct=True))
+        self.assertEqual(domains, {self.compound})
+
+    def test_property_hierarchy_caching(self):
+        first = set(self.father_reasoner.sub_object_properties(self.has_family_member, direct=True))
+        self.assertIn(self.has_family_member, self.father_reasoner._sub_obj_prop_cache)
+        second = set(self.father_reasoner.sub_object_properties(self.has_family_member, direct=True))
+        self.assertEqual(first, second)
+
+    def test_parity_with_structural_reasoner(self):
+        """RDFLibReasoner and StructuralReasoner must agree on the newly-implemented methods.
+
+        One documented exception: StructuralReasoner's super_object_properties additionally
+        yields owl:ObjectProperty itself, because owlready2's `is_a` for property entities
+        conflates rdf:type with rdfs:subPropertyOf. owl:ObjectProperty is a property's
+        metaclass/rdf:type, not a real "super property" in OWL semantics, so RDFLibReasoner's
+        pure rdfs:subPropertyOf-based query intentionally does not reproduce this artifact.
+        """
+        from owlapy.owl_ontology import Ontology
+        from owlapy.owl_reasoner import StructuralReasoner
+
+        structural = StructuralReasoner(Ontology(str(self.father_path)))
+        owl_object_property = OWLObjectProperty(IRI("http://www.w3.org/2002/07/owl#", "ObjectProperty"))
+
+        structural_supers = set(structural.super_object_properties(self.has_child, direct=True))
+        self.assertEqual(
+            set(self.father_reasoner.super_object_properties(self.has_child, direct=True)),
+            structural_supers - {owl_object_property},
+        )
+        self.assertEqual(
+            set(self.father_reasoner.sub_object_properties(self.has_family_member, direct=True)),
+            set(structural.sub_object_properties(self.has_family_member, direct=True)),
+        )
+        # Another StructuralReasoner/owlready2 quirk: StructuralReasoner.sub_classes(person,
+        # only_named=True) itself leaks OWLObjectComplementOf(female) -- the anonymous
+        # equivalent-class expression of `male` -- despite only_named defaulting to True.
+        # object_property_domains/ranges build on sub_classes, so that leak propagates here too.
+        # Filter to named classes on both sides since RDFLibReasoner (working from asserted
+        # rdfs:domain/range + rdfs:subClassOf triples only) never produces anonymous expressions.
+        self.assertEqual(
+            set(self.father_reasoner.object_property_domains(self.has_child, direct=False)),
+            {c for c in structural.object_property_domains(self.has_child, direct=False) if isinstance(c, OWLClass)},
+        )
+        self.assertEqual(
+            set(self.father_reasoner.object_property_ranges(self.has_child, direct=False)),
+            {c for c in structural.object_property_ranges(self.has_child, direct=False) if isinstance(c, OWLClass)},
+        )
+
+
+class TestRDFLibReasonerEquivalenceDisjointnessAndDifferentIndividuals(unittest.TestCase):
+    """Cover equivalent/disjoint object & data properties, different_individuals, and
+    sub/super data properties, using KGs/Test/test_ontology.owl -- the only fixture in this
+    repo containing owl:AllDisjointProperties and owl:AllDifferent RDF-list axioms."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kg_path = Path("KGs/Test/test_ontology.owl")
+        if not cls.kg_path.exists():
+            raise unittest.SkipTest("Test ontology not available")
+
+        cls.onto = SyncOntology(str(cls.kg_path))
+        cls.reasoner = RDFLibReasoner(cls.onto)
+        cls.NS = "http://www.semanticweb.org/stefan/ontologies/2023/1/untitled-ontology-11#"
+        cls.r1 = OWLObjectProperty(IRI(cls.NS, "r1"))
+        cls.r5 = OWLObjectProperty(IRI(cls.NS, "r5"))
+        cls.dp1 = OWLDataProperty(IRI(cls.NS, "dp1"))
+        cls.dp2 = OWLDataProperty(IRI(cls.NS, "dp2"))
+        cls.dp3 = OWLDataProperty(IRI(cls.NS, "dp3"))
+        cls.l = OWLNamedIndividual(IRI(cls.NS, "l"))
+        cls.m = OWLNamedIndividual(IRI(cls.NS, "m"))
+
+    def test_disjoint_object_properties_from_all_disjoint_properties_axiom(self):
+        self.assertEqual(set(self.reasoner.disjoint_object_properties(self.r5)), {self.r1})
+        # Disjointness is symmetric.
+        self.assertEqual(set(self.reasoner.disjoint_object_properties(self.r1)), {self.r5})
+
+    def test_disjoint_data_properties_from_all_disjoint_properties_axiom(self):
+        self.assertEqual(set(self.reasoner.disjoint_data_properties(self.dp1)), {self.dp3})
+
+    def test_different_individuals_from_all_different_axiom(self):
+        self.assertEqual(set(self.reasoner.different_individuals(self.l)), {self.m})
+        self.assertEqual(set(self.reasoner.different_individuals(self.m)), {self.l})
+
+    def test_sub_super_data_properties(self):
+        self.assertEqual(set(self.reasoner.sub_data_properties(self.dp1, direct=True)), {self.dp2})
+        self.assertEqual(set(self.reasoner.super_data_properties(self.dp2, direct=True)), {self.dp1})
+
+    def test_equivalent_properties_return_empty_when_none_asserted(self):
+        # This fixture has no owl:equivalentProperty axioms -- confirms the query doesn't
+        # crash and correctly returns nothing rather than a false positive.
+        self.assertEqual(list(self.reasoner.equivalent_object_properties(self.r1)), [])
+        self.assertEqual(list(self.reasoner.equivalent_data_properties(self.dp1)), [])
+
+
+class TestRDFLibReasonerDataPropertyValues(unittest.TestCase):
+    """Cover data_property_values, and a direct regression test for owlapy#242, using
+    KGs/Biopax/biopax.owl."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.kg_path = Path("KGs/Biopax/biopax.owl")
+        if not cls.kg_path.exists():
+            raise unittest.SkipTest("Biopax ontology not available")
+
+        cls.onto = SyncOntology(str(cls.kg_path))
+        cls.reasoner = RDFLibReasoner(cls.onto)
+        cls.NS = "http://www.biopax.org/examples/glycolysis#"
+        cls.reaction = OWLNamedIndividual(IRI(cls.NS, "biochemicalReaction13"))
+        cls.ec_number = OWLDataProperty(IRI(cls.NS, "EC-NUMBER"))
+
+    def test_data_property_values_returns_typed_literal(self):
+        values = list(self.reasoner.data_property_values(self.reaction, self.ec_number))
+        self.assertEqual(values, [OWLLiteral("2.7.1.11")])
+
+    def test_object_property_values_on_participants_does_not_crash(self):
+        """Regression test for owlapy#242 / Ontolearn#598: StructuralReasoner crashes with
+        AttributeError("'Or' object has no attribute 'iri'") on this ontology's PARTICIPANTS
+        property, because owlready2 mishandles the punned DELTA-G property (declared as both
+        an ObjectProperty and an AnnotationProperty). RDFLibReasoner must not exhibit the same
+        failure since it queries the RDF graph directly and never touches owlready2."""
+        participants = OWLObjectProperty(IRI(self.NS, "PARTICIPANTS"))
+        individuals = set()
+        for local_name in ("biochemicalReaction", "catalysis", "modulation"):
+            individuals.update(self.reasoner.instances(OWLClass(IRI(self.NS, local_name))))
+
+        self.assertGreater(len(individuals), 0)
+        for ind in individuals:
+            list(self.reasoner.object_property_values(ind, participants))  # must not raise
 
 
 if __name__ == '__main__':
