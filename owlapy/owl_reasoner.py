@@ -85,6 +85,7 @@ class StructuralReasoner(AbstractOWLReasoner):
         self._negation_default: bool = negation_default
         self._sub_properties: bool = sub_properties
         self.__warned: int = 0
+        self._warned_malformed_props: Set[OWLObjectProperty] = set()
         self._init()
 
     def _init(self):
@@ -241,6 +242,22 @@ class StructuralReasoner(AbstractOWLReasoner):
         for _, val in relations:
             yield OWLLiteral(val)
 
+    def _named_individuals_from_property_values(self, values: Iterable, pe: OWLObjectProperty) \
+            -> Iterable[OWLNamedIndividual]:
+        """Map owlready2 property values to named individuals. Ontologies that illegally pun an entity as
+        several property types (e.g. ObjectProperty and AnnotationProperty) make owlready2's load-time repair
+        return internal class-expression nodes (e.g. owlready2.Or) as values of unrelated properties; those
+        carry no IRI and are skipped with a warning instead of crashing (issue #242)."""
+        for val in values:
+            if isinstance(val, owlready2.Thing):
+                yield OWLNamedIndividual(IRI.create(val.iri))
+            elif pe not in self._warned_malformed_props:
+                self._warned_malformed_props.add(pe)
+                logger.warning(f"Skipping malformed value of type {type(val).__name__!r} for object property "
+                               f"{pe.str}. The source ontology likely puns an entity as multiple property types "
+                               f"(illegal under OWL 2 DL), which owlready2 attempted to repair at load time. "
+                               f"Further malformed values for this property will be skipped silently.")
+
     def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = False) \
             -> Iterable[OWLNamedIndividual]:
         if isinstance(pe, OWLObjectProperty):
@@ -249,8 +266,7 @@ class StructuralReasoner(AbstractOWLReasoner):
             # Recommended to use direct=False because _get_values_for_individual does not give consistent result
             # for the case when there are equivalent object properties. At least until this is fixed on owlready2.
             retieval_func = p._get_values_for_individual if direct else p._get_indirect_values_for_individual
-            for val in retieval_func(i):
-                yield OWLNamedIndividual(IRI.create(val.iri))
+            yield from self._named_individuals_from_property_values(retieval_func(i), pe)
         elif isinstance(pe, OWLObjectInverseOf):
             p: owlready2.ObjectPropertyClass = self._world[pe.get_named_property().str]
             inverse_p = p.inverse_property
@@ -263,8 +279,8 @@ class StructuralReasoner(AbstractOWLReasoner):
                                               'inverse property is explicitly defined in the ontology.'
                                               f'Property: {pe}')
                 i: owlready2.Thing = self._world[ind.str]
-                for val in p._get_inverse_values_for_individual(i):
-                    yield OWLNamedIndividual(IRI.create(val.iri))
+                yield from self._named_individuals_from_property_values(
+                    p._get_inverse_values_for_individual(i), pe.get_named_property())
         else:
             raise NotImplementedError(pe)
 
