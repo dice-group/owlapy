@@ -9,12 +9,17 @@ from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 from owlapy.class_expression import (
     OWLClass,
     OWLClassExpression,
+    OWLObjectCardinalityRestriction,
+    OWLObjectExactCardinality,
+    OWLObjectMaxCardinality,
+    OWLObjectMinCardinality,
 )
 from owlapy.converter import owl_expression_to_sparql
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
+from owlapy.owl_literal import OWLLiteral, StringOWLDatatype
 from owlapy.owl_ontology import Ontology, SyncOntology
-from owlapy.owl_property import OWLObjectProperty, OWLObjectPropertyExpression
+from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +37,14 @@ class RDFLibReasoner(AbstractOWLReasoner):
     - SPARQL-based reasoning
     - Efficient graph traversal with caching
     - Support for basic OWL 2 class expressions
-    - Direct and indirect hierarchy navigation
+    - Direct and indirect hierarchy navigation for classes, object properties and data properties
+    - Domain/range, equivalence, disjointness and same/different-individual queries, including the
+      RDF-list-based owl:AllDisjointProperties/owl:AllDifferent axiom forms
 
     Limitations:
-    - Does not perform OWL 2 DL inference (use HermiT/Pellet via SyncReasoner for that)
+    - Does not perform OWL 2 DL inference/entailment (use HermiT/Pellet via SyncReasoner for that) —
+      results reflect asserted axioms plus simple transitive closure over sub-class/sub-property
+      hierarchies, not full description logic reasoning
     - Best suited for ontology navigation and simple instance retrieval
     - Does not handle all complex class expressions (nominals, cardinalities may be limited)
     """
@@ -48,6 +57,8 @@ class RDFLibReasoner(AbstractOWLReasoner):
         property_cache: bool = True,
         infer_property_values: bool = False,
         infer_data_property_values: bool = False,
+        negation_default: bool = True,
+        sub_properties: bool = False,
     ):
         """
         Initialize the RDFLib-based reasoner.
@@ -58,6 +69,13 @@ class RDFLibReasoner(AbstractOWLReasoner):
             property_cache: Whether to cache property assertions.
             infer_property_values: Whether to infer property values from sub-properties.
             infer_data_property_values: Whether to infer data property values.
+            negation_default: Whether to assume a missing fact means it is false ("closed world
+                view", the default) when evaluating OWLObjectComplementOf in instances(). If
+                False (open world), a complement never contributes any results, since nothing can
+                be inferred to NOT be a member of a class without an explicit negative assertion.
+            sub_properties: Whether instances() should also match individuals connected via a
+                sub-property of the property used in someValuesFrom/allValuesFrom/hasValue/
+                cardinality restrictions, mirroring StructuralReasoner's sub_properties flag.
         """
         if isinstance(ontology, str):
             ontology = SyncOntology(ontology)
@@ -69,11 +87,17 @@ class RDFLibReasoner(AbstractOWLReasoner):
         self._property_cache_enabled = property_cache
         self._infer_property_values = infer_property_values
         self._infer_data_property_values = infer_data_property_values
+        self._negation_default = negation_default
+        self._sub_properties = sub_properties
 
         # Cache structures
         self._cls_to_ind: Dict[OWLClass, FrozenSet[OWLNamedIndividual]] = {}
         self._subclass_cache: Dict[OWLClass, Set[OWLClass]] = {}
         self._superclass_cache: Dict[OWLClass, Set[OWLClass]] = {}
+        self._sub_obj_prop_cache: Dict[OWLObjectProperty, Set[OWLObjectProperty]] = {}
+        self._super_obj_prop_cache: Dict[OWLObjectProperty, Set[OWLObjectProperty]] = {}
+        self._sub_data_prop_cache: Dict[OWLDataProperty, Set[OWLDataProperty]] = {}
+        self._super_data_prop_cache: Dict[OWLDataProperty, Set[OWLDataProperty]] = {}
 
         self._init_graph()
 
@@ -167,9 +191,21 @@ class RDFLibReasoner(AbstractOWLReasoner):
         if isinstance(ce, OWLClass):
             return self._instances_of_class(ce)
 
+        # OWLObjectMaxCardinality / cardinality==0 restrictions need special-casing: see
+        # _at_most_cardinality_instances for why.
+        if isinstance(ce, OWLObjectCardinalityRestriction) and (
+                isinstance(ce, OWLObjectMaxCardinality) or ce.get_cardinality() == 0):
+            return self._at_most_cardinality_instances(ce)
+
         # For complex class expressions, use SPARQL conversion
         try:
-            sparql_query = owl_expression_to_sparql(ce, named_individuals=True)
+            sparql_query = owl_expression_to_sparql(
+                ce, named_individuals=True,
+                negation_default=self._negation_default,
+                sub_property_resolver=self._sub_property_resolver if self._sub_properties else None,
+                inverse_property_resolver=self._inverse_properties,
+                subclass_resolver=lambda c: self.sub_classes(c, direct=False),
+            )
             results = self._graph.query(sparql_query)
 
             individuals = set()
@@ -185,19 +221,70 @@ class RDFLibReasoner(AbstractOWLReasoner):
             # Fallback to manual filtering (slower)
             return self._instances_manual(ce)
 
+    def _at_most_cardinality_instances(self, ce: OWLObjectCardinalityRestriction) -> Iterable[OWLNamedIndividual]:
+        """Special-cased handling for OWLObjectMaxCardinality (any N) and cardinality==0 (any
+        restriction type).
+
+        The natural SPARQL translation of these needs to identify individuals with ZERO matching
+        relations, via a FILTER NOT EXISTS/OPTIONAL+!BOUND pattern correlated per candidate
+        individual. rdflib's SPARQL engine evaluates that as an expensive per-candidate check
+        (not a proper join), which is catastrophically slow on non-trivial ontologies -- confirmed
+        via profiling on KGs/Mutagenesis/mutagenesis.owl (14k+ candidate individuals). Instead,
+        compute set-theoretically in Python using only the fast, uncorrelated
+        OWLObjectMinCardinality path (which never needs a "zero match" branch, since >=1 and
+        >=N+1 both require at least one match to even appear as a GROUP BY row).
+        """
+        prop = ce.get_property()
+        n = ce.get_cardinality()
+        filler = ce.get_filler()
+
+        if isinstance(ce, OWLObjectMinCardinality):
+            # Only reached when n == 0: ">= 0" is trivially satisfied by every individual.
+            return iter(set(self._ontology.individuals_in_signature()))
+
+        at_least_one = OWLObjectMinCardinality(cardinality=1, property=prop, filler=filler)
+        s_any = set(self.instances(at_least_one))
+        s_zero = set(self._ontology.individuals_in_signature()) - s_any
+
+        if n == 0:
+            # Max/Exact cardinality 0: satisfied only by individuals with no matching relation.
+            return iter(s_zero)
+
+        at_least_n_plus_one = OWLObjectMinCardinality(cardinality=n + 1, property=prop, filler=filler)
+        s_too_many = set(self.instances(at_least_n_plus_one))
+        s_in_range = s_any - s_too_many
+
+        if isinstance(ce, OWLObjectExactCardinality):
+            return iter(s_in_range)
+        return iter(s_in_range | s_zero)  # OWLObjectMaxCardinality
+
     def _instances_of_class(self, cls: OWLClass) -> Iterable[OWLNamedIndividual]:
         """Get instances of a named class using SPARQL."""
         # Check cache first
         if self._class_cache_enabled and cls in self._cls_to_ind:
             return iter(self._cls_to_ind[cls])
 
-        cls_uri = URIRef(cls.str)
+        if cls.is_owl_thing():
+            # owl:Thing matches every individual; individuals are essentially never explicitly
+            # asserted rdf:type owl:Thing, so a `?ind a owl:Thing` SPARQL query would wrongly
+            # return nothing. individuals_in_signature() is the reliable source of truth here.
+            individuals = frozenset(self._ontology.individuals_in_signature())
+            if self._class_cache_enabled:
+                self._cls_to_ind[cls] = individuals
+            return iter(individuals)
+
+        # Individuals may be typed only at a subclass of cls (e.g. a specific atom-type subclass
+        # rather than the general `Atom` class) -- expand via a bounded VALUES list rather than a
+        # flat `?ind a <cls>` triple, which would silently miss them.
+        classes = [cls] + list(self.sub_classes(cls, direct=False))
+        values = " ".join(f"<{c.str}>" for c in classes)
 
         # SPARQL query for instances
         query = f"""
         SELECT DISTINCT ?ind
         WHERE {{
-            ?ind a <{cls_uri}> .
+            ?ind a ?type .
+            VALUES ?type {{ {values} }}
             FILTER(isIRI(?ind))
         }}
         """
@@ -213,6 +300,29 @@ class RDFLibReasoner(AbstractOWLReasoner):
             self._cls_to_ind[cls] = individuals
 
         return iter(individuals)
+
+    def _sub_property_resolver(self, prop):
+        """Resolver passed to owl_expression_to_sparql when sub_properties=True."""
+        if isinstance(prop, OWLObjectProperty):
+            return self.sub_object_properties(prop, direct=False)
+        return self.sub_data_properties(prop, direct=False)
+
+    def _inverse_properties(self, prop: OWLObjectProperty) -> Iterable[OWLObjectProperty]:
+        """Declared owl:inverseOf partner(s) of prop (bidirectional -- only one direction may be
+        physically asserted). Always passed as inverse_property_resolver to owl_expression_to_sparql
+        -- this fills in missing OWL entailment, it isn't an opt-in StructuralReasoner-parity flag."""
+        prop_uri = URIRef(prop.str)
+        query = f"""
+        SELECT DISTINCT ?inv
+        WHERE {{
+            {{ <{prop_uri}> owl:inverseOf ?inv }}
+            UNION
+            {{ ?inv owl:inverseOf <{prop_uri}> }}
+            FILTER(isIRI(?inv) && ?inv != <{prop_uri}>)
+        }}
+        """
+        results = self._graph.query(query)
+        return [OWLObjectProperty(IRI.create(str(row.inv))) for row in results]
 
     def _instances_manual(self, ce: OWLClassExpression) -> Iterable[OWLNamedIndividual]:
         """Manual instance checking for complex expressions (fallback)."""
@@ -475,17 +585,28 @@ class RDFLibReasoner(AbstractOWLReasoner):
         Returns:
             Iterable of individuals that are values of the property for ind.
         """
+        if isinstance(pe, OWLObjectInverseOf):
+            return self._object_property_values_query(ind, pe.get_named_property(), forward=False)
         if not isinstance(pe, OWLObjectProperty):
             logger.warning("Complex property expressions not fully supported")
             return iter([])
 
+        return self._object_property_values_query(ind, pe, forward=True)
+
+    def _object_property_values_query(self, ind: OWLNamedIndividual, prop: OWLObjectProperty, forward: bool) \
+            -> Iterable[OWLNamedIndividual]:
         ind_uri = URIRef(ind.str)
-        prop_uri = URIRef(pe.str)
+        # Expand the predicate with a reverse (`^`) alternative for each declared owl:inverseOf
+        # partner, so prop is matched even if it has no physically-asserted triples of its own but
+        # a declared inverse does (mirrors the same expansion done in converter.py's render()).
+        alternatives = [f"<{prop.str}>"] + [f"^<{inv.str}>" for inv in self._inverse_properties(prop)]
+        predicate = "(" + "|".join(alternatives) + ")"
+        triple = f"<{ind_uri}> {predicate} ?value ." if forward else f"?value {predicate} <{ind_uri}> ."
 
         query = f"""
         SELECT DISTINCT ?value
         WHERE {{
-            <{ind_uri}> <{prop_uri}> ?value .
+            {triple}
             FILTER(isIRI(?value))
         }}
         """
@@ -501,6 +622,10 @@ class RDFLibReasoner(AbstractOWLReasoner):
         self._cls_to_ind.clear()
         self._subclass_cache.clear()
         self._superclass_cache.clear()
+        self._sub_obj_prop_cache.clear()
+        self._super_obj_prop_cache.clear()
+        self._sub_data_prop_cache.clear()
+        self._super_data_prop_cache.clear()
         self._init_graph()
 
     def get_root_ontology(self) -> AbstractOWLOntology:
@@ -546,30 +671,97 @@ class RDFLibReasoner(AbstractOWLReasoner):
 
         return iter(types_list)
 
-    def data_property_domains(self, pe, direct: bool = False):
+    def _property_domains_or_ranges(self, pe, direct: bool, predicate: str) -> Iterable[OWLClassExpression]:
+        """Shared SPARQL/semantics for {data,object}_property_domains and object_property_ranges.
+
+        Mirrors StructuralReasoner's actual behavior (owl_reasoner.py): direct=True yields only the
+        asserted domain/range classes that are not themselves a subclass of another asserted class;
+        direct=False additionally yields every subclass of each asserted class.
+        """
+        prop_uri = URIRef(pe.str)
+        query = f"""
+        SELECT DISTINCT ?cls
+        WHERE {{
+            <{prop_uri}> {predicate} ?cls .
+            FILTER(isIRI(?cls))
+        }}
+        """
+        results = self._graph.query(query)
+        asserted = {OWLClass(IRI.create(str(row.cls))) for row in results}
+
+        sub_of_asserted = set()
+        for c in asserted:
+            sub_of_asserted.update(self.sub_classes(c, direct=False))
+
+        yield from asserted - sub_of_asserted
+        if not direct:
+            yield from sub_of_asserted
+
+    def data_property_domains(self, pe: OWLDataProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         """Gets the class expressions that are the domains of this data property."""
-        logger.warning("data_property_domains not fully implemented")
-        return iter([])
+        return self._property_domains_or_ranges(pe, direct, "rdfs:domain")
 
-    def object_property_domains(self, pe, direct: bool = False):
+    def object_property_domains(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         """Gets the class expressions that are the domains of this object property."""
-        logger.warning("object_property_domains not fully implemented")
-        return iter([])
+        return self._property_domains_or_ranges(pe, direct, "rdfs:domain")
 
-    def object_property_ranges(self, pe, direct: bool = False):
+    def object_property_ranges(self, pe: OWLObjectProperty, direct: bool = False) -> Iterable[OWLClassExpression]:
         """Gets the class expressions that are the ranges of this object property."""
-        logger.warning("object_property_ranges not fully implemented")
-        return iter([])
+        return self._property_domains_or_ranges(pe, direct, "rdfs:range")
 
-    def data_property_values(self, e, pe):
+    def data_property_values(self, e: OWLNamedIndividual, pe: OWLDataProperty) -> Iterable[OWLLiteral]:
         """Gets the data property values for the specified entity and data property."""
-        logger.warning("data_property_values not fully implemented")
-        return iter([])
+        e_uri = URIRef(e.str)
+        prop_uri = URIRef(pe.str)
 
-    def different_individuals(self, ind: OWLNamedIndividual):
+        query = f"""
+        SELECT DISTINCT ?value
+        WHERE {{
+            <{e_uri}> <{prop_uri}> ?value .
+            FILTER(isLiteral(?value))
+        }}
+        """
+        results = self._graph.query(query)
+        for row in results:
+            lit = row.value
+            try:
+                yield OWLLiteral(lit.toPython())
+            except NotImplementedError:
+                # Datatypes rdflib can't map to a native Python type (e.g. xsd:duration, or a
+                # custom/unrecognized datatype URI, which toPython() returns unchanged) fall back
+                # to a plain string literal rather than dropping the value.
+                yield OWLLiteral(str(lit), StringOWLDatatype)
+
+    def different_individuals(self, ind: OWLNamedIndividual) -> Iterable[OWLNamedIndividual]:
         """Gets the individuals that are different from the specified individual."""
-        logger.warning("different_individuals not fully implemented")
-        return iter([])
+        ind_uri = URIRef(ind.str)
+
+        query = f"""
+        SELECT DISTINCT ?other
+        WHERE {{
+            {{ <{ind_uri}> owl:differentFrom ?other }}
+            UNION
+            {{ ?other owl:differentFrom <{ind_uri}> }}
+            UNION
+            {{
+                ?axiom a owl:AllDifferent ;
+                       owl:distinctMembers ?list .
+                ?list rdf:rest*/rdf:first <{ind_uri}> .
+                ?list rdf:rest*/rdf:first ?other .
+            }}
+            UNION
+            {{
+                ?axiom a owl:AllDifferent ;
+                       owl:members ?list .
+                ?list rdf:rest*/rdf:first <{ind_uri}> .
+                ?list rdf:rest*/rdf:first ?other .
+            }}
+            FILTER(isIRI(?other) && ?other != <{ind_uri}>)
+        }}
+        """
+
+        results = self._graph.query(query)
+        return (OWLNamedIndividual(IRI.create(str(row.other))) for row in results)
 
     def same_individuals(self, ind: OWLNamedIndividual):
         """Gets the individuals that are the same as the specified individual."""
@@ -588,45 +780,174 @@ class RDFLibReasoner(AbstractOWLReasoner):
         results = self._graph.query(query)
         return (OWLNamedIndividual(IRI.create(str(row.same))) for row in results)
 
-    def equivalent_object_properties(self, op):
+    def _equivalent_properties(self, pe, wrap_cls) -> Iterable:
+        """Shared SPARQL for equivalent_object_properties/equivalent_data_properties."""
+        if not isinstance(pe, wrap_cls):
+            logger.warning("equivalent properties for non-named property expressions not fully implemented")
+            return iter([])
+
+        prop_uri = URIRef(pe.str)
+        query = f"""
+        SELECT DISTINCT ?equiv
+        WHERE {{
+            {{ <{prop_uri}> owl:equivalentProperty ?equiv }}
+            UNION
+            {{ ?equiv owl:equivalentProperty <{prop_uri}> }}
+            FILTER(isIRI(?equiv) && ?equiv != <{prop_uri}>)
+        }}
+        """
+        results = self._graph.query(query)
+        return (wrap_cls(IRI.create(str(row.equiv))) for row in results)
+
+    def equivalent_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
         """Gets the object properties that are equivalent to the specified object property."""
-        logger.warning("equivalent_object_properties not fully implemented")
-        return iter([])
+        return self._equivalent_properties(op, OWLObjectProperty)
 
-    def equivalent_data_properties(self, dp):
+    def equivalent_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
         """Gets the data properties that are equivalent to the specified data property."""
-        logger.warning("equivalent_data_properties not fully implemented")
-        return iter([])
+        return self._equivalent_properties(dp, OWLDataProperty)
 
-    def disjoint_object_properties(self, op):
+    def _disjoint_properties(self, pe, wrap_cls) -> Iterable:
+        """Shared SPARQL for disjoint_object_properties/disjoint_data_properties.
+
+        Handles both pairwise owl:propertyDisjointWith triples and the RDF-list-based
+        owl:AllDisjointProperties/owl:members form (the only form seen in this repo's test
+        ontologies), using the `rdf:rest*/rdf:first` property-path trick to test list membership
+        without walking the RDF collection in Python.
+        """
+        if not isinstance(pe, wrap_cls):
+            logger.warning("disjoint properties for non-named property expressions not fully implemented")
+            return iter([])
+
+        prop_uri = URIRef(pe.str)
+        query = f"""
+        SELECT DISTINCT ?other
+        WHERE {{
+            {{ <{prop_uri}> owl:propertyDisjointWith ?other }}
+            UNION
+            {{ ?other owl:propertyDisjointWith <{prop_uri}> }}
+            UNION
+            {{
+                ?axiom a owl:AllDisjointProperties ;
+                       owl:members ?list .
+                ?list rdf:rest*/rdf:first <{prop_uri}> .
+                ?list rdf:rest*/rdf:first ?other .
+            }}
+            FILTER(isIRI(?other) && ?other != <{prop_uri}>)
+        }}
+        """
+        results = self._graph.query(query)
+        return (wrap_cls(IRI.create(str(row.other))) for row in results)
+
+    def disjoint_object_properties(self, op: OWLObjectPropertyExpression) -> Iterable[OWLObjectPropertyExpression]:
         """Gets the object properties that are disjoint with the specified object property."""
-        logger.warning("disjoint_object_properties not fully implemented")
-        return iter([])
+        return self._disjoint_properties(op, OWLObjectProperty)
 
-    def disjoint_data_properties(self, dp):
+    def disjoint_data_properties(self, dp: OWLDataProperty) -> Iterable[OWLDataProperty]:
         """Gets the data properties that are disjoint with the specified data property."""
-        logger.warning("disjoint_data_properties not fully implemented")
-        return iter([])
+        return self._disjoint_properties(dp, OWLDataProperty)
 
-    def sub_data_properties(self, dp, direct: bool = False):
-        """Gets the sub data properties of the specified data property."""
-        logger.warning("sub_data_properties not fully implemented")
-        return iter([])
+    def _direct_sub_properties(self, prop, wrap_cls, cache: Dict) -> Set:
+        """Direct rdfs:subPropertyOf children of prop, using cache."""
+        if self._property_cache_enabled and prop in cache:
+            return cache[prop]
 
-    def super_data_properties(self, dp, direct: bool = False):
-        """Gets the super data properties of the specified data property."""
-        logger.warning("super_data_properties not fully implemented")
-        return iter([])
+        prop_uri = URIRef(prop.str)
+        query = f"""
+        SELECT DISTINCT ?sub
+        WHERE {{
+            ?sub rdfs:subPropertyOf <{prop_uri}> .
+            FILTER(isIRI(?sub))
+        }}
+        """
+        results = self._graph.query(query)
+        subs = {wrap_cls(IRI.create(str(row.sub))) for row in results}
 
-    def sub_object_properties(self, op, direct: bool = False):
+        if self._property_cache_enabled:
+            cache[prop] = subs
+        return subs
+
+    def _direct_super_properties(self, prop, wrap_cls, cache: Dict) -> Set:
+        """Direct rdfs:subPropertyOf parents of prop, using cache."""
+        if self._property_cache_enabled and prop in cache:
+            return cache[prop]
+
+        prop_uri = URIRef(prop.str)
+        query = f"""
+        SELECT DISTINCT ?super
+        WHERE {{
+            <{prop_uri}> rdfs:subPropertyOf ?super .
+            FILTER(isIRI(?super))
+        }}
+        """
+        results = self._graph.query(query)
+        supers = {wrap_cls(IRI.create(str(row.super))) for row in results}
+
+        if self._property_cache_enabled:
+            cache[prop] = supers
+        return supers
+
+    def _all_related_properties(self, prop, direct_fn) -> Iterable:
+        """Iterative (non-recursive) transitive closure over a direct sub/super relation.
+
+        Mirrors _all_subclasses/_all_superclasses: no recursion (avoids stack-overflow/circular
+        dependency issues), and de-duplicates yielded results.
+        """
+        seen = set()
+        yielded = set()
+        to_process = {prop}
+
+        while to_process:
+            current = to_process.pop()
+            if current in seen:
+                continue
+            seen.add(current)
+
+            direct = direct_fn(current)
+            to_process.update(direct - seen)
+
+            for item in direct:
+                if item != prop and item not in yielded:
+                    yielded.add(item)
+                    yield item
+
+    def sub_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) \
+            -> Iterable[OWLObjectPropertyExpression]:
         """Gets the sub object properties of the specified object property."""
-        logger.warning("sub_object_properties not fully implemented")
-        return iter([])
+        if not isinstance(op, OWLObjectProperty):
+            logger.warning("sub_object_properties for non-named property expressions not fully implemented")
+            return iter([])
 
-    def super_object_properties(self, op, direct: bool = False):
+        def direct_fn(p):
+            return self._direct_sub_properties(p, OWLObjectProperty, self._sub_obj_prop_cache)
+
+        return iter(direct_fn(op)) if direct else self._all_related_properties(op, direct_fn)
+
+    def super_object_properties(self, op: OWLObjectPropertyExpression, direct: bool = False) \
+            -> Iterable[OWLObjectPropertyExpression]:
         """Gets the super object properties of the specified object property."""
-        logger.warning("super_object_properties not fully implemented")
-        return iter([])
+        if not isinstance(op, OWLObjectProperty):
+            logger.warning("super_object_properties for non-named property expressions not fully implemented")
+            return iter([])
+
+        def direct_fn(p):
+            return self._direct_super_properties(p, OWLObjectProperty, self._super_obj_prop_cache)
+
+        return iter(direct_fn(op)) if direct else self._all_related_properties(op, direct_fn)
+
+    def sub_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
+        """Gets the sub data properties of the specified data property."""
+        def direct_fn(p):
+            return self._direct_sub_properties(p, OWLDataProperty, self._sub_data_prop_cache)
+
+        return iter(direct_fn(dp)) if direct else self._all_related_properties(dp, direct_fn)
+
+    def super_data_properties(self, dp: OWLDataProperty, direct: bool = False) -> Iterable[OWLDataProperty]:
+        """Gets the super data properties of the specified data property."""
+        def direct_fn(p):
+            return self._direct_super_properties(p, OWLDataProperty, self._super_data_prop_cache)
+
+        return iter(direct_fn(dp)) if direct else self._all_related_properties(dp, direct_fn)
 
     def __repr__(self):
         return f"RDFLibReasoner({self._ontology})"
