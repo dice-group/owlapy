@@ -1,4 +1,10 @@
-"""OWL Restrictions"""
+"""OWL Restrictions.
+
+Note: several restriction constructors below take a parameter named ``property``,
+which shadows the Python built-in ``property`` decorator within that scope. This
+is intentional -- it mirrors the OWL API's terminology (`getProperty()`) and the
+`get_property()` accessor defined on `OWLRestriction` -- not an oversight.
+"""
 from abc import ABCMeta, abstractmethod
 from datetime import date, datetime
 from typing import Final, Generic, Iterable, Sequence, TypeVar, Union
@@ -151,7 +157,6 @@ class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpressi
     __slots__ = ()
 
     _property: OWLObjectPropertyExpression
-    # @TODO: CD: property shows the in-built function
 
     @abstractmethod
     def __init__(self, cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
@@ -294,7 +299,6 @@ class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
     individuals that are instances of CE. (https://www.w3.org/TR/owl2-syntax/#Universal_Quantification)"""
     __slots__ = '_property', '_filler'
     type_index: Final = 3006
-    # @TODO: CD: property shows the in-built function
     def __init__(self, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
         super().__init__(filler)
         self._property = property
@@ -365,7 +369,6 @@ class OWLObjectHasValue(OWLHasValueRestriction[OWLIndividual], OWLObjectRestrict
 
     _property: OWLObjectPropertyExpression
     _v: OWLIndividual
-    # @TODO: CD: property shows the in-built function
     def __init__(self, property: OWLObjectPropertyExpression, individual: OWLIndividual):
         """
         Args:
@@ -497,7 +500,6 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
     __slots__ = ()
 
     _property: OWLDataPropertyExpression
-    # @TODO: CD: property shows the in-built function
 
     @abstractmethod
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
@@ -533,7 +535,6 @@ class OWLDataMinCardinality(OWLDataCardinalityRestriction):
     __slots__ = '_cardinality', '_filler', '_property'
 
     type_index: Final = 3015
-    # @TODO: CD: property shows the in-built function
 
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """
@@ -557,7 +558,6 @@ class OWLDataMaxCardinality(OWLDataCardinalityRestriction):
     __slots__ = '_cardinality', '_filler', '_property'
 
     type_index: Final = 3017
-    # @TODO: CD: property shows the in-built function
 
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """
@@ -581,7 +581,6 @@ class OWLDataExactCardinality(OWLDataCardinalityRestriction):
     __slots__ = '_cardinality', '_filler', '_property'
 
     type_index: Final = 3016
-    # @TODO: CD: property shows the in-built function
 
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """
@@ -618,7 +617,6 @@ class OWLDataSomeValuesFrom(OWLQuantifiedDataRestriction):
     type_index: Final = 3012
 
     _property: OWLDataPropertyExpression
-    # @TODO: CD: property shows the in-built function
 
     def __init__(self, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """Gets an OWLDataSomeValuesFrom restriction.
@@ -663,7 +661,6 @@ class OWLDataAllValuesFrom(OWLQuantifiedDataRestriction):
     type_index: Final = 3013
 
     _property: OWLDataPropertyExpression
-    # @TODO:CD:property shows the in-built function
 
     def __init__(self, property: OWLDataPropertyExpression, filler: OWLDataRange):
         """Gets an OWLDataAllValuesFrom restriction.
@@ -710,7 +707,6 @@ class OWLDataHasValue(OWLHasValueRestriction[OWLLiteral], OWLDataRestriction):
     type_index: Final = 3014
 
     _property: OWLDataPropertyExpression
-    # @TODO: CD: property shows the in-built function
 
     def __init__(self, property: OWLDataPropertyExpression, value: OWLLiteral):
         """Gets an OWLDataHasValue restriction.

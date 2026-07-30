@@ -16,21 +16,37 @@ from owlapy.class_expression import (
 )
 from owlapy.iri import IRI
 from owlapy.owl_axiom import (
+    OWLAnnotation,
+    OWLAnnotationAssertionAxiom,
+    OWLAnnotationProperty,
+    OWLAnnotationPropertyDomainAxiom,
+    OWLAnnotationPropertyRangeAxiom,
     OWLClassAssertionAxiom,
     OWLDataPropertyAssertionAxiom,
     OWLDataPropertyDomainAxiom,
     OWLDataPropertyRangeAxiom,
+    OWLDatatypeDefinitionAxiom,
     OWLDeclarationAxiom,
+    OWLDifferentIndividualsAxiom,
     OWLDisjointClassesAxiom,
+    OWLDisjointUnionAxiom,
     OWLEquivalentClassesAxiom,
+    OWLFunctionalDataPropertyAxiom,
     OWLFunctionalObjectPropertyAxiom,
+    OWLHasKeyAxiom,
+    OWLInverseObjectPropertiesAxiom,
     OWLObjectPropertyAssertionAxiom,
     OWLObjectPropertyDomainAxiom,
     OWLObjectPropertyRangeAxiom,
+    OWLSameIndividualAxiom,
+    OWLSubAnnotationPropertyOfAxiom,
     OWLSubClassOfAxiom,
+    OWLSubObjectPropertyOfAxiom,
+    OWLSubPropertyChainAxiom,
+    OWLTransitiveObjectPropertyAxiom,
 )
 from owlapy.owl_individual import OWLAnonymousIndividual, OWLNamedIndividual
-from owlapy.owl_literal import IntegerOWLDatatype, OWLLiteral
+from owlapy.owl_literal import IntegerOWLDatatype, OWLLiteral, StringOWLDatatype
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
 from owlapy.utils import SignatureExtractor
 
@@ -153,11 +169,73 @@ class TestAxiomSignature(unittest.TestCase):
         self.assertIn(axioms[1], extracted)
         self.assertNotIn(axioms[2], extracted)
 
-    def test_unimplemented_axiom_type_raises_not_implemented_error(self):
-        """Axiom types outside the core set (see issue #231) should fail loudly, not silently
-        return an incomplete/wrong signature."""
-        with self.assertRaises(NotImplementedError):
-            OWLFunctionalObjectPropertyAxiom(self.has_child).signature()
+class TestExtendedAxiomSignature(unittest.TestCase):
+    """Covers the axiom types added to close out https://github.com/dice-group/owlapy/issues/231."""
+
+    def setUp(self):
+        self.person = OWLClass(IRI(NS, "Person"))
+        self.student = OWLClass(IRI(NS, "Student"))
+        self.worker = OWLClass(IRI(NS, "Worker"))
+        self.has_child = OWLObjectProperty(IRI(NS, "hasChild"))
+        self.knows = OWLObjectProperty(IRI(NS, "knows"))
+        self.age = OWLDataProperty(IRI(NS, "age"))
+        self.alice = OWLNamedIndividual(IRI(NS, "Alice"))
+        self.bob = OWLNamedIndividual(IRI(NS, "Bob"))
+        self.label = OWLAnnotationProperty(IRI(NS, "label"))
+
+    def test_object_property_characteristic_axioms(self):
+        self.assertEqual(OWLFunctionalObjectPropertyAxiom(self.has_child).signature(), {self.has_child})
+        self.assertEqual(OWLTransitiveObjectPropertyAxiom(self.has_child).signature(), {self.has_child})
+
+    def test_data_property_characteristic_axiom(self):
+        self.assertEqual(OWLFunctionalDataPropertyAxiom(self.age).signature(), {self.age})
+
+    def test_sub_object_property_of_axiom(self):
+        self.assertEqual(OWLSubObjectPropertyOfAxiom(self.has_child, self.knows).signature(),
+                          {self.has_child, self.knows})
+
+    def test_sub_property_chain_axiom(self):
+        ax = OWLSubPropertyChainAxiom([self.has_child, self.knows], self.knows)
+        self.assertEqual(ax.signature(), {self.has_child, self.knows})
+
+    def test_same_and_different_individuals_axioms(self):
+        self.assertEqual(OWLSameIndividualAxiom([self.alice, self.bob]).signature(), {self.alice, self.bob})
+        self.assertEqual(OWLDifferentIndividualsAxiom([self.alice, self.bob]).signature(), {self.alice, self.bob})
+
+    def test_inverse_object_properties_axiom(self):
+        self.assertEqual(OWLInverseObjectPropertiesAxiom(self.has_child, self.knows).signature(),
+                          {self.has_child, self.knows})
+
+    def test_disjoint_union_axiom(self):
+        ax = OWLDisjointUnionAxiom(self.person, [self.student, self.worker])
+        self.assertEqual(ax.signature(), {self.person, self.student, self.worker})
+
+    def test_has_key_axiom(self):
+        ax = OWLHasKeyAxiom(self.person, [self.has_child, self.age])
+        self.assertEqual(ax.signature(), {self.person, self.has_child, self.age})
+
+    def test_datatype_definition_axiom(self):
+        ax = OWLDatatypeDefinitionAxiom(IntegerOWLDatatype, StringOWLDatatype)
+        self.assertEqual(ax.signature(), {IntegerOWLDatatype, StringOWLDatatype})
+
+    def test_annotation_assertion_axiom_with_literal_value(self):
+        ax = OWLAnnotationAssertionAxiom(self.person.iri, OWLAnnotation(self.label, OWLLiteral("Person")))
+        self.assertEqual(ax.signature(), {self.label, StringOWLDatatype})
+
+    def test_annotation_assertion_axiom_iri_subject_and_value_excluded(self):
+        """A raw IRI subject/value contributes nothing -- only the annotation property (an OWLEntity)
+        is part of the signature."""
+        ax = OWLAnnotationAssertionAxiom(self.person.iri, OWLAnnotation(self.label, IRI(NS, "SomeThing")))
+        self.assertEqual(ax.signature(), {self.label})
+
+    def test_sub_annotation_property_of_axiom(self):
+        super_label = OWLAnnotationProperty(IRI(NS, "superLabel"))
+        ax = OWLSubAnnotationPropertyOfAxiom(self.label, super_label)
+        self.assertEqual(ax.signature(), {self.label, super_label})
+
+    def test_annotation_property_domain_and_range_axioms(self):
+        self.assertEqual(OWLAnnotationPropertyDomainAxiom(self.label, self.person.iri).signature(), {self.label})
+        self.assertEqual(OWLAnnotationPropertyRangeAxiom(self.label, self.person.iri).signature(), {self.label})
 
 
 if __name__ == '__main__':
