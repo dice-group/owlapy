@@ -1647,9 +1647,21 @@ class SyncOntology(AbstractOWLOntology):
                 os.remove(tmp_path)
 
 
+def _rdflib_literal_to_owl_literal(literal: "rdflib.term.Literal") -> OWLLiteral:
+    """Convert an rdflib ``Literal`` into an :class:`OWLLiteral`, preserving its datatype where possible."""
+    try:
+        return OWLLiteral(literal.toPython())
+    except NotImplementedError:
+        # Datatypes rdflib can't map to a native Python type (e.g. xsd:duration, or a
+        # custom/unrecognized datatype URI, which toPython() returns unchanged) fall back
+        # to a plain string literal rather than dropping the value.
+        return OWLLiteral(str(literal), StringOWLDatatype)
+
+
 class RDFLibOntology(AbstractOWLOntology):
 
     def __init__(self, path: str, load: bool = True):
+        self._path = path
         if load:
             assert os.path.exists(path)
             import rdflib
@@ -1657,6 +1669,8 @@ class RDFLibOntology(AbstractOWLOntology):
             self.rdflib_graph = rdflib.Graph().parse(path)
             self.str_owl_classes = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_individuals = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual) if not isinstance(x, rdflib.term.BNode)]
+            self.str_owl_object_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.ObjectProperty) if not isinstance(x, rdflib.term.BNode)]
+            self.str_owl_data_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.DatatypeProperty) if not isinstance(x, rdflib.term.BNode)]
         else:  # create a blank rdf ontology
             raise NotImplementedError("Currently supports only loading an existing ontology")
 
@@ -1711,125 +1725,95 @@ class RDFLibOntology(AbstractOWLOntology):
                         axiom = OWLObjectPropertyAssertionAxiom(OWLNamedIndividual(str_owl_individual),
                                                                              OWLObjectProperty(str_iri_predicate),
                                                                              OWLNamedIndividual(str_iri_object))
+                    elif isinstance(o, rdflib.term.Literal):
+                        axiom = OWLDataPropertyAssertionAxiom(OWLNamedIndividual(str_owl_individual),
+                                                               OWLDataProperty(str_iri_predicate),
+                                                               _rdflib_literal_to_owl_literal(o))
                     else:
-
-                        raise NotImplementedError("")
+                        raise NotImplementedError(f"Unsure how to parse:\t{str_owl_individual}\t{str_iri_predicate}\t{o}")
                     if axiom:
                         results.append(axiom)
         return results
 
     def classes_in_signature(self) -> Iterable[OWLClass]:
-        raise NotImplementedError()
-        for c in self._onto.classes():
-            yield OWLClass(IRI.create(c.iri))
+        for str_iri in self.str_owl_classes:
+            yield OWLClass(str_iri)
 
     def data_properties_in_signature(self) -> Iterable[OWLDataProperty]:
-        raise NotImplementedError()
-
-        for dp in self._onto.data_properties():
-            yield OWLDataProperty(IRI.create(dp.iri))
+        for str_iri in self.str_owl_data_properties:
+            yield OWLDataProperty(str_iri)
 
     def object_properties_in_signature(self) -> Iterable[OWLObjectProperty]:
-        raise NotImplementedError()
-
-        for op in self._onto.object_properties():
-            yield OWLObjectProperty(IRI.create(op.iri))
+        for str_iri in self.str_owl_object_properties:
+            yield OWLObjectProperty(str_iri)
 
     def properties_in_signature(self) -> Iterable[OWLProperty]:
-        raise NotImplementedError()
-
         yield from self.object_properties_in_signature()
         yield from self.data_properties_in_signature()
 
     def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
-        raise NotImplementedError()
+        for str_iri in self.str_owl_individuals:
+            yield OWLNamedIndividual(str_iri)
 
-        for (s,p,o) in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
-            logger.debug(f"{s} {p} {o}")
-        # for i in self._onto.individuals():
-        #    yield OWLNamedIndividual(IRI.create(i.iri))
+    def get_abox_axioms_between_individuals(self) -> Iterable[OWLObjectPropertyAssertionAxiom]:
+        return [axiom for axiom in self.get_abox_axioms() if isinstance(axiom, OWLObjectPropertyAssertionAxiom)]
 
+    def get_abox_axioms_between_individuals_and_classes(self) -> Iterable[OWLClassAssertionAxiom]:
+        return [axiom for axiom in self.get_abox_axioms() if isinstance(axiom, OWLClassAssertionAxiom)]
 
-    def get_abox_axioms_between_individuals(self)->Iterable:
-        # @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties
-        raise NotImplementedError("will be implemented in future")
-    def get_abox_axioms_between_individuals_and_classes(self)->Iterable:
-        # @TODO: CD: Return all type information about individuals, i.e., individual type Class
-        raise NotImplementedError("will be implemented in future")
-    # @TODO:CD:Unsure it is working
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
-        raise NotImplementedError("will be implemented in future")
-        c_x: owlready2.ThingClass = self._world[c.str]
-        # TODO: Should this also return EquivalentClasses general class axioms? Compare to java owlapi
-        for ec_x in c_x.equivalent_to:
-            yield OWLEquivalentClassesAxiom([c, _parse_concept_to_owlapy(ec_x)])
-    # @TODO:CD:Unsure it is working
+        c_uri = rdflib.URIRef(c.str)
+        seen = set()
+        for o in self.rdflib_graph.objects(c_uri, rdflib.OWL.equivalentClass):
+            if isinstance(o, rdflib.term.URIRef) and o not in seen:
+                seen.add(o)
+                yield OWLEquivalentClassesAxiom([c, OWLClass(o.n3()[1:-1])])
+        for s in self.rdflib_graph.subjects(rdflib.OWL.equivalentClass, c_uri):
+            if isinstance(s, rdflib.term.URIRef) and s not in seen:
+                seen.add(s)
+                yield OWLEquivalentClassesAxiom([c, OWLClass(s.n3()[1:-1])])
+
     def general_class_axioms(self) -> Iterable[OWLClassAxiom]:
-        raise NotImplementedError("will be implemented in future")
-        # TODO: At the moment owlready2 only supports SubClassOf general class axioms. (18.02.2023)
-        for ca in self._onto.general_class_axioms():
-            yield from (OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(c))
-                        for c in ca.is_a)
+        # General class axioms are SubClassOf/EquivalentClasses/DisjointClasses axioms with a
+        # complex (non-atomic) class expression as an operand. Recognizing them requires
+        # reconstructing an OWLClassExpression tree from blank-node RDF structures
+        # (owl:Restriction, owl:intersectionOf, owl:unionOf, ...), which this triple-based loader
+        # does not do -- see get_tbox_axioms(), which likewise skips every blank-node operand and
+        # only understands axioms between two named classes.
+        raise NotImplementedError("RDFLibOntology does not support parsing complex (blank-node) "
+                                   "class expressions, so general class axioms cannot be retrieved.")
 
     def data_property_domain_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyDomainAxiom]:
-        raise NotImplementedError("will be implemented in future")
-        p_x: owlready2.DataPropertyClass = self._world[pe.str]
-        domains = set(p_x.domains_indirect())
-        if len(domains) == 0:
-            yield OWLDataPropertyDomainAxiom(pe, OWLThing)
-        else:
-            for dom in domains:
-                if isinstance(dom, (owlready2.ThingClass, owlready2.ClassConstruct)):
-                    yield OWLDataPropertyDomainAxiom(pe, _parse_concept_to_owlapy(dom))
-                else:
-                    logger.warning("Construct %s not implemented at %s", dom, pe)
-                    pass  # XXX TODO
+        pe_uri = rdflib.URIRef(pe.str)
+        for dom in self.rdflib_graph.objects(pe_uri, rdflib.RDFS.domain):
+            if isinstance(dom, rdflib.term.URIRef):
+                yield OWLDataPropertyDomainAxiom(pe, OWLClass(dom.n3()[1:-1]))
+            else:
+                logger.warning("Complex domain expression for %s is not supported by RDFLibOntology", pe)
 
     def data_property_range_axioms(self, pe: OWLDataProperty) -> Iterable[OWLDataPropertyRangeAxiom]:
-        raise NotImplementedError("will be implemented in future")
-        p_x: owlready2.DataPropertyClass = self._world[pe.str]
-        ranges = set(chain.from_iterable(super_prop.range for super_prop in p_x.ancestors()))
-        if len(ranges) == 0:
-            pass
-            # TODO
-        else:
-            for rng in ranges:
-                if rng in _Datatype_map:
-                    yield OWLDataPropertyRangeAxiom(pe, _Datatype_map[rng])
-                elif isinstance(rng, owlready2.ClassConstruct):
-                    yield OWLDataPropertyRangeAxiom(pe, _parse_datarange_to_owlapy(rng))
-                else:
-                    logger.warning("Datatype %s not implemented at %s", rng, pe)
-                    pass  # XXX TODO
+        pe_uri = rdflib.URIRef(pe.str)
+        for rng in self.rdflib_graph.objects(pe_uri, rdflib.RDFS.range):
+            if isinstance(rng, rdflib.term.URIRef):
+                yield OWLDataPropertyRangeAxiom(pe, OWLDatatype(rng.n3()[1:-1]))
+            else:
+                logger.warning("Complex range expression for %s is not supported by RDFLibOntology", pe)
 
     def object_property_domain_axioms(self, pe: OWLObjectProperty) -> Iterable[OWLObjectPropertyDomainAxiom]:
-        raise NotImplementedError("will be implemented in future")
-        p_x: owlready2.ObjectPropertyClass = self._world[pe.str]
-        domains = set(p_x.domains_indirect())
-        if len(domains) == 0:
-            yield OWLObjectPropertyDomainAxiom(pe, OWLThing)
-        else:
-            for dom in domains:
-                if isinstance(dom, (owlready2.ThingClass, owlready2.ClassConstruct)):
-                    yield OWLObjectPropertyDomainAxiom(pe, _parse_concept_to_owlapy(dom))
-                else:
-                    logger.warning("Construct %s not implemented at %s", dom, pe)
-                    pass  # XXX TODO
+        pe_uri = rdflib.URIRef(pe.str)
+        for dom in self.rdflib_graph.objects(pe_uri, rdflib.RDFS.domain):
+            if isinstance(dom, rdflib.term.URIRef):
+                yield OWLObjectPropertyDomainAxiom(pe, OWLClass(dom.n3()[1:-1]))
+            else:
+                logger.warning("Complex domain expression for %s is not supported by RDFLibOntology", pe)
 
     def object_property_range_axioms(self, pe: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
-        raise NotImplementedError("will be implemented in future")
-        p_x: owlready2.ObjectPropertyClass = self._world[pe.str]
-
-        ranges = set(chain.from_iterable(super_prop.range for super_prop in p_x.ancestors()))
-        if len(ranges) == 0:
-            yield OWLObjectPropertyRangeAxiom(pe, OWLThing)
-        else:
-            for rng in ranges:
-                if isinstance(rng, (owlready2.ThingClass, owlready2.ClassConstruct)):
-                    yield OWLObjectPropertyRangeAxiom(pe, _parse_concept_to_owlapy(rng))
-                else:
-                    logger.warning("Construct %s not implemented at %s", rng, pe)
-                    pass  # XXX TODO
+        pe_uri = rdflib.URIRef(pe.str)
+        for rng in self.rdflib_graph.objects(pe_uri, rdflib.RDFS.range):
+            if isinstance(rng, rdflib.term.URIRef):
+                yield OWLObjectPropertyRangeAxiom(pe, OWLClass(rng.n3()[1:-1]))
+            else:
+                logger.warning("Complex range expression for %s is not supported by RDFLibOntology", pe)
 
     def add_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
         raise NotImplementedError("will be implemented in future")
@@ -1872,22 +1856,29 @@ class RDFLibOntology(AbstractOWLOntology):
             logger.info(f"Saving {path}..")
             ont_x.save(file=path,format=rdf_format)
 
-    def get_ontology_id(self):
-        raise NotImplementedError("will be implemented in future")
+    def get_ontology_id(self) -> OWLOntologyID:
+        onto_iri = None
+        version_iri = None
+        for s in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Ontology):
+            if isinstance(s, rdflib.term.URIRef):
+                onto_iri = s.n3()[1:-1]
+                version = self.rdflib_graph.value(s, rdflib.OWL.versionIRI)
+                if isinstance(version, rdflib.term.URIRef):
+                    version_iri = version.n3()[1:-1]
+                break
+        return OWLOntologyID(IRI.create(onto_iri) if onto_iri is not None else None,
+                             IRI.create(version_iri) if version_iri is not None else None)
 
     def __eq__(self, other):
-        raise NotImplementedError("will be implemented in future")
         if type(other) is type(self):
-            return self._onto.loaded == other._onto.loaded and self._onto.base_iri == other._onto.base_iri
+            return self._path == other._path
         return NotImplemented
 
     def __hash__(self):
-        raise NotImplementedError("will be implemented in future")
-        return hash(self._onto.base_iri)
+        return hash(("RDFLibOntology", self._path))
 
     def __repr__(self):
-        raise NotImplementedError("will be implemented in future")
-        return f'RDFLibOntology({self._onto.base_iri}, loaded:{self._onto.loaded})'
+        return f'RDFLibOntology({self._path})'
 
 
 OWLREADY2_FACET_KEYS = MappingProxyType({
