@@ -1364,7 +1364,7 @@ class SyncReasoner(AbstractOWLReasoner):
 
         future = self._reasoning_executor.submit(_Callable())
         try:
-            return future.get(timeout, TimeUnit.MILLISECONDS)
+            return future.get(timeout, TimeUnit.SECONDS)
         except jpype.JException as e:
             if "TimeoutException" in type(e).__name__:
                 future.cancel(True)
