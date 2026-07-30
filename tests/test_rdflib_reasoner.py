@@ -1,12 +1,13 @@
 """Tests for RDFLibReasoner - Pure Python RDFLib-based reasoner."""
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
-from owlapy.owl_ontology import SyncOntology
+from owlapy.owl_ontology import RDFLibOntology, SyncOntology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 
@@ -282,10 +283,28 @@ class TestRDFLibReasonerConstruction(unittest.TestCase):
         cls.NS = "http://www.benchmark.org/family#"
 
     def test_construction_from_string_path(self):
-        # Passing a raw path string exercises the `isinstance(ontology, str)` branch.
+        # Passing a raw path string exercises the `isinstance(ontology, str)` branch. It must be
+        # ingested straight into rdflib -- no owlready2/SyncOntology round-trip, no JVM.
         reasoner = RDFLibReasoner(str(self.kg_path))
-        self.assertIsInstance(reasoner._ontology, SyncOntology)
+        self.assertIsInstance(reasoner._ontology, RDFLibOntology)
         self.assertGreater(len(reasoner._graph), 0)
+        # The reasoner must reuse the ontology's own graph, not a re-parsed copy.
+        self.assertIs(reasoner._graph, reasoner._ontology.rdflib_graph)
+
+    def test_construction_from_string_path_never_starts_jvm(self):
+        # Regression test for #205 Group A item 2: a str path must never touch owlready2's
+        # SyncOntology/JVM bridge, since that used to be the only ingestion path.
+        with mock.patch("owlapy.owl_ontology.startJVM") as mocked_start_jvm:
+            reasoner = RDFLibReasoner(str(self.kg_path))
+            mocked_start_jvm.assert_not_called()
+        self.assertGreater(len(reasoner._graph), 0)
+
+    def test_construction_from_rdflib_ontology_reuses_graph(self):
+        # An RDFLibOntology instance should have its rdflib_graph reused directly, not
+        # round-tripped through a save()+reparse cycle.
+        onto = RDFLibOntology(str(self.kg_path))
+        reasoner = RDFLibReasoner(onto)
+        self.assertIs(reasoner._graph, onto.rdflib_graph)
 
     def test_construction_from_plain_ontology(self):
         from owlapy.owl_ontology import Ontology
