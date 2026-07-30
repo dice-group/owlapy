@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `RDFLibOntology` now implements its full read API: `classes_in_signature`, `data_properties_in_signature`, `object_properties_in_signature`, `properties_in_signature`, `individuals_in_signature`, `get_abox_axioms_between_individuals`, `get_abox_axioms_between_individuals_and_classes`, `equivalent_classes_axioms`, `data_property_domain_axioms`/`range_axioms`, `object_property_domain_axioms`/`range_axioms`, and `get_ontology_id`, plus `__eq__`/`__hash__`/`__repr__` (previously hard stubs raising `NotImplementedError`). `general_class_axioms()` still raises `NotImplementedError`, since it would require reconstructing complex class expressions from blank-node RDF structures, which this triple-based loader does not support. The write API (`add_axiom`/`remove_axiom`/`save`) remains unimplemented.
 - The ontology generation pipeline now supports (#219):
   - `rdfs:label` annotations, deterministically computed from entity IRIs
   - `rdfs:comment` annotations, generated via LLM
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ignored generated/scratch artifacts (`demo.owl`, `inferred_axioms_ontology.owl`, `iris_dataset.csv`, `tests/saved_formats/`) that examples and tests write to the repo root
 
 ### Fixed
+- `RDFLibOntology.get_abox_axioms()` no longer raises `NotImplementedError` on individuals with literal-valued (data property) assertions; it now yields a proper `OWLDataPropertyAssertionAxiom` instead.
 - `StructuralReasoner.object_property_values()` no longer crashes with `AttributeError: 'Or' object has no attribute 'iri'` on ontologies that illegally pun an entity as multiple property types (e.g. `KGs/Biopax/biopax.owl`, where `glycolysis#DELTA-G` is declared as both `owl:ObjectProperty` and `owl:AnnotationProperty`). owlready2's load-time punning repair can make values of unrelated properties come back as internal class-expression nodes (`owlready2.Or`) instead of individuals; these are now skipped with a warning (emitted once per property) that points at the punning as the root cause, instead of crashing or silently dropping values (#242, supersedes #236)
 - `owl_expression_to_sparql` no longer requires individuals to be explicitly asserted `rdf:type owl:Thing` when `OWLThing` is used as a nested filler (e.g. `∃r.⊤`), which previously made such queries wrongly return no results; also fixes `RDFLibReasoner.instances(OWLThing)`, which now returns `individuals_in_signature()` instead of an always-empty SPARQL query (#242)
 - `RDFLibReasoner.instances(SomeClass)` (and every named-class membership check inside a larger expression) previously silently returned too few results whenever `SomeClass` had subclasses and individuals were typed only at the leaf level (confirmed on `KGs/Mutagenesis/mutagenesis.owl`'s `Atom` class, 64 subclasses, 0 direct matches). Now expands to the full subclass closure via a bounded SPARQL `VALUES` clause (#242)
