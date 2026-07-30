@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- CI step in `.github/workflows/test.yml` that fails the build if `owlapy/__init__.py`'s `__version__` and `setup.py`'s `version=` disagree, enforcing the dual-source-of-truth documented in `CLAUDE.md` (IMPROVEMENTS.md 5.2)
 - The ontology generation pipeline now supports (#219):
   - `rdfs:label` annotations, deterministically computed from entity IRIs
   - `rdfs:comment` annotations, generated via LLM
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `agen_kg` LLM pipeline now also logs through the `logging` module instead of `print()`. The existing `enable_logging` flag keeps its meaning: when set, progress messages are emitted via per-module loggers under `owlapy.agen_kg` and a console handler is attached so output stays visible without extra configuration; `except`-block diagnostics now use `logger.exception(...)` and include tracebacks. Host applications that configure logging themselves can control verbosity via the `owlapy` logger hierarchy.
 - Added `IMPROVEMENTS.md`, a prioritized plan of readability, performance, documentation, and feature improvements for the library
 - Ignored generated/scratch artifacts (`demo.owl`, `inferred_axioms_ontology.owl`, `iris_dataset.csv`, `tests/saved_formats/`) that examples and tests write to the repo root
+- `class_expression/restriction.py`'s 10 repeated `# @TODO: CD: property shows the in-built function` comments consolidated into a single module-level docstring note; removed a stray, obsolete `# TODO: XXX` in `owl_axiom.py` whose actual gap is already documented in `signature()`'s docstring (IMPROVEMENTS.md 1.1)
 
 ### Fixed
 - `StructuralReasoner.object_property_values()` no longer crashes with `AttributeError: 'Or' object has no attribute 'iri'` on ontologies that illegally pun an entity as multiple property types (e.g. `KGs/Biopax/biopax.owl`, where `glycolysis#DELTA-G` is declared as both `owl:ObjectProperty` and `owl:AnnotationProperty`). owlready2's load-time punning repair can make values of unrelated properties come back as internal class-expression nodes (`owlready2.Or`) instead of individuals; these are now skipped with a warning (emitted once per property) that points at the punning as the root cause, instead of crashing or silently dropping values (#242, supersedes #236)

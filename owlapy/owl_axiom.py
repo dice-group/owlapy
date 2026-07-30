@@ -58,7 +58,6 @@ class OWLAxiom(OWLObject, metaclass=ABCMeta):
         """
         from owlapy.utils import SignatureExtractor
         return SignatureExtractor().get_signature(self)
-    # TODO: XXX
 
 
 class OWLLogicalAxiom(OWLAxiom, metaclass=ABCMeta):
