@@ -18,7 +18,7 @@ from owlapy.converter import owl_expression_to_sparql
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, StringOWLDatatype
-from owlapy.owl_ontology import Ontology, SyncOntology
+from owlapy.owl_ontology import Ontology, RDFLibOntology, SyncOntology
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,9 @@ class RDFLibReasoner(AbstractOWLReasoner):
         Initialize the RDFLib-based reasoner.
 
         Args:
-            ontology: The ontology to reason over (SyncOntology, Ontology, or path to OWL file).
+            ontology: The ontology to reason over (RDFLibOntology, SyncOntology, Ontology, or a
+                path to an OWL file). A path or an `RDFLibOntology` is ingested directly via
+                rdflib, without touching owlready2 or starting the JVM.
             class_cache: Whether to cache class-instance mappings for faster retrieval.
             property_cache: Whether to cache property assertions.
             infer_property_values: Whether to infer property values from sub-properties.
@@ -78,7 +80,8 @@ class RDFLibReasoner(AbstractOWLReasoner):
                 cardinality restrictions, mirroring StructuralReasoner's sub_properties flag.
         """
         if isinstance(ontology, str):
-            ontology = SyncOntology(ontology)
+            # Parse straight into rdflib -- no owlready2 objects, no JVM.
+            ontology = RDFLibOntology(ontology)
 
         super().__init__(ontology)
         self._ontology = ontology
@@ -103,36 +106,38 @@ class RDFLibReasoner(AbstractOWLReasoner):
 
     def _init_graph(self):
         """Initialize or reload the RDF graph from the ontology."""
-        self._graph = Graph()
+        if isinstance(self._ontology, RDFLibOntology):
+            # Already backed by an rdflib graph -- reuse it directly. No owlready2/JVM involved.
+            self._graph = self._ontology.rdflib_graph
+        else:
+            self._graph = Graph()
 
-        # Load ontology into RDFLib graph
-        if isinstance(self._ontology, SyncOntology):
-            # Convert SyncOntology to RDF
-            # Use the ontology's save method to export to a temp file, then load
-            import tempfile
-            with tempfile.NamedTemporaryFile(suffix='.owl', delete=False) as tmp:
-                tmp_path = tmp.name
-            try:
-                self._ontology.save(tmp_path)
-                self._graph.parse(tmp_path, format='xml')
-            finally:
-                import os
-                os.unlink(tmp_path)
-        elif isinstance(self._ontology, Ontology):
-            # Similar approach for Ontology
-            import tempfile
-            with tempfile.NamedTemporaryFile(suffix='.owl', delete=False) as tmp:
-                tmp_path = tmp.name
-            try:
-                self._ontology.save(tmp_path)
-                self._graph.parse(tmp_path, format='xml')
-            finally:
-                import os
-                os.unlink(tmp_path)
-        elif hasattr(self._ontology, 'get_iri'):
-            # Try loading from IRI/path
-            ontology_iri = str(self._ontology.get_iri())
-            self._graph.parse(ontology_iri, format='xml')
+            # Back-compat: JVM-backed (SyncOntology) or owlready2-backed (Ontology) instances
+            # have no rdflib graph of their own, so round-trip through a serialized file.
+            if isinstance(self._ontology, SyncOntology):
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix='.owl', delete=False) as tmp:
+                    tmp_path = tmp.name
+                try:
+                    self._ontology.save(tmp_path)
+                    self._graph.parse(tmp_path, format='xml')
+                finally:
+                    import os
+                    os.unlink(tmp_path)
+            elif isinstance(self._ontology, Ontology):
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix='.owl', delete=False) as tmp:
+                    tmp_path = tmp.name
+                try:
+                    self._ontology.save(tmp_path)
+                    self._graph.parse(tmp_path, format='xml')
+                finally:
+                    import os
+                    os.unlink(tmp_path)
+            elif hasattr(self._ontology, 'get_iri'):
+                # Try loading from IRI/path
+                ontology_iri = str(self._ontology.get_iri())
+                self._graph.parse(ontology_iri, format='xml')
 
         # Build caches if enabled
         if self._class_cache_enabled:
