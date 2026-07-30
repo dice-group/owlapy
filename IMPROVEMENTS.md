@@ -38,21 +38,21 @@ effort estimates, and sequencing.
 ### 1.2 Decompose the largest modules
 - **Where:** `owl_reasoner.py` (3302 LOC, holds both `StructuralReasoner` and
   `SyncReasoner`) plus the sibling `owl_reasoner_rdflib.py` (841 LOC,
-  `RDFLibReasoner`), `owl_ontology.py` (2440), `utils.py` (1986),
-  `agen_kg/graph_extractor.py` (1539), `owl_axiom.py` (1426).
+  `RDFLibReasoner`), `owl_ontology.py` (2440), `agen_kg/graph_extractor.py`
+  (1539), `owl_axiom.py` (1426).
+  ~~`utils.py` (1986)~~ — done: split into `owlapy/utils/` (`similarity.py`,
+  `length.py`, `ordering.py`, `nnf.py`, `simplify.py`, `signature.py`,
+  `cache.py`), re-exported unchanged from `owlapy/utils/__init__.py`.
 - **Why:** Files this size hurt navigation, review, and test isolation.
   `owl_reasoner.py` holds multiple reasoner implementations, and
   `RDFLibReasoner` living in a separate top-level module while conceptually
-  being a third reasoner backend is inconsistent; `utils.py` is a grab-bag
-  (`CESimplifier`, NNF, similarity metrics, an lru_cache adaptation).
+  being a third reasoner backend is inconsistent.
 - **Approach:** Non-breaking split — for the reasoners specifically, turn
   `owl_reasoner.py` into a package `owlapy/owl_reasoner/` with
   `structural.py` (`StructuralReasoner`), `sync.py` (`SyncReasoner`), and
   `rdflib_reasoner.py` (`RDFLibReasoner`, moved in from
   `owl_reasoner_rdflib.py`), all re-exported from
-  `owlapy/owl_reasoner/__init__.py`. For `utils.py`: move cohesive groups into
-  a subpackage (e.g. `owlapy/utils/` with `simplify.py`, `nnf.py`,
-  `similarity.py`) and re-export from `utils.py`/`__init__`.
+  `owlapy/owl_reasoner/__init__.py`.
   **Caveat:** `owlapy.owl_reasoner` is a public import path with at least one
   known external consumer (Ontolearn — see the traceback in owlapy#242, which
   reaches directly into `owl_reasoner.py`). The new package's `__init__.py`
@@ -252,7 +252,7 @@ Phased so each phase is independently shippable and low-risk first.
 9. Fill TODO-flagged public docstrings; optionally enable ruff `D` on one module.
 
 ### Phase 3 — Structural refactor (2–4 days, behind tests)
-10. Split `utils.py` into a subpackage with re-exports (1.2).
+10. ✅ `utils.py` split into a subpackage with re-exports (1.2).
 11. Split reasoner/ontology modules if tests give confidence (1.2).
 12. Add context-manager support to JVM reasoners (2.3, 4.3).
 
