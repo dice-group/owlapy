@@ -44,16 +44,30 @@ from owlapy.class_expression import (
     OWLThing,
 )
 from owlapy.owl_axiom import (
+    OWLAnnotationAssertionAxiom,
+    OWLAnnotationProperty,
+    OWLAnnotationPropertyDomainAxiom,
+    OWLAnnotationPropertyRangeAxiom,
     OWLClassAssertionAxiom,
+    OWLDatatypeDefinitionAxiom,
     OWLDeclarationAxiom,
+    OWLDisjointUnionAxiom,
+    OWLHasKeyAxiom,
     OWLNaryClassAxiom,
+    OWLNaryIndividualAxiom,
+    OWLNaryPropertyAxiom,
     OWLPropertyAssertionAxiom,
     OWLPropertyDomainAxiom,
     OWLPropertyRangeAxiom,
+    OWLSubAnnotationPropertyOfAxiom,
     OWLSubClassOfAxiom,
+    OWLSubPropertyAxiom,
+    OWLSubPropertyChainAxiom,
+    OWLUnaryPropertyAxiom,
 )
 from owlapy.owl_individual import OWLAnonymousIndividual, OWLNamedIndividual
 
+from .iri import IRI
 from .meta_classes import HasCardinality, HasFiller, HasIRI, HasOperands
 from .owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataRange, OWLDataUnionOf, OWLNaryDataRange, OWLPropertyRange
 from .owl_datatype import OWLDatatype
@@ -1688,13 +1702,14 @@ class SignatureExtractor:
     :class:`OWLDatatype`) that it references, collected recursively.
 
     Mirrors the ``signature()`` method of OWLAPI's ``OWLObject`` interface. :class:`OWLAnonymousIndividual`
-    is intentionally excluded (it is not an :class:`OWLEntity`, per the OWL 2 specification).
+    is intentionally excluded (it is not an :class:`OWLEntity`, per the OWL 2 specification). Likewise, a
+    bare :class:`~owlapy.iri.IRI` (used as an annotation subject/value or as the domain/range of an
+    annotation property axiom) contributes nothing to the signature unless it has been resolved to a
+    concrete entity elsewhere in the expression.
 
-    Coverage is currently limited to the axiom types listed below (chosen to cover what
-    ``SyncOntology.get_tbox_axioms()``/``get_abox_axioms()`` return for the ontologies in this repo's test
-    suite) plus the full set of class expression/data range constructs. Extending coverage to the remaining
-    :class:`OWLAxiom` subtypes (property characteristics, property chains, has-key, disjoint union, datatype
-    definition, (un)equal individuals, annotation assertions, ...) is tracked in
+    Covers the full set of class expression/data range constructs plus all :class:`OWLAxiom` subtypes,
+    including property characteristics, sub-property (and property chain) axioms, has-key, disjoint union,
+    datatype definition, (un)equal individuals and annotation axioms. See
     https://github.com/dice-group/owlapy/issues/231.
     """
 
@@ -1744,8 +1759,18 @@ class SignatureExtractor:
         return {o}
 
     @get_signature.register
+    def _(self, o: OWLAnnotationProperty) -> Set[OWLEntity]:
+        return {o}
+
+    @get_signature.register
     def _(self, o: OWLLiteral) -> Set[OWLEntity]:
         return self.get_signature(o.get_datatype())
+
+    @get_signature.register
+    def _(self, o: IRI) -> Set[OWLEntity]:
+        # A raw IRI (annotation subject/value, annotation property domain/range) is not itself an
+        # OWLEntity -- it is only a name, not a resolved reference to one.
+        return set()
 
     # -- class expressions / data ranges ---------------------------------------
 
@@ -1809,6 +1834,73 @@ class SignatureExtractor:
 
     @get_signature.register
     def _(self, o: OWLPropertyRangeAxiom) -> Set[OWLEntity]:
+        return self.get_signature(o.get_property()) | self.get_signature(o.get_range())
+
+    @get_signature.register
+    def _(self, o: OWLUnaryPropertyAxiom) -> Set[OWLEntity]:
+        # Property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/
+        # Transitive/Reflexive/Irreflexive ObjectProperty, FunctionalDataProperty). Domain/range axioms
+        # are handled by the more specific registrations above.
+        return self.get_signature(o.get_property())
+
+    @get_signature.register
+    def _(self, o: OWLSubPropertyAxiom) -> Set[OWLEntity]:
+        return self.get_signature(o.get_sub_property()) | self.get_signature(o.get_super_property())
+
+    @get_signature.register
+    def _(self, o: OWLSubPropertyChainAxiom) -> Set[OWLEntity]:
+        result: Set[OWLEntity] = self.get_signature(o.get_super_property())
+        for p in o.get_property_chain():
+            result |= self.get_signature(p)
+        return result
+
+    @get_signature.register
+    def _(self, o: OWLNaryIndividualAxiom) -> Set[OWLEntity]:
+        result: Set[OWLEntity] = set()
+        for ind in o.individuals():
+            result |= self.get_signature(ind)
+        return result
+
+    @get_signature.register
+    def _(self, o: OWLNaryPropertyAxiom) -> Set[OWLEntity]:
+        result: Set[OWLEntity] = set()
+        for p in o.properties():
+            result |= self.get_signature(p)
+        return result
+
+    @get_signature.register
+    def _(self, o: OWLDisjointUnionAxiom) -> Set[OWLEntity]:
+        result = self.get_signature(o.get_owl_class())
+        for ce in o.get_class_expressions():
+            result |= self.get_signature(ce)
+        return result
+
+    @get_signature.register
+    def _(self, o: OWLHasKeyAxiom) -> Set[OWLEntity]:
+        result = self.get_signature(o.get_class_expression())
+        for p in o.get_property_expressions():
+            result |= self.get_signature(p)
+        return result
+
+    @get_signature.register
+    def _(self, o: OWLDatatypeDefinitionAxiom) -> Set[OWLEntity]:
+        return self.get_signature(o.get_datatype()) | self.get_signature(o.get_datarange())
+
+    @get_signature.register
+    def _(self, o: OWLAnnotationAssertionAxiom) -> Set[OWLEntity]:
+        return (self.get_signature(o.get_subject()) | self.get_signature(o.get_property())
+                | self.get_signature(o.get_value()))
+
+    @get_signature.register
+    def _(self, o: OWLSubAnnotationPropertyOfAxiom) -> Set[OWLEntity]:
+        return self.get_signature(o.get_sub_property()) | self.get_signature(o.get_super_property())
+
+    @get_signature.register
+    def _(self, o: OWLAnnotationPropertyDomainAxiom) -> Set[OWLEntity]:
+        return self.get_signature(o.get_property()) | self.get_signature(o.get_domain())
+
+    @get_signature.register
+    def _(self, o: OWLAnnotationPropertyRangeAxiom) -> Set[OWLEntity]:
         return self.get_signature(o.get_property()) | self.get_signature(o.get_range())
 
 
