@@ -4,10 +4,9 @@ unit-tested elsewhere (extraction, relation/type clustering, coherence
 checking, ontology assembly). Every dspy.Predict-backed attribute involved is
 stubbed with a deterministic MagicMock -- no real LLM calls.
 
-Ontology.get_abox_axioms()/get_tbox_axioms() are themselves unimplemented
-stubs (`raise NotImplementedError("will be implemented in future")`), so
-results are verified by parsing the saved RDF/XML file with rdflib instead --
-this also happens to exercise the real onto.save() path end-to-end.
+Results are verified by parsing the saved RDF/XML file with rdflib rather
+than via Ontology.get_abox_axioms()/get_tbox_axioms(), which also happens to
+exercise the real onto.save() path end-to-end.
 """
 import os
 import tempfile
