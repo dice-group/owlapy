@@ -972,19 +972,63 @@ class Ontology(AbstractOWLOntology):
             yield OWLNamedIndividual(IRI.create(i.iri))
 
     def get_abox_axioms(self) -> Iterable:
-        raise NotImplementedError("will be implemented in future")
+        """Get all ABox (assertional) axioms: class assertions, object- and
+        data-property assertions."""
+        results = list(self.get_abox_axioms_between_individuals_and_classes())
+        results.extend(self.get_abox_axioms_between_individuals())
+        for i_x in self._onto.individuals():
+            subject = OWLNamedIndividual(IRI.create(i_x.iri))
+            for prop_x in i_x.get_properties():
+                if isinstance(prop_x, owlready2.DataPropertyClass):
+                    property_ = OWLDataProperty(IRI.create(prop_x.iri))
+                    for value in prop_x[i_x]:
+                        results.append(OWLDataPropertyAssertionAxiom(subject, property_, OWLLiteral(value)))
+        return results
 
     def get_tbox_axioms(self) -> Iterable:
-        # @TODO: CD: Return all information between owl classes, e.g. subclass or disjoint
-        raise NotImplementedError("will be implemented in future")
+        """Get all TBox (schema-level) axioms: class declarations, SubClassOf,
+        EquivalentClasses and DisjointClasses axioms."""
+        results = []
+        for c in self.classes_in_signature():
+            results.append(OWLDeclarationAxiom(c))
+            c_x: owlready2.ThingClass = self._world[c.str]
+            for parent_x in c_x.is_a:
+                if parent_x is owlready2.Thing:
+                    continue
+                if isinstance(parent_x, (owlready2.ThingClass, owlready2.ClassConstruct)):
+                    results.append(OWLSubClassOfAxiom(c, _parse_concept_to_owlapy(parent_x)))
+            results.extend(self.equivalent_classes_axioms(c))
+        for ca in self._onto.general_class_axioms():
+            results.extend(
+                OWLSubClassOfAxiom(_parse_concept_to_owlapy(ca.left_side), _parse_concept_to_owlapy(super_x))
+                for super_x in ca.is_a
+            )
+        for disjoints_x in self._onto.disjoint_classes():
+            results.append(OWLDisjointClassesAxiom([_parse_concept_to_owlapy(e) for e in disjoints_x.entities]))
+        return results
 
     def get_abox_axioms_between_individuals(self) -> Iterable:
-        # @TODO: CD: Return all information between owl_individuals, i.e., triples with object properties
-        raise NotImplementedError("will be implemented in future")
+        """Get all object-property assertion axioms, i.e. triples between two individuals."""
+        results = []
+        for i_x in self._onto.individuals():
+            subject = OWLNamedIndividual(IRI.create(i_x.iri))
+            for prop_x in i_x.get_properties():
+                if isinstance(prop_x, owlready2.ObjectPropertyClass):
+                    property_ = OWLObjectProperty(IRI.create(prop_x.iri))
+                    for obj_x in prop_x[i_x]:
+                        obj = OWLNamedIndividual(IRI.create(obj_x.iri))
+                        results.append(OWLObjectPropertyAssertionAxiom(subject, property_, obj))
+        return results
 
     def get_abox_axioms_between_individuals_and_classes(self) -> Iterable:
-        # @TODO: CD: Return all type information about individuals, i.e., individual type Class
-        raise NotImplementedError("will be implemented in future")
+        """Get all class assertion axioms, i.e. triples of the form `individual rdf:type Class`."""
+        results = []
+        for i_x in self._onto.individuals():
+            ind = OWLNamedIndividual(IRI.create(i_x.iri))
+            for cls_x in i_x.is_a:
+                if isinstance(cls_x, (owlready2.ThingClass, owlready2.ClassConstruct)):
+                    results.append(OWLClassAssertionAxiom(ind, _parse_concept_to_owlapy(cls_x)))
+        return results
 
     # @TODO:CD:Unsure it is working
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
