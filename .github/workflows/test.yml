@@ -14,6 +14,15 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Check version sync (__init__.py vs setup.py)
+        run: |
+          INIT_VERSION=$(python -c "import re; print(re.search(r\"__version__ = '([^']+)'\", open('owlapy/__init__.py').read()).group(1))")
+          SETUP_VERSION=$(python -c "import re; print(re.search(r'version=\"([^\"]+)\"', open('setup.py').read()).group(1))")
+          if [ "$INIT_VERSION" != "$SETUP_VERSION" ]; then
+            echo "Version mismatch: owlapy/__init__.py has $INIT_VERSION, setup.py has $SETUP_VERSION"
+            exit 1
+          fi
+          echo "Versions in sync: $INIT_VERSION"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

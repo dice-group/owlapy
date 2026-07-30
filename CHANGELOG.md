@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- CI step in `.github/workflows/test.yml` that fails the build if `owlapy/__init__.py`'s `__version__` and `setup.py`'s `version=` disagree, enforcing the dual-source-of-truth documented in `CLAUDE.md` (IMPROVEMENTS.md 5.2)
 - The ontology generation pipeline now supports (#219):
   - `rdfs:label` annotations, deterministically computed from entity IRIs
   - `rdfs:comment` annotations, generated via LLM
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `agen_kg` LLM pipeline now also logs through the `logging` module instead of `print()`. The existing `enable_logging` flag keeps its meaning: when set, progress messages are emitted via per-module loggers under `owlapy.agen_kg` and a console handler is attached so output stays visible without extra configuration; `except`-block diagnostics now use `logger.exception(...)` and include tracebacks. Host applications that configure logging themselves can control verbosity via the `owlapy` logger hierarchy.
 - Added `IMPROVEMENTS.md`, a prioritized plan of readability, performance, documentation, and feature improvements for the library
 - Ignored generated/scratch artifacts (`demo.owl`, `inferred_axioms_ontology.owl`, `iris_dataset.csv`, `tests/saved_formats/`) that examples and tests write to the repo root
+- `class_expression/restriction.py`'s 10 repeated `# @TODO: CD: property shows the in-built function` comments consolidated into a single module-level docstring note; removed a stray, obsolete `# TODO: XXX` in `owl_axiom.py` whose actual gap is already documented in `signature()`'s docstring (IMPROVEMENTS.md 1.1)
 
 ### Fixed
 - `SyncReasoner`'s Java-level timeout helper (`_execute_with_java_timeout`, backing `has_consistent_ontology()`, `is_entailed()`, `is_satisfiable()`, `unsatisfiable_classes()`) waited in **milliseconds** instead of the documented **seconds**, so the default `timeout=1000` only gave the JVM ~1 real second before raising `TimeoutError` — a flaky failure under any CI/machine load. Now correctly waits `timeout` seconds.

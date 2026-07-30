@@ -21,19 +21,27 @@ effort estimates, and sequencing.
 > `CHANGELOG.md` for the record (e.g. the print-to-logging migration, done for
 > the core library and `agen_kg` in the 1.6.6 cycle).
 
-### 1.1 Burn down the `TODO`/`FIXME` backlog — 63 markers
-- **Where:** e.g. `class_expression/restriction.py` (13 `@TODO: CD:` notes,
-  several asking to convert methods to `@property`), `render.py:323/517/544`,
-  `owl_hierarchy.py:32/124` (unimplemented equivalence-set handling),
-  `owl_ontology.py` (multiple `@TODO: CD:` on ABox/TBox retrieval),
-  `parser.py:411/756` (decimal-vs-float shortcut).
+### 1.1 Burn down the `TODO`/`FIXME` backlog — 52 markers remaining (was 63)
+- **Status:** First triage pass done. `class_expression/restriction.py`'s 10
+  repeated "property shows the in-built function" notes were consolidated into
+  a single module-level docstring note (the design decision — `property` as a
+  parameter name intentionally shadows the builtin — only needs stating once).
+  One truly obsolete marker (`owl_axiom.py`'s trailing `# TODO: XXX` after
+  `signature()`, whose actual gap is already documented in that method's
+  docstring with a link to #231) was deleted. The remaining ~52 markers were
+  reviewed and are legitimate — either real, non-trivial correctness/design
+  questions (`render.py:325/519/546`, `owl_hierarchy.py:32/124`,
+  `owl_class.py:56-57`, `nary_boolean_expression.py:19`,
+  `owl_ontology.py`'s ABox/TBox `NotImplementedError` stubs and owlready2
+  bug notes) or already tracked elsewhere in this plan (4.1, 4.2).
+- **Where:** e.g. `owl_ontology.py` (multiple `@TODO: CD:` on ABox/TBox
+  retrieval), `parser.py:411/756` (decimal-vs-float shortcut, tracked in 3.3).
 - **Why:** Author-initialled `CD:`/`AB:` comments are effectively a hidden issue
-  tracker. They hint at real correctness gaps (e.g. `render.py:544` "Can we
+  tracker. They hint at real correctness gaps (e.g. `render.py:546` "Can we
   assume equiv size will be 2?", `owl_hierarchy.py` unhandled eq-sets).
-- **Approach:** Triage into (a) trivial cleanups (do now), (b) real bugs → file
-  GitHub issues, (c) obsolete → delete. Start with `restriction.py`'s repeated
-  "property shows the in-built function" notes, which are a single consistent
-  design decision that can be documented once instead of 13 times.
+- **Approach:** Remaining work is (b) real bugs → file GitHub issues where
+  worth tracking independently, most are small enough to stay as in-code
+  markers for now.
 
 ### 1.2 Decompose the largest modules
 - **Where:** `owl_reasoner.py` (3302 LOC, holds both `StructuralReasoner` and
@@ -215,11 +223,14 @@ effort estimates, and sequencing.
   `iris_dataset.csv`, and any test-generated `tests/saved_formats/` output. Point
   test fixtures at the scratchpad/`tmp` rather than the repo root.
 
-### 5.2 Enforce version sync in CI
+### 5.2 Enforce version sync in CI — ✅ *done*
+- **Status:** `.github/workflows/test.yml` now has a "Check version sync" step
+  (runs before dependency install, so it fails fast) that parses
+  `owlapy/__init__.py`'s `__version__` and `setup.py`'s `version=` and fails
+  the build if they disagree. The README badge is not covered — it's static
+  text, not worth a CI check on its own.
 - **Where:** `owlapy/__init__.py` + `setup.py` (CLAUDE.md documents the
   dual-source-of-truth).
-- **Approach:** Tiny CI step (or pre-commit hook) asserting the two versions
-  match, plus optionally the README badge. Prevents the drift seen in 3.2.
 
 ### 5.3 Consider tightening lint/type gates over time
 - **Where:** `pyproject.toml` — ruff selects only `E/W/F/I`; mypy has
@@ -234,13 +245,15 @@ effort estimates, and sequencing.
 
 Phased so each phase is independently shippable and low-risk first.
 
-### Phase 0 — Quick wins (hours, no behavior change)
-1. Fix README mojibake headers (3.1).
-2. Sync version badges + add CI version-sync check (3.2, 5.2).
-3. Remove/ignore stray root artifacts (5.1).
-4. TODO triage pass: delete obsolete, convert real bugs to issues (1.1 part a).
+### Phase 0 — Quick wins ✅ *shipped*
+1. ✅ Fix README mojibake headers (3.1).
+2. ✅ Sync version badges + add CI version-sync check (3.2, 5.2).
+3. ✅ Remove/ignore stray root artifacts (5.1).
+4. ✅ TODO triage pass: consolidated `restriction.py`'s repeated notes, deleted
+   the one obsolete marker found, reviewed the rest (1.1) — see 1.1 for what's
+   left open (real, non-trivial items, not quick wins).
 
-*Deliverable:* clean tree, accurate metadata, an issue backlog.
+*Deliverable:* clean tree, accurate metadata, reviewed TODO backlog.
 
 ### Phase 1 — Logging migration ✅ *shipped* + exception tightening
 5. ✅ Per-module loggers now cover the core library and `agen_kg`; recorded in
