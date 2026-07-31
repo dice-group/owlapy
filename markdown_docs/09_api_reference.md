@@ -95,22 +95,22 @@ onto.add_axiom(OWLSubClassOfAxiom(student, person))
 onto.save("updated_family.owl")
 ```
 
-### `RDFLibOntology` (Recommended for pure-Python, read-only use)
+### `RDFLibOntology` (Recommended for pure-Python use)
 
 ```python
 from owlapy.owl_ontology import RDFLibOntology
 ```
 
-Pure Python ontology implementation backed by rdflib. No JVM, no owlready2 -- just parses the
-RDF graph directly. Read-only for now: `add_axiom`/`remove_axiom`/`save` are not yet implemented
-(#205).
+Pure Python ontology implementation backed by rdflib. No JVM, no owlready2 -- reads and writes
+the RDF graph directly. Supports both loading an existing ontology and creating a blank one.
 
 **Constructor:**
 ```python
-RDFLibOntology(path: str)
+RDFLibOntology(path: str)                       # load an existing ontology from a file
+RDFLibOntology(iri: str | IRI, load=False)       # create a blank ontology with the given IRI
 ```
 
-**Key Methods:**
+**Key Methods (read):**
 - `classes_in_signature()` / `individuals_in_signature()` / `object_properties_in_signature()` / `data_properties_in_signature()` / `properties_in_signature()`
 - `get_tbox_axioms() -> Iterable[OWLAxiom]` - Class declarations, `SubClassOf`, `EquivalentClasses`, `DisjointClasses` between named classes
 - `get_abox_axioms() -> Iterable[OWLAxiom]` - Class assertions, object- and data-property assertions
@@ -119,9 +119,16 @@ RDFLibOntology(path: str)
 - `data_property_domain_axioms(pe)` / `data_property_range_axioms(pe)` / `object_property_domain_axioms(pe)` / `object_property_range_axioms(pe)`
 - `get_ontology_id() -> OWLOntologyID`
 
-**Limitation:** axioms involving complex (blank-node) class expressions -- e.g. general class
-axioms, restriction-based domains/ranges -- aren't recognized; only axioms between named
-entities are. `general_class_axioms()` raises `NotImplementedError` to say so explicitly.
+**Key Methods (write):**
+- `add_axiom(axiom)` / `remove_axiom(axiom)` - Accepts a single `OWLAxiom` or an iterable. Supports declarations, class/object-property/data-property assertions, `SubClassOf`, `EquivalentClasses`, `DisjointClasses`, sub-property axioms, property domain/range axioms, and the property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/Transitive/Reflexive/Irreflexive) -- all between/on *named* entities. Adding an axiom auto-declares any entity it references that isn't declared yet, so the axiom is immediately visible to the read API
+- `save(path=None, inplace=False, document_format=None)` - Serializes via rdflib (`"rdfxml"` default; also accepts rdflib's own names and OWL-API-style aliases, same vocabulary as `Ontology`/`SyncOntology`)
+
+**Limitation:** axioms involving complex (blank-node) class/property expressions -- e.g. general
+class axioms, restriction-based domains/ranges -- aren't representable, on either the read or
+write side; only axioms between named entities are. `general_class_axioms()` and
+`add_axiom()`/`remove_axiom()` on such an axiom raise `NotImplementedError` to say so explicitly.
+A handful of axiom types aren't supported by the write API yet either (e.g. `OWLSameIndividualAxiom`,
+`OWLAnnotationAssertionAxiom`, `OWLDisjointUnionAxiom`) -- the error message names what is.
 
 **Example:**
 ```python
@@ -129,6 +136,9 @@ onto = RDFLibOntology("family.owl")
 classes = list(onto.classes_in_signature())
 tbox = list(onto.get_tbox_axioms())
 abox = list(onto.get_abox_axioms())
+
+onto.add_axiom(OWLClassAssertionAxiom(OWLNamedIndividual("family#john"), OWLClass("family#Person")))
+onto.save("family_updated.owl")
 ```
 
 ### `Ontology` (Legacy)
