@@ -13,9 +13,9 @@ from types import FunctionType, MappingProxyType
 from typing import DefaultDict, Dict, FrozenSet, Generator, Iterable, List, Mapping, Optional, Set, Tuple, Type, TypeVar, Union
 
 import jpype
-import owlready2
 from jpype import JClass
 
+from owlapy._lazy_owlready2 import import_owlready2
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 from owlapy.class_expression import (
@@ -56,6 +56,10 @@ from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLO
 from owlapy.utils import run_with_timeout
 
 logger = logging.getLogger(__name__)
+
+# owlready2 is an optional dependency, needed only by StructuralReasoner (see
+# owlapy._lazy_owlready2 / issue #205); SyncReasoner is JVM/OWLAPI-backed and doesn't need it.
+owlready2 = import_owlready2()
 
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 

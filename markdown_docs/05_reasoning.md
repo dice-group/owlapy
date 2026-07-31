@@ -67,7 +67,9 @@ Fast Python reasoner using owlready2. **Legacy:** owlapy is moving away from its
 dependency (#205); `RDFLibReasoner` is the actively-maintained pure-Python replacement and
 should be preferred for new code. `StructuralReasoner` also has a known circular dependency
 issue (#205) and is kept mainly for existing code that already depends on it. Constructing one
-now emits a `DeprecationWarning`.
+now emits a `DeprecationWarning`. owlready2 itself is an optional install extra as of #205
+(`pip install owlapy[owlready2]`) -- constructing a `StructuralReasoner` without it installed
+raises a clear `ImportError` explaining how to install it.
 
 ### Basic Usage
 

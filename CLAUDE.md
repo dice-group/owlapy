@@ -84,6 +84,7 @@ Version is tracked in **two places** and must stay in sync:
 - `dicee` pinned `>=0.3.2,<0.4.0`; `dspy` pinned `>=3.0.3,<4.0.0` (verified against 3.1.3) — do not switch to strict `==` pinning
 - Java reasoners require JPype1 + bundled jars in `owlapy/jar_dependencies/`
 - `agen_kg` requires `dspy` — install via `pip install owlapy[agentic]`
+- `owlready2` is an optional extra, not a hard dependency (issue #205) — install via `pip install owlapy[owlready2]`. It backs only the legacy `Ontology`/`StructuralReasoner` classes and a couple of `util_owl_static_funcs` helpers; `owl_ontology.py`/`owl_reasoner.py`/`util_owl_static_funcs.py` import fine without it (see `owlapy/_lazy_owlready2.py`), and only constructing/calling owlready2-backed functionality raises a clear `ImportError`. The `dev`/`all` extras still pull it in for the test suite.
 
 ## Git Workflow
 
