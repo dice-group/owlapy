@@ -61,13 +61,14 @@ expr = dl_to_owl_expression(
 
 ## Ontology Classes
 
-### `SyncOntology` (Recommended)
+### `SyncOntology` (Recommended for full OWL 2 support)
 
 ```python
 from owlapy.owl_ontology import SyncOntology
 ```
 
-Thread-safe ontology implementation using owlready2.
+Thread-safe ontology implementation backed by the Java OWL API (requires the JVM via
+`startJVM()`/`stopJVM()`).
 
 **Constructor:**
 ```python
@@ -94,9 +95,46 @@ onto.add_axiom(OWLSubClassOfAxiom(student, person))
 onto.save("updated_family.owl")
 ```
 
-### `Ontology`
+### `RDFLibOntology` (Recommended for pure-Python, read-only use)
 
-Alternative lightweight ontology implementation.
+```python
+from owlapy.owl_ontology import RDFLibOntology
+```
+
+Pure Python ontology implementation backed by rdflib. No JVM, no owlready2 -- just parses the
+RDF graph directly. Read-only for now: `add_axiom`/`remove_axiom`/`save` are not yet implemented
+(#205).
+
+**Constructor:**
+```python
+RDFLibOntology(path: str)
+```
+
+**Key Methods:**
+- `classes_in_signature()` / `individuals_in_signature()` / `object_properties_in_signature()` / `data_properties_in_signature()` / `properties_in_signature()`
+- `get_tbox_axioms() -> Iterable[OWLAxiom]` - Class declarations, `SubClassOf`, `EquivalentClasses`, `DisjointClasses` between named classes
+- `get_abox_axioms() -> Iterable[OWLAxiom]` - Class assertions, object- and data-property assertions
+- `get_abox_axioms_between_individuals()` / `get_abox_axioms_between_individuals_and_classes()` - Filtered subsets of the above
+- `equivalent_classes_axioms(c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]`
+- `data_property_domain_axioms(pe)` / `data_property_range_axioms(pe)` / `object_property_domain_axioms(pe)` / `object_property_range_axioms(pe)`
+- `get_ontology_id() -> OWLOntologyID`
+
+**Limitation:** axioms involving complex (blank-node) class expressions -- e.g. general class
+axioms, restriction-based domains/ranges -- aren't recognized; only axioms between named
+entities are. `general_class_axioms()` raises `NotImplementedError` to say so explicitly.
+
+**Example:**
+```python
+onto = RDFLibOntology("family.owl")
+classes = list(onto.classes_in_signature())
+tbox = list(onto.get_tbox_axioms())
+abox = list(onto.get_abox_axioms())
+```
+
+### `Ontology` (Legacy)
+
+owlready2-backed ontology implementation. Being phased out in favor of `RDFLibOntology` (#205);
+prefer `SyncOntology` or `RDFLibOntology` for new code.
 
 ```python
 from owlapy.owl_ontology import Ontology
@@ -124,7 +162,7 @@ Pure Python reasoner using SPARQL queries. No circular dependencies, efficient c
 
 **Constructor:**
 ```python
-RDFLibReasoner(ontology: SyncOntology | Ontology)
+RDFLibReasoner(ontology: AbstractOWLOntology | str)  # accepts a path directly, e.g. RDFLibReasoner("family.owl")
 ```
 
 **Key Methods:**

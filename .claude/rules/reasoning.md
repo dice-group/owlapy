@@ -14,12 +14,28 @@ paths:
 
 | Reasoner | Class | Backend | Notes |
 |---|---|---|---|
-| `StructuralReasoner` | `owlapy.owl_reasoner.StructuralReasoner` | owlready2 (pure Python) | Fast, incomplete, no JVM |
-| `RDFLibReasoner` | `owlapy.owl_reasoner_rdflib.RDFLibReasoner` | rdflib (pure Python) | No JVM |
+| `RDFLibReasoner` | `owlapy.owl_reasoner_rdflib.RDFLibReasoner` | rdflib (pure Python) | No JVM, no owlready2. **Preferred over `StructuralReasoner`** (#205) |
+| `StructuralReasoner` | `owlapy.owl_reasoner.StructuralReasoner` | owlready2 (pure Python) | **Legacy**, being phased out (#205). Fast, incomplete, no JVM. Constructing one emits `DeprecationWarning` |
 | `SyncReasoner("HermiT"\|"Pellet"\|"JFact"\|"Openllet"\|"Structural")` | `owlapy.owl_reasoner.SyncReasoner` | Java/OWLAPI | Complete DL reasoning |
 | `SyncReasoner("ELK")` | same | Java/OWLAPI | EL fragment only, very fast, no universals/nominals/inverses |
 
-## StructuralReasoner (no JVM)
+## RDFLibReasoner (no JVM, no owlready2 — preferred)
+
+```python
+from owlapy.owl_reasoner_rdflib import RDFLibReasoner
+from owlapy.class_expression import OWLClass
+
+reasoner = RDFLibReasoner("KGs/Family/father.owl")  # accepts a path, RDFLibOntology, or Ontology/SyncOntology directly
+instances = set(reasoner.instances(OWLClass("http://example.com/father#male")))  # generator -> materialize
+sub_classes = set(reasoner.sub_classes(cls, direct=True))
+super_classes = set(reasoner.super_classes(cls, direct=False))
+equiv = set(reasoner.equivalent_classes(cls))
+disjoint = set(reasoner.disjoint_classes(cls))
+children = set(reasoner.object_property_values(individual, prop))
+values = set(reasoner.data_property_values(individual, data_prop))
+```
+
+## StructuralReasoner (no JVM, legacy — see #205)
 
 ```python
 from owlapy.owl_reasoner import StructuralReasoner
@@ -78,4 +94,4 @@ owlapy --path_ontology "KGs/Family/family-benchmark_rich_background.owl" --infer
 - **Always call `stopJVM()`** after any Java-backed reasoner (`SyncReasoner`); `StructuralReasoner` and `RDFLibReasoner` never need it
 - `instances()` returns a generator — wrap in `set()`/`list()`
 - ELK only supports the EL fragment
-- Prefer `StructuralReasoner` for speed on large ontologies when incompleteness is acceptable; use `SyncReasoner` with HermiT/Pellet for DL-complete results and SWRL
+- Prefer `RDFLibReasoner` for speed on large ontologies when incompleteness is acceptable — it has no owlready2/JVM dependency and no circular sub/super-class dependency issue, unlike `StructuralReasoner` (legacy, #205). Use `SyncReasoner` with HermiT/Pellet for DL-complete results and SWRL

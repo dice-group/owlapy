@@ -8,8 +8,8 @@ Reasoning is the process of inferring implicit knowledge from explicit axioms. o
 
 | Reasoner | Implementation | Completeness | Speed | Dependencies | Use Case |
 |----------|---------------|--------------|-------|--------------|----------|
-| **RDFLibReasoner** | Pure Python (SPARQL) | Structural | Fast | rdflib only | General purpose, no circular deps |
-| **StructuralReasoner** | Python (owlready2) | Structural | Very fast | owlready2 | Quick queries, legacy code |
+| **RDFLibReasoner** | Pure Python (SPARQL) | Structural | Fast | rdflib only | Recommended: general purpose, no circular deps, no owlready2/JVM |
+| **StructuralReasoner (Legacy)** | Python (owlready2) | Structural | Very fast | owlready2 | Existing owlready2-based code only; being phased out (#205) |
 | **SyncReasoner** | Java (various) | Complete OWL 2 DL | Slower | JPype1 + Java | Full reasoning, complex queries |
 
 ## 1. RDFLibReasoner (Recommended)
@@ -61,9 +61,13 @@ reasoner.instances(OWLClass("http://example.com/onto#Person"))
 - Does not compute property chains
 - Best for instance retrieval and hierarchy navigation
 
-## 2. StructuralReasoner
+## 2. StructuralReasoner (Legacy)
 
-Fast Python reasoner using owlready2. Has circular dependency issue (#205) but still widely used.
+Fast Python reasoner using owlready2. **Legacy:** owlapy is moving away from its owlready2
+dependency (#205); `RDFLibReasoner` is the actively-maintained pure-Python replacement and
+should be preferred for new code. `StructuralReasoner` also has a known circular dependency
+issue (#205) and is kept mainly for existing code that already depends on it. Constructing one
+now emits a `DeprecationWarning`.
 
 ### Basic Usage
 

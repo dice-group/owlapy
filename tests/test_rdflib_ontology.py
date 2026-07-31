@@ -20,6 +20,8 @@ from owlapy.owl_axiom import (
     OWLDataPropertyAssertionAxiom,
     OWLDataPropertyDomainAxiom,
     OWLDataPropertyRangeAxiom,
+    OWLDeclarationAxiom,
+    OWLDisjointClassesAxiom,
     OWLEquivalentClassesAxiom,
     OWLObjectPropertyAssertionAxiom,
     OWLObjectPropertyDomainAxiom,
@@ -39,13 +41,16 @@ def _write_graph(path: str, graph: Graph):
 
 @pytest.fixture
 def basic_kg_path(tmp_path):
-    """Person subClassOf Agent, Person equivalentClass Human, knows/age with
-    domain+range, alice a Person with alice knows bob and alice age 30."""
+    """Person subClassOf Agent, Person equivalentClass Human, Person disjointWith Robot,
+    knows/age with domain+range, alice a Person with alice knows bob and alice age 30.
+    Person also carries an rdfs:comment annotation, to make sure tbox extraction doesn't
+    trip over predicates that aren't TBox structure."""
     g = Graph()
     ontology = URIRef(ONTOLOGY_IRI)
     person = URIRef(NS + "Person")
     agent = URIRef(NS + "Agent")
     human = URIRef(NS + "Human")
+    robot = URIRef(NS + "Robot")
     alice = URIRef(NS + "alice")
     bob = URIRef(NS + "bob")
     knows = URIRef(NS + "knows")
@@ -56,8 +61,11 @@ def basic_kg_path(tmp_path):
     g.add((person, RDF.type, OWL.Class))
     g.add((agent, RDF.type, OWL.Class))
     g.add((human, RDF.type, OWL.Class))
+    g.add((robot, RDF.type, OWL.Class))
     g.add((person, RDFS.subClassOf, agent))
     g.add((person, OWL.equivalentClass, human))
+    g.add((person, OWL.disjointWith, robot))
+    g.add((person, RDFS.comment, Literal("A person is an Agent.")))
 
     g.add((knows, RDF.type, OWL.ObjectProperty))
     g.add((knows, RDFS.domain, person))
@@ -79,16 +87,35 @@ def basic_kg_path(tmp_path):
 
 
 @pytest.fixture
-def bad_type_kg_path(tmp_path):
-    """An individual asserted to be of an rdf:type that is neither a declared
-    owl:Class nor owl:NamedIndividual -- triggers the RuntimeError branch."""
+def undeclared_type_kg_path(tmp_path):
+    """An individual asserted to be of an rdf:type that is neither a declared owl:Class nor
+    owl:NamedIndividual (e.g. only ever referenced as a class via this one triple) -- valid OWL
+    (class membership doesn't require an independent `C rdf:type owl:Class` declaration), so
+    get_abox_axioms() must still produce a class assertion for it rather than crashing."""
     g = Graph()
     alice = URIRef(NS + "alice")
     undeclared = URIRef(NS + "SomethingUndeclared")
     g.add((alice, RDF.type, OWL.NamedIndividual))
     g.add((alice, RDF.type, undeclared))
 
-    path = str(tmp_path / "bad_type.owl")
+    path = str(tmp_path / "undeclared_type.owl")
+    _write_graph(path, g)
+    return path
+
+
+@pytest.fixture
+def undeclared_individual_target_kg_path(tmp_path):
+    """An object-property assertion whose target individual is never independently declared
+    `rdf:type owl:NamedIndividual` -- also valid OWL, so it must still be picked up as an
+    object-property assertion rather than crashing."""
+    g = Graph()
+    alice = URIRef(NS + "alice")
+    bob = URIRef(NS + "bob")
+    knows = URIRef(NS + "knows")
+    g.add((alice, RDF.type, OWL.NamedIndividual))
+    g.add((alice, knows, bob))
+
+    path = str(tmp_path / "undeclared_individual_target.owl")
     _write_graph(path, g)
     return path
 
@@ -121,6 +148,28 @@ def test_get_tbox_axioms_subclass_and_equivalent(basic_kg_path):
     assert len(equiv_axioms) >= 1
 
 
+def test_get_tbox_axioms_declarations(basic_kg_path):
+    onto = RDFLibOntology(basic_kg_path)
+    declarations = [a for a in onto.get_tbox_axioms() if isinstance(a, OWLDeclarationAxiom)]
+    declared = {a.get_entity().str for a in declarations}
+    assert declared == {NS + "Person", NS + "Agent", NS + "Human", NS + "Robot"}
+
+
+def test_get_tbox_axioms_disjoint_classes(basic_kg_path):
+    onto = RDFLibOntology(basic_kg_path)
+    disjoint_axioms = [a for a in onto.get_tbox_axioms() if isinstance(a, OWLDisjointClassesAxiom)]
+    assert len(disjoint_axioms) == 1
+    operands = {c.str for c in disjoint_axioms[0].class_expressions()}
+    assert operands == {NS + "Person", NS + "Robot"}
+
+
+def test_get_tbox_axioms_ignores_annotation_predicates(basic_kg_path):
+    """Person carries an rdfs:comment; this must not raise and must not surface as a TBox axiom."""
+    onto = RDFLibOntology(basic_kg_path)
+    axioms = onto.get_tbox_axioms()  # must not raise
+    assert not any("A person is an Agent." in str(a) for a in axioms)
+
+
 def test_get_abox_axioms_class_assertion_and_object_property(basic_kg_path):
     onto = RDFLibOntology(basic_kg_path)
     axioms = onto.get_abox_axioms()
@@ -146,23 +195,22 @@ def test_get_abox_axioms_data_property_assertion(basic_kg_path):
     assert axiom.get_object().to_python() == 30
 
 
-def test_get_abox_axioms_raises_runtime_error_on_unrecognized_type(bad_type_kg_path):
-    onto = RDFLibOntology(bad_type_kg_path)
-    with pytest.raises(RuntimeError):
-        onto.get_abox_axioms()
+def test_get_abox_axioms_class_assertion_for_undeclared_class(undeclared_type_kg_path):
+    onto = RDFLibOntology(undeclared_type_kg_path)
+    axioms = onto.get_abox_axioms()  # must not raise
+
+    class_assertions = [a for a in axioms if isinstance(a, OWLClassAssertionAxiom)]
+    assert any(a.get_individual().str == NS + "alice" and a.get_class_expression().str == NS + "SomethingUndeclared"
+               for a in class_assertions)
 
 
-def test_get_tbox_axioms_raises_not_implemented_for_unknown_predicate(tmp_path):
-    g = Graph()
-    person = URIRef(NS + "Person")
-    g.add((person, RDF.type, OWL.Class))
-    g.add((person, RDFS.comment, Literal("a comment, not subClassOf/equivalentClass/type")))
-    path = str(tmp_path / "unknown_predicate.owl")
-    _write_graph(path, g)
+def test_get_abox_axioms_object_property_to_undeclared_individual(undeclared_individual_target_kg_path):
+    onto = RDFLibOntology(undeclared_individual_target_kg_path)
+    axioms = onto.get_abox_axioms()  # must not raise
 
-    onto = RDFLibOntology(path)
-    with pytest.raises(NotImplementedError):
-        onto.get_tbox_axioms()
+    object_prop_assertions = [a for a in axioms if isinstance(a, OWLObjectPropertyAssertionAxiom)]
+    assert any(a.get_subject().str == NS + "alice" and a.get_object().str == NS + "bob"
+               for a in object_prop_assertions)
 
 
 class TestRDFLibOntologyReadAPI:
@@ -174,7 +222,7 @@ class TestRDFLibOntologyReadAPI:
 
     def test_classes_in_signature(self):
         classes = {c.str for c in self.onto.classes_in_signature()}
-        assert classes == {NS + "Person", NS + "Agent", NS + "Human"}
+        assert classes == {NS + "Person", NS + "Agent", NS + "Human", NS + "Robot"}
 
     def test_data_properties_in_signature(self):
         assert {p.str for p in self.onto.data_properties_in_signature()} == {NS + "age"}
