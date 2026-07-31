@@ -225,6 +225,28 @@ stopJVM()
 - `create_laconic_axiom_justifications(axiom, ...) -> List[Set[OWLAxiom]]` - Same, but each justification is minimized/laconic
 - `infer_axioms_and_save(output_path, output_format=None, inference_types=[...])` - Materialize inferred axioms (e.g. `["InferredClassAssertionAxiomGenerator"]`) and save them
 
+### `EBR` (Embedding-Based Reasoner)
+
+Neural, embedding-based reasoner: predicts class membership/relations from a pretrained knowledge
+graph embedding model (via `dicee`) instead of applying DL semantics to asserted axioms. Not
+DL-complete -- results are probabilistic, score-thresholded predictions. Useful for large, noisy,
+or incomplete knowledge graphs. Requires the `dicee` package (`pip install dicee`).
+
+```python
+from owlapy.owl_ontology import NeuralOntology
+from owlapy.owl_reasoner import EBR
+
+neural_onto = NeuralOntology("path/to/pretrained_kge_model")
+reasoner = EBR(ontology=neural_onto)
+```
+
+**Key Methods:**
+- `instances(ce: OWLClassExpression) -> Iterable[OWLNamedIndividual]` - Predict instances of a (named) class, thresholded by `gamma` (default `0.5`)
+- `predict(h=None, r=None, t=None) -> List[Tuple[str, float]]` - Raw `(head, relation, tail)` triple predictions with scores
+- `sub_classes(ce)` / `super_classes(ce)` / `types(ind)` / `object_property_values(ind, prop)` / `data_property_domains(pe)` / `object_property_domains(pe)` / `object_property_ranges(pe)`
+
+**Limitations:** no complex class expressions; `equivalent_classes()`, `disjoint_classes()`, `same_individuals()`, `different_individuals()`, `equivalent_object_properties()`, `equivalent_data_properties()`, `disjoint_object_properties()`, `disjoint_data_properties()`, and `data_property_values()` all raise `NotImplementedError`.
+
 ## Class Expressions
 
 ### Atomic Classes

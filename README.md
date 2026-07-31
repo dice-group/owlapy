@@ -25,9 +25,9 @@ LLMs
 
 ### Production-Ready Reasoning
 
-- **Python-native Reasoners**: Structural Reasoner and Embedding-based Reasoner
+- **Python-native Reasoners**: [RDFLibReasoner](markdown_docs/05_reasoning.md#1-rdflibreasoner-recommended) (recommended, pure Python, no JVM/owlready2), [Structural Reasoner](markdown_docs/05_reasoning.md#2-structuralreasoner-legacy) (legacy), and an [Embedding-Based Reasoner](markdown_docs/05_reasoning.md#4-ebr-embedding-based-reasoner) for neural knowledge graph completion
 - **Optimized Performance**: Benchmarked across complex ontologies (see our [performance data](#reasoners-runtime-benchmark))
-- **Synchronization with Java Reasoners**: HermiT, Pellet, JFact, Openllet, ELK, and Structural
+- **Synchronization with Java Reasoners**: [HermiT, Pellet, JFact, Openllet, ELK, and Structural](markdown_docs/05_reasoning.md#3-syncreasoner-complete-owl-2-dl)
 
 ### Cutting-Edge Features
 
@@ -90,7 +90,7 @@ For comprehensive, LLM-optimized documentation, check out the [`markdown_docs/`]
 - **[Getting Started](markdown_docs/01_getting_started.md)** - Installation, setup, and quick start guide
 - **[Core Concepts](markdown_docs/02_core_concepts.md)** - OWL fundamentals, ontologies, reasoners, and class expressions
 - **[Ontology Management](markdown_docs/03_ontology_management.md)** - Creating, loading, saving, and modifying ontologies
-- **[Reasoning](markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, StructuralReasoner, and SyncReasoner
+- **[Reasoning](markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, StructuralReasoner, SyncReasoner, and the Embedding-Based Reasoner (EBR)
 - **[Common Patterns](markdown_docs/08_common_patterns.md)** - Best practices, patterns, and anti-patterns
 - **[API Reference](markdown_docs/09_api_reference.md)** - Complete API documentation
 
