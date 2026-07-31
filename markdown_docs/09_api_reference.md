@@ -144,7 +144,9 @@ onto.save("family_updated.owl")
 ### `Ontology` (Legacy)
 
 owlready2-backed ontology implementation. Being phased out in favor of `RDFLibOntology` (#205);
-prefer `SyncOntology` or `RDFLibOntology` for new code.
+prefer `SyncOntology` or `RDFLibOntology` for new code. owlready2 is an optional install extra
+(`pip install owlapy[owlready2]`) -- constructing an `Ontology` without it installed raises a
+clear `ImportError` explaining how to install it.
 
 ```python
 from owlapy.owl_ontology import Ontology

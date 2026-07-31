@@ -11,12 +11,11 @@ from types import MappingProxyType
 from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union, cast
 
 import jpype
-import owlready2
 import rdflib
-from owlready2 import AllDifferent, AllDisjoint, GeneralClassAxiom, destroy_entity
 from pandas import Timedelta
 
 from owlapy import namespaces
+from owlapy._lazy_owlready2 import import_owlready2
 from owlapy.abstracts.abstract_owl_ontology import _OI, AbstractOWLOntology
 from owlapy.class_expression import (
     OWLClass,
@@ -100,6 +99,17 @@ from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
 
 logger = logging.getLogger(__name__)
+
+# owlready2 is an optional dependency (see owlapy._lazy_owlready2 / issue #205): `owlready2`
+# below is either the real module or a placeholder that raises a clear ImportError the moment
+# anything below actually tries to call into it (module-level attribute access, e.g. for type
+# annotations on the owlready2-backed Ontology/ToOwlready2/FromOwlready2 classes below, always
+# succeeds either way).
+owlready2 = import_owlready2()
+AllDifferent = owlready2.AllDifferent
+AllDisjoint = owlready2.AllDisjoint
+GeneralClassAxiom = owlready2.GeneralClassAxiom
+destroy_entity = owlready2.destroy_entity
 
 _Datatype_map: Final = MappingProxyType({
     int: IntegerOWLDatatype,

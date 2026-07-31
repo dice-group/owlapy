@@ -35,7 +35,6 @@ extras["min"] = deps_list(
     "rdflib",
     "parsimonious",
     "sortedcontainers",
-    "owlready2",
     "JPype1",
     "tqdm",
     "fastapi",
@@ -45,7 +44,15 @@ extras["min"] = deps_list(
     "dspy",
 )
 
-extras["dev"] = (extras["min"] + deps_list("pytest", "ruff"))
+# owlready2 backs only the legacy, owlready2-specific parts of owlapy (`Ontology`,
+# `StructuralReasoner`, a few `util_owl_static_funcs` helpers) -- owlapy is migrating away from it
+# in favor of the pure-Python RDFLibOntology/RDFLibReasoner (see issue #205), so it's an optional
+# extra rather than a hard install-time dependency. `owlapy.owl_ontology`/`owl_reasoner` import
+# fine without it; only code paths that actually construct/call owlready2 functionality raise a
+# clear ImportError pointing at this extra (see `owlapy/_lazy_owlready2.py`).
+extras["owlready2"] = deps_list("owlready2")
+
+extras["dev"] = (extras["min"] + extras["owlready2"] + deps_list("pytest", "ruff"))
 extras["agentic"] = (extras["min"] + deps_list("dspy"))
 extras["all"] = (extras["dev"] + deps_list("dspy", "dicee"))
 install_requires = [extras["min"]]

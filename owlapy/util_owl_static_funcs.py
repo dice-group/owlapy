@@ -5,11 +5,11 @@ import random
 from typing import List, Set
 
 import pandas as pd
-from owlready2 import destroy_entity, get_ontology
 from rdflib import OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import XSD
 from tqdm import tqdm
 
+from ._lazy_owlready2 import import_owlready2
 from .class_expression import OWLClass, OWLClassExpression
 from .iri import IRI
 from .owl_axiom import OWLDataPropertyAssertionAxiom, OWLEquivalentClassesAxiom
@@ -19,6 +19,13 @@ from .owl_ontology import Ontology, SyncOntology
 from .owl_property import OWLDataProperty
 
 logger = logging.getLogger(__name__)
+
+# owlready2 is an optional dependency, needed only by make_kb_incomplete(_ass)/make_kb_inconsistent
+# below (see owlapy._lazy_owlready2 / issue #205); create_ontology/csv_to_rdf_kg/
+# save_owl_class_expressions don't need it.
+_owlready2 = import_owlready2()
+destroy_entity = _owlready2.destroy_entity
+get_ontology = _owlready2.get_ontology
 
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
