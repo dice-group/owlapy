@@ -1677,62 +1677,59 @@ class RDFLibOntology(AbstractOWLOntology):
     def __len__(self) -> int:
         return len(self.rdflib_graph)
 
-    def get_tbox_axioms(self) -> Iterable[OWLSubClassOfAxiom | OWLEquivalentClassesAxiom]:
+    def get_tbox_axioms(self) -> Iterable[OWLAxiom]:
+        """Get all TBox (schema-level) axioms this loader can represent: class declarations,
+        SubClassOf, EquivalentClasses and DisjointClasses axioms between *named* classes.
+
+        Predicates this loader doesn't understand as TBox structure (e.g. `rdfs:label`,
+        `rdfs:comment`, or any other annotation on a class) are silently skipped rather than
+        raising -- they aren't TBox axioms, and virtually every real-world ontology has them.
+        """
         results = []
         for owl_class in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class):
-            if isinstance(owl_class, rdflib.term.URIRef):
-                str_owl_class = owl_class.n3()[1:-1]
-                for (_, p, o) in self.rdflib_graph.triples(triple=(owl_class, None, None)):
-                    if isinstance(o, rdflib.term.BNode):
-                        continue
-                    str_iri_predicate = p.n3()
-                    str_iri_object = o.n3()[1:-1]
-                    if str_iri_predicate == "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>":
-                        # Ignore for the timebing
-                        axiom = OWLDeclarationAxiom(OWLClass(str_owl_class))
-                    elif str_iri_predicate == "<http://www.w3.org/2000/01/rdf-schema#subClassOf>":
-                        axiom = OWLSubClassOfAxiom(sub_class=OWLClass(str_owl_class),
-                                                   super_class=OWLClass(str_iri_object))
-
-                    elif str_iri_predicate == "<http://www.w3.org/2002/07/owl#equivalentClass>":
-                        axiom = OWLEquivalentClassesAxiom([OWLClass(str_owl_class), OWLClass(str_iri_object)])
-                    else:
-                        raise NotImplementedError(f"{str_iri_predicate} unsure")
-                    if axiom:
-                        results.append(axiom)
+            if not isinstance(owl_class, rdflib.term.URIRef):
+                continue
+            cls = OWLClass(owl_class.n3()[1:-1])
+            results.append(OWLDeclarationAxiom(cls))
+            for super_cls in self.rdflib_graph.objects(owl_class, rdflib.RDFS.subClassOf):
+                if isinstance(super_cls, rdflib.term.URIRef):
+                    results.append(OWLSubClassOfAxiom(sub_class=cls, super_class=OWLClass(super_cls.n3()[1:-1])))
+            for equiv_cls in self.rdflib_graph.objects(owl_class, rdflib.OWL.equivalentClass):
+                if isinstance(equiv_cls, rdflib.term.URIRef):
+                    results.append(OWLEquivalentClassesAxiom([cls, OWLClass(equiv_cls.n3()[1:-1])]))
+            for disjoint_cls in self.rdflib_graph.objects(owl_class, rdflib.OWL.disjointWith):
+                if isinstance(disjoint_cls, rdflib.term.URIRef):
+                    results.append(OWLDisjointClassesAxiom([cls, OWLClass(disjoint_cls.n3()[1:-1])]))
         return results
 
     def get_abox_axioms(self) -> Iterable:
-        results=[]
+        """Get all ABox (assertional) axioms this loader can represent: class assertions,
+        object-property assertions, and data-property assertions for every named individual.
+
+        Unlike earlier versions of this method, a class-assertion target does not need to be
+        independently declared `rdf:type owl:Class` (OWL doesn't require that for `i rdf:type C`
+        to be valid), and an object-property target does not need to be independently declared
+        `rdf:type owl:NamedIndividual` -- neither omission is an error, so neither raises anymore.
+        """
+        results = []
         for owl_individual in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
-            if isinstance(owl_individual, rdflib.term.URIRef):
-                str_owl_individual = owl_individual.n3()[1:-1]
-                for (_, p, o) in self.rdflib_graph.triples(triple=(owl_individual,None, None)):
-                    if isinstance(o, rdflib.term.BNode):
+            if not isinstance(owl_individual, rdflib.term.URIRef):
+                continue
+            subject = OWLNamedIndividual(owl_individual.n3()[1:-1])
+            for (_, p, o) in self.rdflib_graph.triples(triple=(owl_individual, None, None)):
+                if isinstance(o, rdflib.term.BNode):
+                    continue
+                if p == rdflib.RDF.type:
+                    if o == rdflib.OWL.NamedIndividual:
                         continue
-                    str_iri_predicate = p.n3()[1:-1]
-                    str_iri_object = o.n3()[1:-1]
-                    axiom=None
-                    if str_iri_predicate == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
-                        if str_iri_object in self.str_owl_classes:
-                            axiom = OWLClassAssertionAxiom(OWLNamedIndividual(str_owl_individual), OWLClass(str_iri_object))
-                        elif str_iri_object == "http://www.w3.org/2002/07/owl#NamedIndividual":
-                            # axiom= OWLDeclarationAxiom(OWLNamedIndividual(str_owl_individual))
-                            continue
-                        else:
-                            raise RuntimeError(f"Incorrect Parsing:\t{str_owl_individual}\t{str_iri_predicate}\t{str_iri_object}")
-                    elif str_iri_object in self.str_owl_individuals:
-                        axiom = OWLObjectPropertyAssertionAxiom(OWLNamedIndividual(str_owl_individual),
-                                                                             OWLObjectProperty(str_iri_predicate),
-                                                                             OWLNamedIndividual(str_iri_object))
-                    elif isinstance(o, rdflib.term.Literal):
-                        axiom = OWLDataPropertyAssertionAxiom(OWLNamedIndividual(str_owl_individual),
-                                                               OWLDataProperty(str_iri_predicate),
-                                                               _rdflib_literal_to_owl_literal(o))
-                    else:
-                        raise NotImplementedError(f"Unsure how to parse:\t{str_owl_individual}\t{str_iri_predicate}\t{o}")
-                    if axiom:
-                        results.append(axiom)
+                    if isinstance(o, rdflib.term.URIRef):
+                        results.append(OWLClassAssertionAxiom(subject, OWLClass(o.n3()[1:-1])))
+                elif isinstance(o, rdflib.term.Literal):
+                    results.append(OWLDataPropertyAssertionAxiom(subject, OWLDataProperty(p.n3()[1:-1]),
+                                                                   _rdflib_literal_to_owl_literal(o)))
+                elif isinstance(o, rdflib.term.URIRef):
+                    results.append(OWLObjectPropertyAssertionAxiom(subject, OWLObjectProperty(p.n3()[1:-1]),
+                                                                     OWLNamedIndividual(o.n3()[1:-1])))
         return results
 
     def classes_in_signature(self) -> Iterable[OWLClass]:

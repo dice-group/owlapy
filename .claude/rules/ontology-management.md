@@ -13,11 +13,12 @@ paths:
 # Ontology Management
 
 ```python
-from owlapy.owl_ontology import SyncOntology, Ontology, NeuralOntology
+from owlapy.owl_ontology import SyncOntology, RDFLibOntology, Ontology, NeuralOntology
 from owlapy.util_owl_static_funcs import create_ontology, csv_to_rdf_kg, save_owl_class_expressions
 
-onto = SyncOntology("path/to/ontology.owl")            # preferred: thread-safe owlready2 wrapper
-onto = Ontology("path/to/ontology.owl")                  # lower-level owlready2-backed
+onto = SyncOntology("path/to/ontology.owl")            # thread-safe, Java OWL API-backed (needs the JVM); full read/write
+onto = RDFLibOntology("path/to/ontology.owl")            # pure Python (rdflib), no JVM/owlready2; read API only, no add_axiom/remove_axiom/save yet (#205)
+onto = Ontology("path/to/ontology.owl")                  # owlready2-backed; legacy, being phased out in favor of RDFLibOntology (#205)
 onto = create_ontology("file:/my_ontology.owl", with_owlapi=False)
 ```
 
@@ -70,6 +71,7 @@ save_owl_class_expressions(expressions=[expr1, expr2], path="predictions.owl",
 ## Constraints
 
 - Use full IRIs or `IRI.create(namespace, remainder)` when constructing entities — never bare strings
-- `SyncOntology` is preferred for most use cases; `Ontology` is the lower-level class
+- `SyncOntology` is preferred when you need write access or Java-backed reasoning; `RDFLibOntology` is preferred for pure-Python, read-only use (no JVM/owlready2); `Ontology` (owlready2-backed) is legacy — being phased out (#205)
+- `RDFLibOntology`'s `general_class_axioms()` raises `NotImplementedError`: it only recognizes axioms between *named* entities, not complex (blank-node) class expressions
 - `create_ontology` paths need a valid file URI scheme (e.g. `"file:/path.owl"`)
 - Don't pass `with_owlapi=True` unless Java/OWLAPI interop is explicitly needed — it starts a JVM (see `.claude/rules/owlapi-swrl.md`)

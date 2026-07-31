@@ -5,6 +5,7 @@ import operator
 import os
 import subprocess
 import sys
+import warnings
 from collections import Counter, defaultdict
 from functools import cached_property, reduce, singledispatchmethod
 from itertools import chain, repeat
@@ -60,7 +61,14 @@ _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 
 class StructuralReasoner(AbstractOWLReasoner):
-    """Tries to check instances fast (but maybe incomplete)."""
+    """Tries to check instances fast (but maybe incomplete).
+
+    .. deprecated::
+        `StructuralReasoner` is owlready2-backed and is being phased out in favor of
+        `RDFLibReasoner` (`owlapy.owl_reasoner_rdflib.RDFLibReasoner`), a pure-Python
+        replacement with no owlready2/JVM dependency and no circular sub/super-class
+        dependency issue (see issue #205). Prefer `RDFLibReasoner` for new code.
+    """
 
     def __init__(self, ontology: Union[AbstractOWLOntology, str], *, class_cache: bool = True,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
@@ -73,6 +81,13 @@ class StructuralReasoner(AbstractOWLReasoner):
             sub_properties: Whether to take sub properties into account for the
                 :func:`StructuralReasoner.instances` retrieval.
             """
+        warnings.warn(
+            "StructuralReasoner is owlready2-backed and being phased out in favor of "
+            "RDFLibReasoner (owlapy.owl_reasoner_rdflib.RDFLibReasoner), a pure-Python "
+            "replacement with no owlready2/JVM dependency. See issue #205.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if isinstance(ontology, str):
             ontology = Ontology(ontology)
 
