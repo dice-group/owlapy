@@ -157,6 +157,22 @@ _RDFLIB_FORMATS: Final = MappingProxyType({
 # instead of a plain Graph.
 _RDFLIB_CONJUNCTIVE_FORMATS: Final = frozenset({"trix", "nquads"})
 
+# Format table for RDFLibOntology.save(), which serializes natively via rdflib (no OWL API
+# fallback dance needed, unlike Ontology/SyncOntology above). Keys are user-facing format
+# strings -- both rdflib's own names and the OWL-API-style aliases used by Ontology/SyncOntology's
+# save(), so the three ontology classes accept the same format vocabulary. Values are the format
+# names passed to ``rdflib.Graph.serialize(format=...)``.
+_RDFLIB_NATIVE_FORMATS: Final = MappingProxyType({
+    "rdfxml": "xml", "rdf/xml": "xml", "xml": "xml",
+    "turtle": "turtle", "ttl": "turtle", "turtle2": "turtle",
+    "n3": "n3",
+    "ntriples": "nt", "nt": "nt", "nt11": "nt11",
+    "trig": "trig",
+    "trix": "trix",
+    "nquads": "nquads", "nq": "nquads",
+    "json-ld": "json-ld", "jsonld": "json-ld",
+})
+
 
 class OWLOntologyID:
     """An object that identifies an ontology. Since OWL 2, ontologies do not have to have an ontology IRI, or if they
@@ -1658,21 +1674,372 @@ def _rdflib_literal_to_owl_literal(literal: "rdflib.term.Literal") -> OWLLiteral
         return OWLLiteral(str(literal), StringOWLDatatype)
 
 
+def _owl_literal_to_rdflib_literal(literal: OWLLiteral) -> "rdflib.term.Literal":
+    """Convert an :class:`OWLLiteral` into an rdflib ``Literal``, the inverse of
+    :func:`_rdflib_literal_to_owl_literal`."""
+    return rdflib.Literal(literal.to_python(), datatype=rdflib.URIRef(literal.get_datatype().str))
+
+
+# owl: vocabulary term for each property-characteristic axiom type RDFLibOntology's write API
+# supports. OWLFunctionalObjectPropertyAxiom and OWLFunctionalDataPropertyAxiom map to the same
+# owl:FunctionalProperty class -- OWL doesn't distinguish "functional" at the RDF level, the
+# property's own declared type (owl:ObjectProperty vs owl:DatatypeProperty) does that.
+_PROPERTY_CHARACTERISTIC_TERMS: Final = MappingProxyType({
+    OWLFunctionalObjectPropertyAxiom: rdflib.OWL.FunctionalProperty,
+    OWLFunctionalDataPropertyAxiom: rdflib.OWL.FunctionalProperty,
+    OWLInverseFunctionalObjectPropertyAxiom: rdflib.OWL.InverseFunctionalProperty,
+    OWLSymmetricObjectPropertyAxiom: rdflib.OWL.SymmetricProperty,
+    OWLAsymmetricObjectPropertyAxiom: rdflib.OWL.AsymmetricProperty,
+    OWLTransitiveObjectPropertyAxiom: rdflib.OWL.TransitiveProperty,
+    OWLReflexiveObjectPropertyAxiom: rdflib.OWL.ReflexiveProperty,
+    OWLIrreflexiveObjectPropertyAxiom: rdflib.OWL.IrreflexiveProperty,
+})
+
+
+def _declare_entity(ontology, str_iri: str, rdf_type: "rdflib.term.URIRef", cache_list: list) -> None:
+    ontology.rdflib_graph.add((rdflib.URIRef(str_iri), rdflib.RDF.type, rdf_type))
+    if str_iri not in cache_list:
+        cache_list.append(str_iri)
+
+
+def _undeclare_entity(ontology, str_iri: str, rdf_type: "rdflib.term.URIRef", cache_list: list) -> None:
+    ontology.rdflib_graph.remove((rdflib.URIRef(str_iri), rdflib.RDF.type, rdf_type))
+    if str_iri in cache_list:
+        cache_list.remove(str_iri)
+
+
+def _declare_class(ontology, cls: OWLClass) -> None:
+    _declare_entity(ontology, cls.str, rdflib.OWL.Class, ontology.str_owl_classes)
+
+
+def _declare_individual(ontology, ind: OWLNamedIndividual) -> None:
+    _declare_entity(ontology, ind.str, rdflib.OWL.NamedIndividual, ontology.str_owl_individuals)
+
+
+def _declare_object_property(ontology, pe: OWLObjectProperty) -> None:
+    _declare_entity(ontology, pe.str, rdflib.OWL.ObjectProperty, ontology.str_owl_object_properties)
+
+
+def _declare_data_property(ontology, pe: OWLDataProperty) -> None:
+    _declare_entity(ontology, pe.str, rdflib.OWL.DatatypeProperty, ontology.str_owl_data_properties)
+
+
+def _add_property_characteristic(axiom: OWLAxiom, ontology) -> None:
+    term = _PROPERTY_CHARACTERISTIC_TERMS.get(type(axiom))
+    if term is None:
+        raise NotImplementedError(f"{type(axiom).__name__} is not supported by RDFLibOntology's write API yet.")
+    pe = axiom.get_property()
+    if isinstance(pe, OWLObjectProperty):
+        _declare_object_property(ontology, pe)
+    elif isinstance(pe, OWLDataProperty):
+        _declare_data_property(ontology, pe)
+    else:
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports a named object/data property as the property "
+            "of a characteristic axiom; property expressions (e.g. inverses) aren't representable.")
+    ontology.rdflib_graph.add((rdflib.URIRef(pe.str), rdflib.RDF.type, term))
+
+
+def _remove_property_characteristic(axiom: OWLAxiom, ontology) -> None:
+    term = _PROPERTY_CHARACTERISTIC_TERMS.get(type(axiom))
+    if term is None:
+        raise NotImplementedError(f"{type(axiom).__name__} is not supported by RDFLibOntology's write API yet.")
+    ontology.rdflib_graph.remove((rdflib.URIRef(axiom.get_property().str), rdflib.RDF.type, term))
+
+
+@singledispatch
+def _rdflib_add_axiom(axiom: OWLAxiom, ontology) -> None:
+    raise NotImplementedError(
+        f"RDFLibOntology.add_axiom() does not support {type(axiom).__name__} yet. Supported: "
+        f"OWLDeclarationAxiom, OWLClassAssertionAxiom, OWLObjectPropertyAssertionAxiom, "
+        f"OWLDataPropertyAssertionAxiom, OWLSubClassOfAxiom, OWLEquivalentClassesAxiom, "
+        f"OWLDisjointClassesAxiom, OWLSubObjectPropertyOfAxiom, OWLSubDataPropertyOfAxiom, "
+        f"OWL{{Object,Data}}PropertyDomainAxiom, OWL{{Object,Data}}PropertyRangeAxiom, and the "
+        f"property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/"
+        f"Transitive/Reflexive/Irreflexive) -- all between/on *named* entities only.")
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLDeclarationAxiom, ontology) -> None:
+    entity = axiom.get_entity()
+    if isinstance(entity, OWLClass):
+        _declare_class(ontology, entity)
+    elif isinstance(entity, OWLNamedIndividual):
+        _declare_individual(ontology, entity)
+    elif isinstance(entity, OWLObjectProperty):
+        _declare_object_property(ontology, entity)
+    elif isinstance(entity, OWLDataProperty):
+        _declare_data_property(ontology, entity)
+    else:
+        raise NotImplementedError(
+            f"RDFLibOntology.add_axiom() cannot declare entities of type {type(entity).__name__}; "
+            f"supported: OWLClass, OWLNamedIndividual, OWLObjectProperty, OWLDataProperty.")
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLClassAssertionAxiom, ontology) -> None:
+    ind, ce = axiom.get_individual(), axiom.get_class_expression()
+    if not isinstance(ind, OWLNamedIndividual) or not isinstance(ce, OWLClass):
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports OWLClassAssertionAxiom between a named "
+            "individual and a named class; complex class expressions/anonymous individuals aren't representable.")
+    _declare_individual(ontology, ind)
+    _declare_class(ontology, ce)
+    ontology.rdflib_graph.add((rdflib.URIRef(ind.str), rdflib.RDF.type, rdflib.URIRef(ce.str)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLObjectPropertyAssertionAxiom, ontology) -> None:
+    subj, prop, obj = axiom.get_subject(), axiom.get_property(), axiom.get_object()
+    if not isinstance(subj, OWLNamedIndividual) or not isinstance(prop, OWLObjectProperty) or not isinstance(obj, OWLNamedIndividual):
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports OWLObjectPropertyAssertionAxiom between named "
+            "individuals via a named object property; inverse/anonymous operands aren't representable.")
+    _declare_individual(ontology, subj)
+    _declare_individual(ontology, obj)
+    _declare_object_property(ontology, prop)
+    ontology.rdflib_graph.add((rdflib.URIRef(subj.str), rdflib.URIRef(prop.str), rdflib.URIRef(obj.str)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLDataPropertyAssertionAxiom, ontology) -> None:
+    subj, prop, lit = axiom.get_subject(), axiom.get_property(), axiom.get_object()
+    if not isinstance(subj, OWLNamedIndividual) or not isinstance(prop, OWLDataProperty):
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports OWLDataPropertyAssertionAxiom on a named "
+            "individual via a named data property.")
+    _declare_individual(ontology, subj)
+    _declare_data_property(ontology, prop)
+    ontology.rdflib_graph.add((rdflib.URIRef(subj.str), rdflib.URIRef(prop.str), _owl_literal_to_rdflib_literal(lit)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLSubClassOfAxiom, ontology) -> None:
+    sub, sup = axiom.get_sub_class(), axiom.get_super_class()
+    if not isinstance(sub, OWLClass) or not isinstance(sup, OWLClass):
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports OWLSubClassOfAxiom between two named classes; "
+            "general class axioms (complex sub-class expressions) aren't representable.")
+    _declare_class(ontology, sub)
+    _declare_class(ontology, sup)
+    ontology.rdflib_graph.add((rdflib.URIRef(sub.str), rdflib.RDFS.subClassOf, rdflib.URIRef(sup.str)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLEquivalentClassesAxiom, ontology) -> None:
+    operands = list(axiom.class_expressions())
+    if len(operands) < 2 or not all(isinstance(c, OWLClass) for c in operands):
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports OWLEquivalentClassesAxiom between two or more named classes.")
+    for c in operands:
+        _declare_class(ontology, c)
+    for left, right in zip(operands, operands[1:]):
+        ontology.rdflib_graph.add((rdflib.URIRef(left.str), rdflib.OWL.equivalentClass, rdflib.URIRef(right.str)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLDisjointClassesAxiom, ontology) -> None:
+    operands = list(axiom.class_expressions())
+    if len(operands) < 2 or not all(isinstance(c, OWLClass) for c in operands):
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports OWLDisjointClassesAxiom between two or more named classes.")
+    for c in operands:
+        _declare_class(ontology, c)
+    for i, left in enumerate(operands):
+        for right in operands[i + 1:]:
+            ontology.rdflib_graph.add((rdflib.URIRef(left.str), rdflib.OWL.disjointWith, rdflib.URIRef(right.str)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLSubPropertyAxiom, ontology) -> None:
+    sub, sup = axiom.get_sub_property(), axiom.get_super_property()
+    if isinstance(sub, OWLObjectProperty) and isinstance(sup, OWLObjectProperty):
+        _declare_object_property(ontology, sub)
+        _declare_object_property(ontology, sup)
+    elif isinstance(sub, OWLDataProperty) and isinstance(sup, OWLDataProperty):
+        _declare_data_property(ontology, sub)
+        _declare_data_property(ontology, sup)
+    else:
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports OWLSubPropertyAxiom between two named object "
+            "properties or two named data properties; property chains/inverses aren't representable.")
+    ontology.rdflib_graph.add((rdflib.URIRef(sub.str), rdflib.RDFS.subPropertyOf, rdflib.URIRef(sup.str)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLPropertyDomainAxiom, ontology) -> None:
+    pe, dom = axiom.get_property(), axiom.get_domain()
+    if not isinstance(dom, OWLClass):
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports a named class as the domain of "
+            "OWLObjectPropertyDomainAxiom/OWLDataPropertyDomainAxiom.")
+    if isinstance(pe, OWLObjectProperty):
+        _declare_object_property(ontology, pe)
+    elif isinstance(pe, OWLDataProperty):
+        _declare_data_property(ontology, pe)
+    else:
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports a named object/data property as the property of a domain axiom.")
+    _declare_class(ontology, dom)
+    ontology.rdflib_graph.add((rdflib.URIRef(pe.str), rdflib.RDFS.domain, rdflib.URIRef(dom.str)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLPropertyRangeAxiom, ontology) -> None:
+    pe, rng = axiom.get_property(), axiom.get_range()
+    if isinstance(pe, OWLObjectProperty):
+        if not isinstance(rng, OWLClass):
+            raise NotImplementedError(
+                "RDFLibOntology.add_axiom() only supports a named class as the range of OWLObjectPropertyRangeAxiom.")
+        _declare_object_property(ontology, pe)
+    elif isinstance(pe, OWLDataProperty):
+        if not isinstance(rng, OWLDatatype):
+            raise NotImplementedError(
+                "RDFLibOntology.add_axiom() only supports a named datatype as the range of "
+                "OWLDataPropertyRangeAxiom; complex data ranges aren't representable.")
+        _declare_data_property(ontology, pe)
+    else:
+        raise NotImplementedError(
+            "RDFLibOntology.add_axiom() only supports a named object/data property as the property of a range axiom.")
+    ontology.rdflib_graph.add((rdflib.URIRef(pe.str), rdflib.RDFS.range, rdflib.URIRef(rng.str)))
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology) -> None:
+    _add_property_characteristic(axiom, ontology)
+
+
+@_rdflib_add_axiom.register
+def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology) -> None:
+    _add_property_characteristic(axiom, ontology)
+
+
+@singledispatch
+def _rdflib_remove_axiom(axiom: OWLAxiom, ontology) -> None:
+    raise NotImplementedError(f"RDFLibOntology.remove_axiom() does not support {type(axiom).__name__} yet.")
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLDeclarationAxiom, ontology) -> None:
+    entity = axiom.get_entity()
+    if isinstance(entity, OWLClass):
+        _undeclare_entity(ontology, entity.str, rdflib.OWL.Class, ontology.str_owl_classes)
+    elif isinstance(entity, OWLNamedIndividual):
+        _undeclare_entity(ontology, entity.str, rdflib.OWL.NamedIndividual, ontology.str_owl_individuals)
+    elif isinstance(entity, OWLObjectProperty):
+        _undeclare_entity(ontology, entity.str, rdflib.OWL.ObjectProperty, ontology.str_owl_object_properties)
+    elif isinstance(entity, OWLDataProperty):
+        _undeclare_entity(ontology, entity.str, rdflib.OWL.DatatypeProperty, ontology.str_owl_data_properties)
+    else:
+        raise NotImplementedError(
+            f"RDFLibOntology.remove_axiom() cannot un-declare entities of type {type(entity).__name__}.")
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLClassAssertionAxiom, ontology) -> None:
+    ind, ce = axiom.get_individual(), axiom.get_class_expression()
+    if not isinstance(ind, OWLNamedIndividual) or not isinstance(ce, OWLClass):
+        raise NotImplementedError(
+            "RDFLibOntology.remove_axiom() only supports OWLClassAssertionAxiom between a named "
+            "individual and a named class.")
+    ontology.rdflib_graph.remove((rdflib.URIRef(ind.str), rdflib.RDF.type, rdflib.URIRef(ce.str)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLObjectPropertyAssertionAxiom, ontology) -> None:
+    subj, prop, obj = axiom.get_subject(), axiom.get_property(), axiom.get_object()
+    ontology.rdflib_graph.remove((rdflib.URIRef(subj.str), rdflib.URIRef(prop.str), rdflib.URIRef(obj.str)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLDataPropertyAssertionAxiom, ontology) -> None:
+    subj, prop, lit = axiom.get_subject(), axiom.get_property(), axiom.get_object()
+    ontology.rdflib_graph.remove((rdflib.URIRef(subj.str), rdflib.URIRef(prop.str), _owl_literal_to_rdflib_literal(lit)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLSubClassOfAxiom, ontology) -> None:
+    sub, sup = axiom.get_sub_class(), axiom.get_super_class()
+    if not isinstance(sub, OWLClass) or not isinstance(sup, OWLClass):
+        raise NotImplementedError("RDFLibOntology.remove_axiom() only supports OWLSubClassOfAxiom between two named classes.")
+    ontology.rdflib_graph.remove((rdflib.URIRef(sub.str), rdflib.RDFS.subClassOf, rdflib.URIRef(sup.str)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLEquivalentClassesAxiom, ontology) -> None:
+    operands = list(axiom.class_expressions())
+    if len(operands) < 2 or not all(isinstance(c, OWLClass) for c in operands):
+        raise NotImplementedError("RDFLibOntology.remove_axiom() only supports OWLEquivalentClassesAxiom between named classes.")
+    # Remove both directions defensively: equivalence is symmetric and equivalent_classes_axioms()
+    # looks both ways, but add_axiom() only asserts a forward chain.
+    for left, right in zip(operands, operands[1:]):
+        ontology.rdflib_graph.remove((rdflib.URIRef(left.str), rdflib.OWL.equivalentClass, rdflib.URIRef(right.str)))
+        ontology.rdflib_graph.remove((rdflib.URIRef(right.str), rdflib.OWL.equivalentClass, rdflib.URIRef(left.str)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLDisjointClassesAxiom, ontology) -> None:
+    operands = list(axiom.class_expressions())
+    if len(operands) < 2 or not all(isinstance(c, OWLClass) for c in operands):
+        raise NotImplementedError("RDFLibOntology.remove_axiom() only supports OWLDisjointClassesAxiom between named classes.")
+    for i, left in enumerate(operands):
+        for right in operands[i + 1:]:
+            ontology.rdflib_graph.remove((rdflib.URIRef(left.str), rdflib.OWL.disjointWith, rdflib.URIRef(right.str)))
+            ontology.rdflib_graph.remove((rdflib.URIRef(right.str), rdflib.OWL.disjointWith, rdflib.URIRef(left.str)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLSubPropertyAxiom, ontology) -> None:
+    sub, sup = axiom.get_sub_property(), axiom.get_super_property()
+    ontology.rdflib_graph.remove((rdflib.URIRef(sub.str), rdflib.RDFS.subPropertyOf, rdflib.URIRef(sup.str)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLPropertyDomainAxiom, ontology) -> None:
+    pe, dom = axiom.get_property(), axiom.get_domain()
+    if not isinstance(dom, OWLClass):
+        raise NotImplementedError("RDFLibOntology.remove_axiom() only supports a named class as a domain axiom's domain.")
+    ontology.rdflib_graph.remove((rdflib.URIRef(pe.str), rdflib.RDFS.domain, rdflib.URIRef(dom.str)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLPropertyRangeAxiom, ontology) -> None:
+    pe, rng = axiom.get_property(), axiom.get_range()
+    if not isinstance(rng, (OWLClass, OWLDatatype)):
+        raise NotImplementedError(
+            "RDFLibOntology.remove_axiom() only supports a named class/datatype as a range axiom's range.")
+    ontology.rdflib_graph.remove((rdflib.URIRef(pe.str), rdflib.RDFS.range, rdflib.URIRef(rng.str)))
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLObjectPropertyCharacteristicAxiom, ontology) -> None:
+    _remove_property_characteristic(axiom, ontology)
+
+
+@_rdflib_remove_axiom.register
+def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology) -> None:
+    _remove_property_characteristic(axiom, ontology)
+
+
 class RDFLibOntology(AbstractOWLOntology):
 
-    def __init__(self, path: str, load: bool = True):
-        self._path = path
+    def __init__(self, path: Union[str, IRI], load: bool = True):
+        self._path = path.as_str() if isinstance(path, IRI) else path
+        self.is_modified = False
         if load:
-            assert os.path.exists(path)
-            import rdflib
-
-            self.rdflib_graph = rdflib.Graph().parse(path)
+            assert os.path.exists(self._path)
+            self.rdflib_graph = rdflib.Graph().parse(self._path)
             self.str_owl_classes = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.Class) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_individuals = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_object_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.ObjectProperty) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_data_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.DatatypeProperty) if not isinstance(x, rdflib.term.BNode)]
-        else:  # create a blank rdf ontology
-            raise NotImplementedError("Currently supports only loading an existing ontology")
+        else:  # create a blank ontology; `path`/`self._path` is treated as the new ontology's IRI
+            self.rdflib_graph = rdflib.Graph()
+            self.rdflib_graph.add((rdflib.URIRef(self._path), rdflib.RDF.type, rdflib.OWL.Ontology))
+            self.str_owl_classes = []
+            self.str_owl_individuals = []
+            self.str_owl_object_properties = []
+            self.str_owl_data_properties = []
 
     def __len__(self) -> int:
         return len(self.rdflib_graph)
@@ -1813,45 +2180,69 @@ class RDFLibOntology(AbstractOWLOntology):
                 logger.warning("Complex range expression for %s is not supported by RDFLibOntology", pe)
 
     def add_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
-        raise NotImplementedError("will be implemented in future")
+        """Add the given axiom(s) to this ontology, translating them into rdflib triples.
+
+        Only axioms between/on *named* entities are supported (matching the read API's scope --
+        see `get_tbox_axioms()`/`get_abox_axioms()`); axioms involving complex class/property
+        expressions raise `NotImplementedError`. Adding an axiom that references an entity not yet
+        declared in this ontology (e.g. an `OWLSubClassOfAxiom` between two classes that were never
+        independently declared `owl:Class`) implicitly declares those entities too, so the axiom
+        stays visible to `get_tbox_axioms()`/`classes_in_signature()`/etc. immediately afterwards.
+        """
         self.is_modified = True
         if isinstance(axiom, OWLAxiom):
-            _add_axiom(axiom, self, self._world)
+            _rdflib_add_axiom(axiom, self)
         else:
             for ax in axiom:
-                _add_axiom(ax, self, self._world)
+                _rdflib_add_axiom(ax, self)
 
     def remove_axiom(self, axiom: Union[OWLAxiom, Iterable[OWLAxiom]]):
-        raise NotImplementedError("will be implemented in future")
+        """Remove the given axiom(s) from this ontology.
+
+        Removing an axiom only removes the triple(s) it directly represents -- it does not
+        cascade-remove entity declarations that other axioms might still depend on. Use
+        `remove_axiom(OWLDeclarationAxiom(entity))` explicitly to un-declare an entity.
+        """
         self.is_modified = True
         if isinstance(axiom, OWLAxiom):
-            _remove_axiom(axiom, self, self._world)
+            _rdflib_remove_axiom(axiom, self)
         else:
             for ax in axiom:
-                _remove_axiom(ax, self, self._world)
+                _rdflib_remove_axiom(ax, self)
 
-    def save(self, path: Union[str,IRI] = None, inplace:bool=False, rdf_format = "rdfxml"):
-        raise NotImplementedError("will be implemented in future")
-        # convert it into str.
+    def save(self, path: Union[str, IRI] = None, inplace: bool = False, document_format: Optional[str] = None):
+        """Save this ontology to a file via rdflib's own serializer.
+
+        Args:
+            path: Destination file path. Required unless `inplace` is True.
+            inplace: If True, overwrite the file this ontology was loaded from (or, for a
+                blank ontology created with `load=False`, the IRI it was constructed with --
+                which must itself be a valid filesystem path for that to work).
+            document_format: Serialization format. Accepts rdflib's own format names (`"xml"`,
+                `"turtle"`, `"n3"`, `"nt"`, `"nt11"`, `"trig"`, `"trix"`, `"nquads"`, `"json-ld"`)
+                plus the OWL-API-style aliases `Ontology`/`SyncOntology`'s `save()` accept
+                (`"rdfxml"`, `"ttl"`, `"ntriples"`, `"jsonld"`). Defaults to RDF/XML when omitted.
+
+        Raises:
+            ValueError: If an unsupported format string is provided.
+        """
         if isinstance(path, IRI):
             path = path.as_str()
-        # Sanity checking
         if inplace is False:
-            assert isinstance(path,str), f"path must be string if inplace is set to False. Current path is {type(path)}"
-        # Get the current ontology defined in the world.
-        ont_x:owlready2.namespace.Ontology
-        ont_x = self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str())
+            assert isinstance(path, str), f"path must be string if inplace is set to False. Current path is {type(path)}"
+        target = self._path if inplace else path
 
-        if inplace:
-            if os.path.exists(self._iri.as_str()):
-                logger.info(f"Saving {self} inplace...")
-                ont_x.save(file=self._iri.as_str(), format=rdf_format)
-            else:
-                logger.info(f"Saving {self} inplace with name of demo.owl...")
-                self._world.get_ontology(self.get_ontology_id().get_ontology_iri().as_str()).save(file="demo.owl")
-        else:
-            logger.info(f"Saving {path}..")
-            ont_x.save(file=path,format=rdf_format)
+        fmt_key = document_format.strip().lower() if document_format is not None else "rdfxml"
+        rdflib_format = _RDFLIB_NATIVE_FORMATS.get(fmt_key)
+        if rdflib_format is None:
+            raise ValueError(
+                f"Unsupported document format '{document_format}'. "
+                f"Supported formats: {', '.join(sorted(_RDFLIB_NATIVE_FORMATS))}")
+
+        parent = os.path.dirname(os.path.abspath(target))
+        os.makedirs(parent, exist_ok=True)
+        logger.info(f"Saving {self} to {target} (format={rdflib_format})...")
+        self.rdflib_graph.serialize(destination=target, format=rdflib_format)
 
     def get_ontology_id(self) -> OWLOntologyID:
         onto_iri = None

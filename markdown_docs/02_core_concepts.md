@@ -35,11 +35,12 @@ neural_onto = NeuralOntology("ontology.owl", "embeddings.pkl")
 ```
 
 **Key differences:** `SyncOntology` is thread-safe and backed by the Java OWL API (requires the
-JVM via `startJVM()`/`stopJVM()`, but gives complete OWL 2 support and read/write access).
-`RDFLibOntology` is a pure-Python, rdflib-backed alternative with no JVM or owlready2 dependency
--- prefer it for read-only ontology inspection (signature queries, TBox/ABox axiom retrieval)
-when you don't need Java-backed reasoning or ontology mutation (its write API is not yet
-implemented). `Ontology` is the original owlready2-backed implementation; treat it as legacy.
+JVM via `startJVM()`/`stopJVM()`, but gives complete OWL 2 support). `RDFLibOntology` is a
+pure-Python, rdflib-backed alternative with no JVM or owlready2 dependency -- prefer it when you
+don't need Java-backed reasoning; it supports both inspection (signature queries, TBox/ABox axiom
+retrieval) and mutation (`add_axiom`/`remove_axiom`/`save`), limited to axioms between *named*
+entities (no complex/blank-node class expressions). `Ontology` is the original owlready2-backed
+implementation; treat it as legacy.
 
 ### 2. OWL Entities
 
