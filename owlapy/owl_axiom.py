@@ -306,10 +306,10 @@ class OWLEquivalentClassesAxiom(OWLNaryClassAxiom):
         return any(isinstance(ce, OWLClass) for ce in self._class_expressions)
 
     def contains_owl_nothing(self) -> bool:
-        return any(isinstance(ce, OWLNothing) for ce in self._class_expressions)
+        return any(ce == OWLNothing for ce in self._class_expressions)
 
     def contains_owl_thing(self) -> bool:
-        return any(isinstance(ce, OWLThing) for ce in self._class_expressions)
+        return any(ce == OWLThing for ce in self._class_expressions)
 
     def named_classes(self) -> Iterable[OWLClass]:
         yield from (ce for ce in self._class_expressions if isinstance(ce, OWLClass))

@@ -164,17 +164,14 @@ def test_equivalent_classes_axiom_iter_and_named_classes():
     assert set(axiom.named_classes()) == {cls("A"), OWLNothing, OWLThing}
 
 
-def test_equivalent_classes_axiom_contains_owl_nothing_and_thing_are_broken():
-    # NOTE: OWLNothing/OWLThing are singleton *instances* of OWLClass (see
-    # class_expression/__init__.py), not classes. contains_owl_nothing()/
-    # contains_owl_thing() do `isinstance(ce, OWLNothing)` / `isinstance(ce, OWLThing)`,
-    # which is always a TypeError ("arg 2 must be a type") regardless of input --
-    # these two methods are unconditionally broken as currently written.
+def test_equivalent_classes_axiom_contains_owl_nothing_and_thing():
     axiom = OWLEquivalentClassesAxiom([cls("A"), OWLNothing, OWLThing])
-    with pytest.raises(TypeError):
-        axiom.contains_owl_nothing()
-    with pytest.raises(TypeError):
-        axiom.contains_owl_thing()
+    assert axiom.contains_owl_nothing() is True
+    assert axiom.contains_owl_thing() is True
+
+    axiom_without = OWLEquivalentClassesAxiom([cls("A"), cls("B")])
+    assert axiom_without.contains_owl_nothing() is False
+    assert axiom_without.contains_owl_thing() is False
 
 
 # ---------------------------------------------------------------------------
