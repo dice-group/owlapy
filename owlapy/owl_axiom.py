@@ -610,7 +610,7 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
         yield from self._class_expressions
 
     def get_owl_equivalent_classes_axiom(self) -> OWLEquivalentClassesAxiom:
-        return OWLEquivalentClassesAxiom(self._cls, OWLObjectUnionOf(self._class_expressions))
+        return OWLEquivalentClassesAxiom([self._cls, OWLObjectUnionOf(self._class_expressions)])
 
     def get_owl_disjoint_classes_axiom(self) -> OWLDisjointClassesAxiom:
         return OWLDisjointClassesAxiom(self._class_expressions)
