@@ -19,6 +19,7 @@ from owlapy.util_owl_static_funcs import create_ontology, csv_to_rdf_kg, save_ow
 onto = SyncOntology("path/to/ontology.owl")            # thread-safe, Java OWL API-backed (needs the JVM); full read/write
 onto = RDFLibOntology("path/to/ontology.owl")            # pure Python (rdflib), no JVM/owlready2; read/write, named entities only (#205)
 onto = Ontology("path/to/ontology.owl")                  # owlready2-backed; legacy, being phased out in favor of RDFLibOntology (#205)
+onto = NeuralOntology("path/to/pretrained_kge_model")     # embedding-backed (requires `dicee`); pairs with the EBR reasoner, see .claude/rules/reasoning.md
 onto = create_ontology("file:/my_ontology.owl", with_owlapi=False)
 ```
 

@@ -271,7 +271,15 @@ startJVM()
 reasoner = SyncReasoner(ontology, reasoner="HermiT")
 # ... use reasoner ...
 stopJVM()
+
+# EBR - Embedding-based instance prediction over a NeuralOntology (requires `dicee`)
+from owlapy.owl_ontology import NeuralOntology
+from owlapy.owl_reasoner import EBR
+neural_onto = NeuralOntology("path/to/pretrained_kge_model")
+reasoner = EBR(ontology=neural_onto)
 ```
+
+See [Reasoning](05_reasoning.md) for the complete guide, including EBR's usage and limitations.
 
 #### Reasoner Capabilities
 
