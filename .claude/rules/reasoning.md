@@ -18,6 +18,7 @@ paths:
 | `StructuralReasoner` | `owlapy.owl_reasoner.StructuralReasoner` | owlready2 (pure Python) | **Legacy**, being phased out (#205). Fast, incomplete, no JVM. Constructing one emits `DeprecationWarning` |
 | `SyncReasoner("HermiT"\|"Pellet"\|"JFact"\|"Openllet"\|"Structural")` | `owlapy.owl_reasoner.SyncReasoner` | Java/OWLAPI | Complete DL reasoning |
 | `SyncReasoner("ELK")` | same | Java/OWLAPI | EL fragment only, very fast, no universals/nominals/inverses |
+| `EBR` | `owlapy.owl_reasoner.EBR` | `dicee`/PyTorch (pure Python) | Neural embedding-based instance prediction, not DL-complete; needs a `NeuralOntology` (pretrained KGE model) |
 
 ## RDFLibReasoner (no JVM, no owlready2 — preferred)
 
@@ -64,6 +65,19 @@ subs = sync_reasoner.sub_classes(cls, direct=False)
 stopJVM()   # ALWAYS — every code path, including exceptions
 ```
 
+## EBR (embedding-based, no JVM, requires `dicee`)
+
+```python
+from owlapy.owl_ontology import NeuralOntology
+from owlapy.owl_reasoner import EBR
+from owlapy.class_expression import OWLClass
+
+neural_onto = NeuralOntology("path/to/pretrained_kge_model")  # or train_if_not_exists=True from a KG/.owl path
+reasoner = EBR(ontology=neural_onto)
+predicted = set(reasoner.instances(OWLClass("http://example.com/father#male")))  # score-thresholded by gamma (default 0.5)
+predictions = reasoner.predict(h=["http://example.com/father#john"], r=None, t=None)  # raw (h, r, t) predictions w/ scores
+```
+
 ## Ontology Enrichment
 
 ```python
@@ -91,7 +105,8 @@ owlapy --path_ontology "KGs/Family/family-benchmark_rich_background.owl" --infer
 
 ## Constraints
 
-- **Always call `stopJVM()`** after any Java-backed reasoner (`SyncReasoner`); `StructuralReasoner` and `RDFLibReasoner` never need it
+- **Always call `stopJVM()`** after any Java-backed reasoner (`SyncReasoner`); `StructuralReasoner`, `RDFLibReasoner`, and `EBR` never need it
 - `instances()` returns a generator — wrap in `set()`/`list()`
 - ELK only supports the EL fragment
 - Prefer `RDFLibReasoner` for speed on large ontologies when incompleteness is acceptable — it has no owlready2/JVM dependency and no circular sub/super-class dependency issue, unlike `StructuralReasoner` (legacy, #205). Use `SyncReasoner` with HermiT/Pellet for DL-complete results and SWRL
+- `EBR` isn't a symbolic/DL reasoner — its results are probabilistic embedding predictions, not logical entailments; equivalence/disjointness/same-individuals queries raise `NotImplementedError`
