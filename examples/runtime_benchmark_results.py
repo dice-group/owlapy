@@ -9,6 +9,10 @@ FAMILY_PATH = "../KGs/Family/family-benchmark_rich_background.owl"
 CARCINOGENESIS_PATH = "../KGs/Carcinogenesis/carcinogenesis.owl"
 
 
+def _progress(msg):
+    print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+
+
 def record_runtime(ces, path, namespace, single_reasoner):
     global sync_reasoners
 
@@ -25,20 +29,27 @@ def record_runtime(ces, path, namespace, single_reasoner):
     if native_reasoner:
         # Results for StructuralReasoner
         runtime["StructuralReasoner"] = []
-        for ce in ces:
+        _progress(f"StructuralReasoner: 0/{len(ces)} class expressions")
+        for i, ce in enumerate(ces, 1):
             start = time.time()
             ce_in_owl = dl_to_owl_expression(dl_expression=ce, namespace=namespace)
             inds = native_reasoner.instances(ce_in_owl)
-            runtime["StructuralReasoner"].append(float("{:.4f}".format(time.time() - start)))
+            elapsed = time.time() - start
+            runtime["StructuralReasoner"].append(float("{:.4f}".format(elapsed)))
+            _progress(f"StructuralReasoner: {i}/{len(ces)} done ({elapsed:.4f}s) -- {ce}")
     for reasoner in sync_reasoners:
         # Results for Sync reasoners
         runtime[reasoner] = []
+        _progress(f"{reasoner}: starting reasoner + ontology load...")
         sync_reasoner = SyncReasoner(ontology=path, reasoner=reasoner)
-        for ce in ces:
+        _progress(f"{reasoner}: 0/{len(ces)} class expressions")
+        for i, ce in enumerate(ces, 1):
             start = time.time()
             ce_in_owl = dl_to_owl_expression(dl_expression=ce, namespace=namespace)
             inds = sync_reasoner.instances(ce_in_owl)
-            runtime[reasoner].append(float("{:.4f}".format(time.time() - start)))
+            elapsed = time.time() - start
+            runtime[reasoner].append(float("{:.4f}".format(elapsed)))
+            _progress(f"{reasoner}: {i}/{len(ces)} done ({elapsed:.4f}s) -- {ce}")
 
     return runtime
 
