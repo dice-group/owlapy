@@ -425,19 +425,22 @@ def test_gyearmonth_from_string():
     assert lit.parse_gyearmonth() == (2020, 5)
 
 
-def test_gyearmonth_rejects_tuple_value_directly():
-    # NOTE: despite the type hint `_v: Union[tuple, int]` and the leading
-    # `if isinstance(value, tuple): assert len(value) == 2` check, the surrounding
-    # `if isinstance(value, str): ... else: raise ValueError(...)` is unconditional,
-    # so passing an actual tuple currently always raises -- only string input works.
-    with pytest.raises(ValueError):
-        OWLLiteral((2020, 5), GYearMonthOWLDatatype)
+def test_gyearmonth_accepts_tuple_value_directly():
+    lit = OWLLiteral((2020, 5), GYearMonthOWLDatatype)
+    assert lit.is_gyearmonth()
+    assert lit.parse_gyearmonth() == (2020, 5)
 
 
 def test_gmonthday_from_string():
     lit_from_str = OWLLiteral("--05-20", GMonthDayOWLDatatype)
     assert lit_from_str.is_gmonthday()
     assert lit_from_str.parse_gmonthday() == (5, 20)
+
+
+def test_gmonthday_accepts_tuple_value_directly():
+    lit = OWLLiteral((5, 20), GMonthDayOWLDatatype)
+    assert lit.is_gmonthday()
+    assert lit.parse_gmonthday() == (5, 20)
 
 
 def test_gyear_gmonth_gday_from_int_and_string():

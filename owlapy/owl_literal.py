@@ -841,7 +841,7 @@ class _OWLGDatesInterface(_OWLLiteralBasicsInterface):
         if isinstance(value, tuple) or type_ in [GYearMonthOWLDatatype, GMonthDayOWLDatatype]:
             if isinstance(value, tuple):
                 assert len(value) == 2
-            if isinstance(value, str):
+            elif isinstance(value, str):
                 # expected string input examples: "2001-10", "--11-15"
                 splits = value.lstrip("-").split("-")
                 value = (int(splits[0]), int(splits[1][:2]))

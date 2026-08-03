@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Guarded `rdfs:comment` batch generation against LLM call failures, so a single failed batch no longer aborts the whole ontology generation pipeline (#223)
 - Fixed an infinite loop in `TextChunker`'s fixed-size chunking strategy that could occur with `overlap > 0` once the cursor reached the end of the text (#224)
 - `map_datarange` now degrades gracefully to the top datatype instead of raising `ValueError` on unrecognized data-range fillers (e.g. `owl:Thing` used where a datatype is expected), so a single malformed axiom no longer aborts hierarchy traversal in `super_classes`/`sub_classes`/`object_property_ranges` (#225, #226)
+- `OWLLiteral((year, month), GYearMonthOWLDatatype)` / `OWLLiteral((month, day), GMonthDayOWLDatatype)` no longer always raise `ValueError` on tuple input; `_OWLGDatesInterface.__init__` was unconditionally falling through to its string-parsing branch's `else: raise ValueError(...)` for any non-string value, including tuples it had just validated as length-2. Only string input (e.g. `"2020-05"`) worked before this fix. (#237)
 
 ## [1.6.5] - 2026-05-26
 
