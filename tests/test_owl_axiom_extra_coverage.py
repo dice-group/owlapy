@@ -8,7 +8,7 @@ value objects -- so this is exercised directly rather than through an ontology.
 """
 import pytest
 
-from owlapy.class_expression import OWLClass, OWLNothing, OWLThing
+from owlapy.class_expression import OWLClass, OWLNothing, OWLObjectUnionOf, OWLThing
 from owlapy.iri import IRI
 from owlapy.owl_axiom import (
     OWLAnnotation,
@@ -240,16 +240,11 @@ def test_subclass_of_axiom_properties():
     assert axiom.get_super_class() == cls("B")
 
 
-def test_disjoint_union_axiom_get_owl_equivalent_classes_axiom_is_broken():
-    # NOTE: get_owl_equivalent_classes_axiom() calls
-    # OWLEquivalentClassesAxiom(self._cls, OWLObjectUnionOf(self._class_expressions))
-    # -- two positional args -- but OWLEquivalentClassesAxiom.__init__ expects a
-    # single `class_expressions: List[...]` (plus optional annotations). Passing a
-    # bare OWLClass where a list is expected makes `[*class_expressions]` fail.
-    # This method currently always raises TypeError.
+def test_disjoint_union_axiom_get_owl_equivalent_classes_axiom():
     axiom = OWLDisjointUnionAxiom(cls("A"), [cls("B"), cls("C")])
-    with pytest.raises(TypeError):
-        axiom.get_owl_equivalent_classes_axiom()
+    equivalent = axiom.get_owl_equivalent_classes_axiom()
+    assert isinstance(equivalent, OWLEquivalentClassesAxiom)
+    assert set(equivalent.class_expressions()) == {cls("A"), OWLObjectUnionOf([cls("B"), cls("C")])}
 
 
 def test_disjoint_union_axiom_get_owl_disjoint_classes_axiom():
