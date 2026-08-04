@@ -479,41 +479,53 @@ wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && 
 cd examples && python runtime_benchmark_results.py --pretty_print
 ```
 
+`StructuralReasoner` and `RDFLibReasoner` are **closed-world** (structural, no formal entailment);
+`HermiT`/`Pellet`/`Openllet`/`JFact`/`Structural` (via `SyncReasoner`) are **open-world**, standard
+OWL 2 DL semantics; `ELK` is open-world but incomplete (EL profile only). See
+[Reasoner Comparison](markdown_docs/05_reasoning.md#reasoner-comparison) for what that means for
+your use case.
+
+Each reasoner is given a hard upper bound of 1000 seconds per class expression
+(`--timeout_seconds`, script-enforced -- see `HARD_TIMEOUT_SECONDS` in
+`examples/runtime_benchmark_results.py`); a reasoner that hasn't returned by then is reported as
+`TIMEOUT(>1000s)` instead of being waited on further, so a single pathological query can't block
+the whole benchmark.
+
 Instance retrieval runtime (in seconds) of each reasoner for different class expressions in **Family** dataset:
 
-| Class Expressions                      |  StructuralReasoner |  HermiT |  Pellet |  Openllet |   JFact |     ELK |  Structural |
-|----------------------------------------|--------------------:|--------:|--------:|----------:|--------:|--------:|------------:|
-| Person                                 |              0.0007 |  0.0251 |  0.0238 |    0.0128 |  0.1726 |  0.1526 |      0.0748 |
-| (¬Parent)                              |              0.0005 |  0.3532 |   0.004 |    0.0032 |  0.0046 |  0.0205 |      0.0015 |
-| ∀ hasParent.Father                     |              0.0004 |  0.3108 |  0.0043 |    0.0035 |   0.006 |  0.0038 |       0.001 |
-| ∃ hasSibling.Daughter                  |              0.0003 |  0.3176 |   0.005 |    0.0057 |   0.011 |  0.0103 |      0.0008 |
-| ∃ hasChild.(¬Parent)                   |              0.0005 |  0.3335 |   0.004 |    0.0042 |  0.0102 |  0.0065 |      0.0013 |
-| ≥ 1 married.Male                       |              0.0003 |  0.3129 |  0.1711 |     0.143 |  0.0101 |  0.0035 |       0.001 |
-| ≤ 3 hasChild.Person                    |              0.0006 |  0.3114 |   0.003 |    0.0038 |  0.0044 |  0.0032 |      0.0008 |
-| Brother ⊓ Parent                       |              0.0003 |  0.1445 |  0.0039 |    0.0032 |  0.0028 |  0.0112 |      0.0007 |
-| Mother ⊔ Father                        |              0.0003 |  0.0502 |  0.0063 |     0.008 |  0.0071 |  0.0167 |      0.0005 |
-| ∃ hasParent.{F9M170 ⊔ F9M147 ⊔ F7M128} |              0.0006 |  0.3107 |  0.0152 |     0.033 |  0.0089 |  0.0063 |      0.0017 |
+| Class Expressions                      | StructuralReasoner | RDFLibReasoner |  HermiT |  Pellet | Openllet |   JFact |     ELK | Structural |
+|-----------------------------------------|--------------------:|---------------:|--------:|--------:|---------:|--------:|--------:|-----------:|
+| Person                                 |              0.0730 |          0.1763 |  0.0335 |  0.0624 |   0.0507 |  0.2219 |  0.1705 |     0.0147 |
+| (¬Parent)                              |              0.0024 |          0.5766 |  0.4232 |  0.0036 |   0.0014 |  0.0027 |  0.0240 |     0.0011 |
+| ∀ hasParent.Father                     |              0.0052 |          0.5231 |  0.4135 |  0.0028 |   0.0011 |  0.0040 |  0.0044 |     0.0008 |
+| ∃ hasSibling.Daughter                  |              0.0021 |          0.0360 |  0.3775 |  0.0033 |   0.0023 |  0.0112 |  0.0107 |     0.0007 |
+| ∃ hasChild.(¬Parent)                   |              0.0026 |          0.9000 |  0.3764 |  0.0025 |   0.0017 |  0.0066 |  0.0056 |     0.0008 |
+| ≥ 1 married.Male                       |              0.0035 |          0.1074 |  0.3598 |  0.1690 |   0.1088 |  0.0075 |  0.0028 |     0.0006 |
+| ≤ 3 hasChild.Person                    |              0.0015 |          0.4348 |  0.3743 |  0.0020 |   0.0016 |  0.0028 |  0.0028 |     0.0007 |
+| Brother ⊓ Parent                       |              0.0006 |          0.0942 |  0.1620 |  0.0025 |   0.0012 |  0.0025 |  0.0083 |     0.0007 |
+| Mother ⊔ Father                        |              0.0007 |          0.0830 |  0.0521 |  0.0036 |   0.0050 |  0.0031 |  0.0141 |     0.0006 |
+| ∃ hasParent.{F9M170 ⊔ F9M147 ⊔ F7M128} |              0.0003 |          0.0198 |  0.3837 |  0.0175 |   0.0102 |  0.0061 |  0.0041 |     0.0012 |
 
 -----------------------------------------------------------------
 
-Instance retrieval runtime (in seconds) of each reasoner for different class expressions in **Carcinogenesis** dataset:
+Instance retrieval runtime (in seconds) of each reasoner for different class expressions in **Carcinogenesis** dataset (`TIMEOUT(>1000s)` = hit the hard upper bound described above; result was incomplete/empty, not a completion time):
 
-| Class Expressions                           |  StructuralReasoner |     HermiT |    Pellet |  Openllet |    JFact |     ELK |  Structural |
-|:--------------------------------------------|--------------------:|-----------:|----------:|----------:|---------:|--------:|------------:|
-| Sulfur                                      |              0.0012 |     0.5098 |    0.3415 |    0.3124 |  30.9185 |  1.0194 |      0.0821 |
-| Structure                                   |              0.0004 |     0.0542 |     0.067 |    0.0677 |   0.0571 |  0.1922 |      0.0527 |
-| ¬Structure                                  |              0.0004 |   225.7262 |    0.2838 |    0.3073 |   0.3142 |  0.0465 |      0.0027 |
-| ∀ hasAtom.Atom                              |              0.0004 |     0.2862 |    0.3253 |    0.3112 |   0.3378 |  0.0063 |      0.0010 |
-| ∃ hasStructure.Amino                        |              0.0005 |    20.5614 |    0.0586 |    0.1081 |   0.2986 |  0.0343 |      0.0011 |
-| ≥ 2 inBond.⊤                                |              0.0003 |   593.4231 |    0.4509 |    0.4633 |   7.8003 |  0.0055 |      0.0007 |
-| ≤ 3 hasAtom.⊤                               |              0.0002 |    21.5695 |    0.3497 |    0.3092 |   0.3407 |  0.0035 |      0.0005 |
-| Ring_size_4 ⊓ Sulfur                        |              0.0004 |  2932.3817 |    0.0281 |    0.0163 |   0.0187 |  0.0232 |      0.0008 |
-| Bond-7 ⊔ Bond-3                             |              0.0003 |   486.6015 |    0.0838 |    0.0654 |     0.05 |  0.1009 |      0.0007 |
-| ∃ hasBond.{bond1838 ⊔ bond1879 ⊔ bond1834}  |              0.0006 |    24.3014 |    1.6182 |    1.2811 |   0.3255 |  0.0391 |      0.0012 |
-| ∃ isMutagenic.{True}                        |              0.0233 |    26.6729 |     32.31 |   28.9644 |   0.1972 |   0.012 |      0.0006 |
-| ∃ charge.xsd:double[> 0.1]                  |              0.0008 |   626.9762 |   752.119 |  750.1382 |   0.2102 |   0.006 |      0.0008 |
-| Compound ⊓ ∃ isMutagenic.{True}             |              0.0009 |    21.8479 |   28.4732 |   29.7676 |   0.1918 |  0.0189 |      0.0007 |
-| Carbon ⊓ ∃ charge.xsd:double[> 0.1]         |              0.0005 |   245.4081 |  734.3972 |  747.7481 |   0.0998 |  0.0031 |      0.0007 |
+| Class Expressions                           | StructuralReasoner |  RDFLibReasoner |      HermiT |    Pellet |  Openllet |    JFact |     ELK | Structural |
+|:---------------------------------------------|--------------------:|-----------------:|-------------:|----------:|----------:|---------:|--------:|-----------:|
+| Sulfur                                      |              0.0048 |           2.4729 |       0.4402 |    0.2408 |    0.1411 |  34.5881 |  0.8854 |     0.0087 |
+| Structure                                   |              0.0551 |           8.7157 |       0.0508 |    0.0616 |    0.0505 |   0.0497 |  0.1807 |     0.0451 |
+| ¬Structure                                  |              0.4901 |          71.7221 |     280.8219 |    0.3205 |    0.2755 |   0.4435 |  0.0358 |     0.0010 |
+| ∀ hasAtom.Atom                              |              0.3513 | TIMEOUT(>1000s) |       0.2997 |    0.3297 |    0.3249 |   0.3228 |  0.0028 |     0.0004 |
+| ∃ hasStructure.Amino                        |              0.0320 |           0.8363 |      26.3037 |    0.0350 |    0.0456 |   0.2756 |  0.0228 |     0.0004 |
+| ≥ 2 inBond.⊤                                |              0.2937 |           3.7918 |     762.5192 |    0.4647 |    0.2423 |   8.6851 |  0.0022 |     0.0003 |
+| ≤ 3 hasAtom.⊤                               |              0.0912 |          74.6104 |      28.7288 |    0.3333 |    0.3355 |   0.3411 |  0.0019 |     0.0003 |
+| Ring_size_4 ⊓ Sulfur                        |              0.0011 |           3.7009 | TIMEOUT(>1000s) |    0.0195 |    0.0167 |   0.0121 |  0.0116 |     0.0004 |
+| Bond-7 ⊔ Bond-3                             |              0.0109 |          97.0338 | TIMEOUT(>1000s) |    0.0673 |    0.0602 |   0.0435 |  0.0654 |     0.0005 |
+| ∃ hasBond.{bond1838 ⊔ bond1879 ⊔ bond1834}  |              0.0770 |           0.9832 |     381.2848 |    1.3793 |    1.3290 |   0.3337 |  0.0161 |     0.0007 |
+| ∃ isMutagenic.{True}                        |              0.0046 |           0.0241 |      25.7430 |   28.3317 |   30.6846 |   0.2114 |  0.0055 |     0.0003 |
+| ∃ charge.xsd:double[> 0.1]                  |              0.0845 |           1.1228 |     721.7161 |  709.7448 |  780.8275 |   0.2004 |  0.0022 |     0.0004 |
+| Compound ⊓ ∃ isMutagenic.{True}             |              0.0035 |           2.4838 |      26.6295 |   27.5774 |   29.9838 |   0.4790 |  0.0219 |     0.0004 |
+| Carbon ⊓ ∃ charge.xsd:double[> 0.1]         |              0.0260 |          83.8693 |     273.3282 |  699.4585 |  778.6429 |   0.0960 |  0.0037 |     0.0004 |
 
 </details>
 
