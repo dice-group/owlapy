@@ -10,8 +10,6 @@ safe to call without affecting other JVM-dependent tests in the same session.
 """
 import unittest
 
-import pytest
-
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
@@ -93,16 +91,9 @@ class TestSyncReasonerDataPropertyIncludeBottomEntity(unittest.TestCase):
         subs = list(self.reasoner.sub_data_properties(self.charge, include_bottom_entity=True))
         self.assertIsInstance(subs, list)
 
-    def test_equivalent_data_properties_is_broken(self):
-        # NOTE: SyncReasoner.equivalent_data_properties() calls
-        # `self.mapper.to_list(self._owlapi_reasoner.getEquivalentDataProperties(...))`,
-        # but getEquivalentDataProperties() returns an OWLAPI `Node<OWLDataProperty>`
-        # (old-style API), not a java.util.stream.Stream. mapper.to_list() unconditionally
-        # calls `.collect(Collectors.toList())`, which Node doesn't have -- this method
-        # currently always raises AttributeError, unlike equivalent_object_properties()
-        # (line 1693-1694), which correctly calls the Stream-returning `equivalentObjectProperties`.
-        with pytest.raises(AttributeError):
-            list(self.reasoner.equivalent_data_properties(self.charge))
+    def test_equivalent_data_properties(self):
+        equiv = list(self.reasoner.equivalent_data_properties(self.charge))
+        self.assertIsInstance(equiv, list)
 
 
 if __name__ == '__main__':
