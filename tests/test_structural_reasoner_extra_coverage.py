@@ -4,7 +4,9 @@ value retrieval -- built on a small hand-crafted in-memory Ontology so every bra
 (top/bottom sentinels, equivalence workarounds, inverse properties) is reachable
 without depending on the shape of the Family benchmark ontology used elsewhere.
 """
+import time
 import unittest
+from unittest.mock import patch
 
 from owlapy.class_expression import OWLClass
 from owlapy.iri import IRI
@@ -170,6 +172,27 @@ class TestStructuralReasonerPropertyRelations(unittest.TestCase):
     def test_types_direct(self):
         direct_types = set(self.reasoner.types(self.alice, direct=True))
         self.assertIn(cls("Person"), direct_types)
+
+    # -- instances() timeout (regression test for owlapy#260) -----------------
+
+    def test_instances_timeout_is_enforced(self):
+        # Previously, StructuralReasoner.instances(timeout=...) never actually enforced
+        # anything: _instances() was a generator function, so the timeout only ever bounded
+        # how long it took to *create* the generator (near-instant), not to enumerate it --
+        # the real work happened lazily, outside the timeout-protected region. Simulate a slow
+        # underlying computation and assert the call now genuinely returns within the timeout
+        # (with an empty result) instead of blocking for the full duration.
+        def _slow_find_instances(self_, ce):
+            time.sleep(2)
+            return frozenset({self.alice})
+
+        with patch.object(type(self.reasoner), "_find_instances", _slow_find_instances):
+            start = time.time()
+            result = self.reasoner.instances(cls("Person"), timeout=0.2)
+            elapsed = time.time() - start
+
+        self.assertEqual(result, set())
+        self.assertLess(elapsed, 1.0)
 
 
 if __name__ == '__main__':

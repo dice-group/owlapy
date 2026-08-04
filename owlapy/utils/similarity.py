@@ -53,13 +53,22 @@ def f1_set_similarity(set1, set2) -> float:
     return 2 * (precision * recall) / (precision + recall)
 
 def run_with_timeout(func, timeout, args=(), **kwargs):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(func, *args, **kwargs)
-        try:
-            result = future.result(timeout=timeout)
-            return result
-        except concurrent.futures.TimeoutError:
-            return set()
+    # Deliberately not `with ThreadPoolExecutor() as executor:` -- that context manager calls
+    # executor.shutdown(wait=True) on exit, which blocks until the submitted task finishes
+    # regardless of whether future.result(timeout=...) already timed out, defeating the point
+    # of the timeout (the caller would still wait for the full task duration, just get a
+    # different return value). shutdown(wait=False) lets this return promptly; the abandoned
+    # thread (if any) keeps running in the background -- Python threads cannot be forcibly
+    # killed, only abandoned (owlapy#260).
+    executor = concurrent.futures.ThreadPoolExecutor()
+    future = executor.submit(func, *args, **kwargs)
+    try:
+        result = future.result(timeout=timeout)
+        executor.shutdown(wait=False)
+        return result
+    except concurrent.futures.TimeoutError:
+        executor.shutdown(wait=False)
+        return set()
 
 
 def concept_reducer(concepts:Iterable, opt:Callable):
