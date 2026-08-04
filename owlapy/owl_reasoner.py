@@ -304,12 +304,17 @@ class StructuralReasoner(AbstractOWLReasoner):
             raise NotImplementedError(pe)
 
     def _instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+        # Must return eagerly, not via `yield`/generator: instances() runs this inside
+        # run_with_timeout(), which times a *call* to this function. A generator function call
+        # returns a generator object immediately without executing any of its body, so a
+        # generator version of this method would make the timeout enforce nothing -- the real
+        # work (_find_instances) would only happen once the caller iterates the result, outside
+        # the timeout-protected region (owlapy#260). _find_instances() already returns eagerly.
         if direct:
             if not self.__warned & 2:
                 logger.warning("direct not implemented")
                 self.__warned |= 2
-        temp = self._find_instances(ce)
-        yield from temp
+        return self._find_instances(ce)
 
     def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
         return run_with_timeout(self._instances, timeout, (ce, direct))
