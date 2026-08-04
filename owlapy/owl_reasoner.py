@@ -1746,9 +1746,9 @@ class SyncReasoner(AbstractOWLReasoner):
             be returned.
         """
         if self.reasoner_name == "ELK":
-            raise NotImplementedError("`getEquivalentDataProperties` is not yet implemented by ELK!")
+            raise NotImplementedError("`equivalentDataProperties` is not yet implemented by ELK!")
         yield from [self.mapper.map_(pe) for pe in
-                    self.mapper.to_list(self._owlapi_reasoner.getEquivalentDataProperties(self.mapper.map_(p)))]
+                    self.mapper.to_list(self._owlapi_reasoner.equivalentDataProperties(self.mapper.map_(p)))]
 
     def object_property_values(self, i: OWLNamedIndividual, p: OWLObjectProperty):
         """Gets the object property values for the specified individual and object property expression.
