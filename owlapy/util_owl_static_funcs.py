@@ -1,14 +1,15 @@
 import json
+import logging
 import os
 import random
 from typing import List, Set
 
 import pandas as pd
-from owlready2 import destroy_entity, get_ontology
 from rdflib import OWL, RDF, RDFS, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import XSD
 from tqdm import tqdm
 
+from ._lazy_owlready2 import import_owlready2
 from .class_expression import OWLClass, OWLClassExpression
 from .iri import IRI
 from .owl_axiom import OWLDataPropertyAssertionAxiom, OWLEquivalentClassesAxiom
@@ -16,6 +17,15 @@ from .owl_individual import OWLNamedIndividual
 from .owl_literal import OWLLiteral
 from .owl_ontology import Ontology, SyncOntology
 from .owl_property import OWLDataProperty
+
+logger = logging.getLogger(__name__)
+
+# owlready2 is an optional dependency, needed only by make_kb_incomplete(_ass)/make_kb_inconsistent
+# below (see owlapy._lazy_owlready2 / issue #205); create_ontology/csv_to_rdf_kg/
+# save_owl_class_expressions don't need it.
+_owlready2 = import_owlready2()
+destroy_entity = _owlready2.destroy_entity
+get_ontology = _owlready2.get_ontology
 
 
 def save_owl_class_expressions(expressions: OWLClassExpression | List[OWLClassExpression],
@@ -172,7 +182,7 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
             literal = axiom.get_object()
             literal_value = literal.get_literal()
             if literal_value == "nan":
-                print(f"Skipping {axiom} as it has a NaN value")
+                logger.warning(f"Skipping {axiom} as it has a NaN value")
                 continue
 
             try:
@@ -209,7 +219,7 @@ def rdf_kg_to_csv(path_kg: str = None, path_csv: str = None):
 
     df = pd.DataFrame(data_list, columns=columns)
     df.to_csv(path_csv, index=False, na_rep="")
-    print(f"CSV reconstructed and saved to {path_csv}")
+    logger.info(f"CSV reconstructed and saved to {path_csv}")
 
 
 def create_ontology(iri, with_owlapi=False):
@@ -335,7 +345,7 @@ def generate_ontology(graph_as_json: str = None,
         try:
             from openai import OpenAI
         except ModuleNotFoundError:
-            print("Could not detect the openai module. Please install using `pip install openai`")
+            logger.warning("Could not detect the openai module. Please install using `pip install openai`")
             exit(1)
 
         client = OpenAI(base_url=base_url, api_key=api_key)
@@ -504,7 +514,7 @@ def make_kb_inconsistent(kb_path, output_path, rate, seed, max_attempts=100):
 
         selected_class = random.choice(class_candidates)
         individual.is_a.append(selected_class)
-        print(f"Added incorrect class assertion: {individual} rdf:type {selected_class}")
+        logger.info(f"Added incorrect class assertion: {individual} rdf:type {selected_class}")
         return f"Added incorrect class assertion: {individual} rdf:type {selected_class}"
 
     def generate_incorrect_object_property(individual):
@@ -514,7 +524,7 @@ def make_kb_inconsistent(kb_path, output_path, rate, seed, max_attempts=100):
 
         if incorrect_object not in prop[individual]:
             prop[individual].append(incorrect_object)
-            print(f"Added incorrect object property assertion: {individual} {prop.name} {incorrect_object}")
+            logger.info(f"Added incorrect object property assertion: {individual} {prop.name} {incorrect_object}")
             return f"Added incorrect object property assertion: {individual} {prop.name} {incorrect_object}"
 
     def generate_incorrect_data_property(individual):
@@ -525,7 +535,7 @@ def make_kb_inconsistent(kb_path, output_path, rate, seed, max_attempts=100):
 
             if incorrect_value not in prop[individual]:
                 setattr(individual, prop.name, incorrect_value)
-                print(f"Added incorrect data property assertion: {individual} {prop.name} {incorrect_value}")
+                logger.info(f"Added incorrect data property assertion: {individual} {prop.name} {incorrect_value}")
                 return f"Added incorrect data property assertion: {individual} {prop.name} {incorrect_value}"
 
     def insert_incorrect_statements():

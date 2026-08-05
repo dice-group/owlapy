@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Optional, Union
 
@@ -24,13 +25,15 @@ from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology import Ontology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
 
+logger = logging.getLogger(__name__)
+
 
 class DomainGraphExtractor(GraphExtractor):
     def __init__(self, enable_logging=False, examples_cache_dir: Optional[str] = None):
         """
         A module to extract an RDF graph from domain-specific text input.
         Args:
-            enable_logging: Whether to enable logging.
+            enable_logging: Whether to emit progress messages via the ``owlapy.agen_kg`` logger (attaches a console handler).
             examples_cache_dir: Directory to cache domain-specific examples. If None, uses current working directory.
         """
         super().__init__(enable_logging)
@@ -65,7 +68,7 @@ class DomainGraphExtractor(GraphExtractor):
         if cached_examples is not None:
             if self.logging:
                 cache_file = self.examples_cache.get_cache_file_path(domain)
-                print(f"DomainGraphExtractor: INFO :: Loaded cached examples for domain '{domain}' from {cache_file}")
+                logger.info(f"Loaded cached examples for domain '{domain}' from {cache_file}")
             return cached_examples
 
         # Generate new examples if not cached
@@ -73,22 +76,22 @@ class DomainGraphExtractor(GraphExtractor):
         task_types = ["entity_extraction", "triples_extraction", "type_assertion", "type_generation", "literal_extraction", "triples_with_numeric_literals_extraction"]
 
         if self.logging:
-            print(f"DomainGraphExtractor: INFO :: Generating domain-specific few-shot examples for domain: {domain}")
+            logger.info(f"Generating domain-specific few-shot examples for domain: {domain}")
 
         for task_type in task_types:
             result = self.few_shot_generator(domain=domain, task_type=task_type, num_examples=2, examples_example_structure=task_example_mapping[task_type])
             examples[task_type] = result.few_shot_examples
             if self.logging:
-                print(f"DomainGraphExtractor: INFO :: Generated examples for {task_type}")
+                logger.info(f"Generated examples for {task_type}")
 
         # Save examples to cache
         if self.examples_cache.save_examples(domain, examples):
             if self.logging:
                 cache_file = self.examples_cache.get_cache_file_path(domain)
-                print(f"DomainGraphExtractor: INFO :: Cached examples for domain '{domain}' to {cache_file}")
+                logger.info(f"Cached examples for domain '{domain}' to {cache_file}")
         else:
             if self.logging:
-                print(f"DomainGraphExtractor: WARNING :: Failed to cache examples for domain '{domain}'")
+                logger.warning(f"Failed to cache examples for domain '{domain}'")
 
         return examples
 
@@ -104,7 +107,7 @@ class DomainGraphExtractor(GraphExtractor):
         """
         success = self.examples_cache.clear_domain_cache(domain)
         if success and self.logging:
-            print(f"DomainGraphExtractor: INFO :: Cleared cache for domain '{domain}'")
+            logger.info(f"Cleared cache for domain '{domain}'")
         return success
 
     def clear_all_domain_caches(self) -> bool:
@@ -116,7 +119,7 @@ class DomainGraphExtractor(GraphExtractor):
         """
         success = self.examples_cache.clear_all_caches()
         if success and self.logging:
-            print("DomainGraphExtractor: INFO :: Cleared all domain example caches")
+            logger.info("Cleared all domain example caches")
         return success
 
     def list_cached_domains(self) -> list:
@@ -128,7 +131,7 @@ class DomainGraphExtractor(GraphExtractor):
         """
         domains = self.examples_cache.list_cached_domains()
         if self.logging and domains:
-            print(f"DomainGraphExtractor: INFO :: Cached domains: {', '.join(domains)}")
+            logger.info(f"Cached domains: {', '.join(domains)}")
         return domains
 
     def is_domain_cached(self, domain: str) -> bool:
@@ -222,8 +225,8 @@ class DomainGraphExtractor(GraphExtractor):
             chunks = self.chunk_text(text)
             if self.logging:
                 chunk_info = self.get_chunking_info(text)
-                print(f"DomainGraphExtractor: INFO :: Text will be processed in {chunk_info['num_chunks']} chunks")
-                print(f"DomainGraphExtractor: INFO :: Total chars: {chunk_info['total_chars']}, Est. tokens: {chunk_info['estimated_tokens']}")
+                logger.info(f"Text will be processed in {chunk_info['num_chunks']} chunks")
+                logger.info(f"Total chars: {chunk_info['total_chars']}, Est. tokens: {chunk_info['estimated_tokens']}")
         else:
             chunks = [text]
 
@@ -235,10 +238,10 @@ class DomainGraphExtractor(GraphExtractor):
             domain_result = self.domain_detector(text=domain_detection_text)
             domain = domain_result.domain
             if self.logging:
-                print(f"DomainGraphExtractor: INFO :: Detected domain: {domain}")
+                logger.info(f"Detected domain: {domain}")
         else:
             if self.logging:
-                print(f"DomainGraphExtractor: INFO :: Using provided domain: {domain}")
+                logger.info(f"Using provided domain: {domain}")
 
         # Step 2: Generate domain-specific few-shot examples if not provided
 
@@ -253,11 +256,6 @@ class DomainGraphExtractor(GraphExtractor):
         examples_for_spl_triples_extraction = generated_examples["triples_with_numeric_literals_extraction"]
 
         # Step 3: Extract entities (from chunks if needed)
-        # if self.logging:
-        #     print(
-        #         "DomainGraphExtractor: INFO :: In the generated triples, you may see entities or literals that were not "
-        #         "part of the extracted entities or literals. They are filtered before added to the ontology.")
-
         chunk_summaries = None
         if use_chunking and len(chunks) > 1:
             entities, chunk_summaries = self._extract_entities_from_chunks(chunks, examples_for_entity_extraction, "DomainGraphExtractor", task_instructions=self.entity_extraction_instructions)
@@ -265,7 +263,7 @@ class DomainGraphExtractor(GraphExtractor):
             entities = self.entity_extractor(text=text, few_shot_examples=examples_for_entity_extraction, task_instructions=self.entity_extraction_instructions).entities
 
         if self.logging:
-            print(f"DomainGraphExtractor: INFO :: Generated the following entities: {entities}")
+            logger.info(f"Generated the following entities: {entities}")
 
         # Step 4: Cluster entities to identify and merge duplicates
         # Use summaries if available from chunked extraction, or create clustering context
@@ -276,7 +274,7 @@ class DomainGraphExtractor(GraphExtractor):
 
         canonical_entities = self.filter_entities(entities, clustering_context)
         if self.logging and len(entities) != len(canonical_entities):
-            print(f"DomainGraphExtractor: INFO :: After filtering: {canonical_entities}")
+            logger.info(f"After filtering: {canonical_entities}")
 
         # Step 5: Extract triples using canonical entities (from chunks if needed)
         if use_chunking and len(chunks) > 1:
@@ -287,7 +285,7 @@ class DomainGraphExtractor(GraphExtractor):
             triples = self.triples_extractor(text=text, entities=canonical_entities, few_shot_examples=examples_for_triples_extraction, task_instructions=self.triple_extraction_instructions).triples
 
         if self.logging:
-            print(f"DomainGraphExtractor: INFO :: Generated the following triples: {triples}")
+            logger.info(f"Generated the following triples: {triples}")
 
         # Step 5.5: Cluster relations (object properties) and update triples programmatically BEFORE coherence check
         relations = list(set([triple[1] for triple in triples]))
@@ -295,17 +293,17 @@ class DomainGraphExtractor(GraphExtractor):
         # Update triples with canonical relations
         updated_triples = [(triple[0], relation_mapping.get(triple[1], triple[1]), triple[2]) for triple in triples]
         if self.logging and len(relations) != len(set(relation_mapping.values())):
-            print(f"DomainGraphExtractor: INFO :: After relation clustering: {list(set(relation_mapping.values()))}")
+            logger.info(f"After relation clustering: {list(set(relation_mapping.values()))}")
 
         # Step 6: Check coherence of the relation-normalized triples
         if fact_reassurance:
             coherent_triples = self.check_coherence(updated_triples, clustering_context, self.fact_checking_instructions)
             if self.logging:
-                print(f"DomainGraphExtractor: INFO :: After coherence check, kept {len(coherent_triples)} triples")
+                logger.info(f"After coherence check, kept {len(coherent_triples)} triples")
         else:
             coherent_triples = updated_triples
             if self.logging:
-                print(f"DomainGraphExtractor: INFO :: Skipped coherence check, using all {len(coherent_triples)} triples")
+                logger.info(f"Skipped coherence check, using all {len(coherent_triples)} triples")
 
         # Step 7: Create ontology and add triples
         onto = Ontology(ontology_iri=IRI.create("http://example.com/ontogen"), load=False)
@@ -342,13 +340,13 @@ class DomainGraphExtractor(GraphExtractor):
                         text=text, entities=canonical_entities, entity_types=entity_types, task_instructions=self.type_assertion_instructions, few_shot_examples=examples_for_type_assertion
                     ).pairs
                     if self.logging:
-                        print(f"DomainGraphExtractor: INFO :: Assigned types for entities as following: {type_assertions}")
+                        logger.info(f"Assigned types for entities as following: {type_assertions}")
                 elif generate_types:
                     type_assertions = self.type_generator(
                         text=text, entities=canonical_entities, task_instructions=self.type_generation_instructions, few_shot_examples=examples_for_type_generation
                     ).pairs
                     if self.logging:
-                        print(f"DomainGraphExtractor: INFO :: Finished generating types and assigned them to entities as following: {type_assertions}")
+                        logger.info(f"Finished generating types and assigned them to entities as following: {type_assertions}")
 
             # Cluster types and update type assertions programmatically
             types = list(set([pair[1] for pair in type_assertions]))
@@ -356,7 +354,7 @@ class DomainGraphExtractor(GraphExtractor):
             # Update type assertions with canonical types
             type_assertions = [(pair[0], type_mapping.get(pair[1], pair[1])) for pair in type_assertions]
             if self.logging and len(types) != len(set(type_mapping.values())):
-                print(f"DomainGraphExtractor: INFO :: After type clustering: {list(set(type_mapping.values()))}")
+                logger.info(f"After type clustering: {list(set(type_mapping.values()))}")
 
             # Add class assertion axioms
             for pair in type_assertions:
@@ -365,9 +363,8 @@ class DomainGraphExtractor(GraphExtractor):
                 ax = OWLClassAssertionAxiom(subject, entity_type)
                 try:
                     onto.add_axiom(ax)
-                except Exception as e:
-                    print(e)
-                    print(f"Subject: {subject}, Entity Type: {entity_type}")
+                except Exception:
+                    logger.exception(f"Failed to add class assertion axiom for subject {subject} with type {entity_type}")
 
         # Step 9: Extract SPL triples if requested
         if extract_spl_triples:
@@ -378,7 +375,7 @@ class DomainGraphExtractor(GraphExtractor):
                 literals = self.literal_extractor(text=text, task_instructions=self.literal_extraction_instructions, few_shot_examples=examples_for_literal_extraction).l_values
 
             if self.logging:
-                print(f"DomainGraphExtractor: INFO :: Generated the following numeric literals: {literals}")
+                logger.info(f"Generated the following numeric literals: {literals}")
 
             # Extract SPL triples (from chunks if needed)
             if use_chunking and len(chunks) > 1:
@@ -395,7 +392,7 @@ class DomainGraphExtractor(GraphExtractor):
                 ).triples
 
             if self.logging:
-                print(f"DomainGraphExtractor: INFO :: Generated the following s-p-l triples: {spl_triples}")
+                logger.info(f"Generated the following s-p-l triples: {spl_triples}")
 
             # Cluster relations (data properties) in SPL triples and update programmatically
             spl_relations = list(set([triple[1] for triple in spl_triples]))
@@ -403,7 +400,7 @@ class DomainGraphExtractor(GraphExtractor):
             # Update SPL triples with canonical relations
             spl_triples = [(triple[0], spl_relation_mapping.get(triple[1], triple[1]), triple[2]) for triple in spl_triples]
             if self.logging and len(spl_relations) != len(set(spl_relation_mapping.values())):
-                print(f"DomainGraphExtractor: INFO :: After SPL relation clustering: {list(set(spl_relation_mapping.values()))}")
+                logger.info(f"After SPL relation clustering: {list(set(spl_relation_mapping.values()))}")
 
             for triple in spl_triples:
                 subject = OWLNamedIndividual(ontology_namespace + self.snake_case(triple[0]))
@@ -424,8 +421,8 @@ class DomainGraphExtractor(GraphExtractor):
                 except Exception:
                     continue
                 if self.logging:
-                    print(
-                        f"DomainGraphExtractor: INFO :: For class {cls.remainder} found superclasses: {[IRI.create(s).remainder for s in superclasses]} and subclasses: {[IRI.create(s).remainder for s in subclasses]}"
+                    logger.info(
+                        f"For class {cls.remainder} found superclasses: {[IRI.create(s).remainder for s in superclasses]} and subclasses: {[IRI.create(s).remainder for s in subclasses]}"
                     )
 
                 for superclass in superclasses:
@@ -459,7 +456,7 @@ class DomainGraphExtractor(GraphExtractor):
                 rdfs_label_axioms.append(self.get_rdfs_label_axiom(entity_iri=ent_iri, label=self.format_rdfs_label(label=ent_iri.remainder, is_property=(ent_type == "property"))))
 
             if self.logging:
-                print(f"DomainGraphExtractor: INFO :: Created {len(rdfs_label_axioms)} rdfs:label annotations")
+                logger.info(f"Created {len(rdfs_label_axioms)} rdfs:label annotations")
 
             if rdfs_label_axioms:
                 onto.add_axiom(rdfs_label_axioms)
@@ -468,18 +465,18 @@ class DomainGraphExtractor(GraphExtractor):
             # We are chunking entities to drastically reduce risk of hallucination
             for idx, batch in enumerate(chunked_iterator(seq=entities_meta, size=35), start=1):
                 if self.logging:
-                    print(f"DomainGraphExtractor: INFO :: Processing batch number {idx} for rdfs:comment generation")
+                    logger.info(f"Processing batch number {idx} for rdfs:comment generation")
 
                 rdfs_comment_axioms = self.generate_batch_rdfs_comment_axioms(entities_meta=batch, context=clustering_context)
 
                 if self.logging:
-                    print(f"DomainGraphExtractor: INFO :: Generated {len(rdfs_comment_axioms)} rdfs:comment annotations for batch number {idx}")
+                    logger.info(f"Generated {len(rdfs_comment_axioms)} rdfs:comment annotations for batch number {idx}")
 
                 onto.add_axiom(rdfs_comment_axioms)
 
         # Step 12: Save ontology
         onto.save(path=save_path)
         if self.logging:
-            print(f"DomainGraphExtractor: INFO :: Successfully saved the ontology at {os.path.join(os.getcwd(), save_path)}")
+            logger.info(f"Successfully saved the ontology at {os.path.join(os.getcwd(), save_path)}")
 
         return onto

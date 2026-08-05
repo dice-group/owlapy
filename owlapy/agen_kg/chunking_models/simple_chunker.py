@@ -1,5 +1,10 @@
+import logging
 import re
 from typing import List
+
+from owlapy.agen_kg.logging_utils import enable_console_logging
+
+logger = logging.getLogger(__name__)
 
 
 class TextChunker:
@@ -40,6 +45,8 @@ class TextChunker:
         self.overlap = overlap
         self.strategy = strategy
         self.logging = enable_logging
+        if enable_logging:
+            enable_console_logging()
 
         # Sentence boundary patterns
         self._sentence_end_pattern = re.compile(r'(?<=[.!?])\s+(?=[A-Z])')
@@ -70,9 +77,9 @@ class TextChunker:
                            f"Use 'sentence', 'paragraph', or 'fixed'.")
 
         if self.logging:
-            print(f"TextChunker: INFO :: Split text ({len(text)} chars) into {len(chunks)} chunks")
+            logger.info(f"Split text ({len(text)} chars) into {len(chunks)} chunks")
             for i, chunk in enumerate(chunks):
-                print(f"  Chunk {i+1}: {len(chunk)} chars")
+                logger.debug(f"Chunk {i+1}: {len(chunk)} chars")
 
         return chunks
 

@@ -121,8 +121,17 @@ class TestRunWithTimeout(unittest.TestCase):
             time.sleep(2)
             return "done"
 
+        start = time.time()
         result = run_with_timeout(slow_func, 0.1, args=())
+        elapsed = time.time() - start
+
         self.assertEqual(result, set())
+        # Regression check for owlapy#260: run_with_timeout previously used
+        # `with ThreadPoolExecutor() as executor:`, whose __exit__ calls
+        # shutdown(wait=True) unconditionally -- so this call actually blocked for the full
+        # ~2s task duration despite "timing out" at 0.1s, it just returned a different value.
+        # It must return promptly instead of waiting for the abandoned task to finish.
+        self.assertLess(elapsed, 1.0)
 
 
 class TestConceptReducer(unittest.TestCase):

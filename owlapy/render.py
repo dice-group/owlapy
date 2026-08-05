@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import abc
+import logging
 import types
 import warnings
 from functools import singledispatchmethod
@@ -48,6 +49,8 @@ from .owl_individual import OWLNamedIndividual
 from .owl_literal import OWLLiteral
 from .owl_object import OWLEntity, OWLObject, OWLObjectRenderer
 from .owl_property import OWLDataProperty, OWLObjectInverseOf, OWLPropertyExpression
+
+logger = logging.getLogger(__name__)
 
 _DL_SYNTAX = types.SimpleNamespace(
     SUBCLASS="⊑",
@@ -172,8 +175,7 @@ def translating_short_form_endpoint(e: OWLEntity, endpoint: str,
             if len(results) > 0:
                 return results[0]["o"]["value"]
             else:
-                print(sparql)
-                print(f"No literal found\n{sparql}\n{e}")
+                logger.debug(f"No literal found\n{sparql}\n{e}")
                 continue
 
     warnings.warn(f"No matching rules for OWL Entity:{e}!")

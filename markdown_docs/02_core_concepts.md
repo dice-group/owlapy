@@ -17,11 +17,15 @@ An **ontology** is a formal representation of knowledge as a set of concepts and
 #### Ontology Classes in owlapy
 
 ```python
-# SyncOntology - Recommended for most use cases
+# SyncOntology - Recommended when you need full OWL 2 support / Java-backed reasoning
 from owlapy.owl_ontology import SyncOntology
 onto = SyncOntology("path/to/ontology.owl")
 
-# Ontology - Alternative implementation
+# RDFLibOntology - pure Python (rdflib-backed), no JVM or owlready2 dependency
+from owlapy.owl_ontology import RDFLibOntology
+onto = RDFLibOntology("path/to/ontology.owl")
+
+# Ontology - owlready2-backed; legacy, being phased out in favor of RDFLibOntology (#205)
 from owlapy.owl_ontology import Ontology
 onto = Ontology("path/to/ontology.owl")
 
@@ -30,7 +34,13 @@ from owlapy.owl_ontology import NeuralOntology
 neural_onto = NeuralOntology("ontology.owl", "embeddings.pkl")
 ```
 
-**Key Difference:** `SyncOntology` is thread-safe and uses owlready2 backend, while `Ontology` is lighter weight.
+**Key differences:** `SyncOntology` is thread-safe and backed by the Java OWL API (requires the
+JVM via `startJVM()`/`stopJVM()`, but gives complete OWL 2 support). `RDFLibOntology` is a
+pure-Python, rdflib-backed alternative with no JVM or owlready2 dependency -- prefer it when you
+don't need Java-backed reasoning; it supports both inspection (signature queries, TBox/ABox axiom
+retrieval) and mutation (`add_axiom`/`remove_axiom`/`save`), limited to axioms between *named*
+entities (no complex/blank-node class expressions). `Ontology` is the original owlready2-backed
+implementation; treat it as legacy.
 
 ### 2. OWL Entities
 
@@ -245,13 +255,13 @@ Reasoners infer implicit knowledge from explicit axioms.
 #### Types of Reasoners in owlapy
 
 ```python
-# StructuralReasoner - Fast, incomplete, owlready2-based
-from owlapy.owl_reasoner import StructuralReasoner
-reasoner = StructuralReasoner(ontology)
-
-# RDFLibReasoner - Pure Python, SPARQL-based, no circular dependencies
+# RDFLibReasoner (Recommended) - Pure Python, SPARQL-based, no circular deps, no owlready2/JVM
 from owlapy.owl_reasoner_rdflib import RDFLibReasoner
 reasoner = RDFLibReasoner(ontology)
+
+# StructuralReasoner (Legacy) - Fast, incomplete, owlready2-based; being phased out (#205)
+from owlapy.owl_reasoner import StructuralReasoner
+reasoner = StructuralReasoner(ontology)
 
 # SyncReasoner - Complete OWL 2 DL reasoning, Java-based
 from owlapy.owl_reasoner import SyncReasoner
@@ -261,7 +271,15 @@ startJVM()
 reasoner = SyncReasoner(ontology, reasoner="HermiT")
 # ... use reasoner ...
 stopJVM()
+
+# EBR - Embedding-based instance prediction over a NeuralOntology (requires `dicee`)
+from owlapy.owl_ontology import NeuralOntology
+from owlapy.owl_reasoner import EBR
+neural_onto = NeuralOntology("path/to/pretrained_kge_model")
+reasoner = EBR(ontology=neural_onto)
 ```
+
+See [Reasoning](05_reasoning.md) for the complete guide, including EBR's usage and limitations.
 
 #### Reasoner Capabilities
 

@@ -5,6 +5,7 @@ import operator
 import os
 import subprocess
 import sys
+import warnings
 from collections import Counter, defaultdict
 from functools import cached_property, reduce, singledispatchmethod
 from itertools import chain, repeat
@@ -12,9 +13,9 @@ from types import FunctionType, MappingProxyType
 from typing import DefaultDict, Dict, FrozenSet, Generator, Iterable, List, Mapping, Optional, Set, Tuple, Type, TypeVar, Union
 
 import jpype
-import owlready2
 from jpype import JClass
 
+from owlapy._lazy_owlready2 import import_owlready2
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 from owlapy.class_expression import (
@@ -56,11 +57,22 @@ from owlapy.utils import run_with_timeout
 
 logger = logging.getLogger(__name__)
 
+# owlready2 is an optional dependency, needed only by StructuralReasoner (see
+# owlapy._lazy_owlready2 / issue #205); SyncReasoner is JVM/OWLAPI-backed and doesn't need it.
+owlready2 = import_owlready2()
+
 _P = TypeVar('_P', bound=OWLPropertyExpression)
 
 
 class StructuralReasoner(AbstractOWLReasoner):
-    """Tries to check instances fast (but maybe incomplete)."""
+    """Tries to check instances fast (but maybe incomplete).
+
+    .. deprecated::
+        `StructuralReasoner` is owlready2-backed and is being phased out in favor of
+        `RDFLibReasoner` (`owlapy.owl_reasoner_rdflib.RDFLibReasoner`), a pure-Python
+        replacement with no owlready2/JVM dependency and no circular sub/super-class
+        dependency issue (see issue #205). Prefer `RDFLibReasoner` for new code.
+    """
 
     def __init__(self, ontology: Union[AbstractOWLOntology, str], *, class_cache: bool = True,
                  property_cache: bool = True, negation_default: bool = True, sub_properties: bool = False):
@@ -73,6 +85,13 @@ class StructuralReasoner(AbstractOWLReasoner):
             sub_properties: Whether to take sub properties into account for the
                 :func:`StructuralReasoner.instances` retrieval.
             """
+        warnings.warn(
+            "StructuralReasoner is owlready2-backed and being phased out in favor of "
+            "RDFLibReasoner (owlapy.owl_reasoner_rdflib.RDFLibReasoner), a pure-Python "
+            "replacement with no owlready2/JVM dependency. See issue #205.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if isinstance(ontology, str):
             ontology = Ontology(ontology)
 
@@ -85,6 +104,7 @@ class StructuralReasoner(AbstractOWLReasoner):
         self._negation_default: bool = negation_default
         self._sub_properties: bool = sub_properties
         self.__warned: int = 0
+        self._warned_malformed_props: Set[OWLObjectProperty] = set()
         self._init()
 
     def _init(self):
@@ -241,6 +261,22 @@ class StructuralReasoner(AbstractOWLReasoner):
         for _, val in relations:
             yield OWLLiteral(val)
 
+    def _named_individuals_from_property_values(self, values: Iterable, pe: OWLObjectProperty) \
+            -> Iterable[OWLNamedIndividual]:
+        """Map owlready2 property values to named individuals. Ontologies that illegally pun an entity as
+        several property types (e.g. ObjectProperty and AnnotationProperty) make owlready2's load-time repair
+        return internal class-expression nodes (e.g. owlready2.Or) as values of unrelated properties; those
+        carry no IRI and are skipped with a warning instead of crashing (issue #242)."""
+        for val in values:
+            if isinstance(val, owlready2.Thing):
+                yield OWLNamedIndividual(IRI.create(val.iri))
+            elif pe not in self._warned_malformed_props:
+                self._warned_malformed_props.add(pe)
+                logger.warning(f"Skipping malformed value of type {type(val).__name__!r} for object property "
+                               f"{pe.str}. The source ontology likely puns an entity as multiple property types "
+                               f"(illegal under OWL 2 DL), which owlready2 attempted to repair at load time. "
+                               f"Further malformed values for this property will be skipped silently.")
+
     def object_property_values(self, ind: OWLNamedIndividual, pe: OWLObjectPropertyExpression, direct: bool = False) \
             -> Iterable[OWLNamedIndividual]:
         if isinstance(pe, OWLObjectProperty):
@@ -249,8 +285,7 @@ class StructuralReasoner(AbstractOWLReasoner):
             # Recommended to use direct=False because _get_values_for_individual does not give consistent result
             # for the case when there are equivalent object properties. At least until this is fixed on owlready2.
             retieval_func = p._get_values_for_individual if direct else p._get_indirect_values_for_individual
-            for val in retieval_func(i):
-                yield OWLNamedIndividual(IRI.create(val.iri))
+            yield from self._named_individuals_from_property_values(retieval_func(i), pe)
         elif isinstance(pe, OWLObjectInverseOf):
             p: owlready2.ObjectPropertyClass = self._world[pe.get_named_property().str]
             inverse_p = p.inverse_property
@@ -263,18 +298,23 @@ class StructuralReasoner(AbstractOWLReasoner):
                                               'inverse property is explicitly defined in the ontology.'
                                               f'Property: {pe}')
                 i: owlready2.Thing = self._world[ind.str]
-                for val in p._get_inverse_values_for_individual(i):
-                    yield OWLNamedIndividual(IRI.create(val.iri))
+                yield from self._named_individuals_from_property_values(
+                    p._get_inverse_values_for_individual(i), pe.get_named_property())
         else:
             raise NotImplementedError(pe)
 
     def _instances(self, ce: OWLClassExpression, direct: bool = False) -> Iterable[OWLNamedIndividual]:
+        # Must return eagerly, not via `yield`/generator: instances() runs this inside
+        # run_with_timeout(), which times a *call* to this function. A generator function call
+        # returns a generator object immediately without executing any of its body, so a
+        # generator version of this method would make the timeout enforce nothing -- the real
+        # work (_find_instances) would only happen once the caller iterates the result, outside
+        # the timeout-protected region (owlapy#260). _find_instances() already returns eagerly.
         if direct:
             if not self.__warned & 2:
                 logger.warning("direct not implemented")
                 self.__warned |= 2
-        temp = self._find_instances(ce)
-        yield from temp
+        return self._find_instances(ce)
 
     def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000):
         return run_with_timeout(self._instances, timeout, (ce, direct))
@@ -1348,7 +1388,7 @@ class SyncReasoner(AbstractOWLReasoner):
 
         future = self._reasoning_executor.submit(_Callable())
         try:
-            return future.get(timeout, TimeUnit.MILLISECONDS)
+            return future.get(timeout, TimeUnit.SECONDS)
         except jpype.JException as e:
             if "TimeoutException" in type(e).__name__:
                 future.cancel(True)
@@ -1706,9 +1746,9 @@ class SyncReasoner(AbstractOWLReasoner):
             be returned.
         """
         if self.reasoner_name == "ELK":
-            raise NotImplementedError("`getEquivalentDataProperties` is not yet implemented by ELK!")
+            raise NotImplementedError("`equivalentDataProperties` is not yet implemented by ELK!")
         yield from [self.mapper.map_(pe) for pe in
-                    self.mapper.to_list(self._owlapi_reasoner.getEquivalentDataProperties(self.mapper.map_(p)))]
+                    self.mapper.to_list(self._owlapi_reasoner.equivalentDataProperties(self.mapper.map_(p)))]
 
     def object_property_values(self, i: OWLNamedIndividual, p: OWLObjectProperty):
         """Gets the object property values for the specified individual and object property expression.
@@ -2216,7 +2256,7 @@ class SyncReasoner(AbstractOWLReasoner):
             # Save to file
             save_path = "justifications.owl"
             just_ontology.save(save_path)
-            print(f"Justifications saved to {os.path.abspath(save_path)}")
+            logger.info(f"Justifications saved to {os.path.abspath(save_path)}")
 
         return justifications
 
@@ -2404,7 +2444,7 @@ class SyncReasoner(AbstractOWLReasoner):
             # Save to file
             save_path = "laconic_axiom_justifications.owl"
             just_ontology.save(save_path)
-            print(f"Laconic axiom justifications saved to {os.path.abspath(save_path)}")
+            logger.info(f"Laconic axiom justifications saved to {os.path.abspath(save_path)}")
         return justifications
 
     def create_inconsistency_justifications(self,
@@ -2488,7 +2528,7 @@ class SyncReasoner(AbstractOWLReasoner):
             # Save to file
             save_path = "inconsistency_justifications.owl"
             just_ontology.save(save_path)
-            print(f"Inconsistency justifications saved to {os.path.abspath(save_path)}")
+            logger.info(f"Inconsistency justifications saved to {os.path.abspath(save_path)}")
         return justifications
 
     def get_contrastive_explanation(
@@ -3003,7 +3043,7 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
                 return_subjects.append(OWLNamedIndividual(entity))
             except Exception as e:  # pragma: no cover
                 # Log the invalid IRI
-                print(f"Invalid IRI detected: {entity}, error: {e}")
+                logger.warning(f"Invalid IRI detected: {entity}, error: {e}")
                 continue
 
         return return_subjects

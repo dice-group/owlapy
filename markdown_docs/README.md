@@ -76,7 +76,10 @@ owlapy/
 
 **Current Version:** 1.6.5  
 **Python Requirement:** 3.11+  
-**Main Dependencies:** owlready2, rdflib (6.0.2+), jpype1 (for Java reasoners)
+**Main Dependencies:** rdflib (6.0.2+), jpype1 (for Java reasoners). owlready2 is an optional
+extra (`pip install owlapy[owlready2]`), needed only for the legacy `Ontology`/`StructuralReasoner`
+classes -- owlapy is migrating away from it in favor of the pure-Python `RDFLibOntology`/
+`RDFLibReasoner` (#205)
 
 ## Additional Resources
 

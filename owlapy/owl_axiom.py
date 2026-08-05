@@ -58,7 +58,6 @@ class OWLAxiom(OWLObject, metaclass=ABCMeta):
         """
         from owlapy.utils import SignatureExtractor
         return SignatureExtractor().get_signature(self)
-    # TODO: XXX
 
 
 class OWLLogicalAxiom(OWLAxiom, metaclass=ABCMeta):
@@ -307,10 +306,10 @@ class OWLEquivalentClassesAxiom(OWLNaryClassAxiom):
         return any(isinstance(ce, OWLClass) for ce in self._class_expressions)
 
     def contains_owl_nothing(self) -> bool:
-        return any(isinstance(ce, OWLNothing) for ce in self._class_expressions)
+        return any(ce == OWLNothing for ce in self._class_expressions)
 
     def contains_owl_thing(self) -> bool:
-        return any(isinstance(ce, OWLThing) for ce in self._class_expressions)
+        return any(ce == OWLThing for ce in self._class_expressions)
 
     def named_classes(self) -> Iterable[OWLClass]:
         yield from (ce for ce in self._class_expressions if isinstance(ce, OWLClass))
@@ -611,7 +610,7 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
         yield from self._class_expressions
 
     def get_owl_equivalent_classes_axiom(self) -> OWLEquivalentClassesAxiom:
-        return OWLEquivalentClassesAxiom(self._cls, OWLObjectUnionOf(self._class_expressions))
+        return OWLEquivalentClassesAxiom([self._cls, OWLObjectUnionOf(self._class_expressions)])
 
     def get_owl_disjoint_classes_axiom(self) -> OWLDisjointClassesAxiom:
         return OWLDisjointClassesAxiom(self._class_expressions)

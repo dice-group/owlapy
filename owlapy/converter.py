@@ -3,7 +3,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from functools import singledispatchmethod
 from types import MappingProxyType
-from typing import Dict, Iterable, List, Optional, Set
+from typing import Callable, Dict, Iterable, List, Optional, Set
 
 from rdflib.plugins.sparql.parser import parseQuery
 
@@ -32,6 +32,7 @@ from owlapy.class_expression import (
     OWLObjectSomeValuesFrom,
     OWLObjectUnionOf,
 )
+from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral, TopOWLDatatype
@@ -128,7 +129,9 @@ class Owl2SparqlConverter:
         named_individuals: Whether to restrict results to named individuals only
     """
     __slots__ = 'ce', 'sparql', 'variables', 'parent', 'parent_var', 'properties', 'variable_entities', 'cnt', \
-                'mapping', 'grouping_vars', 'having_conditions', 'for_all_de_morgan', 'named_individuals', '_intersection'
+                'mapping', 'grouping_vars', 'having_conditions', 'for_all_de_morgan', 'named_individuals', \
+                '_intersection', 'negation_default', 'sub_property_resolver', 'inverse_property_resolver', \
+                'subclass_resolver'
 
     ce: OWLClassExpression
     sparql: List[str]
@@ -144,17 +147,42 @@ class Owl2SparqlConverter:
     cnt: int
     for_all_de_morgan: bool
     named_individuals: bool
+    negation_default: bool
+    sub_property_resolver: Optional[Callable]
+    inverse_property_resolver: Optional[Callable]
+    subclass_resolver: Optional[Callable]
 
     def convert(self, root_variable: str,
                 ce: OWLClassExpression,
                 for_all_de_morgan: bool = True,
-                named_individuals: bool = False):
+                named_individuals: bool = False,
+                negation_default: bool = True,
+                sub_property_resolver: Optional[Callable] = None,
+                inverse_property_resolver: Optional[Callable] = None,
+                subclass_resolver: Optional[Callable] = None):
         """Used to convert owl class expression to SPARQL syntax.
 
         Args:
             root_variable (str): Root variable name that will be used in SPARQL query.
             ce (OWLClassExpression): The owl class expression to convert.
             named_individuals (bool): If 'True' return only entities that are instances of owl:NamedIndividual.
+            negation_default (bool): If 'True' (closed world, the default), OWLObjectComplementOf is translated
+                to a `FILTER NOT EXISTS` pattern. If 'False' (open world), OWLObjectComplementOf always
+                contributes no results, since under OWA nothing can be inferred to NOT be a member of a class
+                without an explicit negative assertion.
+            sub_property_resolver: Optional callable mapping an OWLObjectProperty/OWLDataProperty to its
+                sub-properties. When provided, every rendered property predicate is expanded into a SPARQL
+                property-path alternation of itself and all of its sub-properties, so that queries also match
+                individuals connected via a (semantically entailing) sub-property.
+            inverse_property_resolver: Optional callable mapping an OWLObjectProperty to its declared
+                owl:inverseOf partner(s). When provided, every rendered object property predicate is
+                additionally expanded with a reverse (`^`) property-path alternative for each declared
+                inverse, so that a property with no physically-asserted triples of its own (but a declared
+                inverse that does) is still correctly entailed.
+            subclass_resolver: Optional callable mapping an OWLClass to its subclasses. When provided,
+                every named-class membership triple (`?x a <cls>`) is expanded to also match any subclass
+                of `cls`, via a `VALUES` clause, so that individuals typed only at a leaf subclass are not
+                silently missed.
 
         Returns:
             list[str]: The SPARQL query.
@@ -173,6 +201,10 @@ class Owl2SparqlConverter:
         self.having_conditions = defaultdict(set)
         self.for_all_de_morgan = for_all_de_morgan
         self.named_individuals = named_individuals
+        self.negation_default = negation_default
+        self.sub_property_resolver = sub_property_resolver
+        self.inverse_property_resolver = inverse_property_resolver
+        self.subclass_resolver = subclass_resolver
         # # if named_individuals is True, we return only entities that are instances of owl:NamedIndividual
         if named_individuals:
             self.append_triple(root_variable, 'a', f"<{OWLRDFVocabulary.OWL_NAMED_INDIVIDUAL.as_str()}>")
@@ -197,6 +229,30 @@ class Owl2SparqlConverter:
     def _(self, e: OWLEntity):
         if e in self.variable_entities:
             s = self.mapping.get_variable(e)
+        elif (self.sub_property_resolver is not None or self.inverse_property_resolver is not None) \
+                and isinstance(e, (OWLObjectProperty, OWLDataProperty)):
+            # Expand into a SPARQL property-path alternation of the property itself, all of its
+            # sub-properties (matches individuals connected via a semantically entailing
+            # sub-property), and -- for object properties -- a reverse (`^`) alternative for each
+            # declared owl:inverseOf partner (matches when the inverse holds in the other
+            # direction, even if this property itself has no physically-asserted triples). Works
+            # uniformly regardless of OWLObjectInverseOf direction, since inversion is otherwise
+            # handled by triple position.
+            alternatives = [f"<{e.to_string_id()}>"]
+            subs = list(self.sub_property_resolver(e)) if self.sub_property_resolver is not None else []
+            alternatives.extend(f"<{sub.to_string_id()}>" for sub in subs)
+            if self.inverse_property_resolver is not None and isinstance(e, OWLObjectProperty):
+                invs = list(self.inverse_property_resolver(e))
+                alternatives.extend(f"^<{inv.to_string_id()}>" for inv in invs)
+                # A sub-property of a declared inverse of e, reversed, also entails e (e.g. e's
+                # inverse is q, and p is a sub-property of q -- p reversed entails q reversed
+                # entails e). Similarly, the inverse of a sub-property of e, reversed, entails e.
+                if self.sub_property_resolver is not None:
+                    for inv in invs:
+                        alternatives.extend(f"^<{sub.to_string_id()}>" for sub in self.sub_property_resolver(inv))
+                    for sub in subs:
+                        alternatives.extend(f"^<{inv.to_string_id()}>" for inv in self.inverse_property_resolver(sub))
+            s = "(" + "|".join(alternatives) + ")"
         else:
             s = f"<{e.to_string_id()}>"
         if isinstance(e, OWLObjectProperty):
@@ -262,14 +318,27 @@ class Owl2SparqlConverter:
     @process.register
     def _(self, ce: OWLClass):
         if self.ce == ce or not ce.is_owl_thing():
-            self.append_triple(self.current_variable, "a", self.render(ce))
+            if self.subclass_resolver is not None and not ce.is_owl_thing():
+                # Expand to also match individuals typed only at a subclass of ce, via a bounded
+                # VALUES list (cheaper than a UNION of one BGP per subclass).
+                type_var = self.mapping.new_individual_variable()
+                classes = [ce] + list(self.subclass_resolver(ce))
+                values = " ".join(f"<{c.to_string_id()}>" for c in classes)
+                self.append_triple(self.current_variable, "a", type_var)
+                self.append(f"VALUES {type_var} {{ {values} }} ")
+            else:
+                self.append_triple(self.current_variable, "a", self.render(ce))
             # old_var = self.current_variable
             # new_var = self.mapping.new_individual_variable()
             # with self.stack_variable(new_var):
             #     self.append_triple(old_var, "a", new_var)
             #     self.append_triple(new_var, "<http://www.w3.org/2000/01/rdf-schema#subClassOf>*", self.render(ce))
-        elif ce.is_owl_thing():
-            self.append_triple(self.current_variable, "a", "<http://www.w3.org/2002/07/owl#Thing>")
+        # else: ce is owl:Thing used as a nested filler (not the root expression). owl:Thing
+        # tautologically matches every resource, and the variable is already bound by the
+        # surrounding pattern that introduced it (e.g. the property triple in
+        # OWLObjectSomeValuesFrom), so no additional triple is needed. Emitting `?x a owl:Thing`
+        # here would wrongly require individuals to be explicitly asserted rdf:type owl:Thing,
+        # which real ontologies essentially never do.
 
     # an overload of process function
     # this overload is responsible for handling intersections of concepts (e.g., Brother ⊓ Father)
@@ -303,6 +372,15 @@ class Owl2SparqlConverter:
     # general case: ¬C
     @process.register
     def _(self, ce: OWLObjectComplementOf):
+        if not self.negation_default:
+            # Open-world semantics: nothing can be inferred to NOT be a member of a class
+            # without an explicit negative assertion (not modeled here), so a complement never
+            # contributes any results, however deeply nested.
+            # Note: "FILTER(1=0)" rather than "FILTER(false)" -- rdflib's SPARQL engine does not
+            # actually filter out solutions for a bare boolean-literal FILTER(false)/FILTER(0),
+            # but a always-false comparison is evaluated and applied correctly.
+            self.append("FILTER(1=0)")
+            return
         subject = self.current_variable
         # the conversion was trying here to optimize the query
         # but the proposed optimization alters the semantics of some queries
@@ -483,18 +561,28 @@ class Owl2SparqlConverter:
         # here, the second group graph pattern starts
         if comparator == "<=" or cardinality == 0:
             self.append("} UNION {")
-            self.append_triple(subject_variable, self.mapping.new_individual_variable(),
-                               self.mapping.new_individual_variable())
-            self.append("FILTER NOT EXISTS { ")
+            # Bind subject_variable to any resource that has at least one rdf:type assertion
+            # (i.e. any individual), rather than "any triple with any predicate" -- the latter
+            # forces the query engine to scan every triple in the graph grouped by subject, which
+            # is catastrophically expensive on non-trivial ontologies for what is otherwise a cheap
+            # "does this individual exist" check.
+            self.append_triple(subject_variable, "a", self.mapping.new_individual_variable())
+            # OPTIONAL + !BOUND() rather than FILTER NOT EXISTS: the latter is evaluated as a
+            # correlated existence check per subject_variable candidate, which is catastrophically
+            # slow on non-trivial ontologies (rdflib's SPARQL engine has no index for it); OPTIONAL
+            # is evaluated as a single left join and is dramatically cheaper for the same result.
+            # (No extra `{ SELECT ... }` subquery wrapper here -- nested subqueries make rdflib's
+            # query planner fall back to a much slower evaluation strategy.)
+            self.append(" OPTIONAL { ")
             object_variable = self.mapping.new_individual_variable()
             if property_expression.is_anonymous():
                 # property expression is inverse of a property
-                self.append_triple(object_variable, property_expression.get_named_property(), self.current_variable)
+                self.append_triple(object_variable, property_expression.get_named_property(), subject_variable)
             else:
-                self.append_triple(self.current_variable, property_expression.get_named_property(), object_variable)
+                self.append_triple(subject_variable, property_expression.get_named_property(), object_variable)
             with self.stack_variable(object_variable):
                 self.process(filler)
-            self.append(" } }")
+            self.append(f" }} FILTER ( !BOUND ( {object_variable} ) ) }}")
 
     @process.register
     def _(self, ce: OWLDataCardinalityRestriction):
@@ -630,6 +718,37 @@ class Owl2SparqlConverter:
                 self.append(f' FILTER ( {self.current_variable} {_Variable_facet_comp[facet]}'
                             f' "{value.get_literal()}"^^<{value.get_datatype().to_string_id()}> ) ')
 
+    # Data-range boolean combinators. Unlike their object-side counterparts, data-range operands
+    # only ever emit FILTER(...) fragments constraining an already-bound literal variable (never
+    # triples), which makes these simpler than OWLObjectIntersectionOf/UnionOf/ComplementOf.
+    @process.register
+    def _(self, node: OWLDataIntersectionOf):
+        for op in node.operands():
+            self.process(op)
+
+    @process.register
+    def _(self, node: OWLDataUnionOf):
+        first = True
+        for op in node.operands():
+            if first:
+                first = False
+            else:
+                self.append(" UNION ")
+            self.append("{ ")
+            # rdflib's SPARQL engine mishandles a UNION branch that contains exactly one bare
+            # FILTER and nothing else (it fails to correlate with the outer already-bound
+            # variable, silently returning no results for that branch) -- a leading no-op
+            # FILTER(BOUND(...)) works around this reliably, confirmed empirically.
+            self.append(f"FILTER ( BOUND ( {self.current_variable} ) ) ")
+            self.process(op)
+            self.append(" }")
+
+    @process.register
+    def _(self, node: OWLDataComplementOf):
+        self.append("FILTER NOT EXISTS { ")
+        self.process(node.get_data_range())
+        self.append(" }")
+
     def new_count_var(self) -> str:
         self.cnt += 1
         return f"?cnt_{self.cnt}"
@@ -650,7 +769,11 @@ class Owl2SparqlConverter:
                  count: bool = False,
                  values: Optional[Iterable[OWLNamedIndividual]] = None,
                  named_individuals: bool = False,
-                 validate: bool = False) -> str:
+                 validate: bool = False,
+                 negation_default: bool = True,
+                 sub_property_resolver: Optional[Callable] = None,
+                 inverse_property_resolver: Optional[Callable] = None,
+                 subclass_resolver: Optional[Callable] = None) -> str:
         assert isinstance(ce,OWLClassExpression), f"ce must be an instance of OWLClassExpression. Currently {type(ce)}"
         # root variable: the variable that will be projected
         # ce: the class expression to be transformed to a SPARQL query
@@ -661,7 +784,9 @@ class Owl2SparqlConverter:
         #                    of owl:NamedIndividual
         # validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
         qs = ["SELECT"]
-        tp = self.convert(root_variable, ce, for_all_de_morgan=for_all_de_morgan, named_individuals=named_individuals)
+        tp = self.convert(root_variable, ce, for_all_de_morgan=for_all_de_morgan, named_individuals=named_individuals,
+                          negation_default=negation_default, sub_property_resolver=sub_property_resolver,
+                          inverse_property_resolver=inverse_property_resolver, subclass_resolver=subclass_resolver)
         if count:
             qs.append(f" ( COUNT ( DISTINCT {root_variable} ) AS ?cnt ) WHERE {{ ")
         else:
@@ -751,7 +876,11 @@ def owl_expression_to_sparql(expression: OWLClassExpression = None,
                              values: Optional[Iterable[OWLNamedIndividual]] = None,
                              for_all_de_morgan: bool = True,
                              named_individuals: bool = False,
-                             validate: bool = False) -> str:
+                             validate: bool = False,
+                             negation_default: bool = True,
+                             sub_property_resolver: Optional[Callable] = None,
+                             inverse_property_resolver: Optional[Callable] = None,
+                             subclass_resolver: Optional[Callable] = None) -> str:
     """Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
      root variable: the variable that will be projected
      expression: the class expression to be transformed to a SPARQL query
@@ -762,11 +891,22 @@ def owl_expression_to_sparql(expression: OWLClassExpression = None,
      named_individuals: if set to True, the generated SPARQL query will return only entities
      that are instances of owl:NamedIndividual
      validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
+     negation_default: if True (closed world, the default), OWLObjectComplementOf is translated via
+     FILTER NOT EXISTS; if False (open world), OWLObjectComplementOf always contributes no results.
+     sub_property_resolver: optional callable mapping a property to its sub-properties, used to expand
+     every rendered property into a SPARQL property-path alternation of itself and its sub-properties.
+     inverse_property_resolver: optional callable mapping an object property to its declared owl:inverseOf
+     partner(s), used to expand every rendered object property with a reverse (`^`) path alternative.
+     subclass_resolver: optional callable mapping a class to its subclasses, used to expand every named
+     class membership triple to also match individuals typed only at a subclass.
     """
     assert expression is not None, "expression cannot be None"
     return converter.as_query(root_variable, expression, count=False, values=values,
                               named_individuals=named_individuals, for_all_de_morgan=for_all_de_morgan,
-                              validate=validate)
+                              validate=validate, negation_default=negation_default,
+                              sub_property_resolver=sub_property_resolver,
+                              inverse_property_resolver=inverse_property_resolver,
+                              subclass_resolver=subclass_resolver)
 
 
 def owl_expression_to_sparql_with_confusion_matrix(expression: OWLClassExpression,

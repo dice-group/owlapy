@@ -2,15 +2,26 @@
 
 ## Overview
 
-Reasoning is the process of inferring implicit knowledge from explicit axioms. owlapy provides three main reasoner implementations, each with different trade-offs.
+Reasoning is the process of inferring implicit knowledge from explicit axioms. owlapy provides four reasoner implementations, each with different trade-offs.
 
 ## Reasoner Comparison
 
-| Reasoner | Implementation | Completeness | Speed | Dependencies | Use Case |
-|----------|---------------|--------------|-------|--------------|----------|
-| **RDFLibReasoner** | Pure Python (SPARQL) | Structural | Fast | rdflib only | General purpose, no circular deps |
-| **StructuralReasoner** | Python (owlready2) | Structural | Very fast | owlready2 | Quick queries, legacy code |
-| **SyncReasoner** | Java (various) | Complete OWL 2 DL | Slower | JPype1 + Java | Full reasoning, complex queries |
+| Reasoner | Implementation | Completeness | World Assumption | Speed | Dependencies | Use Case |
+|----------|---------------|--------------|-------------------|-------|--------------|----------|
+| **[RDFLibReasoner](#1-rdflibreasoner-recommended)** | Pure Python (SPARQL) | Structural | Closed-world by default (`negation_default` can opt into open-world handling of `OWLObjectComplementOf`) | Fast | rdflib only | Recommended: general purpose, no circular deps, no owlready2/JVM |
+| **[StructuralReasoner](#2-structuralreasoner-legacy) (Legacy)** | Python (owlready2) | Structural | Closed-world | Very fast | owlready2 (optional extra) | Existing owlready2-based code only; being phased out (#205) |
+| **[SyncReasoner](#3-syncreasoner-complete-owl-2-dl)** | Java (various) | Complete OWL 2 DL | Open-world (standard OWL DL semantics) | Slower | JPype1 + Java | Full reasoning, complex queries |
+| **[EBR](#4-ebr-embedding-based-reasoner)** | Pure Python (neural embeddings via `dicee`) | Probabilistic, not DL-complete | N/A (statistical plausibility, not classical entailment) | Fast (batched inference) | dicee + PyTorch | Large/noisy/incomplete KGs where symbolic reasoning misses implicit facts |
+
+⚠️ **Choosing between closed- and open-world semantics matters, not just speed.** If your
+data is meant to be a complete description of the domain (e.g. a fixed test KG) and you want
+fast, predictable "not asserted = false" behavior, use **RDFLibReasoner**. If your data is
+known to be incomplete and you need sound entailment under the standard OWL 2 DL open-world
+assumption (e.g. "not asserted doesn't mean false, it means unknown"), use **SyncReasoner**
+with **HermiT**. `StructuralReasoner` is closed-world like `RDFLibReasoner` but is legacy,
+owlready2-backed, and has known correctness issues (circular `sub_classes()`/`super_classes()`
+dependency, punning-related crashes worked around in #236/#242) -- prefer `RDFLibReasoner` for
+new closed-world code instead.
 
 ## 1. RDFLibReasoner (Recommended)
 
@@ -61,9 +72,15 @@ reasoner.instances(OWLClass("http://example.com/onto#Person"))
 - Does not compute property chains
 - Best for instance retrieval and hierarchy navigation
 
-## 2. StructuralReasoner
+## 2. StructuralReasoner (Legacy)
 
-Fast Python reasoner using owlready2. Has circular dependency issue (#205) but still widely used.
+Fast Python reasoner using owlready2. **Legacy:** owlapy is moving away from its owlready2
+dependency (#205); `RDFLibReasoner` is the actively-maintained pure-Python replacement and
+should be preferred for new code. `StructuralReasoner` also has a known circular dependency
+issue (#205) and is kept mainly for existing code that already depends on it. Constructing one
+now emits a `DeprecationWarning`. owlready2 itself is an optional install extra as of #205
+(`pip install owlapy[owlready2]`) -- constructing a `StructuralReasoner` without it installed
+raises a clear `ImportError` explaining how to install it.
 
 ### Basic Usage
 
@@ -210,6 +227,51 @@ reasoner = SyncReasoner(onto, "Pellet")
 # For very large EL ontologies (incomplete)
 reasoner = SyncReasoner(onto, "ELK")
 ```
+
+## 4. EBR (Embedding-Based Reasoner)
+
+Neural, embedding-based reasoner: instead of applying DL semantics to asserted axioms, it uses a
+pretrained knowledge graph embedding model (via [`dicee`](https://github.com/dice-group/dice-embeddings))
+to *predict* class membership and relations. Useful for large, noisy, or incomplete knowledge
+graphs where symbolic reasoners (RDFLibReasoner/StructuralReasoner/SyncReasoner) either miss
+implicit facts or are too slow.
+
+Requires the `dicee` package (`pip install dicee`; not installed by any `owlapy` extra except
+`owlapy[all]` -- `NeuralOntology` raises a clear `ImportError` naming the install command if it's
+missing).
+
+### Basic Usage
+
+```python
+from owlapy.owl_ontology import NeuralOntology
+from owlapy.owl_reasoner import EBR
+from owlapy.class_expression import OWLClass
+
+# Load a pretrained KGE model (a directory with a `configuration.json`), or train a new one
+neural_onto = NeuralOntology("path/to/pretrained_kge_model")
+# ... or, to train from a knowledge graph if no pretrained model exists yet:
+# neural_onto = NeuralOntology("family.owl", train_if_not_exists=True)
+
+reasoner = EBR(ontology=neural_onto)
+
+# Predict instances of a class via embedding similarity (score threshold = gamma, default 0.5)
+male = OWLClass("http://example.com/family#Male")
+predicted_males = list(reasoner.instances(male))
+
+# Raw (head, relation, tail) triple predictions with scores
+predictions = reasoner.predict(h=["http://example.com/family#john"], r=None, t=None)
+```
+
+### Limitations
+
+- Structural navigation only (`sub_classes`/`super_classes`/`types`/property values); no
+  equivalence, disjointness, same/different-individuals, or complex class expressions --
+  `equivalent_classes()`, `disjoint_classes()`, `same_individuals()`, etc. raise
+  `NotImplementedError`
+- Prediction quality depends entirely on the underlying embedding model; results are
+  probabilistic (score-thresholded by `gamma`), not logically entailed
+- No `stopJVM()`/JVM lifecycle to manage (pure Python + `dicee`/PyTorch), but GPU/CPU device
+  selection matters for performance -- see `NeuralOntology`'s `device` parameter
 
 ## Common Reasoning Tasks
 

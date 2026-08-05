@@ -22,7 +22,7 @@ class AGenKG:
                     temperature: The sampling temperature to use when generating responses.
                     seed: Seed for the LLM.
                     cache: Whether to cache the model responses for reuse to improve performance and reduce costs.
-                    enable_logging: Whether to enable logging.
+                    enable_logging: Whether to emit progress messages via the ``owlapy.agen_kg`` logger (attaches a console handler).
                     max_tokens: Maximum tokens for LLM response.
                 """
         super().__init__()

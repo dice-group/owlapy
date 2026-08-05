@@ -9,8 +9,11 @@ improving performance when processing multiple documents from the same domain.
 """
 
 import json
+import logging
 from pathlib import Path
 from typing import Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 # Mapping of example types to variable names for consistency
 EXAMPLE_TYPE_MAPPING = {
@@ -104,8 +107,8 @@ class DomainExamplesCache:
                 json.dump(examples, f, indent=2, ensure_ascii=False)
 
             return True
-        except Exception as e:
-            print(f"Error saving examples for domain '{domain}': {e}")
+        except Exception:
+            logger.exception(f"Failed to save examples for domain '{domain}'")
             return False
 
     def load_examples(self, domain: str) -> Optional[Dict[str, str]]:
@@ -130,12 +133,12 @@ class DomainExamplesCache:
             # Validate structure
             for example_type in EXAMPLE_TYPE_MAPPING.keys():
                 if example_type not in examples:
-                    print(f"Warning: Missing example type '{example_type}' in cached examples for domain '{domain}'")
+                    logger.warning(f"Missing example type '{example_type}' in cached examples for domain '{domain}'")
                     return None
 
             return examples
-        except Exception as e:
-            print(f"Error loading examples for domain '{domain}': {e}")
+        except Exception:
+            logger.exception(f"Failed to load examples for domain '{domain}'")
             return None
 
     def examples_exist(self, domain: str) -> bool:
@@ -178,8 +181,8 @@ class DomainExamplesCache:
             if cache_file.exists():
                 cache_file.unlink()
             return True
-        except Exception as e:
-            print(f"Error clearing cache for domain '{domain}': {e}")
+        except Exception:
+            logger.exception(f"Failed to clear cache for domain '{domain}'")
             return False
 
     def clear_all_caches(self) -> bool:
@@ -194,8 +197,8 @@ class DomainExamplesCache:
             for cache_file in cache_files:
                 cache_file.unlink()
             return True
-        except Exception as e:
-            print(f"Error clearing all caches: {e}")
+        except Exception:
+            logger.exception("Failed to clear all domain example caches")
             return False
 
     def list_cached_domains(self) -> list:
@@ -214,7 +217,7 @@ class DomainExamplesCache:
                 domain_name = filename.replace("domain_examples_", "", 1)
                 domains.append(domain_name)
             return sorted(domains)
-        except Exception as e:
-            print(f"Error listing cached domains: {e}")
+        except Exception:
+            logger.exception("Failed to list cached domains")
             return []
 
