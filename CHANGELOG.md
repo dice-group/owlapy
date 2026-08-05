@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.6] - 2026-08-05
+
 ### Added
 - README's "Production-Ready Reasoning" bullets and the `markdown_docs`/`.claude/rules` reasoner docs now link out to per-reasoner sections instead of naming reasoners as plain text, and document the previously-undocumented `EBR` (Embedding-Based Reasoner) and its `NeuralOntology` counterpart, which weren't mentioned anywhere outside code docstrings. The README's "Python-native Reasoners" bullet also gained a link to `RDFLibReasoner`, which it previously omitted entirely despite being the recommended pure-Python reasoner.
 - `RDFLibOntology` now implements a write API: `add_axiom()`/`remove_axiom()` (accepting a single `OWLAxiom` or an iterable) support declarations, class/object-property/data-property assertions, `SubClassOf`, `EquivalentClasses`, `DisjointClasses`, sub-property axioms, property domain/range axioms, and the property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/Transitive/Reflexive/Irreflexive) between/on *named* entities -- axiom types or complex (blank-node) expressions it can't represent raise `NotImplementedError` naming what's supported. Adding an axiom auto-declares any entity it references that isn't already declared, so it's immediately visible to the read API. `save()` serializes via rdflib's own writer (`document_format` accepts rdflib's native format names plus the OWL-API-style aliases `Ontology`/`SyncOntology`'s `save()` already use). `RDFLibOntology(iri, load=False)` now creates a blank ontology at the given IRI instead of raising `NotImplementedError` (#205)
