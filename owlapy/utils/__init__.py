@@ -3,9 +3,16 @@
 This is a subpackage (not a single module) so that each cohesive group of helpers -
 similarity metrics, expression-length calculation, canonical ordering, NNF/CNF/DNF,
 syntactic simplification, signature extraction, and the LRU cache - lives in its own
-file. Every name previously importable from ``owlapy.utils`` is re-exported here, so
-``from owlapy.utils import X`` keeps working unchanged.
+file. Every name that was part of ``owlapy.utils``'s own API is re-exported here, so
+``from owlapy.utils import X`` keeps working unchanged for those, plus a handful of
+mixins/types (``HasFiller``, ``HasCardinality``, ``HasOperands``, ``OWLDataOneOf``)
+that downstream code has historically imported from here even though they're defined
+elsewhere. Names only reachable from the old flat ``utils.py`` as a side effect of
+*its own* unrelated top-level imports (stdlib ``typing`` names, or other OWL
+entity/axiom classes) are not re-exported here - import those from their own module.
 """
+from ..class_expression import OWLDataOneOf
+from ..meta_classes import HasCardinality, HasFiller, HasOperands
 from .cache import LRUCache
 from .length import OWLClassExpressionLengthMetric, get_expression_length, measurer
 from .nnf import NNF, _get_top_level_form, get_top_level_cnf, get_top_level_dnf
@@ -61,4 +68,8 @@ __all__ = [
     'get_remaining',
     'simplify_class_expression',
     'transformer',
+    'OWLDataOneOf',
+    'HasCardinality',
+    'HasFiller',
+    'HasOperands',
 ]
