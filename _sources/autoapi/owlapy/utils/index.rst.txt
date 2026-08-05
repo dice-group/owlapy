@@ -10,8 +10,13 @@ owlapy.utils
    This is a subpackage (not a single module) so that each cohesive group of helpers -
    similarity metrics, expression-length calculation, canonical ordering, NNF/CNF/DNF,
    syntactic simplification, signature extraction, and the LRU cache - lives in its own
-   file. Every name previously importable from ``owlapy.utils`` is re-exported here, so
-   ``from owlapy.utils import X`` keeps working unchanged.
+   file. Every name that was part of ``owlapy.utils``'s own API is re-exported here, so
+   ``from owlapy.utils import X`` keeps working unchanged for those, plus a handful of
+   mixins/types (``HasFiller``, ``HasCardinality``, ``HasOperands``, ``OWLDataOneOf``)
+   that downstream code has historically imported from here even though they're defined
+   elsewhere. Names only reachable from the old flat ``utils.py`` as a side effect of
+   *its own* unrelated top-level imports (stdlib ``typing`` names, or other OWL
+   entity/axiom classes) are not re-exported here - import those from their own module.
 
 
 
@@ -44,6 +49,10 @@ Classes
 
 .. autoapisummary::
 
+   owlapy.utils.OWLDataOneOf
+   owlapy.utils.HasCardinality
+   owlapy.utils.HasFiller
+   owlapy.utils.HasOperands
    owlapy.utils.LRUCache
    owlapy.utils.OWLClassExpressionLengthMetric
    owlapy.utils.NNF
@@ -78,6 +87,120 @@ Functions
 
 Package Contents
 ----------------
+
+.. py:class:: OWLDataOneOf(values: Union[owlapy.owl_literal.OWLLiteral, Iterable[owlapy.owl_literal.OWLLiteral]])
+
+   Bases: :py:obj:`owlapy.owl_data_ranges.OWLDataRange`, :py:obj:`owlapy.meta_classes.HasOperands`\ [\ :py:obj:`owlapy.owl_literal.OWLLiteral`\ ]
+
+
+   An enumeration of literals DataOneOf( lt1 ... ltn ) contains exactly the explicitly specified literals lti with
+   1 ≤ i ≤ n. The resulting data range has arity one. (https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Literals)
+
+
+   .. py:attribute:: type_index
+      :type:  Final
+      :value: 4003
+
+
+
+   .. py:method:: __repr__()
+
+
+   .. py:method:: __hash__()
+
+
+   .. py:method:: __eq__(other)
+
+
+   .. py:method:: values() -> Iterable[owlapy.owl_literal.OWLLiteral]
+
+      Gets the values that are in the oneOf.
+
+      :returns: The values of this {@code DataOneOf} class expression.
+
+
+
+   .. py:method:: operands() -> Iterable[owlapy.owl_literal.OWLLiteral]
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
+
+.. py:class:: HasCardinality
+
+   An interface to objects that have a cardinality.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: get_cardinality() -> int
+      :abstractmethod:
+
+
+      Gets the cardinality of a restriction.
+
+      :returns: The cardinality. A non-negative integer.
+
+
+
+.. py:class:: HasFiller
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+
+   An interface to objects that have a filler.
+
+   :param _T: Filler type.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: get_filler() -> _T
+      :abstractmethod:
+
+
+      Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
+      the case of a data restriction this will be a constant (data value). For quantified restriction this will be
+      a class expression or a data range.
+
+      :returns: the value
+
+
+
+.. py:class:: HasOperands
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_T`\ ]
+
+
+   An interface to objects that have a collection of operands.
+
+   :param _T: Operand type.
+
+
+   .. py:attribute:: __slots__
+      :value: ()
+
+
+
+   .. py:method:: operands() -> Iterable[_T]
+      :abstractmethod:
+
+
+      Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+      classes axiom.
+
+      :returns: The operands.
+
+
 
 .. py:class:: LRUCache(maxsize: Optional[int] = None)
 

@@ -104,6 +104,30 @@
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.OWLDataOneOf"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLDataOneOf.type_index"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.type_index</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLDataOneOf.__repr__"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.__repr__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLDataOneOf.__hash__"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.__hash__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLDataOneOf.__eq__"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.__eq__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLDataOneOf.values"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.values()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLDataOneOf.operands"><code class="docutils literal notranslate"><span class="pre">OWLDataOneOf.operands()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.HasCardinality"><code class="docutils literal notranslate"><span class="pre">HasCardinality</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.HasCardinality.__slots__"><code class="docutils literal notranslate"><span class="pre">HasCardinality.__slots__</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.HasCardinality.get_cardinality"><code class="docutils literal notranslate"><span class="pre">HasCardinality.get_cardinality()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.HasFiller"><code class="docutils literal notranslate"><span class="pre">HasFiller</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.HasFiller.__slots__"><code class="docutils literal notranslate"><span class="pre">HasFiller.__slots__</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.HasFiller.get_filler"><code class="docutils literal notranslate"><span class="pre">HasFiller.get_filler()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.HasOperands"><code class="docutils literal notranslate"><span class="pre">HasOperands</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.HasOperands.__slots__"><code class="docutils literal notranslate"><span class="pre">HasOperands.__slots__</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.HasOperands.operands"><code class="docutils literal notranslate"><span class="pre">HasOperands.operands()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.LRUCache"><code class="docutils literal notranslate"><span class="pre">LRUCache</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.sentinel"><code class="docutils literal notranslate"><span class="pre">LRUCache.sentinel</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.PREV"><code class="docutils literal notranslate"><span class="pre">LRUCache.PREV</span></code></a></li>
@@ -256,8 +280,13 @@
 <p>This is a subpackage (not a single module) so that each cohesive group of helpers -
 similarity metrics, expression-length calculation, canonical ordering, NNF/CNF/DNF,
 syntactic simplification, signature extraction, and the LRU cache - lives in its own
-file. Every name previously importable from <code class="docutils literal notranslate"><span class="pre">owlapy.utils</span></code> is re-exported here, so
-<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">owlapy.utils</span> <span class="pre">import</span> <span class="pre">X</span></code> keeps working unchanged.</p>
+file. Every name that was part of <code class="docutils literal notranslate"><span class="pre">owlapy.utils</span></code>’s own API is re-exported here, so
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">owlapy.utils</span> <span class="pre">import</span> <span class="pre">X</span></code> keeps working unchanged for those, plus a handful of
+mixins/types (<code class="docutils literal notranslate"><span class="pre">HasFiller</span></code>, <code class="docutils literal notranslate"><span class="pre">HasCardinality</span></code>, <code class="docutils literal notranslate"><span class="pre">HasOperands</span></code>, <code class="docutils literal notranslate"><span class="pre">OWLDataOneOf</span></code>)
+that downstream code has historically imported from here even though they’re defined
+elsewhere. Names only reachable from the old flat <code class="docutils literal notranslate"><span class="pre">utils.py</span></code> as a side effect of
+<em>its own</em> unrelated top-level imports (stdlib <code class="docutils literal notranslate"><span class="pre">typing</span></code> names, or other OWL
+entity/axiom classes) are not re-exported here - import those from their own module.</p>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 <div class="toctree-wrapper compound">
@@ -289,6 +318,18 @@ file. Every name previously importable from <code class="docutils literal notran
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.OWLDataOneOf" title="owlapy.utils.OWLDataOneOf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLDataOneOf</span></code></a></p></td>
+<td><p>An enumeration of literals DataOneOf( lt1 ... ltn ) contains exactly the explicitly specified literals lti with</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.HasCardinality" title="owlapy.utils.HasCardinality"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HasCardinality</span></code></a></p></td>
+<td><p>An interface to objects that have a cardinality.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.HasFiller" title="owlapy.utils.HasFiller"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HasFiller</span></code></a></p></td>
+<td><p>An interface to objects that have a filler.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.HasOperands" title="owlapy.utils.HasOperands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HasOperands</span></code></a></p></td>
+<td><p>An interface to objects that have a collection of operands.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.LRUCache" title="owlapy.utils.LRUCache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LRUCache</span></code></a></p></td>
 <td><p>Constants shares by all lru cache instances.</p></td>
 </tr>
@@ -370,6 +411,138 @@ file. Every name previously importable from <code class="docutils literal notran
 </section>
 <section id="package-contents">
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.OWLDataOneOf">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">OWLDataOneOf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/class_expression/restriction.html#OWLDataOneOf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLDataOneOf" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataRange" title="owlapy.owl_data_ranges.OWLDataRange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_data_ranges.OWLDataRange</span></code></a>, <a class="reference internal" href="../meta_classes/index.html#owlapy.meta_classes.HasOperands" title="owlapy.meta_classes.HasOperands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.meta_classes.HasOperands</span></code></a>[<a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><code class="xref py py-obj docutils literal notranslate"><span class="pre">owlapy.owl_literal.OWLLiteral</span></code></a>]</p>
+<p>An enumeration of literals DataOneOf( lt1 … ltn ) contains exactly the explicitly specified literals lti with
+1 ≤ i ≤ n. The resulting data range has arity one. (<a class="reference external" href="https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Literals">https://www.w3.org/TR/owl2-syntax/#Enumeration_of_Literals</a>)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.OWLDataOneOf.type_index">
+<span class="sig-name descname"><span class="pre">type_index</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Final</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4003</span></span><a class="headerlink" href="#owlapy.utils.OWLDataOneOf.type_index" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.OWLDataOneOf.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/class_expression/restriction.html#OWLDataOneOf.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLDataOneOf.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.OWLDataOneOf.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/class_expression/restriction.html#OWLDataOneOf.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLDataOneOf.__hash__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.OWLDataOneOf.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/class_expression/restriction.html#OWLDataOneOf.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLDataOneOf.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.OWLDataOneOf.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/class_expression/restriction.html#OWLDataOneOf.values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLDataOneOf.values" title="Link to this definition"></a></dt>
+<dd><p>Gets the values that are in the oneOf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The values of this <a class="reference external" href="mailto:{&#37;&#52;&#48;code">{<span>&#64;</span>code</a> DataOneOf} class expression.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.OWLDataOneOf.operands">
+<span class="sig-name descname"><span class="pre">operands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_literal/index.html#owlapy.owl_literal.OWLLiteral" title="owlapy.owl_literal.OWLLiteral"><span class="pre">owlapy.owl_literal.OWLLiteral</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/class_expression/restriction.html#OWLDataOneOf.operands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLDataOneOf.operands" title="Link to this definition"></a></dt>
+<dd><p>Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+classes axiom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The operands.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.HasCardinality">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">HasCardinality</span></span><a class="reference internal" href="../../../_modules/owlapy/meta_classes.html#HasCardinality"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasCardinality" title="Link to this definition"></a></dt>
+<dd><p>An interface to objects that have a cardinality.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.HasCardinality.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></span><a class="headerlink" href="#owlapy.utils.HasCardinality.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.HasCardinality.get_cardinality">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_cardinality</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/owlapy/meta_classes.html#HasCardinality.get_cardinality"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasCardinality.get_cardinality" title="Link to this definition"></a></dt>
+<dd><p>Gets the cardinality of a restriction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The cardinality. A non-negative integer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.HasFiller">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">HasFiller</span></span><a class="reference internal" href="../../../_modules/owlapy/meta_classes.html#HasFiller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasFiller" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_T</span></code>]</p>
+<p>An interface to objects that have a filler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_T</strong> – Filler type.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.HasFiller.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></span><a class="headerlink" href="#owlapy.utils.HasFiller.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.HasFiller.get_filler">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_filler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_T</span></span></span><a class="reference internal" href="../../../_modules/owlapy/meta_classes.html#HasFiller.get_filler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasFiller.get_filler" title="Link to this definition"></a></dt>
+<dd><p>Gets the filler for this restriction. In the case of an object restriction this will be an individual, in
+the case of a data restriction this will be a constant (data value). For quantified restriction this will be
+a class expression or a data range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the value</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.HasOperands">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">HasOperands</span></span><a class="reference internal" href="../../../_modules/owlapy/meta_classes.html#HasOperands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasOperands" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_T</span></code>]</p>
+<p>An interface to objects that have a collection of operands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_T</strong> – Operand type.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.HasOperands.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></span><a class="headerlink" href="#owlapy.utils.HasOperands.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.HasOperands.operands">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">operands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">_T</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/meta_classes.html#HasOperands.operands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasOperands.operands" title="Link to this definition"></a></dt>
+<dd><p>Gets the operands - e.g., the individuals in a sameAs axiom, or the classes in an equivalent
+classes axiom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The operands.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.utils.LRUCache">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">LRUCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/cache.html#LRUCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache" title="Link to this definition"></a></dt>
