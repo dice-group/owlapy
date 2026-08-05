@@ -70,7 +70,7 @@ Functions
 Package Contents
 ----------------
 
-.. py:function:: owl_expression_to_sparql(expression: owlapy.class_expression.OWLClassExpression = None, root_variable: str = '?x', values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, for_all_de_morgan: bool = True, named_individuals: bool = False, validate: bool = False) -> str
+.. py:function:: owl_expression_to_sparql(expression: owlapy.class_expression.OWLClassExpression = None, root_variable: str = '?x', values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, for_all_de_morgan: bool = True, named_individuals: bool = False, validate: bool = False, negation_default: bool = True, sub_property_resolver: Optional[Callable] = None, inverse_property_resolver: Optional[Callable] = None, subclass_resolver: Optional[Callable] = None) -> str
 
    Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
    root variable: the variable that will be projected
@@ -82,6 +82,14 @@ Package Contents
    named_individuals: if set to True, the generated SPARQL query will return only entities
    that are instances of owl:NamedIndividual
    validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
+   negation_default: if True (closed world, the default), OWLObjectComplementOf is translated via
+   FILTER NOT EXISTS; if False (open world), OWLObjectComplementOf always contributes no results.
+   sub_property_resolver: optional callable mapping a property to its sub-properties, used to expand
+   every rendered property into a SPARQL property-path alternation of itself and its sub-properties.
+   inverse_property_resolver: optional callable mapping an object property to its declared owl:inverseOf
+   partner(s), used to expand every rendered object property with a reverse (`^`) path alternative.
+   subclass_resolver: optional callable mapping a class to its subclasses, used to expand every named
+   class membership triple to also match individuals typed only at a subclass.
 
 
 .. py:function:: owl_expression_to_sparql_with_confusion_matrix(expression: owlapy.class_expression.OWLClassExpression, positive_examples: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]], negative_examples: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]], root_variable: str = '?x', for_all_de_morgan: bool = True, named_individuals: bool = False, validate: bool = False) -> str
@@ -111,7 +119,7 @@ Package Contents
        it is the only ontology backend that exposes RBox axioms).
 
 
-.. py:class:: RDFLibReasoner(ontology: Union[owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology, str], *, class_cache: bool = True, property_cache: bool = True, infer_property_values: bool = False, infer_data_property_values: bool = False)
+.. py:class:: RDFLibReasoner(ontology: Union[owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology, str], *, class_cache: bool = True, property_cache: bool = True, infer_property_values: bool = False, infer_data_property_values: bool = False, negation_default: bool = True, sub_properties: bool = False)
 
    Bases: :py:obj:`owlapy.abstracts.abstract_owl_reasoner.AbstractOWLReasoner`
 
@@ -127,10 +135,14 @@ Package Contents
    - SPARQL-based reasoning
    - Efficient graph traversal with caching
    - Support for basic OWL 2 class expressions
-   - Direct and indirect hierarchy navigation
+   - Direct and indirect hierarchy navigation for classes, object properties and data properties
+   - Domain/range, equivalence, disjointness and same/different-individual queries, including the
+     RDF-list-based owl:AllDisjointProperties/owl:AllDifferent axiom forms
 
    Limitations:
-   - Does not perform OWL 2 DL inference (use HermiT/Pellet via SyncReasoner for that)
+   - Does not perform OWL 2 DL inference/entailment (use HermiT/Pellet via SyncReasoner for that) —
+     results reflect asserted axioms plus simple transitive closure over sub-class/sub-property
+     hierarchies, not full description logic reasoning
    - Best suited for ontology navigation and simple instance retrieval
    - Does not handle all complex class expressions (nominals, cardinalities may be limited)
 
@@ -228,31 +240,31 @@ Package Contents
 
 
 
-   .. py:method:: data_property_domains(pe, direct: bool = False)
+   .. py:method:: data_property_domains(pe: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
 
       Gets the class expressions that are the domains of this data property.
 
 
 
-   .. py:method:: object_property_domains(pe, direct: bool = False)
+   .. py:method:: object_property_domains(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
 
       Gets the class expressions that are the domains of this object property.
 
 
 
-   .. py:method:: object_property_ranges(pe, direct: bool = False)
+   .. py:method:: object_property_ranges(pe: owlapy.owl_property.OWLObjectProperty, direct: bool = False) -> Iterable[owlapy.class_expression.OWLClassExpression]
 
       Gets the class expressions that are the ranges of this object property.
 
 
 
-   .. py:method:: data_property_values(e, pe)
+   .. py:method:: data_property_values(e: owlapy.owl_individual.OWLNamedIndividual, pe: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_literal.OWLLiteral]
 
       Gets the data property values for the specified entity and data property.
 
 
 
-   .. py:method:: different_individuals(ind: owlapy.owl_individual.OWLNamedIndividual)
+   .. py:method:: different_individuals(ind: owlapy.owl_individual.OWLNamedIndividual) -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
 
       Gets the individuals that are different from the specified individual.
 
@@ -264,51 +276,51 @@ Package Contents
 
 
 
-   .. py:method:: equivalent_object_properties(op)
+   .. py:method:: equivalent_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
 
       Gets the object properties that are equivalent to the specified object property.
 
 
 
-   .. py:method:: equivalent_data_properties(dp)
+   .. py:method:: equivalent_data_properties(dp: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_property.OWLDataProperty]
 
       Gets the data properties that are equivalent to the specified data property.
 
 
 
-   .. py:method:: disjoint_object_properties(op)
+   .. py:method:: disjoint_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
 
       Gets the object properties that are disjoint with the specified object property.
 
 
 
-   .. py:method:: disjoint_data_properties(dp)
+   .. py:method:: disjoint_data_properties(dp: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_property.OWLDataProperty]
 
       Gets the data properties that are disjoint with the specified data property.
 
 
 
-   .. py:method:: sub_data_properties(dp, direct: bool = False)
-
-      Gets the sub data properties of the specified data property.
-
-
-
-   .. py:method:: super_data_properties(dp, direct: bool = False)
-
-      Gets the super data properties of the specified data property.
-
-
-
-   .. py:method:: sub_object_properties(op, direct: bool = False)
+   .. py:method:: sub_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression, direct: bool = False) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
 
       Gets the sub object properties of the specified object property.
 
 
 
-   .. py:method:: super_object_properties(op, direct: bool = False)
+   .. py:method:: super_object_properties(op: owlapy.owl_property.OWLObjectPropertyExpression, direct: bool = False) -> Iterable[owlapy.owl_property.OWLObjectPropertyExpression]
 
       Gets the super object properties of the specified object property.
+
+
+
+   .. py:method:: sub_data_properties(dp: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+      Gets the sub data properties of the specified data property.
+
+
+
+   .. py:method:: super_data_properties(dp: owlapy.owl_property.OWLDataProperty, direct: bool = False) -> Iterable[owlapy.owl_property.OWLDataProperty]
+
+      Gets the super data properties of the specified data property.
 
 
 

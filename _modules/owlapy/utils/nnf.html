@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.utils.nnf &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.utils.nnf</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.utils.nnf</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Negation Normal Form and Top-Level CNF/DNF transformation for OWLClassExpression.&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OWLClass</span><span class="p">,</span>
+    <span class="n">OWLClassExpression</span><span class="p">,</span>
+    <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDataExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataHasValue</span><span class="p">,</span>
+    <span class="n">OWLDataMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLDataOneOf</span><span class="p">,</span>
+    <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLDatatypeRestriction</span><span class="p">,</span>
+    <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span>
+    <span class="n">OWLNothing</span><span class="p">,</span>
+    <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectComplementOf</span><span class="p">,</span>
+    <span class="n">OWLObjectExactCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectHasSelf</span><span class="p">,</span>
+    <span class="n">OWLObjectHasValue</span><span class="p">,</span>
+    <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span>
+    <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectMinCardinality</span><span class="p">,</span>
+    <span class="n">OWLObjectOneOf</span><span class="p">,</span>
+    <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span>
+    <span class="n">OWLObjectUnionOf</span><span class="p">,</span>
+    <span class="n">OWLThing</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">OWLDataUnionOf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.ordering</span><span class="w"> </span><span class="kn">import</span> <span class="n">_sort_by_ordered_owl_object</span><span class="p">,</span> <span class="n">combine_nary_expressions</span>
+
+
+<div class="viewcode-block" id="NNF">
+<a class="viewcode-back" href="../../../autoapi/owlapy/utils/nnf/index.html#owlapy.utils.NNF">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NNF</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class contains functions to transform a Class Expression into Negation Normal Form.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="NNF.get_class_nnf">
+<a class="viewcode-back" href="../../../autoapi/owlapy/utils/nnf/index.html#owlapy.utils.NNF.get_class_nnf">[docs]</a>
+    <span class="nd">@singledispatchmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_class_nnf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a Class Expression to Negation Normal Form. Operands will be sorted.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ce: Class Expression.</span>
+<span class="sd">            negated: Whether the result should be negated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Class Expression in Negation Normal Form.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_thing</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">OWLNothing</span>
+            <span class="k">if</span> <span class="n">ce</span><span class="o">.</span><span class="n">is_owl_nothing</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">OWLThing</span>
+            <span class="k">return</span> <span class="n">OWLObjectComplementOf</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ce</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">ops</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">negated</span><span class="p">),</span>
+                  <span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">ops</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">negated</span><span class="p">),</span>
+                  <span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_operand</span><span class="p">(),</span> <span class="ow">not</span> <span class="n">negated</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">negated</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">negated</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectSomeValuesFrom</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLObjectAllValuesFrom</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectHasValue</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">as_some_values_from</span><span class="p">(),</span> <span class="n">negated</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectMinCardinality</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">card</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="n">card</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">card</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">negated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLObjectMinCardinality</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectExactCardinality</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">as_intersection_of_min_max</span><span class="p">(),</span> <span class="n">negated</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">card</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="n">card</span> <span class="o">=</span> <span class="n">card</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">negated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLObjectMinCardinality</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLObjectMaxCardinality</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectHasSelf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_object_complement_of</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ce</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">union</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">as_object_union_of</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">union</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_object_complement_of</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">ce</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">union</span><span class="p">,</span> <span class="n">negated</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">negated</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">negated</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataSomeValuesFrom</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDataAllValuesFrom</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataComplementOf</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ce</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataComplementOf</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ce</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_data_range</span><span class="p">(),</span> <span class="ow">not</span> <span class="n">negated</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataHasValue</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">as_some_values_from</span><span class="p">(),</span> <span class="n">negated</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">OWLDataComplementOf</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ce</span>
+        <span class="n">union</span> <span class="o">=</span> <span class="n">OWLDataUnionOf</span><span class="p">([</span><span class="n">OWLDataOneOf</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">union</span><span class="p">,</span> <span class="n">negated</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataIntersectionOf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">ops</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">negated</span><span class="p">),</span>
+                  <span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataUnionOf</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataUnionOf</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">ops</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">negated</span><span class="p">),</span>
+                  <span class="n">_sort_by_ordered_owl_object</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataIntersectionOf</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDataUnionOf</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataExactCardinality</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">as_intersection_of_min_max</span><span class="p">(),</span> <span class="n">negated</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataMinCardinality</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">card</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="n">card</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">card</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">negated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataMaxCardinality</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDataMinCardinality</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+
+    <span class="nd">@get_class_nnf</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLDataMaxCardinality</span><span class="p">,</span> <span class="n">negated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">card</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="n">card</span> <span class="o">=</span> <span class="n">card</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">filler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_nnf</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_filler</span><span class="p">(),</span> <span class="n">negated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">negated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">OWLDataMinCardinality</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">OWLDataMaxCardinality</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="n">ce</span><span class="o">.</span><span class="n">get_property</span><span class="p">(),</span> <span class="n">filler</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_top_level_cnf">
+<a class="viewcode-back" href="../../../autoapi/owlapy/utils/nnf/index.html#owlapy.utils.get_top_level_cnf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_top_level_cnf</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ce: Class Expression.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Class Expression in Top-Level Conjunctive Normal Form.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">(),</span> <span class="n">OWLObjectUnionOf</span><span class="p">,</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_top_level_dnf">
+<a class="viewcode-back" href="../../../autoapi/owlapy/utils/nnf/index.html#owlapy.utils.get_top_level_dnf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_top_level_dnf</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ce: Class Expression.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Class Expression in Top-Level Disjunctive Normal Form.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="o">.</span><span class="n">get_nnf</span><span class="p">(),</span> <span class="n">OWLObjectIntersectionOf</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_top_level_form</span><span class="p">(</span><span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span>
+                        <span class="n">type_a</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">],</span>
+                        <span class="n">type_b</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">OWLClassExpression</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Transforms a class expression (that&#39;s already in NNF) into Top-Level Conjunctive/Disjunctive Normal Form.</span>
+<span class="sd">    Here type_a specifies the operand which should be distributed inwards over type_b.</span>
+
+<span class="sd">    Conjunctive Normal form:</span>
+<span class="sd">        type_a = OWLObjectUnionOf</span>
+<span class="sd">        type_b = OWLObjectIntersectionOf</span>
+<span class="sd">    Disjunctive Normal form:</span>
+<span class="sd">        type_a = OWLObjectIntersectionOf</span>
+<span class="sd">        type_b = OWLObjectUnionOf</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">distributive_law</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">type_b</span><span class="p">(</span><span class="n">type_a</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">op</span><span class="p">])</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">type_a</span><span class="p">):</span>
+        <span class="n">ce</span> <span class="o">=</span> <span class="n">combine_nary_expressions</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">type_a</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ce</span>
+        <span class="n">ce</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">ce</span><span class="p">)</span>
+        <span class="n">type_b_exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)]</span>
+        <span class="n">non_type_b_exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_exprs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">ce</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">):</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">non_type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> \
+                <span class="k">else</span> <span class="n">type_a</span><span class="p">(</span><span class="n">non_type_b_exprs</span><span class="p">)</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">distributive_law</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_b_exprs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">type_b_expr</span> <span class="ow">in</span> <span class="n">type_b_exprs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">distributive_law</span><span class="p">(</span><span class="n">type_b_expr</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">type_b</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">type_b</span><span class="p">(</span><span class="n">_get_top_level_form</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ce</span><span class="o">.</span><span class="n">operands</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLClassExpression</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ce</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Top-Level CNF/DNF only applicable on class expressions&#39;</span><span class="p">,</span> <span class="n">ce</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

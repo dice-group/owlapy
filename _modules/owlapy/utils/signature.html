@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlapy.utils.signature &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlapy.utils.signature</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlapy.utils.signature</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Signature extraction: the set of named entities referenced by an axiom or class expression/data range.&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">singledispatchmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Set</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataOneOf</span><span class="p">,</span> <span class="n">OWLDatatypeRestriction</span><span class="p">,</span> <span class="n">OWLHasValueRestriction</span><span class="p">,</span> <span class="n">OWLNaryBooleanClassExpression</span><span class="p">,</span> <span class="n">OWLObjectComplementOf</span><span class="p">,</span> <span class="n">OWLObjectOneOf</span><span class="p">,</span> <span class="n">OWLQuantifiedRestriction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_axiom</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">,</span>
+    <span class="n">OWLAnnotationProperty</span><span class="p">,</span>
+    <span class="n">OWLAnnotationPropertyDomainAxiom</span><span class="p">,</span>
+    <span class="n">OWLAnnotationPropertyRangeAxiom</span><span class="p">,</span>
+    <span class="n">OWLClassAssertionAxiom</span><span class="p">,</span>
+    <span class="n">OWLDatatypeDefinitionAxiom</span><span class="p">,</span>
+    <span class="n">OWLDeclarationAxiom</span><span class="p">,</span>
+    <span class="n">OWLDisjointUnionAxiom</span><span class="p">,</span>
+    <span class="n">OWLHasKeyAxiom</span><span class="p">,</span>
+    <span class="n">OWLNaryClassAxiom</span><span class="p">,</span>
+    <span class="n">OWLNaryIndividualAxiom</span><span class="p">,</span>
+    <span class="n">OWLNaryPropertyAxiom</span><span class="p">,</span>
+    <span class="n">OWLPropertyAssertionAxiom</span><span class="p">,</span>
+    <span class="n">OWLPropertyDomainAxiom</span><span class="p">,</span>
+    <span class="n">OWLPropertyRangeAxiom</span><span class="p">,</span>
+    <span class="n">OWLSubAnnotationPropertyOfAxiom</span><span class="p">,</span>
+    <span class="n">OWLSubClassOfAxiom</span><span class="p">,</span>
+    <span class="n">OWLSubPropertyAxiom</span><span class="p">,</span>
+    <span class="n">OWLSubPropertyChainAxiom</span><span class="p">,</span>
+    <span class="n">OWLUnaryPropertyAxiom</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.owl_individual</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLAnonymousIndividual</span><span class="p">,</span> <span class="n">OWLNamedIndividual</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLClass</span><span class="p">,</span> <span class="n">OWLObjectHasSelf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..iri</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..owl_data_ranges</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataComplementOf</span><span class="p">,</span> <span class="n">OWLNaryDataRange</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..owl_datatype</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDatatype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..owl_literal</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLLiteral</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..owl_object</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLEntity</span><span class="p">,</span> <span class="n">OWLObject</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..owl_property</span><span class="w"> </span><span class="kn">import</span> <span class="n">OWLDataProperty</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">,</span> <span class="n">OWLObjectProperty</span>
+
+
+<div class="viewcode-block" id="SignatureExtractor">
+<a class="viewcode-back" href="../../../autoapi/owlapy/utils/signature/index.html#owlapy.utils.SignatureExtractor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SignatureExtractor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the signature of an axiom or class expression/data range: the set of named entities</span>
+<span class="sd">    (:class:`OWLClass`, :class:`OWLObjectProperty`, :class:`OWLDataProperty`, :class:`OWLNamedIndividual`,</span>
+<span class="sd">    :class:`OWLDatatype`) that it references, collected recursively.</span>
+
+<span class="sd">    Mirrors the ``signature()`` method of OWLAPI&#39;s ``OWLObject`` interface. :class:`OWLAnonymousIndividual`</span>
+<span class="sd">    is intentionally excluded (it is not an :class:`OWLEntity`, per the OWL 2 specification). Likewise, a</span>
+<span class="sd">    bare :class:`~owlapy.iri.IRI` (used as an annotation subject/value or as the domain/range of an</span>
+<span class="sd">    annotation property axiom) contributes nothing to the signature unless it has been resolved to a</span>
+<span class="sd">    concrete entity elsewhere in the expression.</span>
+
+<span class="sd">    Covers the full set of class expression/data range constructs plus all :class:`OWLAxiom` subtypes,</span>
+<span class="sd">    including property characteristics, sub-property (and property chain) axioms, has-key, disjoint union,</span>
+<span class="sd">    datatype definition, (un)equal individuals and annotation axioms. See</span>
+<span class="sd">    https://github.com/dice-group/owlapy/issues/231.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SignatureExtractor.get_signature">
+<a class="viewcode-back" href="../../../autoapi/owlapy/utils/signature/index.html#owlapy.utils.SignatureExtractor.get_signature">[docs]</a>
+    <span class="nd">@singledispatchmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the signature of *o*.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            o: An axiom, class expression, data range, property expression, individual or literal.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The set of named entities referenced by *o*.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;signature() is not yet implemented for </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. See &quot;</span>
+            <span class="s2">&quot;https://github.com/dice-group/owlapy/issues/231 to track extending coverage.&quot;</span>
+        <span class="p">)</span></div>
+
+
+    <span class="c1"># -- entities (leaves) -----------------------------------------------------</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLClass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">o</span><span class="p">}</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">o</span><span class="p">}</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLDataProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">o</span><span class="p">}</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLObjectInverseOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">o</span><span class="p">}</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLAnonymousIndividual</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLDatatype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">o</span><span class="p">}</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLAnnotationProperty</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">o</span><span class="p">}</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLLiteral</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">IRI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="c1"># A raw IRI (annotation subject/value, annotation property domain/range) is not itself an</span>
+        <span class="c1"># OWLEntity -- it is only a name, not a resolved reference to one.</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="c1"># -- class expressions / data ranges ---------------------------------------</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNaryBooleanClassExpression</span><span class="p">)</span>
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectComplementOf</span><span class="p">)</span>
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLObjectOneOf</span><span class="p">)</span>
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLNaryDataRange</span><span class="p">)</span>
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLDataOneOf</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">operands</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLDataComplementOf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_data_range</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLQuantifiedRestriction</span><span class="p">)</span>
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">OWLHasValueRestriction</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_filler</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLObjectHasSelf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLDatatypeRestriction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">())</span>
+
+    <span class="c1"># -- axioms ------------------------------------------------------------</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLDeclarationAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_entity</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLClassAssertionAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_individual</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_class_expression</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLPropertyAssertionAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_subject</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span>
+                <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_object</span><span class="p">()))</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLSubClassOfAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_sub_class</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_super_class</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLNaryClassAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">class_expressions</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLPropertyDomainAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_domain</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLPropertyRangeAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_range</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLUnaryPropertyAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="c1"># Property characteristic axioms (Functional/InverseFunctional/Symmetric/Asymmetric/</span>
+        <span class="c1"># Transitive/Reflexive/Irreflexive ObjectProperty, FunctionalDataProperty). Domain/range axioms</span>
+        <span class="c1"># are handled by the more specific registrations above.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLSubPropertyAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_sub_property</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_super_property</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLSubPropertyChainAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_super_property</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">get_property_chain</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLNaryIndividualAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">individuals</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLNaryPropertyAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">properties</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLDisjointUnionAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_owl_class</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">get_class_expressions</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLHasKeyAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_class_expression</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">o</span><span class="o">.</span><span class="n">get_property_expressions</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLDatatypeDefinitionAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_datatype</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_datarange</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLAnnotationAssertionAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_subject</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span>
+                <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_value</span><span class="p">()))</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLSubAnnotationPropertyOfAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_sub_property</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_super_property</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLAnnotationPropertyDomainAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_domain</span><span class="p">())</span>
+
+    <span class="nd">@get_signature</span><span class="o">.</span><span class="n">register</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">OWLAnnotationPropertyRangeAxiom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLEntity</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_property</span><span class="p">())</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_range</span><span class="p">())</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

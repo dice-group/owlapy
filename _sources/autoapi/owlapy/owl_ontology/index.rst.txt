@@ -15,6 +15,11 @@ Attributes
 .. autoapisummary::
 
    owlapy.owl_ontology.logger
+   owlapy.owl_ontology.owlready2
+   owlapy.owl_ontology.AllDifferent
+   owlapy.owl_ontology.AllDisjoint
+   owlapy.owl_ontology.GeneralClassAxiom
+   owlapy.owl_ontology.destroy_entity
    owlapy.owl_ontology.OWLREADY2_FACET_KEYS
 
 
@@ -44,6 +49,16 @@ Module Contents
 ---------------
 
 .. py:data:: logger
+
+.. py:data:: owlready2
+
+.. py:data:: AllDifferent
+
+.. py:data:: AllDisjoint
+
+.. py:data:: GeneralClassAxiom
+
+.. py:data:: destroy_entity
 
 .. py:class:: OWLOntologyID(ontology_iri: Optional[owlapy.iri.IRI] = None, version_iri: Optional[owlapy.iri.IRI] = None)
 
@@ -155,22 +170,28 @@ Module Contents
 
 
    .. py:method:: get_abox_axioms() -> Iterable
-      :abstractmethod:
+
+      Get all ABox (assertional) axioms: class assertions, object- and
+      data-property assertions.
 
 
 
    .. py:method:: get_tbox_axioms() -> Iterable
-      :abstractmethod:
+
+      Get all TBox (schema-level) axioms: class declarations, SubClassOf,
+      EquivalentClasses and DisjointClasses axioms.
 
 
 
    .. py:method:: get_abox_axioms_between_individuals() -> Iterable
-      :abstractmethod:
+
+      Get all object-property assertion axioms, i.e. triples between two individuals.
 
 
 
    .. py:method:: get_abox_axioms_between_individuals_and_classes() -> Iterable
-      :abstractmethod:
+
+      Get all class assertion axioms, i.e. triples of the form `individual rdf:type Class`.
 
 
 
@@ -605,7 +626,7 @@ Module Contents
 
 
 
-.. py:class:: RDFLibOntology(path: str, load: bool = True)
+.. py:class:: RDFLibOntology(path: Union[str, owlapy.iri.IRI], load: bool = True)
 
    Bases: :py:obj:`owlapy.abstracts.abstract_owl_ontology.AbstractOWLOntology`
 
@@ -618,18 +639,38 @@ Module Contents
    Structural Specification).
 
 
+   .. py:attribute:: is_modified
+      :value: False
+
+
+
    .. py:method:: __len__() -> int
 
 
-   .. py:method:: get_tbox_axioms() -> Iterable[owlapy.owl_axiom.OWLSubClassOfAxiom | owlapy.owl_axiom.OWLEquivalentClassesAxiom]
+   .. py:method:: get_tbox_axioms() -> Iterable[owlapy.owl_axiom.OWLAxiom]
+
+      Get all TBox (schema-level) axioms this loader can represent: class declarations,
+      SubClassOf, EquivalentClasses and DisjointClasses axioms between *named* classes.
+
+      Predicates this loader doesn't understand as TBox structure (e.g. `rdfs:label`,
+      `rdfs:comment`, or any other annotation on a class) are silently skipped rather than
+      raising -- they aren't TBox axioms, and virtually every real-world ontology has them.
+
 
 
    .. py:method:: get_abox_axioms() -> Iterable
 
+      Get all ABox (assertional) axioms this loader can represent: class assertions,
+      object-property assertions, and data-property assertions for every named individual.
+
+      Unlike earlier versions of this method, a class-assertion target does not need to be
+      independently declared `rdf:type owl:Class` (OWL doesn't require that for `i rdf:type C`
+      to be valid), and an object-property target does not need to be independently declared
+      `rdf:type owl:NamedIndividual` -- neither omission is an error, so neither raises anymore.
+
+
 
    .. py:method:: classes_in_signature() -> Iterable[owlapy.class_expression.OWLClass]
-      :abstractmethod:
-
 
       Gets the classes in the signature of this object.
 
@@ -638,8 +679,6 @@ Module Contents
 
 
    .. py:method:: data_properties_in_signature() -> Iterable[owlapy.owl_property.OWLDataProperty]
-      :abstractmethod:
-
 
       Get the data properties that are in the signature of this object.
 
@@ -648,8 +687,6 @@ Module Contents
 
 
    .. py:method:: object_properties_in_signature() -> Iterable[owlapy.owl_property.OWLObjectProperty]
-      :abstractmethod:
-
 
       A convenience method that obtains the object properties that are in the signature of this object.
 
@@ -658,13 +695,9 @@ Module Contents
 
 
    .. py:method:: properties_in_signature() -> Iterable[owlapy.owl_property.OWLProperty]
-      :abstractmethod:
-
 
 
    .. py:method:: individuals_in_signature() -> Iterable[owlapy.owl_individual.OWLNamedIndividual]
-      :abstractmethod:
-
 
       A convenience method that obtains the individuals that are in the signature of this object.
 
@@ -672,19 +705,13 @@ Module Contents
 
 
 
-   .. py:method:: get_abox_axioms_between_individuals() -> Iterable
-      :abstractmethod:
+   .. py:method:: get_abox_axioms_between_individuals() -> Iterable[owlapy.owl_axiom.OWLObjectPropertyAssertionAxiom]
 
 
-
-   .. py:method:: get_abox_axioms_between_individuals_and_classes() -> Iterable
-      :abstractmethod:
-
+   .. py:method:: get_abox_axioms_between_individuals_and_classes() -> Iterable[owlapy.owl_axiom.OWLClassAssertionAxiom]
 
 
    .. py:method:: equivalent_classes_axioms(c: owlapy.class_expression.OWLClass) -> Iterable[owlapy.owl_axiom.OWLEquivalentClassesAxiom]
-      :abstractmethod:
-
 
       Gets all of the equivalent axioms in this ontology that contain the specified class as an operand.
 
@@ -706,8 +733,6 @@ Module Contents
 
 
    .. py:method:: data_property_domain_axioms(pe: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_axiom.OWLDataPropertyDomainAxiom]
-      :abstractmethod:
-
 
       Gets the OWLDataPropertyDomainAxiom objects where the property is equal to the specified property.
 
@@ -718,8 +743,6 @@ Module Contents
 
 
    .. py:method:: data_property_range_axioms(pe: owlapy.owl_property.OWLDataProperty) -> Iterable[owlapy.owl_axiom.OWLDataPropertyRangeAxiom]
-      :abstractmethod:
-
 
       Gets the OWLDataPropertyRangeAxiom objects where the property is equal to the specified property.
 
@@ -730,8 +753,6 @@ Module Contents
 
 
    .. py:method:: object_property_domain_axioms(pe: owlapy.owl_property.OWLObjectProperty) -> Iterable[owlapy.owl_axiom.OWLObjectPropertyDomainAxiom]
-      :abstractmethod:
-
 
       Gets the OWLObjectPropertyDomainAxiom objects where the property is equal to the specified property.
 
@@ -742,8 +763,6 @@ Module Contents
 
 
    .. py:method:: object_property_range_axioms(pe: owlapy.owl_property.OWLObjectProperty) -> Iterable[owlapy.owl_axiom.OWLObjectPropertyRangeAxiom]
-      :abstractmethod:
-
 
       Gets the OWLObjectPropertyRangeAxiom objects where the property is equal to the specified property.
 
@@ -754,43 +773,46 @@ Module Contents
 
 
    .. py:method:: add_axiom(axiom: Union[owlapy.owl_axiom.OWLAxiom, Iterable[owlapy.owl_axiom.OWLAxiom]])
-      :abstractmethod:
 
+      Add the given axiom(s) to this ontology, translating them into rdflib triples.
 
-      Add the specified axiom/axioms to the ontology.
-
-      :param axiom: Can be a single axiom or a collection of axioms.
-
-      :returns: Nothing.
+      Only axioms between/on *named* entities are supported (matching the read API's scope --
+      see `get_tbox_axioms()`/`get_abox_axioms()`); axioms involving complex class/property
+      expressions raise `NotImplementedError`. Adding an axiom that references an entity not yet
+      declared in this ontology (e.g. an `OWLSubClassOfAxiom` between two classes that were never
+      independently declared `owl:Class`) implicitly declares those entities too, so the axiom
+      stays visible to `get_tbox_axioms()`/`classes_in_signature()`/etc. immediately afterwards.
 
 
 
    .. py:method:: remove_axiom(axiom: Union[owlapy.owl_axiom.OWLAxiom, Iterable[owlapy.owl_axiom.OWLAxiom]])
-      :abstractmethod:
 
+      Remove the given axiom(s) from this ontology.
 
-      Removes the specified axiom/axioms to the ontology.
-
-      :param axiom: Can be a single axiom or a collection of axioms.
-
-      :returns: Nothing.
-
-
-
-   .. py:method:: save(path: Union[str, owlapy.iri.IRI] = None, inplace: bool = False, rdf_format='rdfxml')
-      :abstractmethod:
-
-
-      Saves this ontology, using its IRI to determine where/how the ontology should be
-      saved.
-
-      :param document_iri: Whether you want to save in a different location.
+      Removing an axiom only removes the triple(s) it directly represents -- it does not
+      cascade-remove entity declarations that other axioms might still depend on. Use
+      `remove_axiom(OWLDeclarationAxiom(entity))` explicitly to un-declare an entity.
 
 
 
-   .. py:method:: get_ontology_id()
-      :abstractmethod:
+   .. py:method:: save(path: Union[str, owlapy.iri.IRI] = None, inplace: bool = False, document_format: Optional[str] = None)
 
+      Save this ontology to a file via rdflib's own serializer.
+
+      :param path: Destination file path. Required unless `inplace` is True.
+      :param inplace: If True, overwrite the file this ontology was loaded from (or, for a
+                      blank ontology created with `load=False`, the IRI it was constructed with --
+                      which must itself be a valid filesystem path for that to work).
+      :param document_format: Serialization format. Accepts rdflib's own format names (`"xml"`,
+                              `"turtle"`, `"n3"`, `"nt"`, `"nt11"`, `"trig"`, `"trix"`, `"nquads"`, `"json-ld"`)
+                              plus the OWL-API-style aliases `Ontology`/`SyncOntology`'s `save()` accept
+                              (`"rdfxml"`, `"ttl"`, `"ntriples"`, `"jsonld"`). Defaults to RDF/XML when omitted.
+
+      :raises ValueError: If an unsupported format string is provided.
+
+
+
+   .. py:method:: get_ontology_id() -> OWLOntologyID
 
       Gets the OWLOntologyID belonging to this object.
 
@@ -799,23 +821,17 @@ Module Contents
 
 
    .. py:method:: __eq__(other)
-      :abstractmethod:
-
 
 
    .. py:method:: __hash__()
-      :abstractmethod:
-
 
 
    .. py:method:: __repr__()
-      :abstractmethod:
-
 
 
 .. py:data:: OWLREADY2_FACET_KEYS
 
-.. py:class:: ToOwlready2(world: owlready2.World)
+.. py:class:: ToOwlready2(world: owlready2)
 
    .. py:attribute:: __slots__
       :value: '_world'
@@ -830,7 +846,7 @@ Module Contents
 
 
 
-   .. py:method:: map_concept(o: owlapy.class_expression.OWLClassExpression) -> Union[owlready2.ClassConstruct, owlready2.ThingClass]
+   .. py:method:: map_concept(o: owlapy.class_expression.OWLClassExpression) -> Union[owlready2, owlready2]
       :abstractmethod:
 
 
@@ -838,7 +854,7 @@ Module Contents
 
 
 
-   .. py:method:: map_datarange(p: owlapy.owl_data_ranges.OWLDataRange) -> Union[owlready2.ClassConstruct, type]
+   .. py:method:: map_datarange(p: owlapy.owl_data_ranges.OWLDataRange) -> Union[owlready2, type]
       :abstractmethod:
 
 
@@ -856,7 +872,7 @@ Module Contents
 
 
 
-   .. py:method:: map_concept(c: Union[owlready2.ClassConstruct, owlready2.ThingClass]) -> owlapy.class_expression.OWLClassExpression
+   .. py:method:: map_concept(c: Union[owlready2, owlready2]) -> owlapy.class_expression.OWLClassExpression
       :abstractmethod:
 
 
@@ -864,7 +880,7 @@ Module Contents
 
 
 
-   .. py:method:: map_datarange(p: owlready2.ClassConstruct) -> owlapy.owl_data_ranges.OWLDataRange
+   .. py:method:: map_datarange(p: owlready2) -> owlapy.owl_data_ranges.OWLDataRange
       :abstractmethod:
 
 

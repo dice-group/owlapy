@@ -1,0 +1,748 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlready2.class_construct &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlready2.class_construct</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlready2.class_construct</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Owlready2</span>
+<span class="c1"># Copyright (C) 2013-2019 Jean-Baptiste LAMY</span>
+<span class="c1"># LIMICS (Laboratoire d&#39;informatique médicale et d&#39;ingénierie des connaissances en santé), UMR_S 1142</span>
+<span class="c1"># University Paris 13, Sorbonne paris-Cité, Bobigny, France</span>
+
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU Lesser General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU Lesser General Public License for more details.</span>
+
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlready2.namespace</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlready2.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">_universal_iri_2_abbrev</span><span class="p">,</span> <span class="n">_universal_abbrev_2_datatype</span><span class="p">,</span> <span class="n">_universal_datatype_2_abbrev</span>
+<span class="n">_non_negative_integer</span> <span class="o">=</span> <span class="n">_universal_iri_2_abbrev</span><span class="p">[</span><span class="s2">&quot;http://www.w3.org/2001/XMLSchema#nonNegativeInteger&quot;</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_deepcopy_construct</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">__deepcopy__</span><span class="p">()</span>
+  <span class="k">return</span> <span class="n">x</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Construct</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="n">ontology</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">storid</span>   <span class="o">=</span> <span class="n">bnode</span>
+    
+    <span class="k">if</span> <span class="n">ontology</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">LOADING</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_set_ontology_copy_if_needed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>   <span class="bp">self</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">OwlReadySharedBlankNodeError</span><span class="p">:</span>
+      <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__deepcopy__</span><span class="p">()</span>
+      <span class="n">new</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="n">l</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">new</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">new</span>
+    <span class="k">return</span> <span class="bp">self</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">LOADING</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">DONT_COPY_BN</span><span class="p">):</span>
+      <span class="k">if</span>   <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ontology</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">ontology</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">storid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">storid</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">new_blank_node</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">ontology</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">OwlReadySharedBlankNodeError</span><span class="p">(</span><span class="s2">&quot;A Construct cannot be shared by two ontologies, because it correspond to a RDF blank node. Please create a dupplicate.&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="n">ontology</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_bnodes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">()</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_del_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_del_data_triple_spod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span> <span class="k">pass</span>
+  
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ClassConstruct</span><span class="p">(</span><span class="n">Construct</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__and__</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span> <span class="k">return</span> <span class="n">And</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__or__</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span> <span class="k">return</span> <span class="n">Or</span> <span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__invert__</span><span class="p">(</span><span class="n">a</span><span class="p">):</span> <span class="k">return</span> <span class="n">Not</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">only_loaded</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">include_equivalent</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">only_loaded</span><span class="p">:</span>
+      <span class="n">r</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_get_obj_triples_po_s</span><span class="p">(</span><span class="n">rdfs_subclassof</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+          <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_entities</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+      <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_get_obj_triples_po_s</span><span class="p">(</span><span class="n">owl_equivalentclass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+          <span class="n">r</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_entities</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">r</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span> <span class="p">[</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_get_by_storid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ThingClass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_get_obj_triples_po_s</span><span class="p">(</span><span class="n">rdfs_subclassof</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">),</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_get_obj_triples_po_s</span><span class="p">(</span><span class="n">owl_equivalentclass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span>
+      <span class="p">]</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">ancestors</span><span class="p">(</span><span class="n">Class</span><span class="p">,</span> <span class="n">include_self</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">include_constructs</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">include_self</span> <span class="ow">and</span> <span class="n">include_constructs</span><span class="p">:</span> <span class="k">return</span> <span class="p">{</span> <span class="n">Class</span> <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">set</span><span class="p">()</span>
+
+  
+<span class="k">class</span><span class="w"> </span><span class="nc">Not</span><span class="p">(</span><span class="n">ClassConstruct</span><span class="p">):</span>
+  <span class="n">is_a</span> <span class="o">=</span> <span class="p">()</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Class</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">bnode</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;Class&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Class</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Not</span><span class="p">(</span><span class="n">_deepcopy_construct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="p">))</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Not</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Class</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">Class</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s2">&quot;Not(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;Class&quot;</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;Class&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_to_python</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_get_obj_triple_sp_o</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_complementof</span><span class="p">),</span> <span class="n">default_to_none</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">C</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">destory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;Class&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">owl_class</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_complementof</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_satisfied_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">Class</span><span class="o">.</span><span class="n">_satisfied_by</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  
+  
+<span class="k">class</span><span class="w"> </span><span class="nc">Inverse</span><span class="p">(</span><span class="n">ClassConstruct</span><span class="p">):</span>
+  <span class="n">is_a</span> <span class="o">=</span> <span class="p">()</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="n">Class</span><span class="p">,</span> <span class="n">Property</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">simplify</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">simplify</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Property</span><span class="p">,</span> <span class="n">Inverse</span><span class="p">):</span> <span class="k">return</span> <span class="n">Property</span><span class="o">.</span><span class="n">property</span>
+      <span class="k">if</span> <span class="n">Property</span><span class="o">.</span><span class="n">inverse_property</span><span class="p">:</span> <span class="k">return</span> <span class="n">Property</span><span class="o">.</span><span class="n">inverse_property</span>
+    <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Class</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Inverse</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">property</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Property</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">simplify</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">bnode</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;property&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Property</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Inverse</span><span class="p">(</span><span class="n">_deepcopy_construct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">))</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s2">&quot;Inverse(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;property&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_inverse_property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">some</span>   <span class="p">(</span><span class="bp">self</span><span class="p">,</span>     <span class="n">value</span><span class="p">):</span> <span class="k">return</span> <span class="n">Restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SOME</span>   <span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">only</span>   <span class="p">(</span><span class="bp">self</span><span class="p">,</span>     <span class="n">value</span><span class="p">):</span> <span class="k">return</span> <span class="n">Restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ONLY</span>   <span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">value</span>  <span class="p">(</span><span class="bp">self</span><span class="p">,</span>     <span class="n">value</span><span class="p">):</span> <span class="k">return</span> <span class="n">Restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">VALUE</span>  <span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">exactly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span> <span class="k">return</span> <span class="n">Restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">EXACTLY</span><span class="p">,</span> <span class="n">nb</span>  <span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">min</span>    <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span> <span class="k">return</span> <span class="n">Restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MIN</span>    <span class="p">,</span> <span class="n">nb</span>  <span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">max</span>    <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nb</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span> <span class="k">return</span> <span class="n">Restriction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MAX</span>    <span class="p">,</span> <span class="n">nb</span>  <span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+  
+  
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LogicalClassConstruct</span><span class="p">(</span><span class="n">ClassConstruct</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Classes</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Classes</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="n">Classes</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_Classes</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="kc">None</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_Classes</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="n">Classes</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">LogicalClassConstruct</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="n">bnode</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">([</span><span class="n">_deepcopy_construct</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">])</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">Classes</span><span class="p">))</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">))</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__rshift__</span><span class="p">(</span><span class="n">Domain</span><span class="p">,</span> <span class="n">Range</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">owlready2.prop</span>
+    <span class="n">owlready2</span><span class="o">.</span><span class="n">prop</span><span class="o">.</span><span class="n">_NEXT_DOMAIN_RANGE</span><span class="o">.</span><span class="n">set</span><span class="p">((</span><span class="n">Domain</span><span class="p">,</span> <span class="n">Range</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Range</span><span class="p">,</span> <span class="n">ThingClass</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Range</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span>
+      <span class="k">return</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">prop</span><span class="o">.</span><span class="n">ObjectProperty</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">prop</span><span class="o">.</span><span class="n">DataProperty</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ontology</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">new_blank_node</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">Class</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Class</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span> <span class="n">Class</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_Classes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Classes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Classes</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_parse_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">),</span> <span class="bp">self</span><span class="p">,</span> <span class="n">LogicalClassConstruct</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Classes</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">set_Classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="o">.</span><span class="n">reinit</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+  <span class="n">Classes</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_Classes</span><span class="p">,</span> <span class="n">set_Classes</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_invalidate_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span> <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Classes</span>
+    <span class="k">except</span><span class="p">:</span> <span class="k">pass</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Classes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">Construct</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">ontology</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span> <span class="n">i</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="nf">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_del_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="n">Classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Classes</span>
+    <span class="k">if</span> <span class="n">Classes</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Classes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">_universal_datatype_2_abbrev</span><span class="p">):</span>
+      <span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">rdfs_datatype</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">owl_class</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owl_op</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">,</span> <span class="n">Classes</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LogicalClassConstruct</span><span class="p">):</span> <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>                                    <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span> <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">([</span><span class="si">%s</span><span class="s2">])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_char</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+  
+<span class="k">class</span><span class="w"> </span><span class="nc">Or</span><span class="p">(</span><span class="n">LogicalClassConstruct</span><span class="p">):</span>
+  <span class="n">_owl_op</span> <span class="o">=</span> <span class="n">owl_unionof</span>
+  <span class="n">_char</span>   <span class="o">=</span> <span class="s2">&quot; | &quot;</span>
+  <span class="n">is_a</span>    <span class="o">=</span> <span class="p">()</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__or__</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Or</span><span class="p">([</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_satisfied_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">Class</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">Class</span><span class="o">.</span><span class="n">_satisfied_by</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+    
+<span class="k">class</span><span class="w"> </span><span class="nc">And</span><span class="p">(</span><span class="n">LogicalClassConstruct</span><span class="p">):</span>
+  <span class="n">_owl_op</span> <span class="o">=</span> <span class="n">owl_intersectionof</span>
+  <span class="n">_char</span>   <span class="o">=</span> <span class="s2">&quot; &amp; &quot;</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__and__</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">And</span><span class="p">([</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_satisfied_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">Class</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Classes</span><span class="p">:</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">Class</span><span class="o">.</span><span class="n">_satisfied_by</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_is_a</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Classes</span>
+  <span class="n">is_a</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_is_a</span><span class="p">)</span>
+
+  
+<span class="n">_qualified_2_non_qualified</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="n">EXACTLY</span> <span class="p">:</span> <span class="n">owl_cardinality</span><span class="p">,</span>
+  <span class="n">MIN</span>     <span class="p">:</span> <span class="n">owl_min_cardinality</span><span class="p">,</span>
+  <span class="n">MAX</span>     <span class="p">:</span> <span class="n">owl_max_cardinality</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">_restriction_type_2_label</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="n">SOME</span>    <span class="p">:</span> <span class="s2">&quot;some&quot;</span><span class="p">,</span>
+  <span class="n">ONLY</span>    <span class="p">:</span> <span class="s2">&quot;only&quot;</span><span class="p">,</span>
+  <span class="n">VALUE</span>   <span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span>
+  <span class="n">HAS_SELF</span><span class="p">:</span> <span class="s2">&quot;has_self&quot;</span><span class="p">,</span>
+  <span class="n">EXACTLY</span> <span class="p">:</span> <span class="s2">&quot;exactly&quot;</span><span class="p">,</span>
+  <span class="n">MIN</span>     <span class="p">:</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span>
+  <span class="n">MAX</span>     <span class="p">:</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+  <span class="p">}</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Restriction</span><span class="p">(</span><span class="n">ClassConstruct</span><span class="p">):</span>
+  <span class="n">is_a</span> <span class="o">=</span> <span class="p">()</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Property</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">cardinality</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;property&quot;</span><span class="p">]</span>    <span class="o">=</span> <span class="n">Property</span>
+    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>        <span class="o">=</span> <span class="nb">type</span>
+    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;cardinality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cardinality</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">bnode</span><span class="p">):</span>
+      <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">value</span> <span class="o">=</span> <span class="n">Thing</span>
+      <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>     <span class="o">=</span> <span class="n">value</span>
+      
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="n">bnode</span><span class="p">)</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Restriction</span><span class="p">(</span><span class="n">_deepcopy_construct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">),</span> <span class="n">_deepcopy_construct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">_deepcopy_construct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Restriction</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span> <span class="ow">is</span> <span class="n">other</span><span class="o">.</span><span class="n">property</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">cardinality</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">))</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span>   <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOME</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ONLY</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">VALUE</span><span class="p">):</span>
+      <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span> <span class="n">_restriction_type_2_label</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">],</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">HAS_SELF</span><span class="p">:</span>
+      <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">()&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span> <span class="n">_restriction_type_2_label</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span> <span class="n">_restriction_type_2_label</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>    <span class="n">Construct</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>   <span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">owl_restriction</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_onproperty</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOME</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ONLY</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">VALUE</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">HAS_SELF</span><span class="p">):</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">o</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_to_rdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span>  <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>         <span class="n">ontology</span><span class="o">.</span><span class="n">_add_data_triple_spod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="n">Thing</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_add_data_triple_spod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">_qualified_2_non_qualified</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">_non_negative_integer</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_add_data_triple_spod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">_non_negative_integer</span><span class="p">)</span>
+        <span class="n">o</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_to_rdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="n">_universal_datatype_2_abbrev</span><span class="p">:</span>
+          <span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_ondatarange</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_onclass</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">if</span>   <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span>
+      <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOME</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ONLY</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">HAS_SELF</span><span class="p">):</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_get_obj_triple_sp_o</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+          <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Thing</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_to_python</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">default_to_none</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">VALUE</span><span class="p">:</span>
+        <span class="n">v</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_get_triple_sp_od</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+          <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Thing</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_to_python</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">default_to_none</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_get_obj_triple_sp_o</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_onclass</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_get_obj_triple_sp_o</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_ondatarange</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+          <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Thing</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_to_python</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">default_to_none</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;property&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;cardinality&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;value&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span>
+      <span class="n">_loaded_attr_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="c1"># Needed to ensure that the attribute values are available later in _create_triples()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Construct</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">v</span><span class="o">.</span><span class="n">ontology</span><span class="p">):</span> <span class="n">v</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+    
+      
+  <span class="k">def</span><span class="w"> </span><span class="nf">_satisfied_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">EntityClass</span><span class="p">):</span> <span class="k">return</span> <span class="kc">True</span> <span class="c1"># XXX not doable on classes</span>
+    
+    <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+    <span class="k">if</span>   <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SOME</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">_satisfied_by</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span> <span class="k">return</span> <span class="kc">True</span>
+      <span class="k">return</span> <span class="kc">False</span>
+    
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">ONLY</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">_satisfied_by</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span> <span class="k">return</span> <span class="kc">False</span>
+      <span class="k">return</span> <span class="kc">True</span>
+    
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">VALUE</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
+      <span class="k">return</span> <span class="kc">False</span>
+    
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">HAS_SELF</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">values</span>
+      
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">nb</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">_satisfied_by</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span> <span class="n">nb</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="k">if</span>   <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">MIN</span><span class="p">:</span>     <span class="k">return</span> <span class="n">nb</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span>
+      <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">MAX</span><span class="p">:</span>     <span class="k">return</span> <span class="n">nb</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span>
+      <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">EXACTLY</span><span class="p">:</span> <span class="k">return</span> <span class="n">nb</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span>
+      
+      
+<span class="k">class</span><span class="w"> </span><span class="nc">OneOf</span><span class="p">(</span><span class="n">ClassConstruct</span><span class="p">):</span>
+  <span class="n">is_a</span> <span class="o">=</span> <span class="p">()</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instances</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instances</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="n">instances</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="kc">None</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="n">instances</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">OneOf</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="n">bnode</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">OneOf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">OneOf</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">instances</span><span class="p">))</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">))</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;instances&quot;</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_parse_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">),</span> <span class="bp">self</span><span class="p">,</span> <span class="n">OneOf</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_invalidate_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span> <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span>
+    <span class="k">except</span><span class="p">:</span> <span class="k">pass</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="nf">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_del_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ontology</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">new_blank_node</span><span class="p">()</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;storid&quot;</span><span class="p">)):</span>
+      <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">rdfs_datatype</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">owl_class</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_oneof</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_satisfied_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s2">&quot;OneOf([</span><span class="si">%s</span><span class="s2">])&quot;</span> <span class="o">%</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span> 
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PropertyChain</span><span class="p">(</span><span class="n">Construct</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Properties</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Properties</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+      <span class="n">Construct</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="n">Properties</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="n">Properties</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">PropertyChain</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
+      <span class="n">Construct</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="nf">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">Prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Prop</span><span class="p">,</span> <span class="s2">&quot;_set_ontology&quot;</span><span class="p">):</span> <span class="n">Prop</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_parse_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">),</span> <span class="bp">self</span><span class="p">,</span> <span class="n">PropertyChain</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_invalidate_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span> <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span>
+    <span class="k">except</span><span class="p">:</span> <span class="k">pass</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="nf">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_del_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">subclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">only_loaded</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">include_equivalent</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[]</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;PropertyChain([</span><span class="si">%s</span><span class="s2">])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">))</span>
+  
+
+
+  
+<span class="n">_PY_FACETS</span>   <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_RDFS_FACETS</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_facets</span><span class="p">(</span><span class="n">py_name</span><span class="p">,</span> <span class="n">rdfs_name</span><span class="p">,</span> <span class="n">value_datatype</span><span class="p">,</span> <span class="n">value_datatype_abbrev</span><span class="p">):</span>
+  <span class="n">_PY_FACETS</span>  <span class="p">[</span><span class="n">py_name</span>  <span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">rdfs_name</span><span class="p">,</span> <span class="n">value_datatype</span><span class="p">,</span> <span class="n">value_datatype_abbrev</span><span class="p">)</span>
+  <span class="n">_RDFS_FACETS</span><span class="p">[</span><span class="n">rdfs_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">py_name</span>  <span class="p">,</span> <span class="n">value_datatype</span><span class="p">,</span> <span class="n">value_datatype_abbrev</span><span class="p">)</span>
+  
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;length&quot;</span><span class="p">,</span> <span class="n">xmls_length</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">_universal_iri_2_abbrev</span><span class="p">[</span><span class="s2">&quot;http://www.w3.org/2001/XMLSchema#nonNegativeInteger&quot;</span><span class="p">])</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;min_length&quot;</span><span class="p">,</span> <span class="n">xmls_minlength</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">_universal_iri_2_abbrev</span><span class="p">[</span><span class="s2">&quot;http://www.w3.org/2001/XMLSchema#nonNegativeInteger&quot;</span><span class="p">])</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;max_length&quot;</span><span class="p">,</span> <span class="n">xmls_maxlength</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">_universal_iri_2_abbrev</span><span class="p">[</span><span class="s2">&quot;http://www.w3.org/2001/XMLSchema#nonNegativeInteger&quot;</span><span class="p">])</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;pattern&quot;</span><span class="p">,</span> <span class="n">xmls_pattern</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_universal_iri_2_abbrev</span><span class="p">[</span><span class="s2">&quot;http://www.w3.org/2001/XMLSchema#string&quot;</span><span class="p">])</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;white_space&quot;</span><span class="p">,</span> <span class="n">xmls_whitespace</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;max_inclusive&quot;</span><span class="p">,</span> <span class="n">xmls_maxinclusive</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;__datatype__&quot;</span><span class="p">)</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;max_exclusive&quot;</span><span class="p">,</span> <span class="n">xmls_maxexclusive</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;__datatype__&quot;</span><span class="p">)</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;min_inclusive&quot;</span><span class="p">,</span> <span class="n">xmls_mininclusive</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;__datatype__&quot;</span><span class="p">)</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;min_exclusive&quot;</span><span class="p">,</span> <span class="n">xmls_minexclusive</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;__datatype__&quot;</span><span class="p">)</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;total_digits&quot;</span><span class="p">,</span> <span class="n">xmls_totaldigits</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">_universal_iri_2_abbrev</span><span class="p">[</span><span class="s2">&quot;http://www.w3.org/2001/XMLSchema#positiveInteger&quot;</span><span class="p">])</span>
+<span class="n">_facets</span><span class="p">(</span><span class="s2">&quot;fraction_digits&quot;</span><span class="p">,</span> <span class="n">xmls_fractiondigits</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">_universal_iri_2_abbrev</span><span class="p">[</span><span class="s2">&quot;http://www.w3.org/2001/XMLSchema#nonNegativeInteger&quot;</span><span class="p">])</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ConstrainedDatatype</span><span class="p">(</span><span class="n">ClassConstruct</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_datatype</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">list_bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">,</span> <span class="n">bnode</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;base_datatype&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_datatype</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span>               <span class="o">=</span> <span class="n">list_bnode</span>
+    
+    <span class="k">if</span> <span class="n">list_bnode</span><span class="p">:</span>
+      <span class="n">l</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_parse_list_as_rdf</span><span class="p">(</span><span class="n">list_bnode</span><span class="p">)</span>
+      <span class="k">for</span> <span class="n">bn</span><span class="p">,</span> <span class="n">dropit</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">p</span><span class="p">,</span><span class="n">o</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_get_data_triples_s_pod</span><span class="p">(</span><span class="n">bn</span><span class="p">):</span>
+          <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">_RDFS_FACETS</span><span class="p">:</span>
+            <span class="n">py_name</span><span class="p">,</span> <span class="n">value_datatype</span><span class="p">,</span> <span class="n">value_datatype_abbrev</span> <span class="o">=</span> <span class="n">_RDFS_FACETS</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">py_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">from_literal</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_PY_FACETS</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No facet &#39;</span><span class="si">%s</span><span class="s2">&#39;!&quot;</span> <span class="o">%</span> <span class="n">k</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        
+  <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">facets</span> <span class="o">=</span> <span class="p">{</span> <span class="n">k</span> <span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_PY_FACETS</span> <span class="p">}</span>
+    <span class="k">return</span> <span class="n">ConstrainedDatatype</span><span class="p">(</span><span class="n">_deepcopy_construct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_datatype</span><span class="p">),</span> <span class="o">**</span><span class="n">facets</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">LOADING</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="ow">and</span> <span class="p">((</span><span class="n">attr</span> <span class="ow">in</span> <span class="n">_PY_FACETS</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;base_datatype&quot;</span><span class="p">)):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_PY_FACETS</span><span class="p">:</span>
+      <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="k">return</span> <span class="s2">&quot;ConstrainedDatatype(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_datatype</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">new_blank_node</span><span class="p">()</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">rdfs_datatype</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_ondatatype</span><span class="p">,</span> <span class="n">_universal_datatype_2_abbrev</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_datatype</span><span class="p">])</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_withrestrictions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">rdfs_name</span><span class="p">,</span> <span class="n">value_datatype</span><span class="p">,</span> <span class="n">value_datatype_abbrev</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_PY_FACETS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+      <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value_datatype_abbrev</span> <span class="o">==</span> <span class="s2">&quot;__datatype__&quot;</span><span class="p">:</span>
+          <span class="n">value_datatype_abbrev</span> <span class="o">=</span> <span class="n">_universal_datatype_2_abbrev</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_datatype</span><span class="p">]</span>
+        <span class="n">bn</span> <span class="o">=</span> <span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">new_blank_node</span><span class="p">()</span>
+        <span class="n">ontology</span><span class="o">.</span><span class="n">_set_data_triple_spod</span><span class="p">(</span><span class="n">bn</span><span class="p">,</span> <span class="n">rdfs_name</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">value_datatype_abbrev</span><span class="p">)</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">bn</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_set_list_as_rdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">):</span>
+    <span class="n">ClassConstruct</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">bn</span><span class="p">,</span> <span class="n">dropit</span> <span class="ow">in</span> <span class="n">ontology</span><span class="o">.</span><span class="n">_parse_list_as_rdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">):</span>
+      <span class="n">ontology</span><span class="o">.</span><span class="n">_del_obj_triple_spo</span><span class="p">(</span><span class="n">bn</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+      <span class="n">ontology</span><span class="o">.</span><span class="n">_del_data_triple_spod</span><span class="p">(</span><span class="n">bn</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ontology</span><span class="o">.</span><span class="n">_del_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+    
+
+
+
+<div class="viewcode-block" id="GeneralClassAxiom">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.GeneralClassAxiom">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneralClassAxiom</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left_side</span><span class="p">,</span> <span class="n">namespace</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">storid</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="n">namespace</span> <span class="ow">or</span> <span class="n">CURRENT_NAMESPACES</span><span class="o">.</span><span class="n">get</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">storid</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">left_side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_parse_bnode</span><span class="p">(</span><span class="n">storid</span><span class="p">)</span>
+      <span class="n">_is_a</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_get_obj_triples_sp_o</span><span class="p">(</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdfs_subclassof</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">_is_a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_parse_bnode</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>     <span class="n">_is_a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_get_by_storid</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ThingClass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">))</span>
+      <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;is_a&quot;</span><span class="p">,</span> <span class="n">CallbackList</span><span class="p">(</span><span class="n">_is_a</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">_is_a_changed</span><span class="p">))</span>
+      
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">left_side</span> <span class="o">=</span> <span class="n">left_side</span>
+      <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;is_a&quot;</span><span class="p">,</span> <span class="n">CallbackList</span><span class="p">([],</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">_is_a_changed</span><span class="p">))</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s2">&quot;GeneralClassAxiom(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_side</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;is_a&quot;</span><span class="p">:</span>
+      <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_a</span>
+      <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;is_a&quot;</span><span class="p">,</span> <span class="n">CallbackList</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">_is_a_changed</span><span class="p">))</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_is_a_changed</span><span class="p">(</span><span class="n">old</span><span class="p">)</span>
+      <span class="k">return</span>
+    
+    <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="nf">_is_a_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+    <span class="n">new</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_a</span><span class="p">)</span>
+    <span class="n">old</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">old</span><span class="p">)</span>
+    
+    <span class="k">if</span>   <span class="n">old</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">new</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_side</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="ow">not</span> <span class="n">old</span><span class="p">)</span> <span class="ow">and</span> <span class="n">new</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_side</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">old</span> <span class="o">-</span> <span class="n">new</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_del_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left_side</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdfs_subclassof</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span> <span class="n">c</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+      
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">new</span> <span class="o">-</span> <span class="n">old</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span> <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">_set_ontology_copy_if_needed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_a</span><span class="p">)</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">LOADING</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left_side</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdfs_subclassof</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span></div>
+
+      
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

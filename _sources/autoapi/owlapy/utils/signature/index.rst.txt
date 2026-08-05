@@ -1,0 +1,52 @@
+owlapy.utils.signature
+======================
+
+.. py:module:: owlapy.utils.signature
+
+.. autoapi-nested-parse::
+
+   Signature extraction: the set of named entities referenced by an axiom or class expression/data range.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.utils.signature.SignatureExtractor
+
+
+Module Contents
+---------------
+
+.. py:class:: SignatureExtractor
+
+   Computes the signature of an axiom or class expression/data range: the set of named entities
+   (:class:`OWLClass`, :class:`OWLObjectProperty`, :class:`OWLDataProperty`, :class:`OWLNamedIndividual`,
+   :class:`OWLDatatype`) that it references, collected recursively.
+
+   Mirrors the ``signature()`` method of OWLAPI's ``OWLObject`` interface. :class:`OWLAnonymousIndividual`
+   is intentionally excluded (it is not an :class:`OWLEntity`, per the OWL 2 specification). Likewise, a
+   bare :class:`~owlapy.iri.IRI` (used as an annotation subject/value or as the domain/range of an
+   annotation property axiom) contributes nothing to the signature unless it has been resolved to a
+   concrete entity elsewhere in the expression.
+
+   Covers the full set of class expression/data range constructs plus all :class:`OWLAxiom` subtypes,
+   including property characteristics, sub-property (and property chain) axioms, has-key, disjoint union,
+   datatype definition, (un)equal individuals and annotation axioms. See
+   https://github.com/dice-group/owlapy/issues/231.
+
+
+   .. py:method:: get_signature(o: owlapy.owl_object.OWLObject) -> Set[owlapy.owl_object.OWLEntity]
+      :abstractmethod:
+
+
+      Compute the signature of *o*.
+
+      :param o: An axiom, class expression, data range, property expression, individual or literal.
+
+      :returns: The set of named entities referenced by *o*.
+
+
+

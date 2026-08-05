@@ -214,7 +214,23 @@ Module Contents
       :type:  bool
 
 
-   .. py:method:: convert(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, for_all_de_morgan: bool = True, named_individuals: bool = False)
+   .. py:attribute:: negation_default
+      :type:  bool
+
+
+   .. py:attribute:: sub_property_resolver
+      :type:  Optional[Callable]
+
+
+   .. py:attribute:: inverse_property_resolver
+      :type:  Optional[Callable]
+
+
+   .. py:attribute:: subclass_resolver
+      :type:  Optional[Callable]
+
+
+   .. py:method:: convert(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, for_all_de_morgan: bool = True, named_individuals: bool = False, negation_default: bool = True, sub_property_resolver: Optional[Callable] = None, inverse_property_resolver: Optional[Callable] = None, subclass_resolver: Optional[Callable] = None)
 
       Used to convert owl class expression to SPARQL syntax.
 
@@ -224,6 +240,24 @@ Module Contents
       :type ce: OWLClassExpression
       :param named_individuals: If 'True' return only entities that are instances of owl:NamedIndividual.
       :type named_individuals: bool
+      :param negation_default: If 'True' (closed world, the default), OWLObjectComplementOf is translated
+                               to a `FILTER NOT EXISTS` pattern. If 'False' (open world), OWLObjectComplementOf always
+                               contributes no results, since under OWA nothing can be inferred to NOT be a member of a class
+                               without an explicit negative assertion.
+      :type negation_default: bool
+      :param sub_property_resolver: Optional callable mapping an OWLObjectProperty/OWLDataProperty to its
+                                    sub-properties. When provided, every rendered property predicate is expanded into a SPARQL
+                                    property-path alternation of itself and all of its sub-properties, so that queries also match
+                                    individuals connected via a (semantically entailing) sub-property.
+      :param inverse_property_resolver: Optional callable mapping an OWLObjectProperty to its declared
+                                        owl:inverseOf partner(s). When provided, every rendered object property predicate is
+                                        additionally expanded with a reverse (`^`) property-path alternative for each declared
+                                        inverse, so that a property with no physically-asserted triples of its own (but a declared
+                                        inverse that does) is still correctly entailed.
+      :param subclass_resolver: Optional callable mapping an OWLClass to its subclasses. When provided,
+                                every named-class membership triple (`?x a <cls>`) is expanded to also match any subclass
+                                of `cls`, via a `VALUES` clause, so that individuals typed only at a leaf subclass are not
+                                silently missed.
 
       :returns: The SPARQL query.
       :rtype: list[str]
@@ -270,7 +304,7 @@ Module Contents
    .. py:method:: triple(subject, predicate, object_)
 
 
-   .. py:method:: as_query(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, for_all_de_morgan: bool = True, count: bool = False, values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, named_individuals: bool = False, validate: bool = False) -> str
+   .. py:method:: as_query(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, for_all_de_morgan: bool = True, count: bool = False, values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, named_individuals: bool = False, validate: bool = False, negation_default: bool = True, sub_property_resolver: Optional[Callable] = None, inverse_property_resolver: Optional[Callable] = None, subclass_resolver: Optional[Callable] = None) -> str
 
 
    .. py:method:: as_confusion_matrix_query(root_variable: str, ce: owlapy.class_expression.OWLClassExpression, positive_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], negative_examples: Iterable[owlapy.owl_individual.OWLNamedIndividual], for_all_de_morgan: bool = True, named_individuals: bool = False, validate: bool = False) -> str
@@ -278,7 +312,7 @@ Module Contents
 
 .. py:data:: converter
 
-.. py:function:: owl_expression_to_sparql(expression: owlapy.class_expression.OWLClassExpression = None, root_variable: str = '?x', values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, for_all_de_morgan: bool = True, named_individuals: bool = False, validate: bool = False) -> str
+.. py:function:: owl_expression_to_sparql(expression: owlapy.class_expression.OWLClassExpression = None, root_variable: str = '?x', values: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]] = None, for_all_de_morgan: bool = True, named_individuals: bool = False, validate: bool = False, negation_default: bool = True, sub_property_resolver: Optional[Callable] = None, inverse_property_resolver: Optional[Callable] = None, subclass_resolver: Optional[Callable] = None) -> str
 
    Convert an OWL Class Expression (https://www.w3.org/TR/owl2-syntax/#Class_Expressions) into a SPARQL query
    root variable: the variable that will be projected
@@ -290,6 +324,14 @@ Module Contents
    named_individuals: if set to True, the generated SPARQL query will return only entities
    that are instances of owl:NamedIndividual
    validate: if set to True, validates the generated SPARQL query using rdflib.parseQuery (slower but safer)
+   negation_default: if True (closed world, the default), OWLObjectComplementOf is translated via
+   FILTER NOT EXISTS; if False (open world), OWLObjectComplementOf always contributes no results.
+   sub_property_resolver: optional callable mapping a property to its sub-properties, used to expand
+   every rendered property into a SPARQL property-path alternation of itself and its sub-properties.
+   inverse_property_resolver: optional callable mapping an object property to its declared owl:inverseOf
+   partner(s), used to expand every rendered object property with a reverse (`^`) path alternative.
+   subclass_resolver: optional callable mapping a class to its subclasses, used to expand every named
+   class membership triple to also match individuals typed only at a subclass.
 
 
 .. py:function:: owl_expression_to_sparql_with_confusion_matrix(expression: owlapy.class_expression.OWLClassExpression, positive_examples: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]], negative_examples: Optional[Iterable[owlapy.owl_individual.OWLNamedIndividual]], root_variable: str = '?x', for_all_de_morgan: bool = True, named_individuals: bool = False, validate: bool = False) -> str

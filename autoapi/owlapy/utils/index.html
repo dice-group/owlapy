@@ -24,7 +24,7 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="owlapy.vocab" href="../vocab/index.html" />
+    <link rel="next" title="owlapy.utils.cache" href="cache/index.html" />
     <link rel="prev" title="owlapy.util_owl_static_funcs" href="../util_owl_static_funcs/index.html" /> 
 </head>
 
@@ -90,15 +90,41 @@
 <li class="toctree-l3"><a class="reference internal" href="../swrl/index.html">owlapy.swrl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../util_owl_static_funcs/index.html">owlapy.util_owl_static_funcs</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">owlapy.utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="cache/index.html">owlapy.utils.cache</a></li>
+<li class="toctree-l5"><a class="reference internal" href="length/index.html">owlapy.utils.length</a></li>
+<li class="toctree-l5"><a class="reference internal" href="nnf/index.html">owlapy.utils.nnf</a></li>
+<li class="toctree-l5"><a class="reference internal" href="ordering/index.html">owlapy.utils.ordering</a></li>
+<li class="toctree-l5"><a class="reference internal" href="signature/index.html">owlapy.utils.signature</a></li>
+<li class="toctree-l5"><a class="reference internal" href="similarity/index.html">owlapy.utils.similarity</a></li>
+<li class="toctree-l5"><a class="reference internal" href="simplify/index.html">owlapy.utils.simplify</a></li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="#attributes">Attributes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.jaccard_similarity"><code class="docutils literal notranslate"><span class="pre">jaccard_similarity()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.f1_set_similarity"><code class="docutils literal notranslate"><span class="pre">f1_set_similarity()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.run_with_timeout"><code class="docutils literal notranslate"><span class="pre">run_with_timeout()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.concept_reducer"><code class="docutils literal notranslate"><span class="pre">concept_reducer()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.concept_reducer_properties"><code class="docutils literal notranslate"><span class="pre">concept_reducer_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.LRUCache"><code class="docutils literal notranslate"><span class="pre">LRUCache</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.sentinel"><code class="docutils literal notranslate"><span class="pre">LRUCache.sentinel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.PREV"><code class="docutils literal notranslate"><span class="pre">LRUCache.PREV</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.NEXT"><code class="docutils literal notranslate"><span class="pre">LRUCache.NEXT</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.KEY"><code class="docutils literal notranslate"><span class="pre">LRUCache.KEY</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.RESULT"><code class="docutils literal notranslate"><span class="pre">LRUCache.RESULT</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">LRUCache.sentinel</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.full"><code class="docutils literal notranslate"><span class="pre">LRUCache.full</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_get"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_get</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_len"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_len</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.lock"><code class="docutils literal notranslate"><span class="pre">LRUCache.lock</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.root"><code class="docutils literal notranslate"><span class="pre">LRUCache.root</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.maxsize"><code class="docutils literal notranslate"><span class="pre">LRUCache.maxsize</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__contains__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__contains__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__getitem__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__getitem__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__setitem__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__setitem__()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_info"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_info()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_clear"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_clear()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric"><code class="docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric.__slots__"><code class="docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric.__slots__</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric.class_length"><code class="docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric.class_length</span></code></a></li>
@@ -127,8 +153,18 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric.length"><code class="docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric.length()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.measurer"><code class="docutils literal notranslate"><span class="pre">measurer</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.get_expression_length"><code class="docutils literal notranslate"><span class="pre">get_expression_length()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.measurer"><code class="docutils literal notranslate"><span class="pre">measurer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.NNF"><code class="docutils literal notranslate"><span class="pre">NNF</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.NNF.get_class_nnf"><code class="docutils literal notranslate"><span class="pre">NNF.get_class_nnf()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.get_top_level_cnf"><code class="docutils literal notranslate"><span class="pre">get_top_level_cnf()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.get_top_level_dnf"><code class="docutils literal notranslate"><span class="pre">get_top_level_dnf()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.ConceptOperandSorter"><code class="docutils literal notranslate"><span class="pre">ConceptOperandSorter</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.ConceptOperandSorter.sort"><code class="docutils literal notranslate"><span class="pre">ConceptOperandSorter.sort()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.EvaluatedDescriptionSet"><code class="docutils literal notranslate"><span class="pre">EvaluatedDescriptionSet</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.EvaluatedDescriptionSet.__slots__"><code class="docutils literal notranslate"><span class="pre">EvaluatedDescriptionSet.__slots__</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.EvaluatedDescriptionSet.items"><code class="docutils literal notranslate"><span class="pre">EvaluatedDescriptionSet.items</span></code></a></li>
@@ -140,20 +176,6 @@
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.EvaluatedDescriptionSet.__iter__"><code class="docutils literal notranslate"><span class="pre">EvaluatedDescriptionSet.__iter__()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.ConceptOperandSorter"><code class="docutils literal notranslate"><span class="pre">ConceptOperandSorter</span></code></a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.ConceptOperandSorter.sort"><code class="docutils literal notranslate"><span class="pre">ConceptOperandSorter.sort()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.get_top_level_cnf"><code class="docutils literal notranslate"><span class="pre">get_top_level_cnf()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.get_top_level_dnf"><code class="docutils literal notranslate"><span class="pre">get_top_level_dnf()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.get_remaining"><code class="docutils literal notranslate"><span class="pre">get_remaining()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.factor_nary_expression"><code class="docutils literal notranslate"><span class="pre">factor_nary_expression()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.CESimplifier"><code class="docutils literal notranslate"><span class="pre">CESimplifier</span></code></a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.CESimplifier.sorter"><code class="docutils literal notranslate"><span class="pre">CESimplifier.sorter</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.CESimplifier.simplify"><code class="docutils literal notranslate"><span class="pre">CESimplifier.simplify()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.CESimplifier.datatype_restriction_inwards_simplification"><code class="docutils literal notranslate"><span class="pre">CESimplifier.datatype_restriction_inwards_simplification()</span></code></a></li>
-</ul>
-</li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.HasIndex"><code class="docutils literal notranslate"><span class="pre">HasIndex</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.HasIndex.type_index"><code class="docutils literal notranslate"><span class="pre">HasIndex.type_index</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.HasIndex.__eq__"><code class="docutils literal notranslate"><span class="pre">HasIndex.__eq__()</span></code></a></li>
@@ -162,45 +184,33 @@
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.OrderedOWLObject"><code class="docutils literal notranslate"><span class="pre">OrderedOWLObject</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OrderedOWLObject.o"><code class="docutils literal notranslate"><span class="pre">OrderedOWLObject.o</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OrderedOWLObject.__slots__"><code class="docutils literal notranslate"><span class="pre">OrderedOWLObject.__slots__</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">OrderedOWLObject.o</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">OrderedOWLObject.o</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OrderedOWLObject.__lt__"><code class="docutils literal notranslate"><span class="pre">OrderedOWLObject.__lt__()</span></code></a></li>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.OrderedOWLObject.__eq__"><code class="docutils literal notranslate"><span class="pre">OrderedOWLObject.__eq__()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.NNF"><code class="docutils literal notranslate"><span class="pre">NNF</span></code></a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.NNF.get_class_nnf"><code class="docutils literal notranslate"><span class="pre">NNF.get_class_nnf()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.as_index"><code class="docutils literal notranslate"><span class="pre">as_index()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.combine_nary_expressions"><code class="docutils literal notranslate"><span class="pre">combine_nary_expressions()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.iter_count"><code class="docutils literal notranslate"><span class="pre">iter_count()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.SignatureExtractor"><code class="docutils literal notranslate"><span class="pre">SignatureExtractor</span></code></a><ul>
 <li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.SignatureExtractor.get_signature"><code class="docutils literal notranslate"><span class="pre">SignatureExtractor.get_signature()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.combine_nary_expressions"><code class="docutils literal notranslate"><span class="pre">combine_nary_expressions()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.iter_count"><code class="docutils literal notranslate"><span class="pre">iter_count()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.as_index"><code class="docutils literal notranslate"><span class="pre">as_index()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.LRUCache"><code class="docutils literal notranslate"><span class="pre">LRUCache</span></code></a><ul>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.sentinel"><code class="docutils literal notranslate"><span class="pre">LRUCache.sentinel</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.PREV"><code class="docutils literal notranslate"><span class="pre">LRUCache.PREV</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.NEXT"><code class="docutils literal notranslate"><span class="pre">LRUCache.NEXT</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.KEY"><code class="docutils literal notranslate"><span class="pre">LRUCache.KEY</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.RESULT"><code class="docutils literal notranslate"><span class="pre">LRUCache.RESULT</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">LRUCache.sentinel</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.full"><code class="docutils literal notranslate"><span class="pre">LRUCache.full</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_get"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_get</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_len"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_len</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.lock"><code class="docutils literal notranslate"><span class="pre">LRUCache.lock</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.root"><code class="docutils literal notranslate"><span class="pre">LRUCache.root</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.maxsize"><code class="docutils literal notranslate"><span class="pre">LRUCache.maxsize</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__contains__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__contains__()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__getitem__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__getitem__()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.__setitem__"><code class="docutils literal notranslate"><span class="pre">LRUCache.__setitem__()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_info"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_info()</span></code></a></li>
-<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.LRUCache.cache_clear"><code class="docutils literal notranslate"><span class="pre">LRUCache.cache_clear()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.concept_reducer"><code class="docutils literal notranslate"><span class="pre">concept_reducer()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.concept_reducer_properties"><code class="docutils literal notranslate"><span class="pre">concept_reducer_properties()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.f1_set_similarity"><code class="docutils literal notranslate"><span class="pre">f1_set_similarity()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.jaccard_similarity"><code class="docutils literal notranslate"><span class="pre">jaccard_similarity()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.run_with_timeout"><code class="docutils literal notranslate"><span class="pre">run_with_timeout()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.CESimplifier"><code class="docutils literal notranslate"><span class="pre">CESimplifier</span></code></a><ul>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.CESimplifier.sorter"><code class="docutils literal notranslate"><span class="pre">CESimplifier.sorter</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.CESimplifier.simplify"><code class="docutils literal notranslate"><span class="pre">CESimplifier.simplify()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="#owlapy.utils.CESimplifier.datatype_restriction_inwards_simplification"><code class="docutils literal notranslate"><span class="pre">CESimplifier.datatype_restriction_inwards_simplification()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.transformer"><code class="docutils literal notranslate"><span class="pre">transformer</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.factor_nary_expression"><code class="docutils literal notranslate"><span class="pre">factor_nary_expression()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.get_remaining"><code class="docutils literal notranslate"><span class="pre">get_remaining()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.simplify_class_expression"><code class="docutils literal notranslate"><span class="pre">simplify_class_expression()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#owlapy.utils.transformer"><code class="docutils literal notranslate"><span class="pre">transformer</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -243,6 +253,25 @@
   <section id="module-owlapy.utils">
 <span id="owlapy-utils"></span><h1>owlapy.utils<a class="headerlink" href="#module-owlapy.utils" title="Link to this heading"></a></h1>
 <p>Owlapy utils.</p>
+<p>This is a subpackage (not a single module) so that each cohesive group of helpers -
+similarity metrics, expression-length calculation, canonical ordering, NNF/CNF/DNF,
+syntactic simplification, signature extraction, and the LRU cache - lives in its own
+file. Every name previously importable from <code class="docutils literal notranslate"><span class="pre">owlapy.utils</span></code> is re-exported here, so
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">owlapy.utils</span> <span class="pre">import</span> <span class="pre">X</span></code> keeps working unchanged.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cache/index.html">owlapy.utils.cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="length/index.html">owlapy.utils.length</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnf/index.html">owlapy.utils.nnf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ordering/index.html">owlapy.utils.ordering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="signature/index.html">owlapy.utils.signature</a></li>
+<li class="toctree-l1"><a class="reference internal" href="similarity/index.html">owlapy.utils.similarity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simplify/index.html">owlapy.utils.simplify</a></li>
+</ul>
+</div>
+</section>
 <section id="attributes">
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -260,32 +289,32 @@
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric" title="owlapy.utils.OWLClassExpressionLengthMetric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.LRUCache" title="owlapy.utils.LRUCache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LRUCache</span></code></a></p></td>
+<td><p>Constants shares by all lru cache instances.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric" title="owlapy.utils.OWLClassExpressionLengthMetric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OWLClassExpressionLengthMetric</span></code></a></p></td>
 <td><p>Length calculation of OWLClassExpression</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.EvaluatedDescriptionSet" title="owlapy.utils.EvaluatedDescriptionSet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EvaluatedDescriptionSet</span></code></a></p></td>
-<td><p>Abstract base class for generic types.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.ConceptOperandSorter" title="owlapy.utils.ConceptOperandSorter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConceptOperandSorter</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.CESimplifier" title="owlapy.utils.CESimplifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CESimplifier</span></code></a></p></td>
-<td><p>Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.HasIndex" title="owlapy.utils.HasIndex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HasIndex</span></code></a></p></td>
-<td><p>Interface for types with an index; this is used to group objects by type when sorting.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.OrderedOWLObject" title="owlapy.utils.OrderedOWLObject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OrderedOWLObject</span></code></a></p></td>
-<td><p>Holder of OWL Objects that can be used for Python sorted.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.NNF" title="owlapy.utils.NNF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NNF</span></code></a></p></td>
 <td><p>This class contains functions to transform a Class Expression into Negation Normal Form.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.ConceptOperandSorter" title="owlapy.utils.ConceptOperandSorter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConceptOperandSorter</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.EvaluatedDescriptionSet" title="owlapy.utils.EvaluatedDescriptionSet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EvaluatedDescriptionSet</span></code></a></p></td>
+<td><p>Abstract base class for generic types.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.HasIndex" title="owlapy.utils.HasIndex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HasIndex</span></code></a></p></td>
+<td><p>Interface for types with an index; this is used to group objects by type when sorting.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.OrderedOWLObject" title="owlapy.utils.OrderedOWLObject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OrderedOWLObject</span></code></a></p></td>
+<td><p>Holder of OWL Objects that can be used for Python sorted.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.SignatureExtractor" title="owlapy.utils.SignatureExtractor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignatureExtractor</span></code></a></p></td>
 <td><p>Computes the signature of an axiom or class expression/data range: the set of named entities</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.LRUCache" title="owlapy.utils.LRUCache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LRUCache</span></code></a></p></td>
-<td><p>Constants shares by all lru cache instances.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.CESimplifier" title="owlapy.utils.CESimplifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CESimplifier</span></code></a></p></td>
+<td><p>Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.</p></td>
 </tr>
 </tbody>
 </table>
@@ -294,35 +323,17 @@
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.jaccard_similarity" title="owlapy.utils.jaccard_similarity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">jaccard_similarity</span></code></a>(→ float)</p></td>
-<td><p>Calculate the Jaccard similarity between two sets.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.f1_set_similarity" title="owlapy.utils.f1_set_similarity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f1_set_similarity</span></code></a>(→ float)</p></td>
-<td><p>Calculate the F1 score between two sets.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.run_with_timeout" title="owlapy.utils.run_with_timeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_with_timeout</span></code></a>(func, timeout[, args])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.get_expression_length" title="owlapy.utils.get_expression_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_expression_length</span></code></a>(→ int)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer" title="owlapy.utils.concept_reducer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer</span></code></a>(concepts, opt)</p></td>
-<td><p>Reduces a set of concepts by applying a binary operation to each pair of concepts.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer_properties" title="owlapy.utils.concept_reducer_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer_properties</span></code></a>(...)</p></td>
-<td><p>Map a set of owl concepts and a set of properties into OWL Restrictions</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.get_expression_length" title="owlapy.utils.get_expression_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_expression_length</span></code></a>(→ int)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.get_top_level_cnf" title="owlapy.utils.get_top_level_cnf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_top_level_cnf</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.get_top_level_cnf" title="owlapy.utils.get_top_level_cnf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_top_level_cnf</span></code></a>(...)</p></td>
 <td><p>Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.get_top_level_dnf" title="owlapy.utils.get_top_level_dnf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_top_level_dnf</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.get_top_level_dnf" title="owlapy.utils.get_top_level_dnf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_top_level_dnf</span></code></a>(...)</p></td>
 <td><p>Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.get_remaining" title="owlapy.utils.get_remaining"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_remaining</span></code></a>(original_set, common_part, type_b)</p></td>
-<td><p>Used in factorization function 'factor_nary_expression'.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.factor_nary_expression" title="owlapy.utils.factor_nary_expression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">factor_nary_expression</span></code></a>(expr[, ...])</p></td>
-<td><p>Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.as_index" title="owlapy.utils.as_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_index</span></code></a>(→ HasIndex)</p></td>
+<td><p>Cast OWL Object to HasIndex.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.combine_nary_expressions" title="owlapy.utils.combine_nary_expressions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">combine_nary_expressions</span></code></a>(…)</p></td>
 <td><p>Shortens an OWLClassExpression or OWLDataRange by combining all nested nary expressions of the same type.</p></td>
@@ -330,8 +341,26 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.iter_count" title="owlapy.utils.iter_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_count</span></code></a>(→ int)</p></td>
 <td><p>Count the number of elements in an iterable.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.as_index" title="owlapy.utils.as_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_index</span></code></a>(→ HasIndex)</p></td>
-<td><p>Cast OWL Object to HasIndex.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer" title="owlapy.utils.concept_reducer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer</span></code></a>(concepts, opt)</p></td>
+<td><p>Reduces a set of concepts by applying a binary operation to each pair of concepts.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.concept_reducer_properties" title="owlapy.utils.concept_reducer_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concept_reducer_properties</span></code></a>(...)</p></td>
+<td><p>Map a set of owl concepts and a set of properties into OWL Restrictions</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.f1_set_similarity" title="owlapy.utils.f1_set_similarity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f1_set_similarity</span></code></a>(→ float)</p></td>
+<td><p>Calculate the F1 score between two sets.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.jaccard_similarity" title="owlapy.utils.jaccard_similarity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">jaccard_similarity</span></code></a>(→ float)</p></td>
+<td><p>Calculate the Jaccard similarity between two sets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.run_with_timeout" title="owlapy.utils.run_with_timeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_with_timeout</span></code></a>(func, timeout[, args])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.factor_nary_expression" title="owlapy.utils.factor_nary_expression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">factor_nary_expression</span></code></a>(expr[, ...])</p></td>
+<td><p>Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#owlapy.utils.get_remaining" title="owlapy.utils.get_remaining"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_remaining</span></code></a>(original_set, common_part, type_b)</p></td>
+<td><p>Used in factorization function 'factor_nary_expression'.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#owlapy.utils.simplify_class_expression" title="owlapy.utils.simplify_class_expression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simplify_class_expression</span></code></a>(...)</p></td>
 <td><p>Simplify a class expression by removing redundant expressions and sorting operands.</p></td>
@@ -339,101 +368,116 @@
 </tbody>
 </table>
 </section>
-<section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.jaccard_similarity">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">jaccard_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#jaccard_similarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.jaccard_similarity" title="Link to this definition"></a></dt>
-<dd><p>Calculate the Jaccard similarity between two sets.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>set1</strong> – First set</p></li>
-<li><p><strong>set2</strong> – Second set</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>intersection(set1, set2) / union(set1, set2)</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Jaccard similarity</p>
-</dd>
-</dl>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">LRUCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/cache.html#LRUCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_K</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">_V</span></code>]</p>
+<p>Constants shares by all lru cache instances.</p>
+<p>Adapted from functools.lru_cache.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.sentinel">
+<span class="sig-name descname"><span class="pre">sentinel</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.sentinel" title="Link to this definition"></a></dt>
+<dd><p>Unique object used to signal cache misses.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.f1_set_similarity">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">f1_set_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#f1_set_similarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.f1_set_similarity" title="Link to this definition"></a></dt>
-<dd><p>Calculate the F1 score between two sets.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>set1</strong> – First set (treated as ground truth)</p></li>
-<li><p><strong>set2</strong> – Second set (treated as prediction)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>F1 score</p>
-</dd>
-</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.PREV">
+<span class="sig-name descname"><span class="pre">PREV</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.PREV" title="Link to this definition"></a></dt>
+<dd><p>Name for the link field 0.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.run_with_timeout">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">run_with_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#run_with_timeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.run_with_timeout" title="Link to this definition"></a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.NEXT">
+<span class="sig-name descname"><span class="pre">NEXT</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.NEXT" title="Link to this definition"></a></dt>
+<dd><p>Name for the link field 1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.KEY">
+<span class="sig-name descname"><span class="pre">KEY</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.KEY" title="Link to this definition"></a></dt>
+<dd><p>Name for the link field 2.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.RESULT">
+<span class="sig-name descname"><span class="pre">RESULT</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.RESULT" title="Link to this definition"></a></dt>
+<dd><p>Name for the link field 3.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">sentinel</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.concept_reducer">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">concept_reducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">concepts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#concept_reducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.concept_reducer" title="Link to this definition"></a></dt>
-<dd><p>Reduces a set of concepts by applying a binary operation to each pair of concepts.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>concepts</strong> (<em>set</em>) – A set of concepts to be reduced.</p></li>
-<li><p><strong>opt</strong> (<em>function</em>) – A binary function that takes a pair of concepts and returns a single concept.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A set containing the results of applying the binary operation to each pair of concepts.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>set</p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">concepts</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">concept_reducer</span><span class="p">(</span><span class="n">concepts</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
-<span class="go">{2, 3, 4, 5, 6}</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The operation <cite>opt</cite> should be commutative and associative to ensure meaningful reduction in the context of set operations.</p>
-</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache">
+<span class="sig-name descname"><span class="pre">cache</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.full">
+<span class="sig-name descname"><span class="pre">full</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.full" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_get">
+<span class="sig-name descname"><span class="pre">cache_get</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache_get" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_len">
+<span class="sig-name descname"><span class="pre">cache_len</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache_len" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.lock">
+<span class="sig-name descname"><span class="pre">lock</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.lock" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.root">
+<span class="sig-name descname"><span class="pre">root</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.root" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.maxsize">
+<span class="sig-name descname"><span class="pre">maxsize</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.maxsize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.__contains__">
+<span class="sig-name descname"><span class="pre">__contains__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_K</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/cache.html#LRUCache.__contains__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.__contains__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_K</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_V</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/cache.html#LRUCache.__getitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.__getitem__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.__setitem__">
+<span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_V</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/cache.html#LRUCache.__setitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.__setitem__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_info">
+<span class="sig-name descname"><span class="pre">cache_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/cache.html#LRUCache.cache_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.cache_info" title="Link to this definition"></a></dt>
+<dd><p>Report cache statistics.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.concept_reducer_properties">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">concept_reducer_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">concepts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cardinality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLQuantifiedObjectRestriction" title="owlapy.class_expression.OWLQuantifiedObjectRestriction"><span class="pre">owlapy.class_expression.OWLQuantifiedObjectRestriction</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLObjectCardinalityRestriction" title="owlapy.class_expression.OWLObjectCardinalityRestriction"><span class="pre">owlapy.class_expression.OWLObjectCardinalityRestriction</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#concept_reducer_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.concept_reducer_properties" title="Link to this definition"></a></dt>
-<dd><p>Map a set of owl concepts and a set of properties into OWL Restrictions</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>concepts</strong></p></li>
-<li><p><strong>properties</strong></p></li>
-<li><p><strong>cls</strong> (<em>Callable</em>) – An owl Restriction class</p></li>
-<li><p><strong>cardinality</strong> – A positive Integer</p></li>
-</ul>
-</dd>
-</dl>
-<p>Returns: List of OWL Restrictions</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_clear">
+<span class="sig-name descname"><span class="pre">cache_clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/cache.html#LRUCache.cache_clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.cache_clear" title="Link to this definition"></a></dt>
+<dd><p>Clear the cache and cache statistics.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.utils.OWLClassExpressionLengthMetric">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">OWLClassExpressionLengthMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_intersection_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_union_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_complement_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_some_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_all_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_has_value_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_cardinality_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_has_self_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_one_of_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_some_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_all_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_has_value_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_cardinality_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_property_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_inverse_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_property_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_one_of_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_complement_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_intersection_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_union_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#OWLClassExpressionLengthMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLClassExpressionLengthMetric" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">OWLClassExpressionLengthMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_intersection_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_union_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_complement_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_some_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_all_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_has_value_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_cardinality_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_has_self_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_one_of_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_some_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_all_values_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_has_value_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_cardinality_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_property_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_inverse_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_property_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_one_of_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_complement_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_intersection_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_union_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/length.html#OWLClassExpressionLengthMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLClassExpressionLengthMetric" title="Link to this definition"></a></dt>
 <dd><p>Length calculation of OWLClassExpression</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -580,29 +624,90 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.OWLClassExpressionLengthMetric.get_default">
-<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_default</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric" title="owlapy.utils.OWLClassExpressionLengthMetric"><span class="pre">OWLClassExpressionLengthMetric</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#OWLClassExpressionLengthMetric.get_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLClassExpressionLengthMetric.get_default" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_default</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#owlapy.utils.OWLClassExpressionLengthMetric" title="owlapy.utils.OWLClassExpressionLengthMetric"><span class="pre">OWLClassExpressionLengthMetric</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/length.html#OWLClassExpressionLengthMetric.get_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLClassExpressionLengthMetric.get_default" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.OWLClassExpressionLengthMetric.length">
-<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><span class="pre">owlapy.owl_object.OWLObject</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#OWLClassExpressionLengthMetric.length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLClassExpressionLengthMetric.length" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><span class="pre">owlapy.owl_object.OWLObject</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/length.html#OWLClassExpressionLengthMetric.length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OWLClassExpressionLengthMetric.length" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.get_expression_length">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">get_expression_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/length.html#get_expression_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.get_expression_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="owlapy.utils.measurer">
 <span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">measurer</span></span><a class="headerlink" href="#owlapy.utils.measurer" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.NNF">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">NNF</span></span><a class="reference internal" href="../../../_modules/owlapy/utils/nnf.html#NNF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.NNF" title="Link to this definition"></a></dt>
+<dd><p>This class contains functions to transform a Class Expression into Negation Normal Form.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.NNF.get_class_nnf">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_class_nnf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">negated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/nnf.html#NNF.get_class_nnf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.NNF.get_class_nnf" title="Link to this definition"></a></dt>
+<dd><p>Convert a Class Expression to Negation Normal Form. Operands will be sorted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ce</strong> – Class Expression.</p></li>
+<li><p><strong>negated</strong> – Whether the result should be negated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Class Expression in Negation Normal Form.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.get_expression_length">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">get_expression_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#get_expression_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.get_expression_length" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="owlapy.utils.get_top_level_cnf">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">get_top_level_cnf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/nnf.html#get_top_level_cnf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.get_top_level_cnf" title="Link to this definition"></a></dt>
+<dd><p>Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ce</strong> – Class Expression.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Class Expression in Top-Level Conjunctive Normal Form.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.get_top_level_dnf">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">get_top_level_dnf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/nnf.html#get_top_level_dnf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.get_top_level_dnf" title="Link to this definition"></a></dt>
+<dd><p>Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ce</strong> – Class Expression.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Class Expression in Top-Level Disjunctive Normal Form.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.ConceptOperandSorter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">ConceptOperandSorter</span></span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#ConceptOperandSorter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.ConceptOperandSorter" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.ConceptOperandSorter.sort">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_O</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_O</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#ConceptOperandSorter.sort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.ConceptOperandSorter.sort" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.utils.EvaluatedDescriptionSet">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">EvaluatedDescriptionSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ordering</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_N</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_O</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#EvaluatedDescriptionSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">EvaluatedDescriptionSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ordering</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_N</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_O</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#EvaluatedDescriptionSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_N</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">_O</span></code>]</p>
 <p>Abstract base class for generic types.</p>
 <p>A generic type is typically declared by inheriting from
@@ -634,91 +739,233 @@ For example, a generic mapping type might be defined as:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.EvaluatedDescriptionSet.maybe_add">
-<span class="sig-name descname"><span class="pre">maybe_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_N</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#EvaluatedDescriptionSet.maybe_add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.maybe_add" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">maybe_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_N</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#EvaluatedDescriptionSet.maybe_add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.maybe_add" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.EvaluatedDescriptionSet.clean">
-<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#EvaluatedDescriptionSet.clean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.clean" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#EvaluatedDescriptionSet.clean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.clean" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.EvaluatedDescriptionSet.worst">
-<span class="sig-name descname"><span class="pre">worst</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#EvaluatedDescriptionSet.worst"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.worst" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">worst</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#EvaluatedDescriptionSet.worst"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.worst" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.EvaluatedDescriptionSet.best">
-<span class="sig-name descname"><span class="pre">best</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#EvaluatedDescriptionSet.best"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.best" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">best</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#EvaluatedDescriptionSet.best"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.best" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.EvaluatedDescriptionSet.best_quality_value">
-<span class="sig-name descname"><span class="pre">best_quality_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#EvaluatedDescriptionSet.best_quality_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.best_quality_value" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">best_quality_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#EvaluatedDescriptionSet.best_quality_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.best_quality_value" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.EvaluatedDescriptionSet.__iter__">
-<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">_N</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#EvaluatedDescriptionSet.__iter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.__iter__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">_N</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#EvaluatedDescriptionSet.__iter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.EvaluatedDescriptionSet.__iter__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="owlapy.utils.ConceptOperandSorter">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">ConceptOperandSorter</span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#ConceptOperandSorter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.ConceptOperandSorter" title="Link to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.ConceptOperandSorter.sort">
-<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_O</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_O</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#ConceptOperandSorter.sort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.ConceptOperandSorter.sort" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="owlapy.utils.HasIndex">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">HasIndex</span></span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#HasIndex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasIndex" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Interface for types with an index; this is used to group objects by type when sorting.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.HasIndex.type_index">
+<span class="sig-name descname"><span class="pre">type_index</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#owlapy.utils.HasIndex.type_index" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.HasIndex.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#HasIndex.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasIndex.__eq__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">OrderedOWLObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_HasIndex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#OrderedOWLObject"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OrderedOWLObject" title="Link to this definition"></a></dt>
+<dd><p>Holder of OWL Objects that can be used for Python sorted.</p>
+<p>The Ordering is dependent on the type_index of the impl. classes recursively followed by all components of the
+OWL Object.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject.o">
+<span class="sig-name descname"><span class="pre">o</span></span><a class="headerlink" href="#owlapy.utils.OrderedOWLObject.o" title="Link to this definition"></a></dt>
+<dd><p>OWL object.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('o',</span> <span class="pre">'_chain')</span></span><a class="headerlink" href="#owlapy.utils.OrderedOWLObject.__slots__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">o</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_HasIndex</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject.__lt__">
+<span class="sig-name descname"><span class="pre">__lt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#OrderedOWLObject.__lt__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OrderedOWLObject.__lt__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#OrderedOWLObject.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OrderedOWLObject.__eq__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.get_top_level_cnf">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">get_top_level_cnf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#get_top_level_cnf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.get_top_level_cnf" title="Link to this definition"></a></dt>
-<dd><p>Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.</p>
+<dt class="sig sig-object py" id="owlapy.utils.as_index">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">as_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><span class="pre">owlapy.owl_object.OWLObject</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#owlapy.utils.HasIndex" title="owlapy.utils.HasIndex"><span class="pre">HasIndex</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#as_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.as_index" title="Link to this definition"></a></dt>
+<dd><p>Cast OWL Object to HasIndex.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.combine_nary_expressions">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">combine_nary_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#combine_nary_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.combine_nary_expressions" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">combine_nary_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataRange" title="owlapy.owl_data_ranges.OWLDataRange"><span class="pre">owlapy.owl_data_ranges.OWLDataRange</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataRange" title="owlapy.owl_data_ranges.OWLDataRange"><span class="pre">owlapy.owl_data_ranges.OWLDataRange</span></a></span></span></dt>
+<dd><p>Shortens an OWLClassExpression or OWLDataRange by combining all nested nary expressions of the same type.
+Operands will be sorted.</p>
+<p>E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -&gt; OWLObjectUnionOf(A, B, C).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.iter_count">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">iter_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/ordering.html#iter_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.iter_count" title="Link to this definition"></a></dt>
+<dd><p>Count the number of elements in an iterable.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="owlapy.utils.SignatureExtractor">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">SignatureExtractor</span></span><a class="reference internal" href="../../../_modules/owlapy/utils/signature.html#SignatureExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.SignatureExtractor" title="Link to this definition"></a></dt>
+<dd><p>Computes the signature of an axiom or class expression/data range: the set of named entities
+(<code class="xref py py-class docutils literal notranslate"><span class="pre">OWLClass</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLObjectProperty</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLDataProperty</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLNamedIndividual</span></code>,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">OWLDatatype</span></code>) that it references, collected recursively.</p>
+<p>Mirrors the <code class="docutils literal notranslate"><span class="pre">signature()</span></code> method of OWLAPI’s <code class="docutils literal notranslate"><span class="pre">OWLObject</span></code> interface. <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLAnonymousIndividual</span></code>
+is intentionally excluded (it is not an <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLEntity</span></code>, per the OWL 2 specification). Likewise, a
+bare <a class="reference internal" href="../iri/index.html#owlapy.iri.IRI" title="owlapy.iri.IRI"><code class="xref py py-class docutils literal notranslate"><span class="pre">IRI</span></code></a> (used as an annotation subject/value or as the domain/range of an
+annotation property axiom) contributes nothing to the signature unless it has been resolved to a
+concrete entity elsewhere in the expression.</p>
+<p>Covers the full set of class expression/data range constructs plus all <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLAxiom</span></code> subtypes,
+including property characteristics, sub-property (and property chain) axioms, has-key, disjoint union,
+datatype definition, (un)equal individuals and annotation axioms. See
+<a class="reference external" href="https://github.com/dice-group/owlapy/issues/231">https://github.com/dice-group/owlapy/issues/231</a>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="owlapy.utils.SignatureExtractor.get_signature">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><span class="pre">owlapy.owl_object.OWLObject</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/signature.html#SignatureExtractor.get_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.SignatureExtractor.get_signature" title="Link to this definition"></a></dt>
+<dd><p>Compute the signature of <em>o</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ce</strong> – Class Expression.</p>
+<dd class="field-odd"><p><strong>o</strong> – An axiom, class expression, data range, property expression, individual or literal.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Class Expression in Top-Level Conjunctive Normal Form.</p>
+<dd class="field-even"><p>The set of named entities referenced by <em>o</em>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.concept_reducer">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">concept_reducer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">concepts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/similarity.html#concept_reducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.concept_reducer" title="Link to this definition"></a></dt>
+<dd><p>Reduces a set of concepts by applying a binary operation to each pair of concepts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>concepts</strong> (<em>set</em>) – A set of concepts to be reduced.</p></li>
+<li><p><strong>opt</strong> (<em>function</em>) – A binary function that takes a pair of concepts and returns a single concept.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A set containing the results of applying the binary operation to each pair of concepts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">concepts</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">concept_reducer</span><span class="p">(</span><span class="n">concepts</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
+<span class="go">{2, 3, 4, 5, 6}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The operation <cite>opt</cite> should be commutative and associative to ensure meaningful reduction in the context of set operations.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.concept_reducer_properties">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">concept_reducer_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">concepts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cardinality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLQuantifiedObjectRestriction" title="owlapy.class_expression.OWLQuantifiedObjectRestriction"><span class="pre">owlapy.class_expression.OWLQuantifiedObjectRestriction</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLObjectCardinalityRestriction" title="owlapy.class_expression.OWLObjectCardinalityRestriction"><span class="pre">owlapy.class_expression.OWLObjectCardinalityRestriction</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/similarity.html#concept_reducer_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.concept_reducer_properties" title="Link to this definition"></a></dt>
+<dd><p>Map a set of owl concepts and a set of properties into OWL Restrictions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>concepts</strong></p></li>
+<li><p><strong>properties</strong></p></li>
+<li><p><strong>cls</strong> (<em>Callable</em>) – An owl Restriction class</p></li>
+<li><p><strong>cardinality</strong> – A positive Integer</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: List of OWL Restrictions</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="owlapy.utils.f1_set_similarity">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">f1_set_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/similarity.html#f1_set_similarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.f1_set_similarity" title="Link to this definition"></a></dt>
+<dd><p>Calculate the F1 score between two sets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set1</strong> – First set (treated as ground truth)</p></li>
+<li><p><strong>set2</strong> – Second set (treated as prediction)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>F1 score</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.get_top_level_dnf">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">get_top_level_dnf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#get_top_level_dnf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.get_top_level_dnf" title="Link to this definition"></a></dt>
-<dd><p>Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.</p>
+<dt class="sig sig-object py" id="owlapy.utils.jaccard_similarity">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">jaccard_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/similarity.html#jaccard_similarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.jaccard_similarity" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Jaccard similarity between two sets.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ce</strong> – Class Expression.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set1</strong> – First set</p></li>
+<li><p><strong>set2</strong> – Second set</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Class Expression in Top-Level Disjunctive Normal Form.</p>
+<dd class="field-even"><p>intersection(set1, set2) / union(set1, set2)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Jaccard similarity</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.get_remaining">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">get_remaining</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_part</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#get_remaining"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.get_remaining" title="Link to this definition"></a></dt>
-<dd><p>Used in factorization function ‘factor_nary_expression’.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.factor_nary_expression">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">factor_nary_expression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLObjectIntersectionOf" title="owlapy.class_expression.OWLObjectIntersectionOf"><span class="pre">owlapy.class_expression.OWLObjectIntersectionOf</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLObjectUnionOf" title="owlapy.class_expression.OWLObjectUnionOf"><span class="pre">owlapy.class_expression.OWLObjectUnionOf</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_to_dnf_on_first_iteration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#factor_nary_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.factor_nary_expression" title="Link to this definition"></a></dt>
-<dd><p>Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This
-factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)
-for that.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="owlapy.utils.run_with_timeout">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">run_with_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/similarity.html#run_with_timeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.run_with_timeout" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="owlapy.utils.CESimplifier">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">CESimplifier</span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#CESimplifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.CESimplifier" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">CESimplifier</span></span><a class="reference internal" href="../../../_modules/owlapy/utils/simplify.html#CESimplifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.CESimplifier" title="Link to this definition"></a></dt>
 <dd><p>Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.
 Simplifications include:
 - Merging redundant cardinality restrictions
@@ -736,257 +983,40 @@ unique as long as its name is unique.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.CESimplifier.simplify">
-<span class="sig-name descname"><span class="pre">simplify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#CESimplifier.simplify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.CESimplifier.simplify" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">simplify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/simplify.html#CESimplifier.simplify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.CESimplifier.simplify" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="owlapy.utils.CESimplifier.datatype_restriction_inwards_simplification">
-<span class="sig-name descname"><span class="pre">datatype_restriction_inwards_simplification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#CESimplifier.datatype_restriction_inwards_simplification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.CESimplifier.datatype_restriction_inwards_simplification" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">datatype_restriction_inwards_simplification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/simplify.html#CESimplifier.datatype_restriction_inwards_simplification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.CESimplifier.datatype_restriction_inwards_simplification" title="Link to this definition"></a></dt>
 <dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.utils.HasIndex">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">HasIndex</span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#HasIndex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasIndex" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
-<p>Interface for types with an index; this is used to group objects by type when sorting.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.HasIndex.type_index">
-<span class="sig-name descname"><span class="pre">type_index</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#owlapy.utils.HasIndex.type_index" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.HasIndex.__eq__">
-<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#HasIndex.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.HasIndex.__eq__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">OrderedOWLObject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_HasIndex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#OrderedOWLObject"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OrderedOWLObject" title="Link to this definition"></a></dt>
-<dd><p>Holder of OWL Objects that can be used for Python sorted.</p>
-<p>The Ordering is dependent on the type_index of the impl. classes recursively followed by all components of the
-OWL Object.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject.o">
-<span class="sig-name descname"><span class="pre">o</span></span><a class="headerlink" href="#owlapy.utils.OrderedOWLObject.o" title="Link to this definition"></a></dt>
-<dd><p>OWL object.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('o',</span> <span class="pre">'_chain')</span></span><a class="headerlink" href="#owlapy.utils.OrderedOWLObject.__slots__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">o</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_HasIndex</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject.__lt__">
-<span class="sig-name descname"><span class="pre">__lt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#OrderedOWLObject.__lt__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OrderedOWLObject.__lt__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.OrderedOWLObject.__eq__">
-<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#OrderedOWLObject.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.OrderedOWLObject.__eq__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.utils.NNF">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">NNF</span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#NNF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.NNF" title="Link to this definition"></a></dt>
-<dd><p>This class contains functions to transform a Class Expression into Negation Normal Form.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.NNF.get_class_nnf">
-<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_class_nnf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">negated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#NNF.get_class_nnf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.NNF.get_class_nnf" title="Link to this definition"></a></dt>
-<dd><p>Convert a Class Expression to Negation Normal Form. Operands will be sorted.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ce</strong> – Class Expression.</p></li>
-<li><p><strong>negated</strong> – Whether the result should be negated.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Class Expression in Negation Normal Form.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.utils.SignatureExtractor">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">SignatureExtractor</span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#SignatureExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.SignatureExtractor" title="Link to this definition"></a></dt>
-<dd><p>Computes the signature of an axiom or class expression/data range: the set of named entities
-(<code class="xref py py-class docutils literal notranslate"><span class="pre">OWLClass</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLObjectProperty</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLDataProperty</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLNamedIndividual</span></code>,
-<code class="xref py py-class docutils literal notranslate"><span class="pre">OWLDatatype</span></code>) that it references, collected recursively.</p>
-<p>Mirrors the <code class="docutils literal notranslate"><span class="pre">signature()</span></code> method of OWLAPI’s <code class="docutils literal notranslate"><span class="pre">OWLObject</span></code> interface. <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLAnonymousIndividual</span></code>
-is intentionally excluded (it is not an <code class="xref py py-class docutils literal notranslate"><span class="pre">OWLEntity</span></code>, per the OWL 2 specification).</p>
-<p>Coverage is currently limited to the axiom types listed below (chosen to cover what
-<code class="docutils literal notranslate"><span class="pre">SyncOntology.get_tbox_axioms()</span></code>/<code class="docutils literal notranslate"><span class="pre">get_abox_axioms()</span></code> return for the ontologies in this repo’s test
-suite) plus the full set of class expression/data range constructs. Extending coverage to the remaining
-<code class="xref py py-class docutils literal notranslate"><span class="pre">OWLAxiom</span></code> subtypes (property characteristics, property chains, has-key, disjoint union, datatype
-definition, (un)equal individuals, annotation assertions, …) is tracked in
-<a class="reference external" href="https://github.com/dice-group/owlapy/issues/231">https://github.com/dice-group/owlapy/issues/231</a>.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.SignatureExtractor.get_signature">
-<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><span class="pre">owlapy.owl_object.OWLObject</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLEntity" title="owlapy.owl_object.OWLEntity"><span class="pre">owlapy.owl_object.OWLEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#SignatureExtractor.get_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.SignatureExtractor.get_signature" title="Link to this definition"></a></dt>
-<dd><p>Compute the signature of <em>o</em>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>o</strong> – An axiom, class expression, data range, property expression, individual or literal.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The set of named entities referenced by <em>o</em>.</p>
-</dd>
-</dl>
-</dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.combine_nary_expressions">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">combine_nary_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#combine_nary_expressions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.combine_nary_expressions" title="Link to this definition"></a></dt>
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">combine_nary_expressions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataRange" title="owlapy.owl_data_ranges.OWLDataRange"><span class="pre">owlapy.owl_data_ranges.OWLDataRange</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../owl_data_ranges/index.html#owlapy.owl_data_ranges.OWLDataRange" title="owlapy.owl_data_ranges.OWLDataRange"><span class="pre">owlapy.owl_data_ranges.OWLDataRange</span></a></span></span></dt>
-<dd><p>Shortens an OWLClassExpression or OWLDataRange by combining all nested nary expressions of the same type.
-Operands will be sorted.</p>
-<p>E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -&gt; OWLObjectUnionOf(A, B, C).</p>
+<dt class="sig sig-object py" id="owlapy.utils.factor_nary_expression">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">factor_nary_expression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLObjectIntersectionOf" title="owlapy.class_expression.OWLObjectIntersectionOf"><span class="pre">owlapy.class_expression.OWLObjectIntersectionOf</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLObjectUnionOf" title="owlapy.class_expression.OWLObjectUnionOf"><span class="pre">owlapy.class_expression.OWLObjectUnionOf</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_to_dnf_on_first_iteration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/simplify.html#factor_nary_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.factor_nary_expression" title="Link to this definition"></a></dt>
+<dd><p>Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This
+factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)
+for that.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.iter_count">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">iter_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#iter_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.iter_count" title="Link to this definition"></a></dt>
-<dd><p>Count the number of elements in an iterable.</p>
+<dt class="sig sig-object py" id="owlapy.utils.get_remaining">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">get_remaining</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_part</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils/simplify.html#get_remaining"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.get_remaining" title="Link to this definition"></a></dt>
+<dd><p>Used in factorization function ‘factor_nary_expression’.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.as_index">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">as_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../owl_object/index.html#owlapy.owl_object.OWLObject" title="owlapy.owl_object.OWLObject"><span class="pre">owlapy.owl_object.OWLObject</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#owlapy.utils.HasIndex" title="owlapy.utils.HasIndex"><span class="pre">HasIndex</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#as_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.as_index" title="Link to this definition"></a></dt>
-<dd><p>Cast OWL Object to HasIndex.</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">LRUCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#LRUCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_K</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">_V</span></code>]</p>
-<p>Constants shares by all lru cache instances.</p>
-<p>Adapted from functools.lru_cache.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.sentinel">
-<span class="sig-name descname"><span class="pre">sentinel</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.sentinel" title="Link to this definition"></a></dt>
-<dd><p>Unique object used to signal cache misses.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.PREV">
-<span class="sig-name descname"><span class="pre">PREV</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.PREV" title="Link to this definition"></a></dt>
-<dd><p>Name for the link field 0.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.NEXT">
-<span class="sig-name descname"><span class="pre">NEXT</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.NEXT" title="Link to this definition"></a></dt>
-<dd><p>Name for the link field 1.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.KEY">
-<span class="sig-name descname"><span class="pre">KEY</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.KEY" title="Link to this definition"></a></dt>
-<dd><p>Name for the link field 2.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.RESULT">
-<span class="sig-name descname"><span class="pre">RESULT</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.RESULT" title="Link to this definition"></a></dt>
-<dd><p>Name for the link field 3.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id1">
-<span class="sig-name descname"><span class="pre">sentinel</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache">
-<span class="sig-name descname"><span class="pre">cache</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.full">
-<span class="sig-name descname"><span class="pre">full</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.full" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_get">
-<span class="sig-name descname"><span class="pre">cache_get</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache_get" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_len">
-<span class="sig-name descname"><span class="pre">cache_len</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.cache_len" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.lock">
-<span class="sig-name descname"><span class="pre">lock</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.lock" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.root">
-<span class="sig-name descname"><span class="pre">root</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.root" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.maxsize">
-<span class="sig-name descname"><span class="pre">maxsize</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#owlapy.utils.LRUCache.maxsize" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.__contains__">
-<span class="sig-name descname"><span class="pre">__contains__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_K</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#LRUCache.__contains__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.__contains__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.__getitem__">
-<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_K</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_V</span></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#LRUCache.__getitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.__getitem__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.__setitem__">
-<span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_V</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#LRUCache.__setitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.__setitem__" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_info">
-<span class="sig-name descname"><span class="pre">cache_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#LRUCache.cache_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.cache_info" title="Link to this definition"></a></dt>
-<dd><p>Report cache statistics.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="owlapy.utils.LRUCache.cache_clear">
-<span class="sig-name descname"><span class="pre">cache_clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/owlapy/utils.html#LRUCache.cache_clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.LRUCache.cache_clear" title="Link to this definition"></a></dt>
-<dd><p>Clear the cache and cache statistics.</p>
-</dd></dl>
-
+<dt class="sig sig-object py" id="owlapy.utils.simplify_class_expression">
+<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">simplify_class_expression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils/simplify.html#simplify_class_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.simplify_class_expression" title="Link to this definition"></a></dt>
+<dd><p>Simplify a class expression by removing redundant expressions and sorting operands.</p>
 </dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="owlapy.utils.transformer">
 <span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">transformer</span></span><a class="headerlink" href="#owlapy.utils.transformer" title="Link to this definition"></a></dt>
 <dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="owlapy.utils.simplify_class_expression">
-<span class="sig-prename descclassname"><span class="pre">owlapy.utils.</span></span><span class="sig-name descname"><span class="pre">simplify_class_expression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../class_expression/index.html#owlapy.class_expression.OWLClassExpression" title="owlapy.class_expression.OWLClassExpression"><span class="pre">owlapy.class_expression.OWLClassExpression</span></a></span></span><a class="reference internal" href="../../../_modules/owlapy/utils.html#simplify_class_expression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#owlapy.utils.simplify_class_expression" title="Link to this definition"></a></dt>
-<dd><p>Simplify a class expression by removing redundant expressions and sorting operands.</p>
-</dd></dl>
 
 </section>
 </section>
@@ -996,7 +1026,7 @@ Operands will be sorted.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../util_owl_static_funcs/index.html" class="btn btn-neutral float-left" title="owlapy.util_owl_static_funcs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../vocab/index.html" class="btn btn-neutral float-right" title="owlapy.vocab" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="cache/index.html" class="btn btn-neutral float-right" title="owlapy.utils.cache" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

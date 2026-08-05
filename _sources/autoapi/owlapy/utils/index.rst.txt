@@ -7,6 +7,27 @@ owlapy.utils
 
    Owlapy utils.
 
+   This is a subpackage (not a single module) so that each cohesive group of helpers -
+   similarity metrics, expression-length calculation, canonical ordering, NNF/CNF/DNF,
+   syntactic simplification, signature extraction, and the LRU cache - lives in its own
+   file. Every name previously importable from ``owlapy.utils`` is re-exported here, so
+   ``from owlapy.utils import X`` keeps working unchanged.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/owlapy/utils/cache/index
+   /autoapi/owlapy/utils/length/index
+   /autoapi/owlapy/utils/nnf/index
+   /autoapi/owlapy/utils/ordering/index
+   /autoapi/owlapy/utils/signature/index
+   /autoapi/owlapy/utils/similarity/index
+   /autoapi/owlapy/utils/simplify/index
 
 
 Attributes
@@ -23,15 +44,15 @@ Classes
 
 .. autoapisummary::
 
+   owlapy.utils.LRUCache
    owlapy.utils.OWLClassExpressionLengthMetric
-   owlapy.utils.EvaluatedDescriptionSet
+   owlapy.utils.NNF
    owlapy.utils.ConceptOperandSorter
-   owlapy.utils.CESimplifier
+   owlapy.utils.EvaluatedDescriptionSet
    owlapy.utils.HasIndex
    owlapy.utils.OrderedOWLObject
-   owlapy.utils.NNF
    owlapy.utils.SignatureExtractor
-   owlapy.utils.LRUCache
+   owlapy.utils.CESimplifier
 
 
 Functions
@@ -39,81 +60,103 @@ Functions
 
 .. autoapisummary::
 
-   owlapy.utils.jaccard_similarity
-   owlapy.utils.f1_set_similarity
-   owlapy.utils.run_with_timeout
-   owlapy.utils.concept_reducer
-   owlapy.utils.concept_reducer_properties
    owlapy.utils.get_expression_length
    owlapy.utils.get_top_level_cnf
    owlapy.utils.get_top_level_dnf
-   owlapy.utils.get_remaining
-   owlapy.utils.factor_nary_expression
+   owlapy.utils.as_index
    owlapy.utils.combine_nary_expressions
    owlapy.utils.iter_count
-   owlapy.utils.as_index
+   owlapy.utils.concept_reducer
+   owlapy.utils.concept_reducer_properties
+   owlapy.utils.f1_set_similarity
+   owlapy.utils.jaccard_similarity
+   owlapy.utils.run_with_timeout
+   owlapy.utils.factor_nary_expression
+   owlapy.utils.get_remaining
    owlapy.utils.simplify_class_expression
 
 
-Module Contents
----------------
+Package Contents
+----------------
 
-.. py:function:: jaccard_similarity(set1, set2) -> float
+.. py:class:: LRUCache(maxsize: Optional[int] = None)
 
-   Calculate the Jaccard similarity between two sets.
-
-   :param set1: First set
-   :param set2: Second set
-
-   :returns: intersection(set1, set2) / union(set1, set2)
-   :rtype: Jaccard similarity
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_K`\ , :py:obj:`_V`\ ]
 
 
-.. py:function:: f1_set_similarity(set1, set2) -> float
+   Constants shares by all lru cache instances.
 
-   Calculate the F1 score between two sets.
+   Adapted from functools.lru_cache.
 
-   :param set1: First set (treated as ground truth)
-   :param set2: Second set (treated as prediction)
+   .. attribute:: sentinel
 
-   :returns: F1 score
+      Unique object used to signal cache misses.
 
+   .. attribute:: PREV
 
-.. py:function:: run_with_timeout(func, timeout, args=(), **kwargs)
+      Name for the link field 0.
 
-.. py:function:: concept_reducer(concepts: Iterable, opt: Callable)
+   .. attribute:: NEXT
 
-   Reduces a set of concepts by applying a binary operation to each pair of concepts.
+      Name for the link field 1.
 
-   :param concepts: A set of concepts to be reduced.
-   :type concepts: set
-   :param opt: A binary function that takes a pair of concepts and returns a single concept.
-   :type opt: function
+   .. attribute:: KEY
 
-   :returns: A set containing the results of applying the binary operation to each pair of concepts.
-   :rtype: set
+      Name for the link field 2.
 
-   .. rubric:: Example
+   .. attribute:: RESULT
 
-   >>> concepts = {1, 2, 3}
-   >>> opt = lambda x: x[0] + x[1]
-   >>> concept_reducer(concepts, opt)
-   {2, 3, 4, 5, 6}
-
-   .. note:: The operation `opt` should be commutative and associative to ensure meaningful reduction in the context of set operations.
+      Name for the link field 3.
 
 
-.. py:function:: concept_reducer_properties(concepts: Iterable, properties, cls: Callable = None, cardinality: int = 2) -> Iterable[Union[owlapy.class_expression.OWLQuantifiedObjectRestriction, owlapy.class_expression.OWLObjectCardinalityRestriction]]
+   .. py:attribute:: sentinel
 
-   Map a set of owl concepts and a set of properties into OWL Restrictions
 
-   :param concepts:
-   :param properties:
-   :param cls: An owl Restriction class
-   :type cls: Callable
-   :param cardinality: A positive Integer
+   .. py:attribute:: cache
 
-   Returns: List of OWL Restrictions
+
+   .. py:attribute:: full
+      :value: False
+
+
+
+   .. py:attribute:: cache_get
+
+
+   .. py:attribute:: cache_len
+
+
+   .. py:attribute:: lock
+
+
+   .. py:attribute:: root
+      :value: []
+
+
+
+   .. py:attribute:: maxsize
+      :value: None
+
+
+
+   .. py:method:: __contains__(item: _K) -> bool
+
+
+   .. py:method:: __getitem__(item: _K) -> _V
+
+
+   .. py:method:: __setitem__(key: _K, value: _V)
+
+
+   .. py:method:: cache_info()
+
+      Report cache statistics.
+
+
+
+   .. py:method:: cache_clear()
+
+      Clear the cache and cache statistics.
 
 
 
@@ -248,9 +291,52 @@ Module Contents
 
 
 
+.. py:function:: get_expression_length(ce: owlapy.class_expression.OWLClassExpression) -> int
+
 .. py:data:: measurer
 
-.. py:function:: get_expression_length(ce: owlapy.class_expression.OWLClassExpression) -> int
+.. py:class:: NNF
+
+   This class contains functions to transform a Class Expression into Negation Normal Form.
+
+
+   .. py:method:: get_class_nnf(ce: owlapy.class_expression.OWLClassExpression, negated: bool = False) -> owlapy.class_expression.OWLClassExpression
+      :abstractmethod:
+
+
+      Convert a Class Expression to Negation Normal Form. Operands will be sorted.
+
+      :param ce: Class Expression.
+      :param negated: Whether the result should be negated.
+
+      :returns: Class Expression in Negation Normal Form.
+
+
+
+.. py:function:: get_top_level_cnf(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+   Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
+
+   :param ce: Class Expression.
+
+   :returns: Class Expression in Top-Level Conjunctive Normal Form.
+
+
+.. py:function:: get_top_level_dnf(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+   Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
+
+   :param ce: Class Expression.
+
+   :returns: Class Expression in Top-Level Disjunctive Normal Form.
+
+
+.. py:class:: ConceptOperandSorter
+
+   .. py:method:: sort(o: _O) -> _O
+      :abstractmethod:
+
+
 
 .. py:class:: EvaluatedDescriptionSet(ordering: Callable[[_N], _O], max_size: int = 10)
 
@@ -304,67 +390,6 @@ Module Contents
    .. py:method:: __iter__() -> Iterable[_N]
 
 
-.. py:class:: ConceptOperandSorter
-
-   .. py:method:: sort(o: _O) -> _O
-      :abstractmethod:
-
-
-
-.. py:function:: get_top_level_cnf(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
-
-   Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
-
-   :param ce: Class Expression.
-
-   :returns: Class Expression in Top-Level Conjunctive Normal Form.
-
-
-.. py:function:: get_top_level_dnf(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
-
-   Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
-
-   :param ce: Class Expression.
-
-   :returns: Class Expression in Top-Level Disjunctive Normal Form.
-
-
-.. py:function:: get_remaining(original_set, common_part, type_b)
-
-   Used in factorization function 'factor_nary_expression'.
-
-
-.. py:function:: factor_nary_expression(expr: Union[owlapy.class_expression.OWLObjectIntersectionOf, owlapy.class_expression.OWLObjectUnionOf], transform_to_dnf_on_first_iteration=False)
-
-   Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This
-   factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)
-   for that.
-
-
-.. py:class:: CESimplifier
-
-   Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.
-   Simplifications include:
-   - Merging redundant cardinality restrictions
-   - Merging redundant existential restrictions
-   - Normalizing union and intersection of class expressions
-   - Absorption of redundant class expressions
-   - Converting to negation normal form (NNF)
-   - and more...
-
-   Note: This simplifier follows Unique Name Assumption (UNA) meaning that every class/individual/property is
-   unique as long as its name is unique.
-
-
-   .. py:attribute:: sorter
-
-
-   .. py:method:: simplify(o: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
-
-
-   .. py:method:: datatype_restriction_inwards_simplification(n)
-
-
 .. py:class:: HasIndex
 
    Bases: :py:obj:`Protocol`
@@ -407,51 +432,9 @@ Module Contents
    .. py:method:: __eq__(other)
 
 
-.. py:class:: NNF
+.. py:function:: as_index(o: owlapy.owl_object.OWLObject) -> HasIndex
 
-   This class contains functions to transform a Class Expression into Negation Normal Form.
-
-
-   .. py:method:: get_class_nnf(ce: owlapy.class_expression.OWLClassExpression, negated: bool = False) -> owlapy.class_expression.OWLClassExpression
-      :abstractmethod:
-
-
-      Convert a Class Expression to Negation Normal Form. Operands will be sorted.
-
-      :param ce: Class Expression.
-      :param negated: Whether the result should be negated.
-
-      :returns: Class Expression in Negation Normal Form.
-
-
-
-.. py:class:: SignatureExtractor
-
-   Computes the signature of an axiom or class expression/data range: the set of named entities
-   (:class:`OWLClass`, :class:`OWLObjectProperty`, :class:`OWLDataProperty`, :class:`OWLNamedIndividual`,
-   :class:`OWLDatatype`) that it references, collected recursively.
-
-   Mirrors the ``signature()`` method of OWLAPI's ``OWLObject`` interface. :class:`OWLAnonymousIndividual`
-   is intentionally excluded (it is not an :class:`OWLEntity`, per the OWL 2 specification).
-
-   Coverage is currently limited to the axiom types listed below (chosen to cover what
-   ``SyncOntology.get_tbox_axioms()``/``get_abox_axioms()`` return for the ontologies in this repo's test
-   suite) plus the full set of class expression/data range constructs. Extending coverage to the remaining
-   :class:`OWLAxiom` subtypes (property characteristics, property chains, has-key, disjoint union, datatype
-   definition, (un)equal individuals, annotation assertions, ...) is tracked in
-   https://github.com/dice-group/owlapy/issues/231.
-
-
-   .. py:method:: get_signature(o: owlapy.owl_object.OWLObject) -> Set[owlapy.owl_object.OWLEntity]
-      :abstractmethod:
-
-
-      Compute the signature of *o*.
-
-      :param o: An axiom, class expression, data range, property expression, individual or literal.
-
-      :returns: The set of named entities referenced by *o*.
-
+   Cast OWL Object to HasIndex.
 
 
 .. py:function:: combine_nary_expressions(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
@@ -468,96 +451,135 @@ Module Contents
    Count the number of elements in an iterable.
 
 
-.. py:function:: as_index(o: owlapy.owl_object.OWLObject) -> HasIndex
+.. py:class:: SignatureExtractor
 
-   Cast OWL Object to HasIndex.
+   Computes the signature of an axiom or class expression/data range: the set of named entities
+   (:class:`OWLClass`, :class:`OWLObjectProperty`, :class:`OWLDataProperty`, :class:`OWLNamedIndividual`,
+   :class:`OWLDatatype`) that it references, collected recursively.
 
+   Mirrors the ``signature()`` method of OWLAPI's ``OWLObject`` interface. :class:`OWLAnonymousIndividual`
+   is intentionally excluded (it is not an :class:`OWLEntity`, per the OWL 2 specification). Likewise, a
+   bare :class:`~owlapy.iri.IRI` (used as an annotation subject/value or as the domain/range of an
+   annotation property axiom) contributes nothing to the signature unless it has been resolved to a
+   concrete entity elsewhere in the expression.
 
-.. py:class:: LRUCache(maxsize: Optional[int] = None)
-
-   Bases: :py:obj:`Generic`\ [\ :py:obj:`_K`\ , :py:obj:`_V`\ ]
-
-
-   Constants shares by all lru cache instances.
-
-   Adapted from functools.lru_cache.
-
-   .. attribute:: sentinel
-
-      Unique object used to signal cache misses.
-
-   .. attribute:: PREV
-
-      Name for the link field 0.
-
-   .. attribute:: NEXT
-
-      Name for the link field 1.
-
-   .. attribute:: KEY
-
-      Name for the link field 2.
-
-   .. attribute:: RESULT
-
-      Name for the link field 3.
+   Covers the full set of class expression/data range constructs plus all :class:`OWLAxiom` subtypes,
+   including property characteristics, sub-property (and property chain) axioms, has-key, disjoint union,
+   datatype definition, (un)equal individuals and annotation axioms. See
+   https://github.com/dice-group/owlapy/issues/231.
 
 
-   .. py:attribute:: sentinel
+   .. py:method:: get_signature(o: owlapy.owl_object.OWLObject) -> Set[owlapy.owl_object.OWLEntity]
+      :abstractmethod:
 
 
-   .. py:attribute:: cache
+      Compute the signature of *o*.
 
+      :param o: An axiom, class expression, data range, property expression, individual or literal.
 
-   .. py:attribute:: full
-      :value: False
+      :returns: The set of named entities referenced by *o*.
 
 
 
-   .. py:attribute:: cache_get
+.. py:function:: concept_reducer(concepts: Iterable, opt: Callable)
+
+   Reduces a set of concepts by applying a binary operation to each pair of concepts.
+
+   :param concepts: A set of concepts to be reduced.
+   :type concepts: set
+   :param opt: A binary function that takes a pair of concepts and returns a single concept.
+   :type opt: function
+
+   :returns: A set containing the results of applying the binary operation to each pair of concepts.
+   :rtype: set
+
+   .. rubric:: Example
+
+   >>> concepts = {1, 2, 3}
+   >>> opt = lambda x: x[0] + x[1]
+   >>> concept_reducer(concepts, opt)
+   {2, 3, 4, 5, 6}
+
+   .. note:: The operation `opt` should be commutative and associative to ensure meaningful reduction in the context of set operations.
 
 
-   .. py:attribute:: cache_len
+.. py:function:: concept_reducer_properties(concepts: Iterable, properties, cls: Callable = None, cardinality: int = 2) -> Iterable[Union[owlapy.class_expression.OWLQuantifiedObjectRestriction, owlapy.class_expression.OWLObjectCardinalityRestriction]]
 
+   Map a set of owl concepts and a set of properties into OWL Restrictions
 
-   .. py:attribute:: lock
+   :param concepts:
+   :param properties:
+   :param cls: An owl Restriction class
+   :type cls: Callable
+   :param cardinality: A positive Integer
 
-
-   .. py:attribute:: root
-      :value: []
-
-
-
-   .. py:attribute:: maxsize
-      :value: None
-
-
-
-   .. py:method:: __contains__(item: _K) -> bool
-
-
-   .. py:method:: __getitem__(item: _K) -> _V
-
-
-   .. py:method:: __setitem__(key: _K, value: _V)
-
-
-   .. py:method:: cache_info()
-
-      Report cache statistics.
-
-
-
-   .. py:method:: cache_clear()
-
-      Clear the cache and cache statistics.
+   Returns: List of OWL Restrictions
 
 
 
-.. py:data:: transformer
+.. py:function:: f1_set_similarity(set1, set2) -> float
+
+   Calculate the F1 score between two sets.
+
+   :param set1: First set (treated as ground truth)
+   :param set2: Second set (treated as prediction)
+
+   :returns: F1 score
+
+
+.. py:function:: jaccard_similarity(set1, set2) -> float
+
+   Calculate the Jaccard similarity between two sets.
+
+   :param set1: First set
+   :param set2: Second set
+
+   :returns: intersection(set1, set2) / union(set1, set2)
+   :rtype: Jaccard similarity
+
+
+.. py:function:: run_with_timeout(func, timeout, args=(), **kwargs)
+
+.. py:class:: CESimplifier
+
+   Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.
+   Simplifications include:
+   - Merging redundant cardinality restrictions
+   - Merging redundant existential restrictions
+   - Normalizing union and intersection of class expressions
+   - Absorption of redundant class expressions
+   - Converting to negation normal form (NNF)
+   - and more...
+
+   Note: This simplifier follows Unique Name Assumption (UNA) meaning that every class/individual/property is
+   unique as long as its name is unique.
+
+
+   .. py:attribute:: sorter
+
+
+   .. py:method:: simplify(o: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+
+   .. py:method:: datatype_restriction_inwards_simplification(n)
+
+
+.. py:function:: factor_nary_expression(expr: Union[owlapy.class_expression.OWLObjectIntersectionOf, owlapy.class_expression.OWLObjectUnionOf], transform_to_dnf_on_first_iteration=False)
+
+   Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This
+   factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)
+   for that.
+
+
+.. py:function:: get_remaining(original_set, common_part, type_b)
+
+   Used in factorization function 'factor_nary_expression'.
+
 
 .. py:function:: simplify_class_expression(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
 
    Simplify a class expression by removing redundant expressions and sorting operands.
 
+
+.. py:data:: transformer
 

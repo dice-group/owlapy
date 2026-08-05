@@ -1,0 +1,34 @@
+owlapy.agen_kg.logging_utils
+============================
+
+.. py:module:: owlapy.agen_kg.logging_utils
+
+.. autoapi-nested-parse::
+
+   Logging helpers for the agen_kg package.
+
+   The agen_kg components expose an ``enable_logging`` flag. When set, progress
+   messages are emitted through per-module loggers under ``owlapy.agen_kg`` and a
+   console handler is attached so the opt-in keeps producing visible output even
+   if the host application has not configured logging. Host applications that
+   configure logging themselves can ignore the flag and control verbosity via the
+   ``owlapy`` logger hierarchy instead.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.agen_kg.logging_utils.enable_console_logging
+
+
+Module Contents
+---------------
+
+.. py:function:: enable_console_logging(level: int = logging.INFO) -> None
+
+   Attach a console handler to the ``owlapy.agen_kg`` logger (idempotent).
+
+

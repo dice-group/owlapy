@@ -88,6 +88,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">defaultdict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span><span class="p">,</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">singledispatchmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">repeat</span>
@@ -95,9 +96,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">FrozenSet</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">jpype</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">owlready2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jpype</span><span class="w"> </span><span class="kn">import</span> <span class="n">JClass</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlapy._lazy_owlready2</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_owlready2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_ontology</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLOntology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.abstracts.abstract_owl_reasoner</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOWLReasoner</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">owlapy.class_expression</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -139,13 +140,24 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="c1"># owlready2 is an optional dependency, needed only by StructuralReasoner (see</span>
+<span class="c1"># owlapy._lazy_owlready2 / issue #205); SyncReasoner is JVM/OWLAPI-backed and doesn&#39;t need it.</span>
+<span class="n">owlready2</span> <span class="o">=</span> <span class="n">import_owlready2</span><span class="p">()</span>
+
 <span class="n">_P</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;_P&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">OWLPropertyExpression</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="StructuralReasoner">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StructuralReasoner</span><span class="p">(</span><span class="n">AbstractOWLReasoner</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tries to check instances fast (but maybe incomplete).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tries to check instances fast (but maybe incomplete).</span>
+
+<span class="sd">    .. deprecated::</span>
+<span class="sd">        `StructuralReasoner` is owlready2-backed and is being phased out in favor of</span>
+<span class="sd">        `RDFLibReasoner` (`owlapy.owl_reasoner_rdflib.RDFLibReasoner`), a pure-Python</span>
+<span class="sd">        replacement with no owlready2/JVM dependency and no circular sub/super-class</span>
+<span class="sd">        dependency issue (see issue #205). Prefer `RDFLibReasoner` for new code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ontology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AbstractOWLOntology</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">class_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">property_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">negation_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sub_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
@@ -158,6 +170,13 @@
 <span class="sd">            sub_properties: Whether to take sub properties into account for the</span>
 <span class="sd">                :func:`StructuralReasoner.instances` retrieval.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;StructuralReasoner is owlready2-backed and being phased out in favor of &quot;</span>
+            <span class="s2">&quot;RDFLibReasoner (owlapy.owl_reasoner_rdflib.RDFLibReasoner), a pure-Python &quot;</span>
+            <span class="s2">&quot;replacement with no owlready2/JVM dependency. See issue #205.&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ontology</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">ontology</span> <span class="o">=</span> <span class="n">Ontology</span><span class="p">(</span><span class="n">ontology</span><span class="p">)</span>
 
@@ -170,6 +189,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_negation_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">negation_default</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sub_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">sub_properties</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__warned</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warned_malformed_props</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">OWLObjectProperty</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -359,6 +379,22 @@
             <span class="k">yield</span> <span class="n">OWLLiteral</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_named_individuals_from_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectProperty</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Map owlready2 property values to named individuals. Ontologies that illegally pun an entity as</span>
+<span class="sd">        several property types (e.g. ObjectProperty and AnnotationProperty) make owlready2&#39;s load-time repair</span>
+<span class="sd">        return internal class-expression nodes (e.g. owlready2.Or) as values of unrelated properties; those</span>
+<span class="sd">        carry no IRI and are skipped with a warning instead of crashing (issue #242).&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">Thing</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">pe</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_warned_malformed_props</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_warned_malformed_props</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping malformed value of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> for object property &quot;</span>
+                               <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pe</span><span class="o">.</span><span class="n">str</span><span class="si">}</span><span class="s2">. The source ontology likely puns an entity as multiple property types &quot;</span>
+                               <span class="sa">f</span><span class="s2">&quot;(illegal under OWL 2 DL), which owlready2 attempted to repair at load time. &quot;</span>
+                               <span class="sa">f</span><span class="s2">&quot;Further malformed values for this property will be skipped silently.&quot;</span><span class="p">)</span>
+
 <div class="viewcode-block" id="StructuralReasoner.object_property_values">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner.object_property_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">object_property_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">:</span> <span class="n">OWLNamedIndividual</span><span class="p">,</span> <span class="n">pe</span><span class="p">:</span> <span class="n">OWLObjectPropertyExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> \
@@ -369,8 +405,7 @@
             <span class="c1"># Recommended to use direct=False because _get_values_for_individual does not give consistent result</span>
             <span class="c1"># for the case when there are equivalent object properties. At least until this is fixed on owlready2.</span>
             <span class="n">retieval_func</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">_get_values_for_individual</span> <span class="k">if</span> <span class="n">direct</span> <span class="k">else</span> <span class="n">p</span><span class="o">.</span><span class="n">_get_indirect_values_for_individual</span>
-            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">retieval_func</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_named_individuals_from_property_values</span><span class="p">(</span><span class="n">retieval_func</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">pe</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span> <span class="n">OWLObjectInverseOf</span><span class="p">):</span>
             <span class="n">p</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">ObjectPropertyClass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">[</span><span class="n">pe</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="p">]</span>
             <span class="n">inverse_p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">inverse_property</span>
@@ -383,19 +418,24 @@
                                               <span class="s1">&#39;inverse property is explicitly defined in the ontology.&#39;</span>
                                               <span class="sa">f</span><span class="s1">&#39;Property: </span><span class="si">{</span><span class="n">pe</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="n">i</span><span class="p">:</span> <span class="n">owlready2</span><span class="o">.</span><span class="n">Thing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_world</span><span class="p">[</span><span class="n">ind</span><span class="o">.</span><span class="n">str</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">_get_inverse_values_for_individual</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
-                    <span class="k">yield</span> <span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">IRI</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">iri</span><span class="p">))</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_named_individuals_from_property_values</span><span class="p">(</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">_get_inverse_values_for_individual</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">pe</span><span class="o">.</span><span class="n">get_named_property</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ce</span><span class="p">:</span> <span class="n">OWLClassExpression</span><span class="p">,</span> <span class="n">direct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">OWLNamedIndividual</span><span class="p">]:</span>
+        <span class="c1"># Must return eagerly, not via `yield`/generator: instances() runs this inside</span>
+        <span class="c1"># run_with_timeout(), which times a *call* to this function. A generator function call</span>
+        <span class="c1"># returns a generator object immediately without executing any of its body, so a</span>
+        <span class="c1"># generator version of this method would make the timeout enforce nothing -- the real</span>
+        <span class="c1"># work (_find_instances) would only happen once the caller iterates the result, outside</span>
+        <span class="c1"># the timeout-protected region (owlapy#260). _find_instances() already returns eagerly.</span>
         <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__warned</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;direct not implemented&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__warned</span> <span class="o">|=</span> <span class="mi">2</span>
-        <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_instances</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
-        <span class="k">yield from</span> <span class="n">temp</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_instances</span><span class="p">(</span><span class="n">ce</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StructuralReasoner.instances">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_reasoner/index.html#owlapy.owl_reasoner.StructuralReasoner.instances">[docs]</a>
@@ -1529,7 +1569,7 @@
 
         <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reasoning_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">_Callable</span><span class="p">())</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="n">MILLISECONDS</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">future</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="n">SECONDS</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">jpype</span><span class="o">.</span><span class="n">JException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;TimeoutException&quot;</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
                 <span class="n">future</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
@@ -1934,9 +1974,9 @@
 <span class="sd">            be returned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reasoner_name</span> <span class="o">==</span> <span class="s2">&quot;ELK&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`getEquivalentDataProperties` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;`equivalentDataProperties` is not yet implemented by ELK!&quot;</span><span class="p">)</span>
         <span class="k">yield from</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">pe</span><span class="p">)</span> <span class="k">for</span> <span class="n">pe</span> <span class="ow">in</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">getEquivalentDataProperties</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">)))]</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owlapi_reasoner</span><span class="o">.</span><span class="n">equivalentDataProperties</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">map_</span><span class="p">(</span><span class="n">p</span><span class="p">)))]</span></div>
 
 
 <div class="viewcode-block" id="SyncReasoner.object_property_values">
@@ -2483,7 +2523,7 @@
             <span class="c1"># Save to file</span>
             <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;justifications.owl&quot;</span>
             <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">justifications</span></div>
 
@@ -2674,7 +2714,7 @@
             <span class="c1"># Save to file</span>
             <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;laconic_axiom_justifications.owl&quot;</span>
             <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Laconic axiom justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Laconic axiom justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">justifications</span></div>
 
 
@@ -2761,7 +2801,7 @@
             <span class="c1"># Save to file</span>
             <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;inconsistency_justifications.owl&quot;</span>
             <span class="n">just_ontology</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistency justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistency justifications saved to </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">justifications</span></div>
 
 
@@ -3354,7 +3394,7 @@
                 <span class="n">return_subjects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">OWLNamedIndividual</span><span class="p">(</span><span class="n">entity</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
                 <span class="c1"># Log the invalid IRI</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid IRI detected: </span><span class="si">{</span><span class="n">entity</span><span class="si">}</span><span class="s2">, error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid IRI detected: </span><span class="si">{</span><span class="n">entity</span><span class="si">}</span><span class="s2">, error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">continue</span>
 
         <span class="k">return</span> <span class="n">return_subjects</span></div>

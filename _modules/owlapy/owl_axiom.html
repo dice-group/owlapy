@@ -159,7 +159,6 @@
         <span class="k">return</span> <span class="n">SignatureExtractor</span><span class="p">()</span><span class="o">.</span><span class="n">get_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 </div>
 
-    <span class="c1"># TODO: XXX</span>
 
 
 <div class="viewcode-block" id="OWLLogicalAxiom">
@@ -517,13 +516,13 @@
 <div class="viewcode-block" id="OWLEquivalentClassesAxiom.contains_owl_nothing">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLEquivalentClassesAxiom.contains_owl_nothing">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">contains_owl_nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLNothing</span><span class="p">)</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">ce</span> <span class="o">==</span> <span class="n">OWLNothing</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OWLEquivalentClassesAxiom.contains_owl_thing">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLEquivalentClassesAxiom.contains_owl_thing">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">contains_owl_thing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">OWLThing</span><span class="p">)</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">ce</span> <span class="o">==</span> <span class="n">OWLThing</span> <span class="k">for</span> <span class="n">ce</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OWLEquivalentClassesAxiom.named_classes">
@@ -932,7 +931,7 @@
 <div class="viewcode-block" id="OWLDisjointUnionAxiom.get_owl_equivalent_classes_axiom">
 <a class="viewcode-back" href="../../autoapi/owlapy/owl_axiom/index.html#owlapy.owl_axiom.OWLDisjointUnionAxiom.get_owl_equivalent_classes_axiom">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_owl_equivalent_classes_axiom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OWLEquivalentClassesAxiom</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">OWLEquivalentClassesAxiom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cls</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">OWLEquivalentClassesAxiom</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_cls</span><span class="p">,</span> <span class="n">OWLObjectUnionOf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_class_expressions</span><span class="p">)])</span></div>
 
 
 <div class="viewcode-block" id="OWLDisjointUnionAxiom.get_owl_disjoint_classes_axiom">

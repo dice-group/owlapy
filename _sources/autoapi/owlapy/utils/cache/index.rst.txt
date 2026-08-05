@@ -1,0 +1,103 @@
+owlapy.utils.cache
+==================
+
+.. py:module:: owlapy.utils.cache
+
+.. autoapi-nested-parse::
+
+   LRU cache adaptation, decoupled from functools.lru_cache internals so it can be reused directly.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.utils.cache.LRUCache
+
+
+Module Contents
+---------------
+
+.. py:class:: LRUCache(maxsize: Optional[int] = None)
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_K`\ , :py:obj:`_V`\ ]
+
+
+   Constants shares by all lru cache instances.
+
+   Adapted from functools.lru_cache.
+
+   .. attribute:: sentinel
+
+      Unique object used to signal cache misses.
+
+   .. attribute:: PREV
+
+      Name for the link field 0.
+
+   .. attribute:: NEXT
+
+      Name for the link field 1.
+
+   .. attribute:: KEY
+
+      Name for the link field 2.
+
+   .. attribute:: RESULT
+
+      Name for the link field 3.
+
+
+   .. py:attribute:: sentinel
+
+
+   .. py:attribute:: cache
+
+
+   .. py:attribute:: full
+      :value: False
+
+
+
+   .. py:attribute:: cache_get
+
+
+   .. py:attribute:: cache_len
+
+
+   .. py:attribute:: lock
+
+
+   .. py:attribute:: root
+      :value: []
+
+
+
+   .. py:attribute:: maxsize
+      :value: None
+
+
+
+   .. py:method:: __contains__(item: _K) -> bool
+
+
+   .. py:method:: __getitem__(item: _K) -> _V
+
+
+   .. py:method:: __setitem__(key: _K, value: _V)
+
+
+   .. py:method:: cache_info()
+
+      Report cache statistics.
+
+
+
+   .. py:method:: cache_clear()
+
+      Clear the cache and cache statistics.
+
+
+

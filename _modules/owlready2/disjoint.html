@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>owlready2.disjoint &mdash; OWLAPY 1.6.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme.css?v=ea877efc" />
+      <link rel="stylesheet" type="text/css" href="../../_static/theme_tweak.css?v=f0ad19f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=677a9ea0" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8ea99608"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            OWLAPY
+              <img src="../../_static/owlapy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/main.html">About owlapy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/usage_examples.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/ontologies.html">Ontologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/reasoner.html">Reasoners</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/owlapi_synchronization.html">Owlapi Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/further_resources.html">Further Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/owlapy/index.html">owlapy</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OWLAPY</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">owlready2.disjoint</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for owlready2.disjoint</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Owlready2</span>
+<span class="c1"># Copyright (C) 2013-2019 Jean-Baptiste LAMY</span>
+<span class="c1"># LIMICS (Laboratoire d&#39;informatique médicale et d&#39;ingénierie des connaissances en santé), UMR_S 1142</span>
+<span class="c1"># University Paris 13, Sorbonne paris-Cité, Bobigny, France</span>
+
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU Lesser General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU Lesser General Public License for more details.</span>
+
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlready2.namespace</span><span class="w">       </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlready2.entity</span><span class="w">          </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlready2.prop</span><span class="w">            </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">owlready2.class_construct</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="AllDisjoint">
+<a class="viewcode-back" href="../../autoapi/owlapy/owl_ontology/index.html#owlapy.owl_ontology.AllDisjoint">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AllDisjoint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entities</span><span class="p">,</span> <span class="n">ontology</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bnode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="c1">#if not CURRENT_NAMESPACES[-1] is None: self.ontology = CURRENT_NAMESPACES[-1].ontology</span>
+    <span class="c1">#else:                                  self.ontology = ontology or entities[0].namespace.ontology</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">=</span> <span class="p">(</span><span class="n">CURRENT_NAMESPACES</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="ow">and</span> <span class="n">CURRENT_NAMESPACES</span><span class="o">.</span><span class="n">get</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="ow">or</span> <span class="n">ontology</span> <span class="ow">or</span> <span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">ontology</span>
+    
+    <span class="c1"># For AllDisjoint, storid can be either:</span>
+    <span class="c1">#   * a blank node, when at least 3 entities are involved</span>
+    <span class="c1">#   * a triple, when only 2 entities, e.g. (entity1.storid, owl_disjointwith, entity2.storid)</span>
+    
+    <span class="k">if</span>   <span class="nb">isinstance</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+      <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bnode</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">storid</span>      <span class="o">=</span> <span class="n">bnode</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="n">entities</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">storid</span>      <span class="o">=</span> <span class="n">entities</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">storid</span>      <span class="o">=</span> <span class="n">bnode</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="kc">None</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">entities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">individuals</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">AllDisjoint</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
+      
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">LOADING</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span><span class="p">()</span>
+    
+  <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;entities&quot;</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_parse_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_to_python</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">_to_python</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">[</span><span class="mi">2</span><span class="p">])]</span>
+      <span class="n">r</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">AllDisjoint</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span>
+      <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span><span class="n">r</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">r</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_create_triples</span> <span class="p">()</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="nf">_destroy_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span>   <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_del_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_del_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_del_obj_triple_spo</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_destroy_triples</span><span class="p">()</span>
+  
+  <span class="k">def</span><span class="w"> </span><span class="nf">_create_triples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">Construct</span><span class="p">):</span> <span class="n">entity</span><span class="o">.</span><span class="n">_set_ontology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="p">)</span>
+      
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+      <span class="k">if</span>   <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ThingClass</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storid</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_disjointwith</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+        <span class="k">return</span>
+      <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">PropertyClass</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storid</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_propdisjointwith</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">)</span>
+        <span class="k">return</span>
+      <span class="c1"># It seems that there is no 1-1 relation for individuals</span>
+      <span class="c1"># =&gt; continue</span>
+      
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">storid</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">new_blank_node</span><span class="p">()</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">:</span>             <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">new_blank_node</span><span class="p">()</span>
+      
+      <span class="k">if</span>   <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ThingClass</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">owl_alldisjointclasses</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+        
+      <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">PropertyClass</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">owl_alldisjointproperties</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+        
+      <span class="k">else</span><span class="p">:</span> <span class="c1"># Individuals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">rdf_type</span><span class="p">,</span> <span class="n">owl_alldifferent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_add_obj_triple_spo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storid</span><span class="p">,</span> <span class="n">owl_distinctmembers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">)</span>
+        
+      <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span><span class="o">.</span><span class="n">_set_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_bnode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">)</span>
+      
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">namespace</span><span class="o">.</span><span class="n">ontology</span><span class="p">:</span> <span class="n">onto</span> <span class="o">=</span> <span class="s2">&quot;, ontology = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">ontology</span>
+    <span class="k">else</span><span class="p">:</span>                                                    <span class="n">onto</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;AllDisjoint([</span><span class="si">%s</span><span class="s2">]</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">Class</span><span class="p">)</span> <span class="k">for</span> <span class="n">Class</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entities</span><span class="p">),</span> <span class="n">onto</span><span class="p">)</span></div>
+
+    
+<span class="n">AllDifferent</span> <span class="o">=</span> <span class="n">AllDisjoint</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">partition</span><span class="p">(</span><span class="n">mother</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+  <span class="n">mother</span><span class="o">.</span><span class="n">is_a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Or</span><span class="p">(</span><span class="n">children</span><span class="p">))</span>
+  <span class="n">AllDisjoint</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
+
+  
+<span class="c1"># class DisjointUnion(LogicalClassConstruct):</span>
+<span class="c1">#   _owl_op = owl_disjointunion</span>
+<span class="c1">#   is_a    = ()</span>
+  
+<span class="c1">#   def _satisfied_by(self, x):</span>
+<span class="c1">#     for Class in self.Classes:</span>
+<span class="c1">#       if Class._satisfied_by(x): return True</span>
+<span class="c1">#     return False</span>
+  
+<span class="c1">#   def __repr__(self):</span>
+<span class="c1">#     s = []</span>
+<span class="c1">#     for x in self.Classes:</span>
+<span class="c1">#       if isinstance(x, LogicalClassConstruct): s.append(&quot;(%s)&quot; % x)</span>
+<span class="c1">#       else:                                    s.append(repr(x))</span>
+<span class="c1">#     return &quot;%s([%s])&quot; % (self.__class__.__name__, &quot;, &quot;.join(s))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

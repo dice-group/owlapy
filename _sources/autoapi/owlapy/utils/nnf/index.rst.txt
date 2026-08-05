@@ -1,0 +1,67 @@
+owlapy.utils.nnf
+================
+
+.. py:module:: owlapy.utils.nnf
+
+.. autoapi-nested-parse::
+
+   Negation Normal Form and Top-Level CNF/DNF transformation for OWLClassExpression.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.utils.nnf.NNF
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.utils.nnf.get_top_level_cnf
+   owlapy.utils.nnf.get_top_level_dnf
+
+
+Module Contents
+---------------
+
+.. py:class:: NNF
+
+   This class contains functions to transform a Class Expression into Negation Normal Form.
+
+
+   .. py:method:: get_class_nnf(ce: owlapy.class_expression.OWLClassExpression, negated: bool = False) -> owlapy.class_expression.OWLClassExpression
+      :abstractmethod:
+
+
+      Convert a Class Expression to Negation Normal Form. Operands will be sorted.
+
+      :param ce: Class Expression.
+      :param negated: Whether the result should be negated.
+
+      :returns: Class Expression in Negation Normal Form.
+
+
+
+.. py:function:: get_top_level_cnf(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+   Convert a class expression into Top-Level Conjunctive Normal Form. Operands will be sorted.
+
+   :param ce: Class Expression.
+
+   :returns: Class Expression in Top-Level Conjunctive Normal Form.
+
+
+.. py:function:: get_top_level_dnf(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+   Convert a class expression into Top-Level Disjunctive Normal Form. Operands will be sorted.
+
+   :param ce: Class Expression.
+
+   :returns: Class Expression in Top-Level Disjunctive Normal Form.
+
+

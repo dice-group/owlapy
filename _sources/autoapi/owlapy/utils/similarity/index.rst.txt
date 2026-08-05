@@ -1,0 +1,85 @@
+owlapy.utils.similarity
+=======================
+
+.. py:module:: owlapy.utils.similarity
+
+.. autoapi-nested-parse::
+
+   Similarity metrics and concept-reduction helpers.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.utils.similarity.jaccard_similarity
+   owlapy.utils.similarity.f1_set_similarity
+   owlapy.utils.similarity.run_with_timeout
+   owlapy.utils.similarity.concept_reducer
+   owlapy.utils.similarity.concept_reducer_properties
+
+
+Module Contents
+---------------
+
+.. py:function:: jaccard_similarity(set1, set2) -> float
+
+   Calculate the Jaccard similarity between two sets.
+
+   :param set1: First set
+   :param set2: Second set
+
+   :returns: intersection(set1, set2) / union(set1, set2)
+   :rtype: Jaccard similarity
+
+
+.. py:function:: f1_set_similarity(set1, set2) -> float
+
+   Calculate the F1 score between two sets.
+
+   :param set1: First set (treated as ground truth)
+   :param set2: Second set (treated as prediction)
+
+   :returns: F1 score
+
+
+.. py:function:: run_with_timeout(func, timeout, args=(), **kwargs)
+
+.. py:function:: concept_reducer(concepts: Iterable, opt: Callable)
+
+   Reduces a set of concepts by applying a binary operation to each pair of concepts.
+
+   :param concepts: A set of concepts to be reduced.
+   :type concepts: set
+   :param opt: A binary function that takes a pair of concepts and returns a single concept.
+   :type opt: function
+
+   :returns: A set containing the results of applying the binary operation to each pair of concepts.
+   :rtype: set
+
+   .. rubric:: Example
+
+   >>> concepts = {1, 2, 3}
+   >>> opt = lambda x: x[0] + x[1]
+   >>> concept_reducer(concepts, opt)
+   {2, 3, 4, 5, 6}
+
+   .. note:: The operation `opt` should be commutative and associative to ensure meaningful reduction in the context of set operations.
+
+
+.. py:function:: concept_reducer_properties(concepts: Iterable, properties, cls: Callable = None, cardinality: int = 2) -> Iterable[Union[owlapy.class_expression.OWLQuantifiedObjectRestriction, owlapy.class_expression.OWLObjectCardinalityRestriction]]
+
+   Map a set of owl concepts and a set of properties into OWL Restrictions
+
+   :param concepts:
+   :param properties:
+   :param cls: An owl Restriction class
+   :type cls: Callable
+   :param cardinality: A positive Integer
+
+   Returns: List of OWL Restrictions
+
+
+

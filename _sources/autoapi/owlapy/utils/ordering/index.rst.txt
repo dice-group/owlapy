@@ -1,0 +1,166 @@
+owlapy.utils.ordering
+=====================
+
+.. py:module:: owlapy.utils.ordering
+
+.. autoapi-nested-parse::
+
+   Canonical ordering/sorting of OWL objects and nary-expression combination, used to normalize
+   class expressions before comparison, simplification, and NNF conversion.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.utils.ordering.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.utils.ordering.HasIndex
+   owlapy.utils.ordering.OrderedOWLObject
+   owlapy.utils.ordering.EvaluatedDescriptionSet
+   owlapy.utils.ordering.ConceptOperandSorter
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.utils.ordering.iter_count
+   owlapy.utils.ordering.as_index
+   owlapy.utils.ordering.combine_nary_expressions
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: iter_count(i: Iterable) -> int
+
+   Count the number of elements in an iterable.
+
+
+.. py:class:: HasIndex
+
+   Bases: :py:obj:`Protocol`
+
+
+   Interface for types with an index; this is used to group objects by type when sorting.
+
+
+   .. py:attribute:: type_index
+      :type:  ClassVar[int]
+
+
+   .. py:method:: __eq__(other)
+
+
+.. py:function:: as_index(o: owlapy.owl_object.OWLObject) -> HasIndex
+
+   Cast OWL Object to HasIndex.
+
+
+.. py:class:: OrderedOWLObject(o: _HasIndex)
+
+   Holder of OWL Objects that can be used for Python sorted.
+
+   The Ordering is dependent on the type_index of the impl. classes recursively followed by all components of the
+   OWL Object.
+
+   .. attribute:: o
+
+      OWL object.
+
+
+   .. py:attribute:: __slots__
+      :value: ('o', '_chain')
+
+
+
+   .. py:attribute:: o
+      :type:  _HasIndex
+
+
+   .. py:method:: __lt__(other)
+
+
+   .. py:method:: __eq__(other)
+
+
+.. py:class:: EvaluatedDescriptionSet(ordering: Callable[[_N], _O], max_size: int = 10)
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_N`\ , :py:obj:`_O`\ ]
+
+
+   Abstract base class for generic types.
+
+   A generic type is typically declared by inheriting from
+   this class parameterized with one or more type variables.
+   For example, a generic mapping type might be defined as::
+
+     class Mapping(Generic[KT, VT]):
+         def __getitem__(self, key: KT) -> VT:
+             ...
+         # Etc.
+
+   This class can then be used as follows::
+
+     def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -> VT:
+         try:
+             return mapping[key]
+         except KeyError:
+             return default
+
+
+   .. py:attribute:: __slots__
+      :value: ('items', '_max_size', '_Ordering')
+
+
+
+   .. py:attribute:: items
+      :type:  SortedSet[_N]
+
+
+   .. py:method:: maybe_add(node: _N)
+
+
+   .. py:method:: clean()
+
+
+   .. py:method:: worst()
+
+
+   .. py:method:: best()
+
+
+   .. py:method:: best_quality_value() -> float
+
+
+   .. py:method:: __iter__() -> Iterable[_N]
+
+
+.. py:class:: ConceptOperandSorter
+
+   .. py:method:: sort(o: _O) -> _O
+      :abstractmethod:
+
+
+
+.. py:function:: combine_nary_expressions(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+                 combine_nary_expressions(ce: owlapy.owl_data_ranges.OWLDataRange) -> owlapy.owl_data_ranges.OWLDataRange
+
+   Shortens an OWLClassExpression or OWLDataRange by combining all nested nary expressions of the same type.
+   Operands will be sorted.
+
+   E.g. OWLObjectUnionOf(A, OWLObjectUnionOf(C, B)) -> OWLObjectUnionOf(A, B, C).
+
+

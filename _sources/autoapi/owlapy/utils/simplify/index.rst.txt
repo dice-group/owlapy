@@ -1,0 +1,83 @@
+owlapy.utils.simplify
+=====================
+
+.. py:module:: owlapy.utils.simplify
+
+.. autoapi-nested-parse::
+
+   Syntactic simplification of OWLClassExpression (redundancy removal, factorization, absorption).
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   owlapy.utils.simplify.transformer
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   owlapy.utils.simplify.CESimplifier
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   owlapy.utils.simplify.get_remaining
+   owlapy.utils.simplify.factor_nary_expression
+   owlapy.utils.simplify.simplify_class_expression
+
+
+Module Contents
+---------------
+
+.. py:function:: get_remaining(original_set, common_part, type_b)
+
+   Used in factorization function 'factor_nary_expression'.
+
+
+.. py:function:: factor_nary_expression(expr: Union[owlapy.class_expression.OWLObjectIntersectionOf, owlapy.class_expression.OWLObjectUnionOf], transform_to_dnf_on_first_iteration=False)
+
+   Factor a common operand from a top-level Union (⊔) or Intersection (⊓) if possible. This
+   factorization takes into consideration only boolean construction. Restrictions are not considered (use CESimplifier)
+   for that.
+
+
+.. py:class:: CESimplifier
+
+   Simplifies OWLClassExpression by removing redundant operands and normalizing the structure.
+   Simplifications include:
+   - Merging redundant cardinality restrictions
+   - Merging redundant existential restrictions
+   - Normalizing union and intersection of class expressions
+   - Absorption of redundant class expressions
+   - Converting to negation normal form (NNF)
+   - and more...
+
+   Note: This simplifier follows Unique Name Assumption (UNA) meaning that every class/individual/property is
+   unique as long as its name is unique.
+
+
+   .. py:attribute:: sorter
+
+
+   .. py:method:: simplify(o: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+
+   .. py:method:: datatype_restriction_inwards_simplification(n)
+
+
+.. py:data:: transformer
+
+.. py:function:: simplify_class_expression(ce: owlapy.class_expression.OWLClassExpression) -> owlapy.class_expression.OWLClassExpression
+
+   Simplify a class expression by removing redundant expressions and sorting operands.
+
+
