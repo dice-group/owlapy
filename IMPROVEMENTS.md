@@ -152,6 +152,37 @@ effort estimates, and sequencing.
   `pydocstyle`/ruff `D` rule (currently only `E/W/F/I` are enabled in
   `pyproject.toml`) to prevent regressions.
 
+### 3.5 JPype/JVM dependency-boundary reference table — *from TGDK review*
+- **Where:** `markdown_docs/05_reasoning.md` (already has a reasoner
+  comparison table with closed/open-world semantics), README "Why OWLAPY?"
+  section.
+- **Why:** TGDK Reviewer 1 flagged that the JVM/JPype dependency's *scope*
+  (which components need Java, which don't) isn't characterized anywhere in
+  one place — reviewers had to infer it from scattered prose. A precise,
+  greppable table is the single cheapest change that answers "what do I lose
+  if I can't run a JVM?" for both reviewers and adopters evaluating the
+  library for JVM-averse deployments.
+- **Approach:** Add one table — component × JVM required? × semantics —
+  covering `RDFLibReasoner`/`RDFLibOntology` (no), legacy `StructuralReasoner`
+  (no), `NeuralOntology`/EBR (no), `SyncReasoner` + the OWLAPI mapper (yes).
+  Keep it next to the existing reasoner comparison table since the set of
+  components changes rarely; link it from the README's dependency section.
+
+### 3.6 OWLAPI ↔ OWLAPY feature-coverage matrix — *from TGDK review*
+- **Where:** `owlapy_mapper.py`, `markdown_docs/09_api_reference.md`.
+- **Why:** TGDK Reviewer 1 asked which OWLAPI features OWLAPY covers;
+  Reviewer 2 characterized the resource as an incremental mirror of OWLAPI
+  with no evidence either way. A coverage matrix turns a vague claim into a
+  checkable list, and documents known mapper gaps (literal-type mapping
+  raises `NotImplementedError` for unmapped datatypes at
+  `owlapi_mapper.py:198,301`) in one place instead of scattered exceptions
+  discovered only at runtime.
+- **Approach:** Enumerate OWLAPI axiom/class-expression/entity types and
+  cross-reference against owlapy's mapper; produce a checked-in Markdown
+  table. Consider a test asserting every `OWLAxiom` subtype has a mapper
+  round-trip test, so the table can't silently drift out of date as new
+  axiom types are added.
+
 ---
 
 ## 4. Missing Features / Enhancements
@@ -207,6 +238,66 @@ effort estimates, and sequencing.
   already-bound outer variables — add a leading no-op `FILTER(BOUND(?var))` to any
   such branch (two or more filters in the group works fine).
 
+### 4.5 Ontology-generation quality evaluation harness (`agen_kg`) — *from TGDK review*
+- **Where:** `owlapy/agen_kg/`, new `examples/agen_kg_eval.py` (or similar).
+- **Why:** TGDK Reviewer 3 pointed out that the GraphRAG-style
+  text-to-ontology pipeline is described but never evaluated — "not clear
+  ... if the generated ontologies can have good quality." This is currently
+  the single biggest evidence gap for that feature and the most likely
+  paper-rejection risk; it's also a real product gap since users have no way
+  to sanity-check pipeline output against a baseline today.
+- **Approach:** Run the pipeline over 1–2 small public gold-standard
+  KGs/texts, then report precision/recall/F1 of extracted entities/triples/
+  types against the gold ABox/TBox. Wire it into `examples/` as a runnable
+  script producing a table, so both the paper and README can cite real
+  numbers instead of a narrative claim.
+
+### 4.6 Multi-provider LLM example + test for `agen_kg` — *from TGDK review*
+- **Where:** `owlapy/agen_kg/agent.py` (`model="gpt-4o"` default,
+  `dspy.LM(model=f"openai/{model}", ...)`), `owlapy/agen_kg/helper.py`
+  (`configure_dspy` hardcodes `"openai/gpt-4o"`), `examples/`.
+- **Why:** TGDK Reviewer 2 read the pipeline as tied to one LLM vendor. In
+  reality `dspy.LM` is provider-agnostic, but every example and default
+  hardcodes an OpenAI model string, so the provider-agnostic claim is
+  currently unverified by anything runnable.
+- **Approach:** Add one example configuration plus an integration test
+  (skipped by default / requires an API key) that runs `agen_kg` against a
+  non-OpenAI `dspy.LM` backend (e.g. a local Ollama-hosted model or another
+  vendor supported by `litellm`), and document the swap in `markdown_docs/`.
+
+### 4.7 `NeuralOntology` (EBR) runtime/hardware benchmark — *from TGDK review*
+- **Where:** `examples/runtime_benchmark_results.py` (already benchmarks
+  `SyncReasoner`/`StructuralReasoner`/`RDFLibReasoner`), `owl_ontology.py`
+  `NeuralOntology`.
+- **Why:** TGDK Reviewer 2 asked for the hardware specification needed to
+  run the embedding-based reasoning path. There is currently no runtime or
+  hardware data for `NeuralOntology` anywhere, unlike the symbolic reasoners
+  which already have a published benchmark table.
+- **Approach:** Extend the existing benchmark script to include
+  `NeuralOntology` inference latency at a couple of embedding
+  dimensions/dataset sizes, on CPU and GPU (`device="cpu"`/`"gpu"`), and
+  report the numbers in the README/paper next to the existing reasoner
+  table.
+
+### 4.8 Close or document remaining ELK query-method gaps — *from TGDK review*
+- **Where:** `owl_reasoner.py` — `getDisjointClasses`,
+  `getDataPropertyDomains`, `getObjectPropertyDomains`/`Ranges`,
+  `getSubDataProperties`/`getSuperDataProperties`,
+  `getDifferentIndividuals`, `equivalentDataProperties` all raise
+  `NotImplementedError` when `reasoner_name == "ELK"`.
+- **Why:** These currently read as blanket owlapy gaps (raised during the
+  TGDK response's R1.2 answer), but some are genuine OWL EL profile
+  limitations that ELK itself cannot support by design (e.g. EL has no
+  disjointness), while others may be closable with a structural fallback.
+  Distinguishing the two turns a vague "not implemented" list into either a
+  documented, principled reasoner-profile limitation, or a real backlog item
+  — both are defensible in the paper, an unexplained gap list isn't.
+- **Approach:** Audit each `NotImplementedError` against the OWL EL profile
+  spec. For anything EL doesn't support, reword the message from "not yet
+  implemented" to an explicit "unsupported by the EL profile" and add it to
+  the reasoner comparison table in `markdown_docs/05_reasoning.md`. For
+  anything closable, implement it via a structural fallback.
+
 ---
 
 ## 5. Project Housekeeping
@@ -238,6 +329,20 @@ effort estimates, and sequencing.
 - **Approach:** Incrementally enable ruff `B` (bugbear), `UP` (pyupgrade), and
   `D` (docstrings) on a per-directory basis; ratchet mypy strictness as coverage
   allows. `py.typed` is already shipped (good — PEP 561 compliant).
+
+### 5.4 Independent-adoption tracking — *from TGDK review*
+- **Where:** README.md "Why OWLAPY?" section / new `markdown_docs/` page.
+- **Why:** TGDK Reviewers 1 and 2 both flagged that documented real-world
+  usage is currently limited to DICE-group-originated projects (Ontolearn,
+  DRILL, EvoLearner, CLIP). Citing genuinely independent adopters is the
+  single most effective lever for the paper's Impact score, and it's cheap
+  to start collecting now rather than scrambling right before a resubmission
+  deadline.
+- **Approach:** Check PyPI/GitHub's "Used by"/dependents graph and Google
+  Scholar citations of the owlapy paper/repo for usage outside
+  `dice-group`-owned repos. If none are found, consider lightweight outreach
+  (e.g. a GitHub Discussions "who's using owlapy?" thread, or a request in
+  the release notes) to surface adopters before the revision deadline.
 
 ---
 
@@ -276,6 +381,18 @@ Phased so each phase is independently shippable and low-risk first.
 ### Phase 5 — Features (scoped separately)
 14. Decimal/typed-literal support (4.1).
 15. Equivalence-set handling in `OWLHierarchy` (4.2).
+
+### Phase 6 — TGDK resubmission support (paper-driven, prioritize by revision deadline)
+16. JPype/JVM dependency-boundary table + OWLAPI feature-coverage matrix
+    (3.5, 3.6) — cheapest, highest-leverage for reviewer concerns; do first.
+17. Independent-adoption search/outreach (5.4) — start immediately, it's the
+    slowest-turnaround item (depends on external response).
+18. `agen_kg` evaluation harness (4.5) — addresses the most substantive
+    quality gap raised (R3).
+19. `NeuralOntology` CPU/GPU benchmark (4.7) and multi-provider LLM example
+    (4.6) — answers R2's "missing technical detail" points with runnable
+    evidence rather than prose.
+20. ELK gap audit (4.8) — smaller, do if time allows before the deadline.
 
 ### Cross-cutting rules
 - Every change runs `ruff check owlapy --line-length=200` and the pytest suite
