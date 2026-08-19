@@ -2,11 +2,13 @@
 paths:
   - "owlapy/owl_reasoner.py"
   - "owlapy/owl_reasoner_rdflib.py"
+  - "owlapy/parallel_reasoner.py"
   - "owlapy/static_funcs.py"
   - "tests/test_owlapy_structural_reasoner.py"
   - "tests/test_sync_reasoner.py"
   - "tests/test_rdflib_reasoner*.py"
   - "tests/test_reasoner_*.py"
+  - "tests/test_parallel_reasoner.py"
   - "tests/test_ontology_justification.py"
 ---
 
@@ -19,6 +21,7 @@ paths:
 | `SyncReasoner("HermiT"\|"Pellet"\|"JFact"\|"Openllet"\|"Structural")` | `owlapy.owl_reasoner.SyncReasoner` | Java/OWLAPI | Complete DL reasoning |
 | `SyncReasoner("ELK")` | same | Java/OWLAPI | EL fragment only, very fast, no universals/nominals/inverses |
 | `EBR` | `owlapy.owl_reasoner.EBR` | `dicee`/PyTorch (pure Python) | Neural embedding-based instance prediction, not DL-complete; needs a `NeuralOntology` (pretrained KGE model) |
+| `ParallelReasoner` | `owlapy.parallel_reasoner.ParallelReasoner` | Java/OWLAPI, multiprocessing | Fans out `instances()` across a process pool wrapping any `SyncReasoner` backend. `direct=False` only |
 
 ## RDFLibReasoner (no JVM, no owlready2 — preferred)
 
@@ -77,6 +80,24 @@ reasoner = EBR(ontology=neural_onto)
 predicted = set(reasoner.instances(OWLClass("http://example.com/father#male")))  # score-thresholded by gamma (default 0.5)
 predictions = reasoner.predict(h=["http://example.com/father#john"], r=None, t=None)  # raw (h, r, t) predictions w/ scores
 ```
+
+## ParallelReasoner (Java, multiprocessing, no ontology partitioning)
+
+```python
+from owlapy.parallel_reasoner import ParallelReasoner
+
+with ParallelReasoner("KGs/Family/father.owl", reasoner="Pellet", num_workers=8) as pr:
+    result = pr.instances(ce)  # set[OWLNamedIndividual]
+```
+
+Each worker process loads the full, unpartitioned ontology and starts its own JVM +
+`SyncReasoner`. `KB |= ce(a)` is checked per individual (via `is_entailed` on a
+`ClassAssertionAxiom`) and results are unioned, so the answer is identical to a
+single-process `SyncReasoner.instances(ce, direct=False)` call -- just computed
+concurrently. `direct=True` raises `NotImplementedError` (a "direct" instance requires
+comparing against every other candidate type, which isn't a single entailment check).
+No `stopJVM()` call needed in the caller's process -- each worker tears down its own
+JVM on exit; call `.close()` (or exit the `with` block) to shut the pool down.
 
 ## Ontology Enrichment
 

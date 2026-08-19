@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `owlapy.parallel_reasoner.ParallelReasoner`: parallel open-world class-expression retrieval that fans `instances()` out across a pool of OS processes, each loading the full (unpartitioned) ontology and running its own JVM + `SyncReasoner` backend -- any name `SyncReasoner` accepts (`HermiT`, `Pellet`, `JFact`, `Openllet`, `ELK`, `Structural`), not just Pellet. Instance membership is checked independently per individual and results are unioned, giving results identical to a single-process `SyncReasoner.instances(ce, direct=False)` call. `direct=True` is not supported and raises `NotImplementedError`.
+
 ## [1.6.6] - 2026-08-05
 
 ### Added

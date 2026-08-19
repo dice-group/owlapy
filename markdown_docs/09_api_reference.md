@@ -225,6 +225,26 @@ stopJVM()
 - `create_laconic_axiom_justifications(axiom, ...) -> List[Set[OWLAxiom]]` - Same, but each justification is minimized/laconic
 - `infer_axioms_and_save(output_path, output_format=None, inference_types=[...])` - Materialize inferred axioms (e.g. `["InferredClassAssertionAxiomGenerator"]`) and save them
 
+### `ParallelReasoner`
+
+Fans out `instances()` retrieval for one (unpartitioned) ontology across a pool of OS
+processes, each running its own JVM and its own Java-backed `SyncReasoner` -- any name
+`SyncReasoner` accepts ("HermiT", "Pellet", "JFact", "Openllet", "ELK", "Structural"),
+not just Pellet. Instance checking is independent per individual, so results are
+identical to a single-process `SyncReasoner.instances(ce)` call, just computed
+concurrently. Only `direct=False` retrieval is supported.
+
+```python
+from owlapy.parallel_reasoner import ParallelReasoner
+
+with ParallelReasoner("onto.owl", reasoner="Pellet", num_workers=8) as pr:
+    result = pr.instances(ce)  # set[OWLNamedIndividual], identical to SyncReasoner's
+```
+
+Reuse one `ParallelReasoner` across multiple `instances()` calls -- the worker pool
+(and each worker's JVM + loaded reasoner) starts on first use and is kept alive, so
+only the first call pays per-worker JVM startup/classification cost.
+
 ### `EBR` (Embedding-Based Reasoner)
 
 Neural, embedding-based reasoner: predicts class membership/relations from a pretrained knowledge
