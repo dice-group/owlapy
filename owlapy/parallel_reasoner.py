@@ -57,11 +57,21 @@ def _teardown_worker() -> None:
 
 def _check_individual(args) -> Optional[str]:
     """Runs in the worker process. Returns the individual's IRI string if the
-    worker's KB entails ce(individual), else None."""
+    worker's KB entails ce(individual), else None.
+
+    Unlike `SyncReasoner.instances()` (which swallows a Java-level timeout and
+    returns an empty set), `SyncReasoner.is_entailed()` raises `TimeoutError` on
+    timeout. A single slow individual must not abort the whole retrieval, so a
+    per-individual timeout is treated the same way `instances()` treats a global
+    one: that individual is excluded rather than the exception propagating.
+    """
     ce, individual_iri, timeout = args
     from owlapy.owl_axiom import OWLClassAssertionAxiom
     axiom = OWLClassAssertionAxiom(OWLNamedIndividual(individual_iri), ce)
-    return individual_iri if _worker_reasoner.is_entailed(axiom, timeout=timeout) else None
+    try:
+        return individual_iri if _worker_reasoner.is_entailed(axiom, timeout=timeout) else None
+    except TimeoutError:
+        return None
 
 
 class ParallelReasoner:

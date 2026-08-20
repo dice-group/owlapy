@@ -245,6 +245,13 @@ Reuse one `ParallelReasoner` across multiple `instances()` calls -- the worker p
 (and each worker's JVM + loaded reasoner) starts on first use and is kept alive, so
 only the first call pays per-worker JVM startup/classification cost.
 
+**Not a default-faster option.** Benchmarks in `benchmarks/parallel_reasoner/` found it
+*slower* than `SyncReasoner.instances()` in most tested (ontology, reasoner) combinations --
+up to 670x slower on a 14K-individual ABox with Pellet -- because bulk `getInstances()`
+already reuses shared reasoning work across individuals that per-individual `is_entailed()`
+checks throw away. It only won on a small ABox with HermiT. Profile before choosing it over
+`SyncReasoner`.
+
 ### `EBR` (Embedding-Based Reasoner)
 
 Neural, embedding-based reasoner: predicts class membership/relations from a pretrained knowledge

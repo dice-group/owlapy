@@ -69,6 +69,15 @@ class TestParallelReasoner(unittest.TestCase):
             result = pr.instances(male, individuals=[])
         self.assertEqual(result, set())
 
+    def test_per_individual_timeout_excludes_rather_than_raises(self):
+        # A timeout of 0s forces SyncReasoner.is_entailed() to raise TimeoutError on
+        # (almost) every individual inside the worker; ParallelReasoner must swallow
+        # that per-individual and return a (conservative, possibly empty) result
+        # instead of letting the exception propagate out of instances().
+        with ParallelReasoner(PATH, reasoner="HermiT", num_workers=2) as pr:
+            result = pr.instances(male, timeout=0)
+        self.assertEqual(result, set())
+
 
 if __name__ == "__main__":
     unittest.main()

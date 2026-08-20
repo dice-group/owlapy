@@ -99,6 +99,18 @@ comparing against every other candidate type, which isn't a single entailment ch
 No `stopJVM()` call needed in the caller's process -- each worker tears down its own
 JVM on exit; call `.close()` (or exit the `with` block) to shut the pool down.
 
+**Performance: do not reach for this by default.** Benchmarked in `benchmarks/parallel_reasoner/`
+(100 generated complex-DL expressions per dataset, HermiT + Pellet, small + large ABox): it was
+*slower* than plain `SyncReasoner.instances()` in 3 of 4 tested configurations -- up to 670x
+slower on a 14K-individual ABox with Pellet -- because Pellet/HermiT's bulk `getInstances()`
+already reuses shared internal structure (classified TBox, completion-graph state) across
+individuals far more efficiently than N independent `is_entailed()` calls can, and per-worker
+parallelism didn't come close to closing that gap. It only won (1.33x) on a small ABox (~200
+individuals) with HermiT specifically, where bulk retrieval happened to be inefficient enough
+relative to per-individual checking that decomposition was already a sequential win before
+parallelism was applied. Profile your specific (ontology, reasoner) pair before using this in
+place of `SyncReasoner`; see the benchmark report for the full results and root-cause analysis.
+
 ## Ontology Enrichment
 
 ```python

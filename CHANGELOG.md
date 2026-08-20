@@ -8,7 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `owlapy.parallel_reasoner.ParallelReasoner`: parallel open-world class-expression retrieval that fans `instances()` out across a pool of OS processes, each loading the full (unpartitioned) ontology and running its own JVM + `SyncReasoner` backend -- any name `SyncReasoner` accepts (`HermiT`, `Pellet`, `JFact`, `Openllet`, `ELK`, `Structural`), not just Pellet. Instance membership is checked independently per individual and results are unioned, giving results identical to a single-process `SyncReasoner.instances(ce, direct=False)` call. `direct=True` is not supported and raises `NotImplementedError`.
+- `owlapy.parallel_reasoner.ParallelReasoner`: parallel open-world class-expression retrieval that fans `instances()` out across a pool of OS processes, each loading the full (unpartitioned) ontology and running its own JVM + `SyncReasoner` backend -- any name `SyncReasoner` accepts (`HermiT`, `Pellet`, `JFact`, `Openllet`, `ELK`, `Structural`), not just Pellet. Instance membership is checked independently per individual and results are unioned, giving results identical to a single-process `SyncReasoner.instances(ce, direct=False)` call. `direct=True` is not supported and raises `NotImplementedError`. Benchmarked in `benchmarks/parallel_reasoner/` against 100 generated complex-DL expressions per dataset across HermiT/Pellet and small/large ABoxes: correctness matched `SyncReasoner` in every non-timeout-affected comparison, but it was *slower* than `SyncReasoner.instances()` in 3 of 4 tested configurations (up to 670x slower on a 14K-individual ABox with Pellet), since bulk `getInstances()` already reuses reasoning work across individuals that per-individual decomposition discards -- see the benchmark report for when (rarely) it actually helps.
+
+### Fixed
+- `ParallelReasoner.instances()` no longer crashes with an uncaught `TimeoutError` when a single individual's per-shard entailment check exceeds its timeout; `SyncReasoner.is_entailed()` raises on timeout (unlike `instances()`, which returns an empty set), and that exception is now caught per-individual and treated as "not entailed within budget," matching `instances()`'s own timeout behavior.
 
 ## [1.6.6] - 2026-08-05
 
