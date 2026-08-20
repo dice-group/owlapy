@@ -1,17 +1,31 @@
-# ParallelReasoner benchmark: does it actually help?
+# Parallel reasoning benchmarks: do these strategies actually help?
 
-`owlapy.parallel_reasoner.ParallelReasoner` (added alongside this benchmark) fans out
-open-world class-expression instance retrieval across a pool of OS processes, each running
-its own JVM + Java-backed reasoner (`HermiT`, `Pellet`, `JFact`, `Openllet`, `ELK`,
-`Structural`), by checking `KB |= ce(a)` independently per individual instead of one bulk
-`getInstances()` call. This directory measures whether that actually reduces wall-clock time,
-using 100 (or fewer, where documented) generated complex-DL class expressions per dataset,
-run through both `SyncReasoner` (baseline) and `ParallelReasoner` (parallel), with identical
-reused reasoner state on both sides so only the per-query cost is compared.
+`owlapy.parallel_reasoner` (added alongside this benchmark) implements two independent
+strategies for parallelizing open-world class-expression instance retrieval across a pool of
+OS processes, each running its own JVM + Java-backed reasoner (`HermiT`, `Pellet`, `JFact`,
+`Openllet`, `ELK`, `Structural`):
 
-**Headline result: it depends heavily on the reasoner and the ABox size, and in 3 of the 4
-tested configurations it made things *slower*, sometimes drastically.** See
-[Results](#results) and [Why](#why-bulk-retrieval-usually-wins) below.
+- **`ParallelReasoner`** parallelizes *within one query*, sharding the individuals it checks
+  membership for across workers (`KB |= ce(a)` independently per individual, instead of one
+  bulk `getInstances()` call). See [Part 1](#results).
+- **`BatchParallelReasoner`** parallelizes *across many different queries* against the same
+  ontology, dispatching each expression to a worker that runs its own full, un-decomposed bulk
+  call. See [Part 2](#part-2-batchparallelreasoner----parallelizing-across-queries-instead-of-individuals).
+
+This directory measures whether either actually reduces wall-clock time, using 100 (or fewer,
+where documented) generated complex-DL class expressions per dataset, run through both
+`SyncReasoner` (sequential baseline) and the parallel variant, with identical reused reasoner
+state on both sides so only the per-workload cost is compared.
+
+**Headline result: both strategies are conditional wins, not free lunches, and for different
+reasons.** Part 1 (individual-level) lost in 3 of 4 configurations, sometimes by orders of
+magnitude, because it discards reuse the reasoner's own bulk retrieval already does. Part 2
+(query-level) is a real, substantial win when the reasoner's bulk calls are individually
+expensive (2-5x, both datasets with HermiT), but a loss when they're already fast (Pellet,
+both datasets) because pool-startup and JVM-contention overhead isn't amortized. See both
+parts below for the numbers and the reasoning behind each pattern.
+
+### Part 1: `ParallelReasoner` (individual-level)
 
 | Dataset (individuals) | Reasoner | Speedup (total wall time, 100→30→10 expressions) |
 |---|---|---|
@@ -29,12 +43,16 @@ speed does not, except in one specific corner case.
 - `generate_expressions.py` -- builds a reproducible corpus of complex DL class expressions
   (intersection, union, complement, existential/universal, min/max/exact cardinality, nested
   up to depth 3) from a dataset's actual classes and object properties.
-- `run_benchmark.py` -- runs one (dataset, reasoner) combination: baseline `SyncReasoner`
-  then `ParallelReasoner`, one reused instance/pool per side, one CSV row per expression per
-  mode, written incrementally.
-- `analyze_results.py` -- aggregates CSVs into the summary table above.
+- `run_benchmark.py` -- Part 1: runs one (dataset, reasoner) combination, sequential
+  `SyncReasoner` vs `ParallelReasoner` (individual-level), one reused instance/pool per side,
+  one CSV row per expression per mode, written incrementally.
+- `run_batch_benchmark.py` -- Part 2: runs one (dataset, reasoner) combination, sequential
+  `SyncReasoner` vs `BatchParallelReasoner` (query-level, whole corpus dispatched in one
+  `instances_batch()` call).
+- `analyze_results.py` -- aggregates Part 1 CSVs into the Part 1 summary table.
 - `expressions/*.txt` -- the exact generated corpora used (Manchester syntax, one per line).
-- `results/*.csv` + `*.meta.json` -- raw per-expression timings and run metadata.
+- `results/*.csv` + `*.meta.json` -- raw per-expression timings and run metadata (`*_batch.csv`
+  for Part 2 runs).
 
 ## Reproducing this
 
@@ -69,9 +87,30 @@ python run_benchmark.py --ontology ../../KGs/Mutagenesis/mutagenesis.owl \
     --dataset mutagenesis --reasoner HermiT --out results/mutagenesis_hermit.csv \
     --timeout 30 --per-individual-timeout 1 --limit 10
 
-# 3. Summarize
+# 3. Summarize Part 1
 python analyze_results.py "results/*.csv"
+
+# 4. Part 2: BatchParallelReasoner vs sequential SyncReasoner, same corpora
+python run_batch_benchmark.py --ontology ../../KGs/Family/family-benchmark_rich_background.owl \
+    --namespace "http://www.benchmark.org/family#" --expressions expressions/family.txt \
+    --dataset family --reasoner Pellet --out results/family_pellet_batch.csv --timeout 30
+
+python run_batch_benchmark.py --ontology ../../KGs/Family/family-benchmark_rich_background.owl \
+    --namespace "http://www.benchmark.org/family#" --expressions expressions/family.txt \
+    --dataset family --reasoner HermiT --out results/family_hermit_batch.csv --timeout 30
+
+python run_batch_benchmark.py --ontology ../../KGs/Mutagenesis/mutagenesis.owl \
+    --namespace "http://dl-learner.org/mutagenesis#" --expressions expressions/mutagenesis.txt \
+    --dataset mutagenesis --reasoner Pellet --out results/mutagenesis_pellet_batch.csv --timeout 30
+
+python run_batch_benchmark.py --ontology ../../KGs/Mutagenesis/mutagenesis.owl \
+    --namespace "http://dl-learner.org/mutagenesis#" --expressions expressions/mutagenesis.txt \
+    --dataset mutagenesis --reasoner HermiT --out results/mutagenesis_hermit_batch.csv \
+    --timeout 30 --limit 10
 ```
+
+`run_batch_benchmark.py` prints its own sequential-vs-batch-parallel total and speedup at the
+end of each run (no separate analyze step needed for Part 2).
 
 `KGs/` is downloaded per the root `CLAUDE.md` instructions (`wget .../KGs.zip`), not
 checked into the repo.
@@ -227,27 +266,79 @@ themselves:
 
 ## Practical guidance
 
-Based on this data, **`ParallelReasoner` should not be reached for by default.** It is a
-plausible win only when you have independently confirmed that, for your specific
-(ontology, reasoner) pair, per-individual `is_entailed()` checking is already competitive
-with bulk `instances()` *before* adding parallelism -- which in this experiment was true for
-exactly one of four configurations (a small ABox with HermiT). For anything resembling a
-production-sized ABox (thousands of individuals), or for Pellet specifically (whose bulk
-realization is clearly well-optimized), `SyncReasoner.instances()` directly is very likely
-faster, sometimes by two to three orders of magnitude.
+- **`ParallelReasoner` (individual-level) should not be reached for by default.** It's a
+  plausible win only when you've independently confirmed that per-individual
+  `is_entailed()` checking is already competitive with bulk `instances()` *before* adding
+  parallelism -- true for exactly one of four configurations tested (a small ABox with
+  HermiT). For anything resembling a production-sized ABox, or for Pellet specifically,
+  `SyncReasoner.instances()` directly is very likely faster, sometimes by orders of magnitude.
+- **`BatchParallelReasoner` (query-level) is worth reaching for when you have many
+  independent queries and a reasoner whose bulk calls aren't already fast.** It won 2-5x with
+  HermiT on both datasets here, and lost with Pellet on both -- so profile a handful of
+  sequential bulk calls first: if they average well under ~100ms, sequential `SyncReasoner`
+  calls in a loop are very likely faster than paying to start a worker pool at all, regardless
+  of how many queries you have.
+- Both strategies pay a real, non-trivial worker-pool startup cost (JVM start + TBox
+  classification, per worker, done once when the pool is created) -- reuse one
+  `ParallelReasoner`/`BatchParallelReasoner` instance across as much of your workload as
+  possible rather than constructing a fresh one per call, and size `num_workers` to your
+  actual workload rather than always maxing out `os.cpu_count()`.
 
-## A more promising direction (not implemented/benchmarked here)
+## Part 2: `BatchParallelReasoner` -- parallelizing across queries instead of individuals
 
-The diagnosis above suggests a different parallelization axis is likely to actually work:
-**parallelize across *queries*, not across individuals.** A workload with many different
-candidate class expressions to evaluate against the same ontology (e.g. scoring refinement-
-operator candidates during concept learning -- squarely Ontolearn/DRILL's use case) is
-embarrassingly parallel at the query level without discarding any reasoner-internal reuse:
-dispatch each class expression to a different worker process, and have each worker run its
-own full, un-decomposed `SyncReasoner.instances(ce)` bulk call. Every worker still benefits
-from the reasoner's own realization optimizations; only the *set of queries*, not the ABox, is
-split across cores. This wasn't implemented or measured in this round (scope was "benchmark
-the existing `ParallelReasoner`"), but given that Family+Pellet's bulk calls average 10ms and
-Mutagenesis+Pellet's average 132ms, batching e.g. 100 *different* expressions across 22
-processes this way would plausibly deliver a real, close-to-N-fold speedup with none of the
-per-individual overhead documented here. Worth a follow-up benchmark.
+The diagnosis above ("bulk retrieval already reuses shared work across individuals, so
+decomposing one query throws that away") suggested a different axis should work better:
+**parallelize across *queries*, not across individuals.** `owlapy.parallel_reasoner.BatchParallelReasoner`
+implements this: each worker runs its own full, un-decomposed `SyncReasoner.instances(ce)`
+bulk call, but different workers are assigned *different* expressions from the same corpus,
+via `instances_batch(expressions)`. This preserves every reasoner's internal realization/reuse
+optimizations -- only the *set of queries*, not the ABox, is split across cores.
+
+```python
+from owlapy.parallel_reasoner import BatchParallelReasoner
+
+with BatchParallelReasoner("onto.owl", reasoner="Pellet", num_workers=22) as bpr:
+    results = bpr.instances_batch([ce1, ce2, ce3, ...])  # list[set[OWLNamedIndividual]], input order preserved
+```
+
+This was benchmarked the same way (`run_batch_benchmark.py`, same corpora, same environment):
+one `SyncReasoner` making 100 (or fewer, where documented) sequential bulk calls vs one
+`BatchParallelReasoner` pool dispatching that same corpus across 22 workers in a single
+`instances_batch()` call.
+
+| Dataset | Reasoner | N | Sequential total (s) | Batch-parallel total (s) | Speedup |
+|---|---|---|---|---|---|
+| Family (202 ind.) | Pellet | 100 | 1.781 | 10.932 | **0.16x** (slower) |
+| Family (202 ind.) | HermiT | 100 | 35.573 | 17.525 | **2.03x** |
+| Mutagenesis (14,145 ind.) | Pellet | 100 | 43.765 | 63.196 | **0.69x** (slower) |
+| Mutagenesis (14,145 ind.) | HermiT | 10 | 307.064 | 60.948 | **5.04x** |
+
+Correctness held here too: every `batch_parallel` result matched its `sequential` counterpart
+exactly, on every expression, in all four runs.
+
+**This is a genuinely mixed result, but a more legible one than Part 1's.** The pattern tracks
+directly with how expensive the reasoner's own bulk call is:
+
+- **HermiT (both datasets): a clear win (2-5x).** HermiT's bulk calls are slow enough (35.6s /
+  100 = 356ms mean on Family; each of the 10 Mutagenesis calls hit the 30s timeout) that the
+  22-way concurrency comfortably outweighs the fixed cost of starting 22 JVMs.
+  Mutagenesis+HermiT is the standout: 10 expressions across 22 workers means near-perfect
+  one-expression-per-worker scheduling, turning a 307s sequential sweep into 61s.
+- **Pellet (both datasets): a loss.** Pellet's bulk calls are so fast on their own (Family:
+  1.78s / 100 = 18ms mean; Mutagenesis: 43.8s / 100 = 438ms mean, pulled up by a handful of
+  slow nested-cardinality expressions) that they don't clear the pool-startup bar. Spinning up
+  22 fresh JVMs (each independently loading and classifying the ontology) took *longer than
+  the entire sequential sweep* on Family (10.9s of overhead vs 1.78s of actual work), and on
+  Mutagenesis the 100-query batch, spread unevenly across workers plus 22 CPU-heavy JVMs
+  contending for the same 22 physical cores, ended up slower than running them one after
+  another in a single process.
+
+So: unlike Part 1 (where the individual-decomposition axis lost almost everywhere), this axis
+*works, conditionally* -- it needs total sequential work to clearly exceed worker-pool startup
+cost, which in practice means either a slow reasoner (HermiT here) or a large enough batch of
+individually-nontrivial queries. For a fast bulk reasoner like Pellet on typical-sized corpora,
+plain sequential `SyncReasoner` calls remain faster than either parallelization strategy tested
+in this benchmark. A likely further win, not tested here: size `num_workers` to the batch size
+and expected per-query cost rather than always maxing out `os.cpu_count()` -- e.g. Family+Pellet
+would plausibly break even with far fewer workers, since 100 queries at 18ms each barely need
+concurrency at all, let alone 22-way.

@@ -12,7 +12,7 @@ from owlapy.class_expression import OWLClass, OWLObjectSomeValuesFrom
 from owlapy.iri import IRI
 from owlapy.owl_property import OWLObjectProperty
 from owlapy.owl_reasoner import SyncReasoner
-from owlapy.parallel_reasoner import ParallelReasoner
+from owlapy.parallel_reasoner import BatchParallelReasoner, ParallelReasoner
 
 NS = "http://example.com/father#"
 PATH = "KGs/Family/father.owl"
@@ -21,6 +21,7 @@ male = OWLClass(IRI(NS, "male"))
 female = OWLClass(IRI(NS, "female"))
 has_child = OWLObjectProperty(IRI(NS, "hasChild"))
 has_child_female = OWLObjectSomeValuesFrom(has_child, female)
+has_child_male = OWLObjectSomeValuesFrom(has_child, male)
 
 
 class TestParallelReasoner(unittest.TestCase):
@@ -77,6 +78,44 @@ class TestParallelReasoner(unittest.TestCase):
         with ParallelReasoner(PATH, reasoner="HermiT", num_workers=2) as pr:
             result = pr.instances(male, timeout=0)
         self.assertEqual(result, set())
+
+
+class TestBatchParallelReasoner(unittest.TestCase):
+
+    def test_matches_sync_reasoner_per_expression(self):
+        expressions = [male, female, has_child_female, has_child_male]
+        with BatchParallelReasoner(PATH, reasoner="Pellet", num_workers=2) as bpr:
+            batch_results = bpr.instances_batch(expressions)
+
+        sync_reasoner = SyncReasoner(ontology=PATH, reasoner="Pellet")
+        expected = [set(sync_reasoner.instances(ce)) for ce in expressions]
+        sync_reasoner.close()
+
+        self.assertEqual(batch_results, expected)
+        self.assertTrue(any(expected))  # sanity: not every expression is trivially empty
+
+    def test_result_order_matches_input_order(self):
+        expressions = [male, female]
+        with BatchParallelReasoner(PATH, reasoner="HermiT", num_workers=2) as bpr:
+            results = bpr.instances_batch(expressions)
+        self.assertEqual(len(results), 2)
+        self.assertTrue(results[0].isdisjoint(results[1]))  # male vs female instances
+
+    def test_invalid_reasoner_name_rejected_eagerly(self):
+        with self.assertRaises(AssertionError):
+            BatchParallelReasoner(PATH, reasoner="NotAReasoner")
+
+    def test_empty_expression_list_returns_empty_list_without_error(self):
+        with BatchParallelReasoner(PATH, reasoner="HermiT", num_workers=2) as bpr:
+            result = bpr.instances_batch([])
+        self.assertEqual(result, [])
+
+    def test_pool_reused_across_calls(self):
+        with BatchParallelReasoner(PATH, reasoner="HermiT", num_workers=2) as bpr:
+            first = bpr.instances_batch([male])
+            second = bpr.instances_batch([female])
+            self.assertIsNotNone(bpr._pool)
+        self.assertTrue(first[0].isdisjoint(second[0]))
 
 
 if __name__ == "__main__":

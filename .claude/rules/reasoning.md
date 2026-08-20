@@ -21,7 +21,8 @@ paths:
 | `SyncReasoner("HermiT"\|"Pellet"\|"JFact"\|"Openllet"\|"Structural")` | `owlapy.owl_reasoner.SyncReasoner` | Java/OWLAPI | Complete DL reasoning |
 | `SyncReasoner("ELK")` | same | Java/OWLAPI | EL fragment only, very fast, no universals/nominals/inverses |
 | `EBR` | `owlapy.owl_reasoner.EBR` | `dicee`/PyTorch (pure Python) | Neural embedding-based instance prediction, not DL-complete; needs a `NeuralOntology` (pretrained KGE model) |
-| `ParallelReasoner` | `owlapy.parallel_reasoner.ParallelReasoner` | Java/OWLAPI, multiprocessing | Fans out `instances()` across a process pool wrapping any `SyncReasoner` backend. `direct=False` only |
+| `ParallelReasoner` | `owlapy.parallel_reasoner.ParallelReasoner` | Java/OWLAPI, multiprocessing | Fans out one query's individuals across a process pool. `direct=False` only. Usually *slower* than `SyncReasoner` -- see caveat below |
+| `BatchParallelReasoner` | `owlapy.parallel_reasoner.BatchParallelReasoner` | Java/OWLAPI, multiprocessing | Fans out many *different* queries across a process pool, each running its own bulk call. Wins with slow-bulk-call reasoners (e.g. HermiT), loses with fast ones (e.g. Pellet) -- see caveat below |
 
 ## RDFLibReasoner (no JVM, no owlready2 — preferred)
 
@@ -110,6 +111,31 @@ individuals) with HermiT specifically, where bulk retrieval happened to be ineff
 relative to per-individual checking that decomposition was already a sequential win before
 parallelism was applied. Profile your specific (ontology, reasoner) pair before using this in
 place of `SyncReasoner`; see the benchmark report for the full results and root-cause analysis.
+
+## BatchParallelReasoner (Java, multiprocessing, parallel across queries not individuals)
+
+```python
+from owlapy.parallel_reasoner import BatchParallelReasoner
+
+with BatchParallelReasoner("KGs/Family/father.owl", reasoner="Pellet", num_workers=8) as bpr:
+    results = bpr.instances_batch([ce1, ce2, ce3])  # list[set[OWLNamedIndividual]], same order as input
+```
+
+Sibling to `ParallelReasoner`, same worker-pool lifecycle (own JVM + `SyncReasoner` per
+worker, lazy pool startup, `.close()`/context manager teardown), but parallelizes across the
+*query set* instead of one query's individuals: each worker runs its own full, un-decomposed
+`SyncReasoner.instances(ce)` bulk call for a different expression. A per-expression reasoner
+failure (e.g. a Java-internal reasoner bug) is caught and logged, returning an empty set for
+that expression rather than aborting the whole batch.
+
+**Performance: a real win, but only when the reasoner's bulk calls are individually expensive.**
+Benchmarked the same way as `ParallelReasoner` (`benchmarks/parallel_reasoner/`): 2.03x-5.04x
+faster than sequential `SyncReasoner` calls with HermiT (both a 202- and a 14K-individual
+ABox), but 0.16x-0.69x (i.e. *slower*) with Pellet on the same two datasets, because Pellet's
+bulk calls are already fast enough (tens to hundreds of ms) that starting 22 JVMs, plus
+resource contention among that many concurrently-reasoning JVMs, isn't amortized. Profile a
+handful of sequential bulk calls first -- well under ~100ms average means sequential
+`SyncReasoner` calls in a loop are very likely faster than either parallel strategy here.
 
 ## Ontology Enrichment
 

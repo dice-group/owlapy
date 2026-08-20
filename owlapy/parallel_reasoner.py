@@ -1,30 +1,36 @@
 """Parallel open-world class-expression retrieval, fanned out across OS processes.
 
-The knowledge base is *not* partitioned. Every worker process loads the same,
-complete ontology and starts its own JVM and its own Java-backed
-`SyncReasoner` (HermiT, Pellet, JFact, Openllet, ELK, or OWLAPI's
-"Structural" -- any name `SyncReasoner` accepts). Retrieval of Instances(ce)
-is embarrassingly parallel at the level of individuals: for a fixed KB,
-"KB |= ce(a)" for different individuals `a` are independent decision
-problems, so answers from any worker over any subset of individuals can be
-unioned freely. This gives identical (sound + complete) results to a single
-`SyncReasoner.instances(ce)` call, just computed concurrently -- it trades
-redundant per-worker JVM startup/TBox-classification cost for wall-clock
-throughput on the ABox side, so it pays off when the number of individuals
-being checked is large relative to that startup cost.
+Two different, independent parallelization axes live here -- see
+`benchmarks/parallel_reasoner/README.md` for the benchmark data behind why both exist:
 
-Not supported: `direct=True` instance retrieval. A "direct" instance is one
-whose *most specific* type is `ce`, which requires comparing against every
-other candidate type and isn't expressible as a single per-individual
-entailment check.
+- `ParallelReasoner`: parallelizes *within one query*, by sharding the individuals it
+  checks membership for across workers. Benchmarks showed this is usually a net loss
+  (up to 670x slower observed) because it discards the shared-work reuse that Pellet/
+  HermiT's own bulk `getInstances()` already does across individuals internally. It
+  only wins when that internal reuse is weak relative to per-individual overhead
+  (observed: a small ABox with HermiT).
+- `BatchParallelReasoner`: parallelizes *across many different queries* against the
+  same ontology, e.g. scoring many candidate class expressions during a concept-
+  learning refinement search. Each worker runs its own full, un-decomposed
+  `SyncReasoner.instances(ce)` bulk call per expression it's assigned, so every
+  worker keeps the reasoner's internal optimizations intact -- only the *set of
+  queries*, not the ABox, is split across cores.
+
+In both cases the knowledge base itself is not partitioned: every worker process loads
+the same, complete ontology and starts its own JVM and its own Java-backed
+`SyncReasoner` (HermiT, Pellet, JFact, Openllet, ELK, or OWLAPI's "Structural" -- any
+name `SyncReasoner` accepts).
 """
 import atexit
+import logging
 import multiprocessing as mp
 import os
-from typing import Iterable, Optional, Set
+from typing import Iterable, List, Optional, Set
 
 from owlapy.class_expression import OWLClassExpression
 from owlapy.owl_individual import OWLNamedIndividual
+
+logger = logging.getLogger(__name__)
 
 # Keep in sync with the reasoner names validated by owlapy.owl_reasoner.SyncReasoner.
 _VALID_REASONERS = ("HermiT", "Pellet", "ELK", "JFact", "Openllet", "Structural")
@@ -74,23 +80,12 @@ def _check_individual(args) -> Optional[str]:
         return None
 
 
-class ParallelReasoner:
-    """Fans out open-world instance retrieval for one ontology across a pool of
-    worker processes, each running its own copy of a Java-backed reasoner.
-
-    Reuse one `ParallelReasoner` across multiple `instances()` calls against
-    the same ontology: the worker pool (and each worker's JVM + loaded
-    reasoner) is started lazily on first use and kept alive, so only the
-    first call pays JVM startup cost per worker.
-
-    Example:
-        >>> with ParallelReasoner("KGs/Family/father.owl", reasoner="Pellet", num_workers=8) as pr:
-        ...     result = pr.instances(male_and_has_child)  # set[OWLNamedIndividual]
-
-    `num_workers` processes are started immediately once the pool is created
-    (not lazily per task), so size it to the workload you intend to run
-    through this instance rather than to a single call -- it defaults to
-    `os.cpu_count()`.
+class _PooledReasonerBase:
+    """Shared JVM-worker-pool lifecycle for `ParallelReasoner` and `BatchParallelReasoner`:
+    validates the reasoner name, lazily starts a `spawn`-context `multiprocessing.Pool`
+    where each worker runs `_init_worker` (its own JVM + `SyncReasoner`), and tears it
+    down via `close()`/context-manager/`__del__`. Subclasses add only the task-dispatch
+    method (`instances()` or `instances_batch()`) and the worker-side task function it uses.
     """
 
     def __init__(self, ontology_path: str, reasoner: str = "HermiT", num_workers: Optional[int] = None):
@@ -121,6 +116,47 @@ class ParallelReasoner:
                 initargs=(self.ontology_path, self.reasoner_name),
             )
         return self._pool
+
+    def close(self) -> None:
+        """Tear down the worker pool. Each worker's `atexit` hook closes its own
+        reasoner and shuts down its own JVM as that worker process exits."""
+        if self._pool is not None:
+            self._pool.close()
+            self._pool.join()
+            self._pool = None
+
+    def __enter__(self):
+        self._ensure_pool()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
+class ParallelReasoner(_PooledReasonerBase):
+    """Fans out open-world instance retrieval for one ontology across a pool of
+    worker processes, each running its own copy of a Java-backed reasoner.
+
+    Reuse one `ParallelReasoner` across multiple `instances()` calls against
+    the same ontology: the worker pool (and each worker's JVM + loaded
+    reasoner) is started lazily on first use and kept alive, so only the
+    first call pays JVM startup cost per worker.
+
+    Example:
+        >>> with ParallelReasoner("KGs/Family/father.owl", reasoner="Pellet", num_workers=8) as pr:
+        ...     result = pr.instances(male_and_has_child)  # set[OWLNamedIndividual]
+
+    `num_workers` processes are started immediately once the pool is created
+    (not lazily per task), so size it to the workload you intend to run
+    through this instance rather than to a single call -- it defaults to
+    `os.cpu_count()`.
+    """
 
     def instances(self, ce: OWLClassExpression, direct: bool = False, timeout: int = 1000,
                   individuals: Optional[Iterable[OWLNamedIndividual]] = None,
@@ -165,23 +201,79 @@ class ParallelReasoner:
                  if iri is not None}
         return {OWLNamedIndividual(iri) for iri in found}
 
-    def close(self) -> None:
-        """Tear down the worker pool. Each worker's `atexit` hook closes its own
-        reasoner and shuts down its own JVM as that worker process exits."""
-        if self._pool is not None:
-            self._pool.close()
-            self._pool.join()
-            self._pool = None
 
-    def __enter__(self) -> "ParallelReasoner":
-        self._ensure_pool()
-        return self
+def _run_expression(args):
+    """Runs in the worker process. Returns (index, iri_list_or_None, error_message_or_None).
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.close()
+    Unlike `_check_individual`, this calls `SyncReasoner.instances()` (bulk, per-worker,
+    un-decomposed) rather than `is_entailed()` per individual -- each task here is one
+    whole class-expression query, not one individual.
+    """
+    idx, ce, timeout = args
+    try:
+        result = sorted(i.str for i in _worker_reasoner.instances(ce, timeout=timeout))
+        return idx, result, None
+    except Exception as e:  # noqa: BLE001 -- a bad expression must not abort the whole batch
+        return idx, None, f"{type(e).__name__}: {e}"
 
-    def __del__(self):
-        try:
-            self.close()
-        except Exception:
-            pass
+
+class BatchParallelReasoner(_PooledReasonerBase):
+    """Fans out MANY DIFFERENT class-expression retrieval queries across a pool of worker
+    processes, each running its own JVM and its own copy of a Java-backed reasoner.
+
+    Unlike `ParallelReasoner` (which shards *one* query's individuals across workers,
+    and was found to usually be slower than the reasoner's own bulk retrieval -- see
+    `benchmarks/parallel_reasoner/README.md`), this shards the *query set*: each worker
+    runs its own full, un-decomposed `SyncReasoner.instances(ce)` call per expression it's
+    assigned. Every worker keeps the reasoner's internal realization/reuse optimizations
+    intact, so this should scale close to linearly with `num_workers` for a batch of
+    independent queries -- e.g. scoring many candidate concepts during a concept-learning
+    refinement search.
+
+    Example:
+        >>> with BatchParallelReasoner("KGs/Family/father.owl", reasoner="Pellet", num_workers=8) as bpr:
+        ...     results = bpr.instances_batch([ce1, ce2, ce3])  # list[set[OWLNamedIndividual]]
+
+    Reuse one `BatchParallelReasoner` across multiple `instances_batch()` calls against
+    the same ontology: the worker pool is started lazily on first use and kept alive, so
+    only the first call pays JVM startup cost per worker. `num_workers` processes are
+    started immediately once the pool is created (not lazily per task); it defaults to
+    `os.cpu_count()`.
+    """
+
+    def instances_batch(self, expressions: Iterable[OWLClassExpression],
+                         timeout: int = 1000, chunksize: Optional[int] = None) -> List[Set[OWLNamedIndividual]]:
+        """Retrieve Instances(ce) for every ce in `expressions`, one bulk call per
+        expression, dispatched across the worker pool.
+
+        Args:
+            expressions: The class expressions to retrieve instances of. `direct=False`
+                semantics throughout (same as `SyncReasoner.instances()`'s default).
+            timeout: Per-expression bulk-call timeout in seconds, forwarded to
+                `SyncReasoner.instances()`. Unlike `ParallelReasoner.instances()`'s
+                `timeout`, this bounds a whole query, not a single individual -- it means
+                the same thing here as it does for `SyncReasoner` directly.
+            chunksize: Expressions handed to a worker per IPC round-trip. The default (1)
+                favors load balancing across workers with uneven per-query cost.
+
+        Returns:
+            A list aligned with `expressions` (same order, same length): result[i] is the
+            instance set for expressions[i]. If a given expression's reasoning task raises
+            (a reasoner-internal error, not a timeout -- `SyncReasoner.instances()` itself
+            degrades to an empty set on timeout) that expression's slot is an empty set and
+            a warning is logged, rather than the whole batch aborting.
+        """
+        expressions = list(expressions)
+        if not expressions:
+            return []
+
+        pool = self._ensure_pool()
+        tasks = [(idx, ce, timeout) for idx, ce in enumerate(expressions)]
+        results: List[Optional[Set[OWLNamedIndividual]]] = [None] * len(expressions)
+        for idx, iris, err in pool.imap_unordered(_run_expression, tasks, chunksize=chunksize or 1):
+            if err is not None:
+                logger.warning(f"BatchParallelReasoner: expression {idx} ({expressions[idx]}) failed: {err}")
+                results[idx] = set()
+            else:
+                results[idx] = {OWLNamedIndividual(iri) for iri in iris}
+        return results

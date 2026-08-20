@@ -252,6 +252,26 @@ already reuses shared reasoning work across individuals that per-individual `is_
 checks throw away. It only won on a small ABox with HermiT. Profile before choosing it over
 `SyncReasoner`.
 
+### `BatchParallelReasoner`
+
+Sibling to `ParallelReasoner`: same worker-pool/JVM-per-worker lifecycle, but parallelizes
+across *many different* class-expression queries instead of one query's individuals. Each
+worker runs its own full, un-decomposed `SyncReasoner.instances(ce)` bulk call for a
+different expression from the batch, preserving the reasoner's own internal optimizations.
+
+```python
+from owlapy.parallel_reasoner import BatchParallelReasoner
+
+with BatchParallelReasoner("onto.owl", reasoner="Pellet", num_workers=8) as bpr:
+    results = bpr.instances_batch([ce1, ce2, ce3])  # list[set[OWLNamedIndividual]], input order preserved
+```
+
+**A conditional win.** Benchmarks in `benchmarks/parallel_reasoner/` found it 2.03x-5.04x
+faster than sequential `SyncReasoner` calls with HermiT (small and large ABox alike), but
+0.16x-0.69x (slower) with Pellet on the same datasets -- Pellet's bulk calls are fast enough
+already that starting a worker pool isn't amortized. Profile a handful of sequential bulk
+calls first: well under ~100ms average means sequential calls in a loop are likely faster.
+
 ### `EBR` (Embedding-Based Reasoner)
 
 Neural, embedding-based reasoner: predicts class membership/relations from a pretrained knowledge
