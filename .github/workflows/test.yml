@@ -38,7 +38,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           pip install coverage
-          coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x
+          coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py --ignore=tests/test_parallel_reasoner_benchmark_regression.py -p no:warnings -x
       - name: Generate coverage report
         run: |
           coverage report -m

@@ -28,15 +28,16 @@ ruff check owlapy --line-length=200
 ruff check owlapy --line-length=200 --fix --unsafe-fixes
 
 # Tests (download KGs.zip once, see below)
-PYTHONPATH=. pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings
+PYTHONPATH=. pytest --ignore=tests/test_z_do_last_ebr_retrieval.py --ignore=tests/test_parallel_reasoner_benchmark_regression.py -p no:warnings
 
 # Coverage
-coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py -p no:warnings -x
+coverage run -m pytest --ignore=tests/test_z_do_last_ebr_retrieval.py --ignore=tests/test_parallel_reasoner_benchmark_regression.py -p no:warnings -x
 coverage report -m
 ```
 
 - Test KGs (one-time): `wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip`
 - `tests/test_z_do_last_ebr_retrieval.py` is slow and excluded from the default run by convention (runs last, retrains embeddings)
+- `tests/test_parallel_reasoner_benchmark_regression.py` asserts a wall-clock speedup (BatchParallelReasoner vs sequential SyncReasoner with HermiT) and is excluded from the default run by convention -- CI runs on small, shared runners under `pytest -x`, where a timing assertion is too flaky to gate unrelated PRs on. Run explicitly: `PYTHONPATH=. pytest tests/test_parallel_reasoner_benchmark_regression.py -p no:warnings -v`
 - Test files: `tests/test_*.py`, functions `test_*` (pytest, `pythonpath = ["."]`, configured in `pyproject.toml`)
 - mypy config lives in `pyproject.toml` (`check_untyped_defs = true`, `disallow_untyped_defs = false` — gradual typing, tighten over time, don't relax)
 
