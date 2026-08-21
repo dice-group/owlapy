@@ -112,6 +112,52 @@ effort estimates, and sequencing.
   (`with SyncReasoner(...) as r:`) that guarantees teardown, reducing the
   boilerplate that CLAUDE.md currently warns about manually.
 
+### 2.4 Multi-process parallel reasoning — investigated, not a general win
+- **Status:** Investigated and benchmarked (2026-08) as
+  `owlapy.parallel_reasoner.ParallelReasoner`/`BatchParallelReasoner`, on branch
+  `feature/parallel-reasoner` (dice-group/owlapy#269, **closed without merging**).
+  Recorded here so the same approach isn't re-attempted without reading this first.
+- **What was tried:** Two independent multi-process strategies for parallelizing
+  `SyncReasoner.instances()` (open-world class-expression instance retrieval) across a
+  pool of OS processes, each running its own JVM + Java-backed reasoner, without
+  partitioning the ontology itself: (1) *individual-level* — shard the individuals
+  checked for membership across workers (`KB |= ce(a)` independently per individual via
+  `is_entailed`); (2) *query-level* — shard a *batch of different class expressions*
+  across workers, each running its own full bulk `instances()` call.
+- **Methodology:** 100 generated complex-DL class expressions (intersection, union,
+  complement, existential/universal, min/max/exact cardinality, nested to depth 3) per
+  dataset, HermiT and Pellet, on a small (Family, 202 individuals) and large
+  (Mutagenesis, 14,145 individuals) ABox. Correctness verified against sequential
+  `SyncReasoner` on every expression.
+- **Findings:** Correctness held throughout; only speed varied, and not favorably.
+  Individual-level sharding was *slower* than sequential in 3 of 4 configurations — up
+  to **670x slower** on the large ABox with Pellet — because bulk `getInstances()`
+  already reuses shared reasoning work across individuals (classified TBox,
+  completion-graph state) that per-individual decomposition throws away.
+  Query-level batching won 2.03x-5.04x with HermiT (both ABox sizes), but *lost*
+  (0.16x-0.69x) with Pellet on the same two datasets, since Pellet's bulk calls are
+  already fast enough that worker-pool startup (many concurrent JVMs) and resource
+  contention among them isn't amortized. Critically, even the *best* parallelized
+  HermiT time never approached plain sequential Pellet: on Family (100 expressions),
+  Pellet sequential took 1.78s vs. HermiT's best (query-level parallel) 17.53s — ~10x
+  slower despite HermiT's own 2x internal speedup from parallelizing. HermiT is only
+  "helped" by parallelism because it's much slower to begin with, not because
+  parallelism makes it competitive with Pellet.
+- **Conclusion:** For general-purpose speedup of OWL class-expression retrieval, plain
+  sequential `SyncReasoner.instances()` with Pellet beat both parallel strategies in
+  every configuration measured. The one narrow, real use case — many independent
+  queries against a reasoner whose bulk calls are individually expensive (e.g. a
+  HermiT-locked workload) — didn't justify the added library surface (two new classes,
+  a `multiprocessing`/JVM-per-worker lifecycle) for a project whose default
+  recommendation is already "use Pellet." Not pursued further. Full benchmark
+  methodology, scripts, and raw results are preserved in the closed PR
+  (dice-group/owlapy#269, branch `feature/parallel-reasoner`) if this needs revisiting.
+- **Approach if revisited:** Don't re-attempt individual-level sharding — the root
+  cause (reasoners already batch-optimize instance retrieval internally) is
+  structural, not an implementation bug. Query-level batching is the only strand worth
+  resuming, and only for a reasoner/workload combination where a handful of sequential
+  bulk calls already average comfortably over ~100ms each.
+
 ---
 
 ## 3. Documentation
