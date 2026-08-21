@@ -161,6 +161,18 @@ class OWLObjectCardinalityRestriction(OWLCardinalityRestriction[OWLClassExpressi
     @abstractmethod
     def __init__(self, cardinality: int, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
         super().__init__(cardinality, filler)
+        if not isinstance(cardinality, int) or cardinality < 0:
+            raise ValueError(
+                f"Expected 'cardinality' to be a non-negative integer, got {cardinality!r} instead."
+            )
+        if not isinstance(property, OWLObjectPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLObjectPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
+        if not isinstance(filler, OWLClassExpression):
+            raise TypeError(
+                f"Expected 'filler' to be an instance of OWLClassExpression, got {type(filler).__name__} instead ({filler!r})."
+            )
         self._property = property
 
     def get_property(self) -> OWLObjectPropertyExpression:

@@ -92,8 +92,10 @@ class OWLProperty(OWLPropertyExpression, OWLEntity):
         """
         if isinstance(iri, IRI):
             self._iri = iri
-        else:
+        elif isinstance(iri, str):
             self._iri = IRI.create(iri)
+        else:
+            raise TypeError(f"Expected iri to be an instance of IRI or str, got {type(iri).__name__} instead ({iri!r}).")
 
     @property
     def str(self) -> str:
@@ -163,6 +165,8 @@ class OWLObjectInverseOf(OWLObjectPropertyExpression):
         Args:
             property: The property of which the inverse will be returned.
         """
+        if not isinstance(property, OWLObjectProperty):
+            raise TypeError(f"Expected property to be an instance of OWLObjectProperty, got {type(property).__name__} instead ({property!r}).")
         self._inverse_property = property
 
     def get_inverse(self) -> OWLObjectProperty:

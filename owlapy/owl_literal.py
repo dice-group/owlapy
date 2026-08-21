@@ -170,6 +170,7 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
             elif type_ == GDayOWLDatatype:
                 return super().__new__(_OWLLiteralImplGDay)
             else:
+                # Non-listed datatypes or non-datatypes fall back to the generic literal implementation
                 return super().__new__(_OWLLiteralImpl)
         # If datatype not specified, find which literal type fits the value best
         if isinstance(value, bool):
@@ -932,7 +933,8 @@ class _OWLLiteralImpl(OWLLiteral):
     __slots__ = '_v', '_datatype'
 
     def __init__(self, v, type_: OWLDatatype):
-        assert isinstance(type_, OWLDatatype)
+        if not isinstance(type_, OWLDatatype):
+            raise TypeError(f"Expected OWLDatatype, got {type(type_).__name__} ({type_!r})")
         self._v = v
         self._datatype = type_
 
