@@ -115,6 +115,8 @@ class OWLDeclarationAxiom(OWLAxiom):
     _entity: OWLEntity
 
     def __init__(self, entity: OWLEntity, annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(entity, OWLEntity):
+            raise TypeError(f"Expected entity to be an instance of OWLEntity, got {type(entity).__name__} instead ({entity!r}).")
         self._entity = entity
         super().__init__(annotations=annotations)
 
@@ -147,6 +149,10 @@ class OWLDatatypeDefinitionAxiom(OWLLogicalAxiom):
 
     def __init__(self, datatype: OWLDatatype, datarange: OWLDataRange,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(datatype, OWLDatatype):
+            raise TypeError(f"Expected datatype to be an instance of OWLDatatype, got {type(datatype).__name__} instead ({datatype!r}).")
+        if not isinstance(datarange, OWLDataRange):
+            raise TypeError(f"Expected datarange to be an instance of OWLDataRange, got {type(datarange).__name__} instead ({datarange!r}).")
         self._datatype = datatype
         self._datarange = datarange
         super().__init__(annotations=annotations)
@@ -193,6 +199,11 @@ class OWLHasKeyAxiom(OWLLogicalAxiom, HasOperands[OWLPropertyExpression]):
 
     def __init__(self, class_expression: OWLClassExpression, property_expressions: List[OWLPropertyExpression],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(class_expression, OWLClassExpression):
+            raise TypeError(f"Expected class_expression to be an instance of OWLClassExpression, got {type(class_expression).__name__} instead ({class_expression!r}).")
+        for i, prop in enumerate(property_expressions):
+            if not isinstance(prop, OWLPropertyExpression):
+                raise TypeError(f"Expected all property_expressions to be instances of OWLPropertyExpression, got {type(prop).__name__} instead ({prop!r}) at index {i}.")
         self._class_expression = class_expression
         self._property_expressions = property_expressions
         super().__init__(annotations=annotations)
@@ -247,6 +258,11 @@ class OWLNaryClassAxiom(OWLClassAxiom, OWLNaryAxiom[OWLClassExpression], metacla
     @abstractmethod
     def __init__(self, class_expressions: List[OWLClassExpression],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        for i, ce in enumerate(class_expressions):
+            if not isinstance(ce, OWLClassExpression):
+                raise TypeError(f"Expected all class_expressions to be instances of OWLClassExpression, got {type(ce).__name__} instead ({ce!r}) at index {i}.")
+        if len(class_expressions) < 2:
+            raise ValueError(f"{type(self).__name__} requires at least two class expressions.")
         self._class_expressions = [*class_expressions]
         super().__init__(annotations=annotations)
 
@@ -338,6 +354,11 @@ class OWLNaryIndividualAxiom(OWLIndividualAxiom, OWLNaryAxiom[OWLIndividual], me
     @abstractmethod
     def __init__(self, individuals: List[OWLIndividual],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        for i, ind in enumerate(individuals):
+            if not isinstance(ind, OWLIndividual):
+                raise TypeError(f"Expected all individuals to be instances of OWLIndividual, got {type(ind).__name__} instead ({ind!r}) at index {i}.")
+        if len(individuals) < 2:
+            raise ValueError(f"{type(self).__name__} requires at least two individuals.")
         self._individuals = [*individuals]
         super().__init__(annotations=annotations)
 
@@ -406,6 +427,11 @@ class OWLNaryPropertyAxiom(Generic[_P], OWLPropertyAxiom, OWLNaryAxiom[_P], meta
 
     @abstractmethod
     def __init__(self, properties: List[_P], annotations: Optional[Iterable['OWLAnnotation']] = None):
+        for i, prop in enumerate(properties):
+            if not isinstance(prop, OWLPropertyExpression):
+                raise TypeError(f"Expected all properties to be instances of OWLPropertyExpression, got {type(prop).__name__} instead ({prop!r}) at index {i}.")
+        if len(properties) < 2:
+            raise ValueError(f"{type(self).__name__} requires at least two properties.")
         self._properties = [*properties]
         super().__init__(annotations=annotations)
 
@@ -449,6 +475,9 @@ class OWLEquivalentObjectPropertiesAxiom(OWLNaryPropertyAxiom[OWLObjectPropertyE
 
     def __init__(self, properties: List[OWLObjectPropertyExpression],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        for i, prop in enumerate(properties):
+            if not isinstance(prop, OWLObjectPropertyExpression):
+                raise TypeError(f"Expected all properties to be instances of OWLObjectPropertyExpression, got {type(prop).__name__} instead ({prop!r}) at index {i}.")
         super().__init__(properties=properties, annotations=annotations)
 
 
@@ -462,6 +491,9 @@ class OWLDisjointObjectPropertiesAxiom(OWLNaryPropertyAxiom[OWLObjectPropertyExp
 
     def __init__(self, properties: List[OWLObjectPropertyExpression],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        for i, prop in enumerate(properties):
+            if not isinstance(prop, OWLObjectPropertyExpression):
+                raise TypeError(f"Expected all properties to be instances of OWLObjectPropertyExpression, got {type(prop).__name__} instead ({prop!r}) at index {i}.")
         super().__init__(properties=properties, annotations=annotations)
 
 
@@ -479,6 +511,10 @@ class OWLInverseObjectPropertiesAxiom(OWLNaryPropertyAxiom[OWLObjectPropertyExpr
 
     def __init__(self, first: OWLObjectPropertyExpression, second: OWLObjectPropertyExpression,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(first, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected first to be an instance of OWLObjectPropertyExpression, got {type(first).__name__} instead ({first!r}).")
+        if not isinstance(second, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected second to be an instance of OWLObjectPropertyExpression, got {type(second).__name__} instead ({second!r}).")
         self._first = first
         self._second = second
         super().__init__(properties=[first, second], annotations=annotations)
@@ -514,6 +550,9 @@ class OWLEquivalentDataPropertiesAxiom(OWLNaryPropertyAxiom[OWLDataPropertyExpre
 
     def __init__(self, properties: List[OWLDataPropertyExpression],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        for i, prop in enumerate(properties):
+            if not isinstance(prop, OWLDataPropertyExpression):
+                raise TypeError(f"Expected all properties to be instances of OWLDataPropertyExpression, got {type(prop).__name__} instead ({prop!r}) at index {i}.")
         super().__init__(properties=properties, annotations=annotations)
 
 
@@ -527,6 +566,9 @@ class OWLDisjointDataPropertiesAxiom(OWLNaryPropertyAxiom[OWLDataPropertyExpress
 
     def __init__(self, properties: List[OWLDataPropertyExpression],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        for i, prop in enumerate(properties):
+            if not isinstance(prop, OWLDataPropertyExpression):
+                raise TypeError(f"Expected all properties to be instances of OWLDataPropertyExpression, got {type(prop).__name__} instead ({prop!r}) at index {i}.")
         super().__init__(properties=properties, annotations=annotations)
 
 
@@ -545,13 +587,17 @@ class OWLSubClassOfAxiom(OWLClassAxiom):
 
     def __init__(self, sub_class: OWLClassExpression, super_class: OWLClassExpression,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
-        """Get an equivalent classes axiom with specified operands and no annotations.
+        """Get a subclass axiom with specified operands and no annotations.
 
         Args:
             sub_class: The sub-class.
             super_class: The super class.
             annotations: Annotations.
         """
+        if not isinstance(sub_class, OWLClassExpression):
+            raise TypeError(f"Expected sub_class to be an instance of OWLClassExpression, got {type(sub_class).__name__} instead ({sub_class!r}).")
+        if not isinstance(super_class, OWLClassExpression):
+            raise TypeError(f"Expected super_class to be an instance of OWLClassExpression, got {type(super_class).__name__} instead ({super_class!r}).")
         self._sub_class = sub_class
         self._super_class = super_class
         super().__init__(annotations=annotations)
@@ -599,6 +645,11 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
 
     def __init__(self, cls_: OWLClass, class_expressions: List[OWLClassExpression],
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(cls_, OWLClass):
+            raise TypeError(f"Expected cls_ to be an instance of OWLClass, got {type(cls_).__name__} instead ({cls_!r}).")
+        for i, ce in enumerate(class_expressions):
+            if not isinstance(ce, OWLClassExpression):
+                raise TypeError(f"Expected all class_expressions to be instances of OWLClassExpression, got {type(ce).__name__} instead ({ce!r}) at index {i}.")
         self._cls = cls_
         self._class_expressions = class_expressions
         super().__init__(annotations=annotations)
@@ -648,6 +699,10 @@ class OWLClassAssertionAxiom(OWLIndividualAxiom):
             class_expression: The class the individual belongs to.
             annotations: Annotations.
         """
+        if not isinstance(individual, OWLIndividual):
+            raise TypeError(f"Expected individual to be an instance of OWLIndividual, got {type(individual).__name__} instead ({individual!r}).")
+        if not isinstance(class_expression, OWLClassExpression):
+            raise TypeError(f"Expected class_expression to be an instance of OWLClassExpression, got {type(class_expression).__name__} instead ({class_expression!r}).")
         self._individual = individual
         self._class_expression = class_expression
         super().__init__(annotations=annotations)
@@ -686,8 +741,10 @@ class OWLAnnotationProperty(OWLProperty):
         """
         if isinstance(iri, IRI):
             self._iri = iri
-        else:
+        elif isinstance(iri, str):
             self._iri = IRI.create(iri)
+        else:
+            raise TypeError(f"Expected iri to be an instance of IRI or str, got {type(iri).__name__} instead ({iri!r}).")
 
     @property
     def iri(self) -> IRI:
@@ -713,6 +770,10 @@ class OWLAnnotation(OWLObject):
             property: the annotation property.
             value: The annotation value.
         """
+        if not isinstance(property, OWLAnnotationProperty):
+            raise TypeError(f"Expected property to be an instance of OWLAnnotationProperty, got {type(property).__name__} instead ({property!r}).")
+        if not isinstance(value, OWLAnnotationValue):
+            raise TypeError(f"Expected value to be an instance of OWLAnnotationValue, got {type(value).__name__} instead ({value!r}).")
         self._property = property
         self._value = value
 
@@ -773,8 +834,10 @@ class OWLAnnotationAssertionAxiom(OWLAnnotationAxiom):
             subject: Subject.
             annotation: Annotation.
         """
-        assert isinstance(subject, OWLAnnotationSubject)
-        assert isinstance(annotation, OWLAnnotation)
+        if not isinstance(subject, OWLAnnotationSubject):
+            raise TypeError(f"Expected subject to be an instance of OWLAnnotationSubject, got {type(subject).__name__} instead ({subject!r}).")
+        if not isinstance(annotation, OWLAnnotation):
+            raise TypeError(f"Expected annotation to be an instance of OWLAnnotation, got {type(annotation).__name__} instead ({annotation!r}).")
         super().__init__(annotations)
         self._subject = subject
         self._annotation = annotation
@@ -826,6 +889,10 @@ class OWLSubAnnotationPropertyOfAxiom(OWLAnnotationAxiom):
 
     def __init__(self, sub_property: OWLAnnotationProperty, super_property: OWLAnnotationProperty,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(sub_property, OWLAnnotationProperty):
+            raise TypeError(f"Expected sub_property to be an instance of OWLAnnotationProperty, got {type(sub_property).__name__} instead ({sub_property!r}).")
+        if not isinstance(super_property, OWLAnnotationProperty):
+            raise TypeError(f"Expected super_property to be an instance of OWLAnnotationProperty, got {type(super_property).__name__} instead ({super_property!r}).")
         self._sub_property = sub_property
         self._super_property = super_property
         super().__init__(annotations=annotations)
@@ -862,6 +929,10 @@ class OWLAnnotationPropertyDomainAxiom(OWLAnnotationAxiom):
 
     def __init__(self, property_: OWLAnnotationProperty, domain: IRI,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(property_, OWLAnnotationProperty):
+            raise TypeError(f"Expected property_ to be an instance of OWLAnnotationProperty, got {type(property_).__name__} instead ({property_!r}).")
+        if not isinstance(domain, IRI):
+            raise TypeError(f"Expected domain to be an instance of IRI, got {type(domain).__name__} instead ({domain!r}).")
         self._property = property_
         self._domain = domain
         super().__init__(annotations=annotations)
@@ -898,6 +969,10 @@ class OWLAnnotationPropertyRangeAxiom(OWLAnnotationAxiom):
 
     def __init__(self, property_: OWLAnnotationProperty, range_: IRI,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(property_, OWLAnnotationProperty):
+            raise TypeError(f"Expected property_ to be an instance of OWLAnnotationProperty, got {type(property_).__name__} instead ({property_!r}).")
+        if not isinstance(range_, IRI):
+            raise TypeError(f"Expected range_ to be an instance of IRI, got {type(range_).__name__} instead ({range_!r}).")
         self._property = property_
         self._range = range_
         super().__init__(annotations=annotations)
@@ -971,6 +1046,10 @@ class OWLSubObjectPropertyOfAxiom(OWLSubPropertyAxiom[OWLObjectPropertyExpressio
 
     def __init__(self, sub_property: OWLObjectPropertyExpression, super_property: OWLObjectPropertyExpression,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(sub_property, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected sub_property to be an instance of OWLObjectPropertyExpression, got {type(sub_property).__name__} instead ({sub_property!r}).")
+        if not isinstance(super_property, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected super_property to be an instance of OWLObjectPropertyExpression, got {type(super_property).__name__} instead ({super_property!r}).")
         super().__init__(sub_property=sub_property, super_property=super_property, annotations=annotations)
 
 
@@ -984,6 +1063,10 @@ class OWLSubDataPropertyOfAxiom(OWLSubPropertyAxiom[OWLDataPropertyExpression], 
 
     def __init__(self, sub_property: OWLDataPropertyExpression, super_property: OWLDataPropertyExpression,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(sub_property, OWLDataPropertyExpression):
+            raise TypeError(f"Expected sub_property to be an instance of OWLDataPropertyExpression, got {type(sub_property).__name__} instead ({sub_property!r}).")
+        if not isinstance(super_property, OWLDataPropertyExpression):
+            raise TypeError(f"Expected super_property to be an instance of OWLDataPropertyExpression, got {type(super_property).__name__} instead ({super_property!r}).")
         super().__init__(sub_property=sub_property, super_property=super_property, annotations=annotations)
 
 
@@ -1005,8 +1088,8 @@ class OWLPropertyAssertionAxiom(Generic[_P, _C], OWLIndividualAxiom, metaclass=A
             object_: The object of the property assertion.
             annotations: Annotations.
         """
-        assert isinstance(subject, OWLIndividual)
-
+        if not isinstance(subject, OWLIndividual):
+            raise TypeError(f"Expected subject to be an instance of OWLIndividual, got {type(subject).__name__} instead ({subject!r}).")
         self._subject = subject
         self._property = property_
         self._object = object_
@@ -1045,6 +1128,12 @@ class OWLObjectPropertyAssertionAxiom(OWLPropertyAssertionAxiom[OWLObjectPropert
 
     def __init__(self, subject: OWLIndividual, property_: OWLObjectPropertyExpression, object_: OWLIndividual,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(subject, OWLIndividual):
+            raise TypeError(f"Expected subject to be an instance of OWLIndividual, got {type(subject).__name__} instead ({subject!r}).")
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
+        if not isinstance(object_, OWLIndividual):
+            raise TypeError(f"Expected object_ to be an instance of OWLIndividual, got {type(object_).__name__} instead ({object_!r}).")
         super().__init__(subject, property_, object_, annotations)
 
 
@@ -1058,6 +1147,12 @@ class OWLNegativeObjectPropertyAssertionAxiom(OWLPropertyAssertionAxiom[OWLObjec
 
     def __init__(self, subject: OWLIndividual, property_: OWLObjectPropertyExpression, object_: OWLIndividual,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(subject, OWLIndividual):
+            raise TypeError(f"Expected subject to be an instance of OWLIndividual, got {type(subject).__name__} instead ({subject!r}).")
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
+        if not isinstance(object_, OWLIndividual):
+            raise TypeError(f"Expected object_ to be an instance of OWLIndividual, got {type(object_).__name__} instead ({object_!r}).")
         super().__init__(subject, property_, object_, annotations)
 
 
@@ -1071,9 +1166,12 @@ class OWLDataPropertyAssertionAxiom(OWLPropertyAssertionAxiom[OWLDataPropertyExp
 
     def __init__(self, subject: OWLIndividual, property_: OWLDataPropertyExpression, object_: OWLLiteral,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
-        assert isinstance(subject,OWLIndividual), f"subject must be an OWLIndividual. Currently, {subject} of {type(subject)}"
-        assert isinstance(property_,OWLDataPropertyExpression), f"property_ must be an OWLDataPropertyExpression. Currently, {type(property_)}"
-        assert isinstance(object_,OWLLiteral), f"object_ must be an OWLLiteral. Currently, {type(object_)}"
+        if not isinstance(subject, OWLIndividual):
+            raise TypeError(f"Expected subject to be an instance of OWLIndividual, got {type(subject).__name__} instead ({subject!r}).")
+        if not isinstance(property_, OWLDataPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLDataPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
+        if not isinstance(object_, OWLLiteral):
+            raise TypeError(f"Expected object_ to be an instance of OWLLiteral, got {type(object_).__name__} instead ({object_!r}).")
         super().__init__(subject, property_, object_, annotations)
 
 
@@ -1087,6 +1185,12 @@ class OWLNegativeDataPropertyAssertionAxiom(OWLPropertyAssertionAxiom[OWLDataPro
 
     def __init__(self, subject: OWLIndividual, property_: OWLDataPropertyExpression, object_: OWLLiteral,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
+        if not isinstance(subject, OWLIndividual):
+            raise TypeError(f"Expected subject to be an instance of OWLIndividual, got {type(subject).__name__} instead ({subject!r}).")
+        if not isinstance(property_, OWLDataPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLDataPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
+        if not isinstance(object_, OWLLiteral):
+            raise TypeError(f"Expected object_ to be an instance of OWLLiteral, got {type(object_).__name__} instead ({object_!r}).")
         super().__init__(subject, property_, object_, annotations)
 
 
@@ -1111,6 +1215,8 @@ class OWLObjectPropertyCharacteristicAxiom(OWLUnaryPropertyAxiom[OWLObjectProper
 
     @abstractmethod
     def __init__(self, property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
     def __eq__(self, other):
@@ -1134,6 +1240,8 @@ class OWLFunctionalObjectPropertyAxiom(OWLObjectPropertyCharacteristicAxiom):
     __slots__ = ()
 
     def __init__(self, property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
 
@@ -1146,6 +1254,8 @@ class OWLAsymmetricObjectPropertyAxiom(OWLObjectPropertyCharacteristicAxiom):
     __slots__ = ()
 
     def __init__(self, property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
 
@@ -1159,6 +1269,8 @@ class OWLInverseFunctionalObjectPropertyAxiom(OWLObjectPropertyCharacteristicAxi
     __slots__ = ()
 
     def __init__(self, property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
 
@@ -1172,6 +1284,8 @@ class OWLIrreflexiveObjectPropertyAxiom(OWLObjectPropertyCharacteristicAxiom):
     __slots__ = ()
 
     def __init__(self, property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
 
@@ -1185,6 +1299,8 @@ class OWLReflexiveObjectPropertyAxiom(OWLObjectPropertyCharacteristicAxiom):
     __slots__ = ()
 
     def __init__(self, property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
 
@@ -1200,6 +1316,8 @@ class OWLSymmetricObjectPropertyAxiom(OWLObjectPropertyCharacteristicAxiom):
     __slots__ = ()
 
     def __init__(self, property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
 
@@ -1215,6 +1333,8 @@ class OWLTransitiveObjectPropertyAxiom(OWLObjectPropertyCharacteristicAxiom):
     __slots__ = ()
 
     def __init__(self, property_: OWLObjectPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
 
@@ -1225,6 +1345,8 @@ class OWLDataPropertyCharacteristicAxiom(OWLUnaryPropertyAxiom[OWLDataPropertyEx
 
     @abstractmethod
     def __init__(self, property_: OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLDataPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLDataPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
     def __eq__(self, other):
@@ -1246,11 +1368,13 @@ class OWLFunctionalDataPropertyAxiom(OWLDataPropertyCharacteristicAxiom):
     y. Each such axiom can be seen as a syntactic shortcut for the following axiom:
     SubClassOf( owl:Thing DataMaxCardinality( 1 DPE ) )
 
-    (https://www.w3.org/TR/owl2-syntax/#Transitive_Object_Properties)
+    (https://www.w3.org/TR/owl2-syntax/#Functional_Data_Properties)
     """
     __slots__ = ()
 
     def __init__(self, property_: OWLDataPropertyExpression, annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLDataPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLDataPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
         super().__init__(property_=property_, annotations=annotations)
 
 
@@ -1263,6 +1387,8 @@ class OWLPropertyDomainAxiom(Generic[_P], OWLUnaryPropertyAxiom[_P], metaclass=A
     @abstractmethod
     def __init__(self, property_: _P, domain: OWLClassExpression,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(domain, OWLClassExpression):
+            raise TypeError(f"Expected domain to be an instance of OWLClassExpression, got {type(domain).__name__} instead ({domain!r}).")
         self._domain = domain
         super().__init__(property_=property_, annotations=annotations)
 
@@ -1330,6 +1456,9 @@ class OWLObjectPropertyDomainAxiom(OWLPropertyDomainAxiom[OWLObjectPropertyExpre
 
     def __init__(self, property_: OWLObjectPropertyExpression, domain: OWLClassExpression,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
+        # Domain check is already done in the parent class OWLPropertyDomainAxiom
         super().__init__(property_=property_, domain=domain, annotations=annotations)
 
     @property
@@ -1350,6 +1479,9 @@ class OWLDataPropertyDomainAxiom(OWLPropertyDomainAxiom[OWLDataPropertyExpressio
 
     def __init__(self, property_: OWLDataPropertyExpression, domain: OWLClassExpression,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLDataPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLDataPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
+        # Domain check is already done in the parent class OWLPropertyDomainAxiom
         super().__init__(property_=property_, domain=domain, annotations=annotations)
 
 
@@ -1365,6 +1497,10 @@ class OWLObjectPropertyRangeAxiom(OWLPropertyRangeAxiom[OWLObjectPropertyExpress
 
     def __init__(self, property_: OWLObjectPropertyExpression, range_: OWLClassExpression,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLObjectPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
+        if not isinstance(range_, OWLClassExpression):
+            raise TypeError(f"Expected range_ to be an instance of OWLClassExpression, got {type(range_).__name__} instead ({range_!r}).")
         super().__init__(property_=property_, range_=range_, annotations=annotations)
 
 
@@ -1380,6 +1516,10 @@ class OWLDataPropertyRangeAxiom(OWLPropertyRangeAxiom[OWLDataPropertyExpression,
 
     def __init__(self, property_: OWLDataPropertyExpression, range_: OWLDataRange,
                  annotations: Optional[Iterable[OWLAnnotation]] = None):
+        if not isinstance(property_, OWLDataPropertyExpression):
+            raise TypeError(f"Expected property_ to be an instance of OWLDataPropertyExpression, got {type(property_).__name__} instead ({property_!r}).")
+        if not isinstance(range_, OWLDataRange):
+            raise TypeError(f"Expected range_ to be an instance of OWLDataRange, got {type(range_).__name__} instead ({range_!r}).")
         super().__init__(property_=property_, range_=range_, annotations=annotations)
 
 
@@ -1399,6 +1539,11 @@ class OWLSubPropertyChainAxiom(OWLObjectPropertyAxiom):
     def __init__(self, property_chain: Sequence[OWLObjectPropertyExpression], super_property: OWLObjectPropertyExpression,
                  annotations: Optional[Iterable['OWLAnnotation']] = None):
         super().__init__(annotations=annotations)
+        for i, prop in enumerate(property_chain):
+            if not isinstance(prop, OWLObjectPropertyExpression):
+                raise TypeError(f"Expected property_chain[{i}] to be an instance of OWLObjectPropertyExpression, got {type(prop).__name__} instead ({prop!r}).")
+        if not isinstance(super_property, OWLObjectPropertyExpression):
+            raise TypeError(f"Expected super_property to be an instance of OWLObjectPropertyExpression, got {type(super_property).__name__} instead ({super_property!r}).")
         self._property_chain = tuple(property_chain)
         # self._sub_property = self._property_chain
         self._super_property = super_property

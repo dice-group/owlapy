@@ -485,6 +485,6 @@ def test_generic_literal_impl_for_custom_datatype():
 
 
 def test_generic_literal_impl_requires_owl_datatype():
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         from owlapy.owl_literal import _OWLLiteralImpl
         _OWLLiteralImpl("value", "not a datatype")

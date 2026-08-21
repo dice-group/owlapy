@@ -1,12 +1,16 @@
 """OWL nary boolean expressions"""
+
 from typing import Final, Iterable, Sequence
 
 from ..meta_classes import HasOperands
 from .class_expression import OWLBooleanClassExpression, OWLClassExpression
 
 
-class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLClassExpression]):
+class OWLNaryBooleanClassExpression(
+    OWLBooleanClassExpression, HasOperands[OWLClassExpression]
+):
     """OWLNaryBooleanClassExpression."""
+
     __slots__ = ()
 
     _operands: Sequence[OWLClassExpression]
@@ -19,19 +23,27 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
         # TODO: CD: Replace tuple with set
         self._operands = tuple(operands)
 
-        assert len(self._operands)>1, "OWLNaryBooleanClassExpression requires at least two operands."
+        assert (
+            len(self._operands) > 1
+        ), "OWLNaryBooleanClassExpression requires at least two operands."
+        for i, op in enumerate(self._operands):
+            if not isinstance(op, OWLClassExpression):
+                raise TypeError(
+                    f"Expected all operands to be instances of OWLClassExpression, got {type(op).__name__} instead ({op!r}) at index {i}."
+                )
 
     def operands(self) -> Iterable[OWLClassExpression]:
         # documented in parent
         yield from self._operands
 
     def __repr__(self):
-        return f'{type(self).__name__}({repr(self._operands)})'
+        return f"{type(self).__name__}({repr(self._operands)})"
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return (set(self._operands) == set(other.operands())
-                    and len(list(self._operands)) == len(list(other.operands())))
+            return set(self._operands) == set(other.operands()) and len(
+                list(self._operands)
+            ) == len(list(other.operands()))
         return False
 
     def __hash__(self):
@@ -40,10 +52,11 @@ class OWLNaryBooleanClassExpression(OWLBooleanClassExpression, HasOperands[OWLCl
 
 class OWLObjectUnionOf(OWLNaryBooleanClassExpression):
     """A union class expression ObjectUnionOf( CE1 ... CEn ) contains all individuals that are instances
-       of at least one class expression CEi for 1 ≤ i ≤ n.
-       (https://www.w3.org/TR/owl2-syntax/#Union_of_Class_Expressions)
+    of at least one class expression CEi for 1 ≤ i ≤ n.
+    (https://www.w3.org/TR/owl2-syntax/#Union_of_Class_Expressions)
     """
-    __slots__ = '_operands'
+
+    __slots__ = "_operands"
     type_index: Final = 3002
 
     _operands: Sequence[OWLClassExpression]
@@ -54,7 +67,8 @@ class OWLObjectIntersectionOf(OWLNaryBooleanClassExpression):
     of all class expressions CEi for 1 ≤ i ≤ n.
     (https://www.w3.org/TR/owl2-syntax/#Intersection_of_Class_Expressions)
     """
-    __slots__ = '_operands'
+
+    __slots__ = "_operands"
     type_index: Final = 3001
 
     _operands: Sequence[OWLClassExpression]

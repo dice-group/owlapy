@@ -44,6 +44,8 @@ from owlapy.owl_axiom import (
     OWLTransitiveObjectPropertyAxiom,
 )
 from owlapy.owl_datatype import OWLDatatype
+from owlapy.owl_data_ranges import OWLDataUnionOf
+from owlapy.owl_literal import DoubleOWLDatatype, IntOWLDatatype
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_literal import OWLLiteral
 from owlapy.owl_ontology import RDFLibOntology
@@ -475,8 +477,11 @@ class TestRDFLibOntologyAddAxiom:
         assert len(ranges) == 1 and ranges[0].get_range().str == xsd_int.str
 
     def test_data_property_range_rejects_non_datatype(self):
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(TypeError):
             self.onto.add_axiom(OWLDataPropertyRangeAxiom(self.age, self.Person))
+        with pytest.raises(NotImplementedError):
+            complex_datatype = OWLDataUnionOf([OWLDatatype(XSD.integer), OWLDatatype(XSD.double)])
+            self.onto.add_axiom(OWLDataPropertyRangeAxiom(self.age, complex_datatype))
 
     def test_sub_object_property_of(self):
         sub = OWLObjectProperty(NS + "hasCloseFriend")

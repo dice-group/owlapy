@@ -92,8 +92,10 @@ class OWLProperty(OWLPropertyExpression, OWLEntity):
         """
         if isinstance(iri, IRI):
             self._iri = iri
-        else:
+        elif isinstance(iri, str):
             self._iri = IRI.create(iri)
+        else:
+            raise TypeError(f"Expected iri to be an instance of IRI or str, got {type(iri).__name__} instead ({iri!r}).")
 
     @property
     def str(self) -> str:
