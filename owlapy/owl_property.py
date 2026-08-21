@@ -165,6 +165,8 @@ class OWLObjectInverseOf(OWLObjectPropertyExpression):
         Args:
             property: The property of which the inverse will be returned.
         """
+        if not isinstance(property, OWLObjectProperty):
+            raise TypeError(f"Expected property to be an instance of OWLObjectProperty, got {type(property).__name__} instead ({property!r}).")
         self._inverse_property = property
 
     def get_inverse(self) -> OWLObjectProperty:
