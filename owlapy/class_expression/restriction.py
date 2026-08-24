@@ -144,6 +144,10 @@ class OWLQuantifiedObjectRestriction(OWLQuantifiedRestriction[OWLClassExpression
     _filler: OWLClassExpression
 
     def __init__(self, filler: OWLClassExpression):
+        if not isinstance(filler, OWLClassExpression):
+            raise TypeError(
+                f"Expected 'filler' to be an instance of OWLClassExpression, got {type(filler).__name__} instead ({filler!r})."
+            )
         self._filler = filler
 
     def get_filler(self) -> OWLClassExpression:
@@ -286,6 +290,10 @@ class OWLObjectSomeValuesFrom(OWLQuantifiedObjectRestriction):
             An OWLObjectSomeValuesFrom restriction along the specified property with the specified filler.
         """
         super().__init__(filler)
+        if not isinstance(property, OWLObjectPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLObjectPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
         self._property = property
 
     def __repr__(self):
@@ -313,6 +321,10 @@ class OWLObjectAllValuesFrom(OWLQuantifiedObjectRestriction):
     type_index: Final = 3006
     def __init__(self, property: OWLObjectPropertyExpression, filler: OWLClassExpression):
         super().__init__(filler)
+        if not isinstance(property, OWLObjectPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLObjectPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
         self._property = property
 
     def __repr__(self):
@@ -351,6 +363,10 @@ class OWLObjectHasSelf(OWLObjectRestriction):
         Returns:
             A ObjectHasSelf class expression on the specified property.
         """
+        if not isinstance(property, OWLObjectPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLObjectPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
         self._property = property
 
     def get_property(self) -> OWLObjectPropertyExpression:
@@ -390,6 +406,14 @@ class OWLObjectHasValue(OWLHasValueRestriction[OWLIndividual], OWLObjectRestrict
         Returns:
             A HasValue restriction with specified property and value
         """
+        if not isinstance(property, OWLObjectPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLObjectPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
+        if not isinstance(individual, OWLIndividual):
+            raise TypeError(
+                f"Expected 'individual' to be an instance of OWLIndividual, got {type(individual).__name__} instead ({individual!r})."
+            )
         super().__init__(individual)
         self._property = property
 
@@ -426,13 +450,15 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
     type_index: Final = 3004
 
     def __init__(self, values: OWLIndividual | Iterable[OWLIndividual]):
-        #assert isinstance(values, OWLIndividual) | isinstance(values, set)
-        #    f"The input of OWLObjectOneOf must be either an OWLIndividual or a set of OWLIndividual. Currently, {type(values)}!"
         if isinstance(values, OWLIndividual):
             self._values = values,
         else:
-            for _ in values:
-                assert isinstance(_, OWLIndividual)
+            values = tuple(values)
+            for i, v in enumerate(values):
+                if not isinstance(v, OWLIndividual):
+                    raise TypeError(
+                        f"Expected all values to be instances of OWLIndividual, got {type(v).__name__} instead ({v!r}) at index {i}."
+                    )
             self._values = frozenset(values)
 
     def individuals(self) -> Iterable[OWLIndividual]:
@@ -496,7 +522,10 @@ class OWLQuantifiedDataRestriction(OWLQuantifiedRestriction[OWLDataRange],
     _filler: OWLDataRange
 
     def __init__(self, filler: OWLDataRange):
-        assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
+        if not isinstance(filler, OWLDataRange):
+            raise TypeError(
+                f"Expected 'filler' to be an instance of OWLDataRange, got {type(filler).__name__} instead ({filler!r})."
+            )
         self._filler = filler
     # @TODO:CD: define it as @property
 
@@ -515,7 +544,18 @@ class OWLDataCardinalityRestriction(OWLCardinalityRestriction[OWLDataRange],
 
     @abstractmethod
     def __init__(self, cardinality: int, property: OWLDataPropertyExpression, filler: OWLDataRange):
-        assert isinstance(filler, OWLDataRange), "filler must be an OWLDataRange"
+        if not isinstance(cardinality, int) or cardinality < 0:
+            raise ValueError(
+                f"Expected 'cardinality' to be a non-negative integer, got {cardinality!r} instead."
+            )
+        if not isinstance(property, OWLDataPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLDataPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
+        if not isinstance(filler, OWLDataRange):
+            raise TypeError(
+                f"Expected 'filler' to be an instance of OWLDataRange, got {type(filler).__name__} instead ({filler!r})."
+            )
         super().__init__(cardinality, filler)
         self._property = property
 
@@ -641,6 +681,10 @@ class OWLDataSomeValuesFrom(OWLQuantifiedDataRestriction):
             An OWLDataSomeValuesFrom restriction along the specified property with the specified filler.
         """
         super().__init__(filler)
+        if not isinstance(property, OWLDataPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLDataPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
         self._property = property
 
     def __repr__(self):
@@ -685,6 +729,10 @@ class OWLDataAllValuesFrom(OWLQuantifiedDataRestriction):
             An OWLDataAllValuesFrom restriction along the specified property with the specified filler.
         """
         super().__init__(filler)
+        if not isinstance(property, OWLDataPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLDataPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
         self._property = property
 
     def __repr__(self):
@@ -730,6 +778,14 @@ class OWLDataHasValue(OWLHasValueRestriction[OWLLiteral], OWLDataRestriction):
         Returns:
             An OWLDataHasValue restriction along the specified property with the specified literal.
         """
+        if not isinstance(property, OWLDataPropertyExpression):
+            raise TypeError(
+                f"Expected 'property' to be an instance of OWLDataPropertyExpression, got {type(property).__name__} instead ({property!r})."
+            )
+        if not isinstance(value, OWLLiteral):
+            raise TypeError(
+                f"Expected 'value' to be an instance of OWLLiteral, got {type(value).__name__} instead ({value!r})."
+            )
         super().__init__(value)
         self._property = property
 
@@ -769,9 +825,13 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
         if isinstance(values, OWLLiteral):
             self._values = values,
         else:
-            for _ in values:
-                assert isinstance(_, OWLLiteral)
-            self._values = tuple(values)
+            values = tuple(values)
+            for i, v in enumerate(values):
+                if not isinstance(v, OWLLiteral):
+                    raise TypeError(
+                        f"Expected all values to be instances of OWLLiteral, got {type(v).__name__} instead ({v!r}) at index {i}."
+                    )
+            self._values = values
 
     def __repr__(self):
         return f'OWLDataOneOf({self._values})'
@@ -815,10 +875,20 @@ class OWLDatatypeRestriction(OWLDataRange):
 
     def __init__(self, type_: OWLDatatype, facet_restrictions: Union['OWLFacetRestriction',
                                                                      Iterable['OWLFacetRestriction']]):
+        if not isinstance(type_, OWLDatatype):
+            raise TypeError(
+                f"Expected 'type_' to be an instance of OWLDatatype, got {type(type_).__name__} instead ({type_!r})."
+            )
         self._type = type_
         if isinstance(facet_restrictions, OWLFacetRestriction):
             facet_restrictions = facet_restrictions,
-        self._facet_restrictions = tuple(facet_restrictions)
+        facet_restrictions = tuple(facet_restrictions)
+        for i, fr in enumerate(facet_restrictions):
+            if not isinstance(fr, OWLFacetRestriction):
+                raise TypeError(
+                    f"Expected all facet_restrictions to be instances of OWLFacetRestriction, got {type(fr).__name__} instead ({fr!r}) at index {i}."
+                )
+        self._facet_restrictions = facet_restrictions
 
     def get_datatype(self) -> OWLDatatype:
         return self._type
@@ -851,6 +921,10 @@ class OWLFacetRestriction(OWLObject):
     _literal: 'OWLLiteral'
 
     def __init__(self, facet: OWLFacet, literal: Literals):
+        if not isinstance(facet, OWLFacet):
+            raise TypeError(
+                f"Expected 'facet' to be an instance of OWLFacet, got {type(facet).__name__} instead ({facet!r})."
+            )
         self._facet = facet
         if isinstance(literal, OWLLiteral):
             self._literal = literal
