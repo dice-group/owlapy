@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Python-side type checks across OWL construct constructors (`owlapy.owl_axiom`, `owlapy.class_expression`, `owlapy.owl_property`, `owlapy.owl_individual`, `owlapy.owl_datatype`, `owlapy.owl_literal`, `owlapy.namespaces`): constructing an OWL axiom/class expression/entity with an argument of the wrong type (e.g. an `OWLSubClassOfAxiom` given object properties instead of class expressions) now raises a clear `TypeError`/`ValueError` immediately, instead of succeeding silently and only failing later -- as an opaque Java exception -- once the construct is used with a JVM-backed ontology (#271, #272)
+- Additional regression tests for the `owlapy.owl_axiom` type checks above, covering `OWLSubClassOfAxiom`, `OWLClassAssertionAxiom`, `OWLEquivalentClassesAxiom`, `OWLObjectPropertyAssertionAxiom`, `OWLObjectPropertyDomainAxiom`, `OWLFunctionalObjectPropertyAxiom`, and `OWLDeclarationAxiom` (#271)
+
 ## [1.6.6] - 2026-08-05
 
 ### Added
