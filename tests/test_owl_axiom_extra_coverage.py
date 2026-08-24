@@ -388,3 +388,44 @@ def test_sub_property_chain_axiom_eq_false_for_different_type():
     assert (axiom == "not an axiom") is False
     assert axiom == OWLSubPropertyChainAxiom(chain, obj_prop("hasGrandparent"))
     assert list(axiom.get_property_chain()) == chain
+
+
+# ---------------------------------------------------------------------------
+# Python-side type checks (owlapy#271): constructing an axiom with an argument
+# of the wrong OWL construct type must fail immediately with a clear Python
+# error, not silently succeed and only blow up once the JVM gets involved.
+# ---------------------------------------------------------------------------
+
+def test_sub_class_of_axiom_rejects_non_class_expression():
+    with pytest.raises(TypeError):
+        OWLSubClassOfAxiom(obj_prop("p1"), obj_prop("p2"))
+
+
+def test_class_assertion_axiom_rejects_swapped_arguments():
+    with pytest.raises(TypeError):
+        OWLClassAssertionAxiom(cls("A"), ind("alice"))
+
+
+def test_equivalent_classes_axiom_rejects_non_class_expression():
+    with pytest.raises(TypeError):
+        OWLEquivalentClassesAxiom([cls("A"), obj_prop("p")])
+
+
+def test_object_property_assertion_axiom_rejects_data_property():
+    with pytest.raises(TypeError):
+        OWLObjectPropertyAssertionAxiom(ind("alice"), data_prop("age"), ind("bob"))
+
+
+def test_object_property_domain_axiom_rejects_data_property():
+    with pytest.raises(TypeError):
+        OWLObjectPropertyDomainAxiom(data_prop("age"), cls("A"))
+
+
+def test_functional_object_property_axiom_rejects_data_property():
+    with pytest.raises(TypeError):
+        OWLFunctionalObjectPropertyAxiom(data_prop("age"))
+
+
+def test_declaration_axiom_rejects_non_entity():
+    with pytest.raises(TypeError):
+        OWLDeclarationAxiom("not an entity")
