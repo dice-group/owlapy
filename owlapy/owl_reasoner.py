@@ -3340,3 +3340,6 @@ class EBR(AbstractOWLReasoner): # pragma: no cover
 
     def get_root_ontology(self) -> NeuralOntology:
         return self.ontology
+
+
+from owlapy.owl_reasoner_nir import NIRReasoner  # noqa: E402

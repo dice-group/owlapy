@@ -19,6 +19,7 @@ paths:
 | `SyncReasoner("HermiT"\|"Pellet"\|"JFact"\|"Openllet"\|"Structural")` | `owlapy.owl_reasoner.SyncReasoner` | Java/OWLAPI | Complete DL reasoning |
 | `SyncReasoner("ELK")` | same | Java/OWLAPI | EL fragment only, very fast, no universals/nominals/inverses |
 | `EBR` | `owlapy.owl_reasoner.EBR` | `dicee`/PyTorch (pure Python) | Neural embedding-based instance prediction, not DL-complete; needs a `NeuralOntology` (pretrained KGE model) |
+| `NIRReasoner` | `owlapy.owl_reasoner.NIRReasoner` | NIR encoder in `owlapy.nir` + entity embeddings (pure Python) | Neural instance retrieval for complex class expressions; TBox delegated to StructuralReasoner/RDFLibReasoner. Needs `torch` + `transformers`, a pretrained encoder directory, and an embeddings CSV |
 
 ## RDFLibReasoner (no JVM, no owlready2 — preferred)
 
@@ -77,6 +78,27 @@ reasoner = EBR(ontology=neural_onto)
 predicted = set(reasoner.instances(OWLClass("http://example.com/father#male")))  # score-thresholded by gamma (default 0.5)
 predictions = reasoner.predict(h=["http://example.com/father#john"], r=None, t=None)  # raw (h, r, t) predictions w/ scores
 ```
+
+## NIRReasoner (neural instance retrieval, no JVM)
+
+```python
+from owlapy.owl_ontology import Ontology
+from owlapy.owl_reasoner import NIRReasoner
+from owlapy.class_expression import OWLClass
+
+onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+reasoner = NIRReasoner(
+    onto,
+    model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
+    embeddings_path="trained_models/embeddings/family/DeCaL_entity_embeddings.csv",
+    th=0.5,
+)
+instances = set(reasoner.instances(OWLClass("http://www.benchmark.org/family#Brother")))
+```
+
+- Named / length-1 concepts go to the symbolic fallback; longer expressions are scored by the NIR encoder.
+- Hierarchies and roles are always symbolic. Results are score-thresholded, not DL-entailed.
+- No `stopJVM()`.
 
 ## Ontology Enrichment
 
