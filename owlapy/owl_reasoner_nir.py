@@ -256,7 +256,7 @@ def _register_and_load(model_path: str, architecture: str, device):
             "NIRReasoner requires torch and transformers. Install with: pip install torch transformers"
         ) from exc
 
-    from owlapy.nir import NIRComposite, NIRGRU, NIRLSTM, NIRTransformer
+    from owlapy.nir import NIRGRU, NIRLSTM, NIRComposite, NIRTransformer
 
     key = architecture.strip()
     class_name = _ARCH_TO_CLASS.get(key)

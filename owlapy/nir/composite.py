@@ -5,7 +5,8 @@ import torch.nn as nn
 from transformers import PreTrainedModel
 
 from owlapy.nir.config import NIRConfig
-from owlapy.nir.nandnet import Inverse, Le, NAND, Self
+from owlapy.nir.nandnet import NAND, Inverse, Le, Self
+
 
 class NIRComposite(PreTrainedModel):
     config_class = NIRConfig
@@ -104,7 +105,7 @@ class NIRComposite(PreTrainedModel):
             n = int(parts[0])
             parts = parts[1].split('.')
             r, C = parts[0], parts[1]
-            
+
             # r = self.process_negation(r, component_embeddings_dict, encodings, encodings_mapping) if '¬' in r else encodings.get(encodings_mapping.get(r, ''), component_embeddings_dict.get(r))
             if '⁻' not in r:
                 r = encodings.get(encodings_mapping.get(r, ''), component_embeddings_dict.get(r))
@@ -123,7 +124,7 @@ class NIRComposite(PreTrainedModel):
             n = int(parts[0])
             parts = parts[1].split('.')
             r, C = parts[0], parts[1]
-            
+
             n = torch.tensor([n - 1]).to(self.config.device)
 
             # r = self.process_negation(r, component_embeddings_dict, encodings, encodings_mapping) if '¬' in r else encodings.get(encodings_mapping.get(r, ''), component_embeddings_dict.get(r))
@@ -143,7 +144,7 @@ class NIRComposite(PreTrainedModel):
             innermost = innermost.replace('∀ ', '')
             parts = innermost.split('.')
             r, C = parts[0], parts[1]
-            
+
             n = 0
             # r = self.process_negation(r, component_embeddings_dict, encodings, encodings_mapping) if '¬' in r else encodings.get(encodings_mapping.get(r, ''), component_embeddings_dict.get(r))
             if '⁻' not in r:
@@ -166,7 +167,7 @@ class NIRComposite(PreTrainedModel):
             innermost = innermost.replace('∃ ', '')
             parts = innermost.split('.')
             r, C = parts[0], parts[1]
-            
+
             n = 0
             if re.search(r'\[(≤|≥)\s-?\d+(\.\d+)?\]', innermost):
                 constraint = (re.search(r'\[(≤|≥)\s-?\d+(\.\d+)?\]', innermost).group())
