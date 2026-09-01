@@ -247,6 +247,24 @@ reasoner = EBR(ontology=neural_onto)
 
 **Limitations:** no complex class expressions; `equivalent_classes()`, `disjoint_classes()`, `same_individuals()`, `different_individuals()`, `equivalent_object_properties()`, `equivalent_data_properties()`, `disjoint_object_properties()`, `disjoint_data_properties()`, and `data_property_values()` all raise `NotImplementedError`.
 
+### `NIRReasoner` (Neural Instance Retrieval)
+
+Scores complex class expressions with a pretrained NIR encoder against entity embeddings.
+Named classes and TBox queries use a symbolic fallback. Requires `torch` and `transformers`.
+Pretrained weights: https://files.dice-research.org/datasets/CNIR/trained_models.zip
+
+```python
+from owlapy.owl_ontology import Ontology
+from owlapy.owl_reasoner import NIRReasoner
+
+onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+reasoner = NIRReasoner(
+    onto,
+    model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
+    embeddings_path="trained_models/embeddings/family/DeCaL_entity_embeddings.csv",
+)
+```
+
 ## Class Expressions
 
 ### Atomic Classes

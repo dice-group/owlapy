@@ -1,8 +1,10 @@
 """Tests for owlapy.owl_reasoner_nir.NIRReasoner.
 
-Helpers and routing logic are covered with a mocked encoder so the suite does not
-need the original NIR repository or pretrained weights. A slower Family integration test
-runs only when the encoder, OWL file, and embeddings are present on disk.
+Helpers and routing logic are covered with a mocked encoder so CI does not need
+pretrained weights. Optional Family integration tests run only when the encoder,
+OWL file, and embeddings are on disk. Weights are not fetched in GitHub Actions;
+download them locally from
+https://files.dice-research.org/datasets/CNIR/trained_models.zip
 """
 from __future__ import annotations
 

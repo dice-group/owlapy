@@ -25,7 +25,7 @@ LLMs
 
 ### Production-Ready Reasoning
 
-- **Python-native Reasoners**: [RDFLibReasoner](markdown_docs/05_reasoning.md#1-rdflibreasoner-recommended) (recommended, pure Python, no JVM/owlready2), [Structural Reasoner](markdown_docs/05_reasoning.md#2-structuralreasoner-legacy) (legacy), and an [Embedding-Based Reasoner](markdown_docs/05_reasoning.md#4-ebr-embedding-based-reasoner) for neural knowledge graph completion
+- **Python-native Reasoners**: [RDFLibReasoner](markdown_docs/05_reasoning.md#1-rdflibreasoner-recommended) (recommended, pure Python, no JVM/owlready2), [Structural Reasoner](markdown_docs/05_reasoning.md#2-structuralreasoner-legacy) (legacy), an [Embedding-Based Reasoner](markdown_docs/05_reasoning.md#4-ebr-embedding-based-reasoner) for neural knowledge graph completion, and [NIRReasoner](markdown_docs/05_reasoning.md#5-nirreasoner-neural-instance-retrieval) for neural instance retrieval of complex class expressions
 - **Optimized Performance**: Benchmarked across complex ontologies (see our [performance data](#reasoners-runtime-benchmark))
 - **Synchronization with Java Reasoners**: [HermiT, Pellet, JFact, Openllet, ELK, and Structural](markdown_docs/05_reasoning.md#3-syncreasoner-complete-owl-2-dl)
 
@@ -77,6 +77,9 @@ conda create -n temp_owlapy python=3.11 --no-default-packages && conda activate 
 # Download RDF knowledge graphs
 wget https://files.dice-research.org/projects/Ontolearn/KGs.zip -O ./KGs.zip && unzip KGs.zip
 
+# Download pretrained NIR encoders + DeCaL embeddings (needed to use NIRReasoner)
+wget https://files.dice-research.org/datasets/CNIR/trained_models.zip -O ./trained_models.zip && unzip trained_models.zip
+
 # Test with pytest
 PYTHONPATH=. pytest
 ```
@@ -90,7 +93,7 @@ For comprehensive, LLM-optimized documentation, check out the [`markdown_docs/`]
 - **[Getting Started](markdown_docs/01_getting_started.md)** - Installation, setup, and quick start guide
 - **[Core Concepts](markdown_docs/02_core_concepts.md)** - OWL fundamentals, ontologies, reasoners, and class expressions
 - **[Ontology Management](markdown_docs/03_ontology_management.md)** - Creating, loading, saving, and modifying ontologies
-- **[Reasoning](markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, StructuralReasoner, SyncReasoner, and the Embedding-Based Reasoner (EBR)
+- **[Reasoning](markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, StructuralReasoner, SyncReasoner, the Embedding-Based Reasoner (EBR), and NIRReasoner
 - **[Common Patterns](markdown_docs/08_common_patterns.md)** - Best practices, patterns, and anti-patterns
 - **[API Reference](markdown_docs/09_api_reference.md)** - Complete API documentation
 

@@ -29,6 +29,9 @@ Example
         embeddings_path="trained_models/embeddings/family/DeCaL_entity_embeddings.csv",
     )
     instances = set(reasoner.instances(named_class))
+
+Pretrained encoders and DeCaL embeddings:
+https://files.dice-research.org/datasets/CNIR/trained_models.zip
 """
 
 from __future__ import annotations

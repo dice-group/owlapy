@@ -96,6 +96,12 @@ reasoner = NIRReasoner(
 instances = set(reasoner.instances(OWLClass("http://www.benchmark.org/family#Brother")))
 ```
 
+Download pretrained encoders and DeCaL embeddings:
+
+```shell
+wget https://files.dice-research.org/datasets/CNIR/trained_models.zip -O ./trained_models.zip && unzip trained_models.zip
+```
+
 - Named / length-1 concepts go to the symbolic fallback; longer expressions are scored by the NIR encoder.
 - Hierarchies and roles are always symbolic. Results are score-thresholded, not DL-entailed.
 - No `stopJVM()`.
