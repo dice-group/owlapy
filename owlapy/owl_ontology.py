@@ -49,6 +49,7 @@ from owlapy.class_expression import (
 )
 from owlapy.iri import IRI
 from owlapy.owl_axiom import (
+    OWLAnnotation,
     OWLAnnotationAssertionAxiom,
     OWLAnnotationProperty,
     OWLAsymmetricObjectPropertyAxiom,
@@ -93,7 +94,7 @@ from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, O
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLIndividual, OWLNamedIndividual
 from owlapy.owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype, TopOWLDatatype
-from owlapy.owl_object import OWLObject
+from owlapy.owl_object import OWLEntity, OWLObject
 from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
@@ -1387,6 +1388,19 @@ class SyncOntology(AbstractOWLOntology):
     def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
         return self.mapper.map_(self.owlapi_ontology.getObjectPropertyRangeAxioms(self.mapper.map_(property)))
 
+    def annotation_assertion_axioms(self, entity: Union[OWLEntity, IRI]) -> Iterable[OWLAnnotationAssertionAxiom]:
+        """Gets the annotation assertion axioms about the given entity in this ontology, e.g. its
+        `rdfs:label`/`rdfs:comment` or any other `owl:AnnotationProperty` assertion.
+
+        Args:
+            entity: The entity (or its IRI directly) to get annotation assertions for.
+
+        Returns:
+            Annotation assertion axioms whose subject is the given entity's IRI.
+        """
+        subject_iri = entity if isinstance(entity, IRI) else entity.iri
+        return self.mapper.map_(self.owlapi_ontology.getAnnotationAssertionAxioms(self.mapper.map_(subject_iri)))
+
     def _get_imports_enum(self, include_imports_closure: bool):
         # noinspection PyUnresolvedReferences
         from org.semanticweb.owlapi.model.parameters import Imports
@@ -2035,6 +2049,16 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology) -> None:
     _remove_property_characteristic(axiom, ontology)
 
 
+# Annotation properties every OWL ontology may use without declaring them locally as
+# `owl:AnnotationProperty` -- RDFLibOntology.annotation_assertion_axioms() also honours any
+# predicate explicitly declared as such in the loaded graph.
+_WELL_KNOWN_ANNOTATION_PREDICATES = frozenset((
+    rdflib.RDFS.label, rdflib.RDFS.comment, rdflib.RDFS.seeAlso, rdflib.RDFS.isDefinedBy,
+    rdflib.OWL.versionInfo, rdflib.OWL.deprecated, rdflib.OWL.priorVersion,
+    rdflib.OWL.backwardCompatibleWith, rdflib.OWL.incompatibleWith,
+))
+
+
 class RDFLibOntology(AbstractOWLOntology):
 
     def __init__(self, path: Union[str, IRI], load: bool = True):
@@ -2047,6 +2071,7 @@ class RDFLibOntology(AbstractOWLOntology):
             self.str_owl_individuals = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_object_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.ObjectProperty) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_data_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.DatatypeProperty) if not isinstance(x, rdflib.term.BNode)]
+            self.str_owl_annotation_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.AnnotationProperty) if not isinstance(x, rdflib.term.BNode)]
         else:  # create a blank ontology; `path`/`self._path` is treated as the new ontology's IRI
             self.rdflib_graph = rdflib.Graph()
             self.rdflib_graph.add((rdflib.URIRef(self._path), rdflib.RDF.type, rdflib.OWL.Ontology))
@@ -2054,6 +2079,7 @@ class RDFLibOntology(AbstractOWLOntology):
             self.str_owl_individuals = []
             self.str_owl_object_properties = []
             self.str_owl_data_properties = []
+            self.str_owl_annotation_properties = []
 
     def __len__(self) -> int:
         return len(self.rdflib_graph)
@@ -2138,6 +2164,38 @@ class RDFLibOntology(AbstractOWLOntology):
 
     def get_abox_axioms_between_individuals_and_classes(self) -> Iterable[OWLClassAssertionAxiom]:
         return [axiom for axiom in self.get_abox_axioms() if isinstance(axiom, OWLClassAssertionAxiom)]
+
+    def annotation_assertion_axioms(self, entity: Union[OWLEntity, IRI]) -> Iterable[OWLAnnotationAssertionAxiom]:
+        """Gets the annotation assertion axioms about the given entity in this ontology, e.g. its
+        `rdfs:label`/`rdfs:comment`.
+
+        Recognizes the well-known annotation predicates (`rdfs:label`, `rdfs:comment`, `rdfs:seeAlso`,
+        `rdfs:isDefinedBy`, `owl:versionInfo`, `owl:deprecated`, `owl:priorVersion`,
+        `owl:backwardCompatibleWith`, `owl:incompatibleWith`) plus any predicate explicitly declared
+        `rdf:type owl:AnnotationProperty` in the loaded graph. A blank-node annotation value (an
+        anonymous individual) is skipped, matching how blank nodes are handled elsewhere in this class.
+
+        Args:
+            entity: The entity (or its IRI directly) to get annotation assertions for.
+
+        Returns:
+            Annotation assertion axioms whose subject is the given entity's IRI.
+        """
+        subject_iri = entity if isinstance(entity, IRI) else entity.iri
+        subject_ref = rdflib.URIRef(subject_iri.str)
+        annotation_predicates = _WELL_KNOWN_ANNOTATION_PREDICATES | {rdflib.URIRef(s) for s in self.str_owl_annotation_properties}
+        results = []
+        for (_, p, o) in self.rdflib_graph.triples((subject_ref, None, None)):
+            if p not in annotation_predicates:
+                continue
+            if isinstance(o, rdflib.term.Literal):
+                value = _rdflib_literal_to_owl_literal(o)
+            elif isinstance(o, rdflib.term.URIRef):
+                value = IRI.create(o.n3()[1:-1])
+            else:
+                continue
+            results.append(OWLAnnotationAssertionAxiom(subject_iri, OWLAnnotation(OWLAnnotationProperty(p.n3()[1:-1]), value)))
+        return results
 
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
         c_uri = rdflib.URIRef(c.str)
