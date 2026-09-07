@@ -99,6 +99,8 @@ class OWLAnonymousIndividual(OWLIndividual, OWLAnnotationSubject, OWLAnnotationV
         Returns:
             An OWLAnonymousIndividual identified by the given (or a freshly generated) node id.
         """
+        if node_id is not None and not isinstance(node_id, str):
+            raise TypeError(f"Expected 'node_id' to be an instance of str or None, got {type(node_id).__name__} instead ({node_id!r}).")
         self._node_id = NodeID.get_node_id(node_id)
 
     @property
