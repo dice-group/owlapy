@@ -53,6 +53,7 @@ from owlapy.owl_literal import OWLBottomDataProperty, OWLBottomObjectProperty, O
 from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import NeuralOntology, Ontology, SyncOntology, _parse_concept_to_owlapy
 from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
+from owlapy.owl_reasoner_nir import NIRReasoner as NIRReasoner
 from owlapy.utils import run_with_timeout
 
 logger = logging.getLogger(__name__)
