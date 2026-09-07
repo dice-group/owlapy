@@ -2,6 +2,8 @@ import os
 import tempfile
 import unittest
 
+import pytest
+
 from owlapy.owl_axiom import OWLClassAssertionAxiom, OWLObjectPropertyAssertionAxiom
 from owlapy.owl_individual import OWLAnonymousIndividual, OWLNamedIndividual
 from owlapy.owl_ontology import SyncOntology
@@ -55,6 +57,10 @@ class TestOWLAnonymousIndividual(unittest.TestCase):
 
     def test_not_equal_to_named_individual(self):
         self.assertNotEqual(OWLAnonymousIndividual("b0"), OWLNamedIndividual("http://example.org/b0"))
+
+    def test_rejects_non_str_non_none_node_id(self):
+        with pytest.raises(TypeError):
+            OWLAnonymousIndividual(42)
 
 
 class TestOntologyWithAnonymousIndividual(unittest.TestCase):

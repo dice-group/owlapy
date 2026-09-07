@@ -202,6 +202,10 @@ class OWLOntologyID:
             ontology_iri: The ontology IRI (optional).
             version_iri: The version IRI (must be None if no ontology_iri is provided).
         """
+        if ontology_iri is not None and not isinstance(ontology_iri, IRI):
+            raise TypeError(f"Expected 'ontology_iri' to be an instance of IRI or None, got {type(ontology_iri).__name__} instead ({ontology_iri!r}).")
+        if version_iri is not None and not isinstance(version_iri, IRI):
+            raise TypeError(f"Expected 'version_iri' to be an instance of IRI or None, got {type(version_iri).__name__} instead ({version_iri!r}).")
         self._ontology_iri = ontology_iri
         self._version_iri = version_iri
 

@@ -30,8 +30,10 @@ class Variable(metaclass=ABCMeta):
     def __init__(self, iri:Union[IRI, str]):
         if isinstance(iri, str):
             self.iri = IRI.create(iri)
-        else:
+        elif isinstance(iri, IRI):
             self.iri = iri
+        else:
+            raise TypeError(f"Expected 'iri' to be an instance of IRI or str, got {type(iri).__name__} instead ({iri!r}).")
 
     def is_i_variable(self):
         if isinstance(self, IVariable):
@@ -150,8 +152,8 @@ class Atom(metaclass=ABCMeta):
                 if "?" in args[i]:
                     args[i] = DVariable(SWRL + args[i][1:])
                 else:
-                    args[i] = OWLNamedIndividual(namespace + args[i])
-                return BuiltInAtom(IRI.create(SWRLB + predicate), args)
+                    args[i] = OWLLiteral(args[i])
+            return BuiltInAtom(IRI.create(SWRLB + predicate), args)
         else:
             raise ValueError(f"Invalid SWRL atom: {atom_str}")
 
@@ -191,6 +193,10 @@ class ClassAtom(Atom):
     cls: OWLClass
 
     def __init__(self, cls: OWLClass, argument1: Union[IVariable, OWLNamedIndividual]):
+        if not isinstance(cls, OWLClass):
+            raise TypeError(f"Expected 'cls' to be an instance of OWLClass, got {type(cls).__name__} instead ({cls!r}).")
+        if not isinstance(argument1, (IVariable, OWLNamedIndividual)):
+            raise TypeError(f"Expected 'argument1' to be an instance of IVariable or OWLNamedIndividual, got {type(argument1).__name__} instead ({argument1!r}).")
         self.cls = cls
         self.argument1 = argument1
 
@@ -225,10 +231,14 @@ class ClassAtom(Atom):
 
 class DataRangeAtom(Atom):
     """Represents a data range atom in SWRL syntax"""
-    argument1: DVariable
+    argument1: Union[DVariable, OWLLiteral]
     datatype: OWLDatatype
 
-    def __init__(self, datatype: OWLDatatype, argument1: DVariable):
+    def __init__(self, datatype: OWLDatatype, argument1: Union[DVariable, OWLLiteral]):
+        if not isinstance(datatype, OWLDatatype):
+            raise TypeError(f"Expected 'datatype' to be an instance of OWLDatatype, got {type(datatype).__name__} instead ({datatype!r}).")
+        if not isinstance(argument1, (DVariable, OWLLiteral)):
+            raise TypeError(f"Expected 'argument1' to be an instance of DVariable or OWLLiteral, got {type(argument1).__name__} instead ({argument1!r}).")
         self.datatype = datatype
         self.argument1 = argument1
 
@@ -296,6 +306,12 @@ class ObjectPropertyAtom(PropertyAtom):
 
     def __init__(self, prop: OWLObjectProperty, argument1: Union[OWLNamedIndividual, IVariable],
                  argument2: Union[OWLNamedIndividual, IVariable]):
+        if not isinstance(prop, OWLObjectProperty):
+            raise TypeError(f"Expected 'prop' to be an instance of OWLObjectProperty, got {type(prop).__name__} instead ({prop!r}).")
+        if not isinstance(argument1, (OWLNamedIndividual, IVariable)):
+            raise TypeError(f"Expected 'argument1' to be an instance of OWLNamedIndividual or IVariable, got {type(argument1).__name__} instead ({argument1!r}).")
+        if not isinstance(argument2, (OWLNamedIndividual, IVariable)):
+            raise TypeError(f"Expected 'argument2' to be an instance of OWLNamedIndividual or IVariable, got {type(argument2).__name__} instead ({argument2!r}).")
         super().__init__(prop, argument1, argument2)
 
     def __repr__(self):
@@ -318,6 +334,12 @@ class DataPropertyAtom(PropertyAtom):
 
     def __init__(self, prop: OWLDataProperty, argument1: Union[OWLNamedIndividual, IVariable],
                  argument2: Union[OWLLiteral, DVariable]):
+        if not isinstance(prop, OWLDataProperty):
+            raise TypeError(f"Expected 'prop' to be an instance of OWLDataProperty, got {type(prop).__name__} instead ({prop!r}).")
+        if not isinstance(argument1, (OWLNamedIndividual, IVariable)):
+            raise TypeError(f"Expected 'argument1' to be an instance of OWLNamedIndividual or IVariable, got {type(argument1).__name__} instead ({argument1!r}).")
+        if not isinstance(argument2, (OWLLiteral, DVariable)):
+            raise TypeError(f"Expected 'argument2' to be an instance of OWLLiteral or DVariable, got {type(argument2).__name__} instead ({argument2!r}).")
         super().__init__(prop, argument1, argument2)
 
     def __repr__(self):
@@ -337,6 +359,10 @@ class SameAsAtom(Atom):
     argument2: Union[IVariable, OWLNamedIndividual]
 
     def __init__(self, argument1: Union[IVariable, OWLNamedIndividual], argument2: Union[IVariable, OWLNamedIndividual]):
+        if not isinstance(argument1, (IVariable, OWLNamedIndividual)):
+            raise TypeError(f"Expected 'argument1' to be an instance of IVariable or OWLNamedIndividual, got {type(argument1).__name__} instead ({argument1!r}).")
+        if not isinstance(argument2, (IVariable, OWLNamedIndividual)):
+            raise TypeError(f"Expected 'argument2' to be an instance of IVariable or OWLNamedIndividual, got {type(argument2).__name__} instead ({argument2!r}).")
         self.argument1 = argument1
         self.argument2 = argument2
 
@@ -376,6 +402,10 @@ class DifferentFromAtom(Atom):
     argument2: Union[IVariable, OWLNamedIndividual]
 
     def __init__(self, argument1: Union[IVariable, OWLNamedIndividual], argument2: Union[IVariable, OWLNamedIndividual]):
+        if not isinstance(argument1, (IVariable, OWLNamedIndividual)):
+            raise TypeError(f"Expected 'argument1' to be an instance of IVariable or OWLNamedIndividual, got {type(argument1).__name__} instead ({argument1!r}).")
+        if not isinstance(argument2, (IVariable, OWLNamedIndividual)):
+            raise TypeError(f"Expected 'argument2' to be an instance of IVariable or OWLNamedIndividual, got {type(argument2).__name__} instead ({argument2!r}).")
         self.argument1 = argument1
         self.argument2 = argument2
 
@@ -412,9 +442,15 @@ class DifferentFromAtom(Atom):
 class BuiltInAtom(Atom):
     """Represents a built-in atom in SWRL syntax"""
     predicate: IRI # should have the correct prefix, e.g: http://www.w3.org/2003/11/swrlb#divide
-    arguments: List[Union[DVariable, OWLLiteral]]
+    arguments: List[Union[IVariable, DVariable, OWLLiteral]]
 
-    def __init__(self, predicate: IRI, arguments: List[Union[DVariable, OWLLiteral]]):
+    def __init__(self, predicate: IRI, arguments: List[Union[IVariable, DVariable, OWLLiteral]]):
+        if not isinstance(predicate, IRI):
+            raise TypeError(f"Expected 'predicate' to be an instance of IRI, got {type(predicate).__name__} instead ({predicate!r}).")
+        arguments = list(arguments)
+        for i, arg in enumerate(arguments):
+            if not isinstance(arg, (IVariable, DVariable, OWLLiteral)):
+                raise TypeError(f"Expected all arguments to be instances of IVariable, DVariable or OWLLiteral, got {type(arg).__name__} instead ({arg!r}) at index {i}.")
         self.predicate = predicate
         self.arguments = arguments
 
@@ -465,6 +501,15 @@ class Rule:
     head_atoms: Union[Atom, List[Atom]]
 
     def __init__(self, body_atoms: Union[Atom, List[Atom]], head_atoms: Union[Atom, List[Atom]]):
+        for name, atoms in (("body_atoms", body_atoms), ("head_atoms", head_atoms)):
+            if isinstance(atoms, Atom):
+                continue
+            if isinstance(atoms, list):
+                for i, a in enumerate(atoms):
+                    if not isinstance(a, Atom):
+                        raise TypeError(f"Expected all elements of '{name}' to be instances of Atom, got {type(a).__name__} instead ({a!r}) at index {i}.")
+                continue
+            raise TypeError(f"Expected '{name}' to be an instance of Atom or a list of Atom, got {type(atoms).__name__} instead ({atoms!r}).")
         self.body = body_atoms
         self.head = head_atoms
 
