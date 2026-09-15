@@ -1370,6 +1370,100 @@ class SyncOntology(AbstractOWLOntology):
     def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
         return self.mapper.map_(self.owlapi_ontology.getIndividualsInSignature())
 
+    def _to_owlapi_iri(self, entity: Union[IRI, str, OWLClass, OWLObjectProperty, OWLDataProperty,
+                                            OWLAnnotationProperty, OWLDatatype, OWLNamedIndividual]):
+        """Coerce an IRI, IRI string, or named entity into an OWL API ``IRI`` object."""
+        if isinstance(entity, str):
+            entity = IRI.create(entity)
+        if not isinstance(entity, IRI):
+            entity = entity.iri
+        return self.mapper.map_(entity)
+
+    def contains_class_in_signature(self, entity: Union[IRI, str, OWLClass],
+                                     include_imports_closure: bool = True) -> bool:
+        """Check whether a class with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The class (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if a class with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsClassInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def contains_object_property_in_signature(self, entity: Union[IRI, str, OWLObjectProperty],
+                                                include_imports_closure: bool = True) -> bool:
+        """Check whether an object property with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The object property (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if an object property with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsObjectPropertyInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def contains_data_property_in_signature(self, entity: Union[IRI, str, OWLDataProperty],
+                                             include_imports_closure: bool = True) -> bool:
+        """Check whether a data property with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The data property (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if a data property with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsDataPropertyInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def contains_annotation_property_in_signature(self, entity: Union[IRI, str, OWLAnnotationProperty],
+                                                    include_imports_closure: bool = True) -> bool:
+        """Check whether an annotation property with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The annotation property (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if an annotation property with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsAnnotationPropertyInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def contains_individual_in_signature(self, entity: Union[IRI, str, OWLNamedIndividual],
+                                          include_imports_closure: bool = True) -> bool:
+        """Check whether a named individual with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The named individual (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if a named individual with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsIndividualInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def is_declared(self, entity: Union[OWLClass, OWLObjectProperty, OWLDataProperty,
+                                         OWLAnnotationProperty, OWLDatatype, OWLNamedIndividual],
+                     include_imports_closure: bool = True) -> bool:
+        """Check whether the given entity has a declaration axiom in this ontology.
+
+        Args:
+            entity: The class, object/data/annotation property, datatype, or named individual to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if the entity is declared, False otherwise.
+        """
+        return bool(self.owlapi_ontology.isDeclared(
+            self.mapper.map_(entity), self._get_imports_enum(include_imports_closure)))
+
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
         return self.mapper.map_(self.owlapi_ontology.getEquivalentClassesAxioms(self.mapper.map_(c)))
 
@@ -1420,6 +1514,40 @@ class SyncOntology(AbstractOWLOntology):
             Entities in signature.
         """
         return self.mapper.map_(self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
+
+    def get_punned_iris(self, include_imports_closure: bool = True) -> Iterable[IRI]:
+        """Get the IRIs that are used for more than one entity type in this ontology (punning), e.g. an
+        IRI that is used both as a class and as a named individual.
+
+        Args:
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            The punned IRIs.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getPunnedIRIs(self._get_imports_enum(include_imports_closure)))
+
+    def get_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
+        """Get all axioms in this ontology.
+
+        Args:
+            include_imports_closure: Whether to include/exclude imports from searches.
+
+        Returns:
+            All axioms in this ontology.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getAxioms(self._get_imports_enum(include_imports_closure)))
+
+    def contains_axiom(self, axiom: OWLAxiom) -> bool:
+        """Check whether this ontology contains the given axiom (imports excluded).
+
+        Args:
+            axiom: The axiom to check for.
+
+        Returns:
+            True if this ontology contains the axiom, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsAxiom(self.mapper.map_(axiom)))
 
     def get_abox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
         """Get all ABox axioms.
