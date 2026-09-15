@@ -191,6 +191,77 @@ def test_get_tbox_axioms_ignores_annotation_predicates(basic_kg_path):
     assert not any("A person is an Agent." in str(a) for a in axioms)
 
 
+@pytest.fixture
+def annotated_kg_path(tmp_path):
+    """Student carries a well-known predicate (rdfs:label), a custom predicate explicitly declared
+    owl:AnnotationProperty (ex:priority), an IRI-valued annotation (rdfs:seeAlso), and a blank-node
+    annotation value that must be silently skipped rather than crashing."""
+    g = Graph()
+    student = URIRef(NS + "Student")
+    person = URIRef(NS + "Person")
+    priority = URIRef(NS + "priority")
+
+    g.add((student, RDF.type, OWL.Class))
+    g.add((student, RDFS.label, Literal("Student")))
+    g.add((student, RDFS.seeAlso, person))
+    g.add((priority, RDF.type, OWL.AnnotationProperty))
+    g.add((student, priority, Literal("high")))
+    g.add((student, URIRef(NS + "hasNote"), Literal("ignored", lang=None)))  # undeclared predicate -> ignored
+    bnode_note = rdflib.BNode()
+    g.add((student, URIRef(NS + "hasBlankNote"), bnode_note))
+    g.add((bnode_note, RDF.type, URIRef(NS + "Note")))
+
+    path = str(tmp_path / "annotated.owl")
+    _write_graph(path, g)
+    return path
+
+
+def test_annotation_assertion_axioms_well_known_predicate(basic_kg_path):
+    onto = RDFLibOntology(basic_kg_path)
+    axioms = list(onto.annotation_assertion_axioms(OWLClass(NS + "Person")))
+    assert len(axioms) == 1
+    assert axioms[0].get_property().str == str(RDFS.comment)
+    assert axioms[0].get_value() == OWLLiteral("A person is an Agent.")
+
+
+def test_annotation_assertion_axioms_accepts_iri_directly(basic_kg_path):
+    onto = RDFLibOntology(basic_kg_path)
+    axioms = list(onto.annotation_assertion_axioms(IRI.create(NS, "Person")))
+    assert len(axioms) == 1
+    assert axioms[0].get_value() == OWLLiteral("A person is an Agent.")
+
+
+def test_annotation_assertion_axioms_empty_for_entity_without_annotations(basic_kg_path):
+    onto = RDFLibOntology(basic_kg_path)
+    assert list(onto.annotation_assertion_axioms(OWLClass(NS + "Agent"))) == []
+
+
+def test_annotation_assertion_axioms_custom_declared_annotation_property(annotated_kg_path):
+    onto = RDFLibOntology(annotated_kg_path)
+    axioms = list(onto.annotation_assertion_axioms(OWLClass(NS + "Student")))
+    priority_axioms = [a for a in axioms if a.get_property().str == NS + "priority"]
+    assert len(priority_axioms) == 1
+    assert priority_axioms[0].get_value() == OWLLiteral("high")
+
+
+def test_annotation_assertion_axioms_iri_valued_annotation(annotated_kg_path):
+    onto = RDFLibOntology(annotated_kg_path)
+    axioms = list(onto.annotation_assertion_axioms(OWLClass(NS + "Student")))
+    see_also_axioms = [a for a in axioms if a.get_property().str == str(RDFS.seeAlso)]
+    assert len(see_also_axioms) == 1
+    assert see_also_axioms[0].get_value() == IRI.create(NS, "Person")
+
+
+def test_annotation_assertion_axioms_ignores_undeclared_predicate_and_blank_node_value(annotated_kg_path):
+    onto = RDFLibOntology(annotated_kg_path)
+    axioms = list(onto.annotation_assertion_axioms(OWLClass(NS + "Student")))
+    properties = {a.get_property().str for a in axioms}
+    assert NS + "hasNote" not in properties
+    assert NS + "hasBlankNote" not in properties
+    # only the three recognized predicates should have made it through
+    assert properties == {str(RDFS.label), str(RDFS.seeAlso), NS + "priority"}
+
+
 def test_get_abox_axioms_class_assertion_and_object_property(basic_kg_path):
     onto = RDFLibOntology(basic_kg_path)
     axioms = onto.get_abox_axioms()
