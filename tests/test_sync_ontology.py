@@ -206,6 +206,53 @@ class TestSyncOntology(unittest.TestCase):
                                    OWLClass(IRI('http://example.com/father#', 'female'))),
                                                           OWLClass(IRI('http://example.com/father#', 'male'))],[])])
 
+    def test_contains_in_signature(self):
+        male = OWLClass(IRI('http://example.com/father#', 'male'))
+        has_child = OWLObjectProperty(IRI('http://example.com/father#', 'hasChild'))
+        markus = OWLNamedIndividual(IRI('http://example.com/father#', 'markus'))
+        missing_class = OWLClass(IRI('http://example.com/father#', 'nonexistent'))
+
+        self.assertTrue(father_onto.contains_class_in_signature(male))
+        self.assertTrue(father_onto.contains_class_in_signature(male.iri.str))
+        self.assertFalse(father_onto.contains_class_in_signature(missing_class))
+
+        self.assertTrue(father_onto.contains_object_property_in_signature(has_child))
+        self.assertFalse(father_onto.contains_object_property_in_signature(
+            OWLObjectProperty(IRI('http://example.com/father#', 'nonexistent'))))
+
+        self.assertTrue(father_onto.contains_individual_in_signature(markus))
+        self.assertFalse(father_onto.contains_individual_in_signature(
+            OWLNamedIndividual(IRI('http://example.com/father#', 'nonexistent'))))
+
+        self.assertFalse(father_onto.contains_data_property_in_signature(
+            OWLDataProperty(IRI('http://example.com/father#', 'nonexistent'))))
+        self.assertFalse(father_onto.contains_annotation_property_in_signature(
+            "http://example.com/father#nonexistent"))
+
+    def test_is_declared(self):
+        male = OWLClass(IRI('http://example.com/father#', 'male'))
+        owl_thing = OWLClass(IRI('http://www.w3.org/2002/07/owl#', 'Thing'))
+        missing_class = OWLClass(IRI('http://example.com/father#', 'nonexistent'))
+
+        self.assertTrue(father_onto.is_declared(male))
+        # owl:Thing is built-in and not asserted with its own declaration axiom
+        self.assertFalse(father_onto.is_declared(owl_thing))
+        self.assertFalse(father_onto.is_declared(missing_class))
+
+    def test_get_axioms_and_contains_axiom(self):
+        axioms = list(father_onto.get_axioms())
+        self.assertTrue(len(axioms) > 0)
+        for axiom in axioms:
+            self.assertTrue(father_onto.contains_axiom(axiom))
+
+        not_an_axiom = OWLClassAssertionAxiom(
+            individual=OWLNamedIndividual(IRI('http://example.com/father#', 'markus')),
+            class_expression=OWLClass(IRI('http://example.com/father#', 'female')), annotations=[])
+        self.assertFalse(father_onto.contains_axiom(not_an_axiom))
+
+    def test_get_punned_iris(self):
+        self.assertCountEqual(list(father_onto.get_punned_iris()), [])
+
     def test_get_rbox(self):
         new_ontology = SyncOntology("KGs/Family/father.owl")
         print("Previous rbox axioms: ", father_onto.get_rbox_axioms())

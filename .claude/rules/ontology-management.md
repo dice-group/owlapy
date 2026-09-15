@@ -34,6 +34,28 @@ onto.data_property_domain_axioms(prop); onto.data_property_range_axioms(prop)
 onto.object_property_domain_axioms(prop); onto.object_property_range_axioms(prop)
 ```
 
+## Membership Checks (SyncOntology only)
+
+Java-side OWL API checks exposed on Python side (#278) -- prefer these over scanning
+`*_in_signature()`/`get_*_axioms()` by hand:
+
+```python
+onto.get_axioms()            # all axioms (vs. get_abox/tbox/rbox_axioms() for a subset)
+onto.contains_axiom(axiom)   # bool, imports excluded
+
+# each accepts either the named entity (OWLClass/OWLObjectProperty/...) or its IRI/IRI string
+onto.contains_class_in_signature(cls_or_iri)
+onto.contains_object_property_in_signature(prop_or_iri)
+onto.contains_data_property_in_signature(prop_or_iri)
+onto.contains_annotation_property_in_signature(prop_or_iri)
+onto.contains_individual_in_signature(ind_or_iri)
+
+onto.is_declared(entity)     # has a declaration axiom for this entity
+onto.get_punned_iris()       # IRIs used as more than one entity type
+```
+
+All of the above take `include_imports_closure: bool = True`, matching `get_abox_axioms()` et al.
+
 Add/remove axioms with `onto.add_axiom([...])` / `onto.remove_axiom(axiom)`. Common axiom types
 (`owlapy.owl_axiom`): `OWLDeclarationAxiom`, `OWLClassAssertionAxiom(ind, cls)`,
 `OWLObjectPropertyAssertionAxiom(subj, prop, obj)`, `OWLDataPropertyAssertionAxiom(subj, prop, literal)`,
