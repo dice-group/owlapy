@@ -253,6 +253,21 @@ class TestSyncOntology(unittest.TestCase):
     def test_get_punned_iris(self):
         self.assertCountEqual(list(father_onto.get_punned_iris()), [])
 
+    def test_get_punned_iris_with_punning(self):
+        # Regression test for https://github.com/dice-group/owlapy/issues/278#issuecomment-5694838630:
+        # getPunnedIRIs() returns a non-empty java.util.HashSet, which the mapper's
+        # singledispatch could not dispatch on (RuntimeError: Inconsistent hierarchy).
+        punned_iri = IRI.create("http://example.org/punning#Alice")
+        punned_ind = OWLNamedIndividual(punned_iri)
+        punned_class = OWLClass(punned_iri)
+        person = OWLClass(IRI.create("http://example.org/punning#Person"))
+
+        onto = SyncOntology("http://example.org/punning", load=False)
+        onto.add_axiom(OWLClassAssertionAxiom(punned_ind, person))
+        onto.add_axiom(OWLSubClassOfAxiom(punned_class, person))
+
+        self.assertCountEqual(list(onto.get_punned_iris()), [punned_iri])
+
     def test_get_rbox(self):
         new_ontology = SyncOntology("KGs/Family/father.owl")
         print("Previous rbox axioms: ", father_onto.get_rbox_axioms())

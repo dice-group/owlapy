@@ -80,7 +80,7 @@ from owlapy.vocab import OWLFacet
 
 if not jpype.isJVMStarted():
     startJVM()
-from java.util import ArrayList, Collections, LinkedHashSet, List, Optional, Set
+from java.util import ArrayList, Collections, HashSet, LinkedHashSet, List, Optional, Set
 from java.util.stream import Stream
 from org.semanticweb.owlapi.model import IRI as owlapi_IRI
 from org.semanticweb.owlapi.model import NodeID as owlapi_NodeID
@@ -645,6 +645,7 @@ class OWLAPIMapper:
     @map_.register(List)
     @map_.register(Set)
     @map_.register(LinkedHashSet)
+    @map_.register(HashSet)
     @map_.register(ArrayList)
     def _(self, e):
         python_list = list()
