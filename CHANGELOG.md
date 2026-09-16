@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python-side type checks across OWL construct constructors (`owlapy.owl_axiom`, `owlapy.class_expression`, `owlapy.owl_property`, `owlapy.owl_individual`, `owlapy.owl_datatype`, `owlapy.owl_literal`, `owlapy.namespaces`): constructing an OWL axiom/class expression/entity with an argument of the wrong type (e.g. an `OWLSubClassOfAxiom` given object properties instead of class expressions) now raises a clear `TypeError`/`ValueError` immediately, instead of succeeding silently and only failing later -- as an opaque Java exception -- once the construct is used with a JVM-backed ontology (#271, #272)
 - Additional regression tests for the `owlapy.owl_axiom` type checks above, covering `OWLSubClassOfAxiom`, `OWLClassAssertionAxiom`, `OWLEquivalentClassesAxiom`, `OWLObjectPropertyAssertionAxiom`, `OWLObjectPropertyDomainAxiom`, `OWLFunctionalObjectPropertyAxiom`, and `OWLDeclarationAxiom` (#271)
 
+### Fixed
+- `SyncOntology.get_punned_iris()` raised `RuntimeError: Inconsistent hierarchy` whenever the ontology actually contained a punned IRI: `OWLAPIMapper.map_()` (a `functools.singledispatchmethod`) had no registered handler for `java.util.HashSet` -- the concrete type `getPunnedIRIs()` returns when non-empty -- so it fell through to MRO-based dispatch, which JPype's dynamic Java-class proxies can't always resolve. Registered `HashSet` directly (the same fix already applied to `LinkedHashSet` for the same underlying issue), which lets `singledispatch` hit its exact-type fast path instead (#278)
+
 ## [1.6.6] - 2026-08-05
 
 ### Added
