@@ -1,9 +1,12 @@
+import tempfile
 import unittest
+from pathlib import Path
 
 from owlapy.class_expression import OWLClass, OWLObjectIntersectionOf, OWLObjectSomeValuesFrom, OWLObjectComplementOf
 from owlapy.iri import IRI
 from owlapy.owl_axiom import OWLEquivalentClassesAxiom, OWLClassAssertionAxiom, OWLObjectPropertyAssertionAxiom, \
-    OWLSubClassOfAxiom, OWLObjectPropertyRangeAxiom, OWLObjectPropertyDomainAxiom
+    OWLSubClassOfAxiom, OWLObjectPropertyRangeAxiom, OWLObjectPropertyDomainAxiom, OWLDeclarationAxiom, \
+    OWLAnnotationProperty
 from owlapy.owl_individual import OWLNamedIndividual
 from owlapy.owl_ontology import OWLOntologyID, SyncOntology
 from owlapy.owl_property import OWLDataProperty, OWLObjectProperty
@@ -267,6 +270,98 @@ class TestSyncOntology(unittest.TestCase):
         onto.add_axiom(OWLSubClassOfAxiom(punned_class, person))
 
         self.assertCountEqual(list(onto.get_punned_iris()), [punned_iri])
+
+    def test_get_punned_iris_three_types_and_empty(self):
+        # An IRI used as class, individual and object property is reported once, not once per entity type.
+        punned_iri = IRI.create("http://example.org/punning3#Alice")
+        onto = SyncOntology("http://example.org/punning3", load=False)
+        onto.add_axiom(OWLDeclarationAxiom(OWLClass(punned_iri)))
+        onto.add_axiom(OWLDeclarationAxiom(OWLNamedIndividual(punned_iri)))
+        onto.add_axiom(OWLDeclarationAxiom(OWLObjectProperty(punned_iri)))
+        self.assertCountEqual(list(onto.get_punned_iris()), [punned_iri])
+        self.assertCountEqual(list(onto.get_punned_iris(include_imports_closure=False)), [punned_iri])
+
+        empty = SyncOntology("http://example.org/empty", load=False)
+        self.assertEqual(list(empty.get_axioms()), [])
+        self.assertEqual(list(empty.get_punned_iris()), [])
+
+    def test_signature_and_declaration_positive_cases(self):
+        ns = "http://example.org/positive#"
+        cls = OWLClass(IRI.create(ns + "C"))
+        dp = OWLDataProperty(IRI.create(ns + "dp"))
+        op = OWLObjectProperty(IRI.create(ns + "op"))
+        ap = OWLAnnotationProperty(IRI.create(ns + "ap"))
+        ind = OWLNamedIndividual(IRI.create(ns + "i"))
+        onto = SyncOntology("http://example.org/positive", load=False)
+        for entity in (cls, dp, op, ap, ind):
+            onto.add_axiom(OWLDeclarationAxiom(entity))
+
+        self.assertTrue(onto.contains_data_property_in_signature(dp))
+        self.assertTrue(onto.contains_annotation_property_in_signature(ap))
+        self.assertTrue(onto.contains_annotation_property_in_signature(ap.iri.str))
+        # IRI, IRI string and entity are interchangeable
+        self.assertTrue(onto.contains_class_in_signature(cls.iri))
+        self.assertTrue(onto.contains_class_in_signature(cls.iri.str))
+        self.assertTrue(onto.contains_class_in_signature(cls, include_imports_closure=False))
+        # signature membership is per entity type
+        self.assertFalse(onto.contains_class_in_signature(dp.iri))
+
+        for entity in (cls, dp, op, ap, ind):
+            with self.subTest(entity=entity):
+                self.assertTrue(onto.is_declared(entity))
+                self.assertTrue(onto.is_declared(entity, include_imports_closure=False))
+
+    def test_contains_axiom_after_remove(self):
+        ns = "http://example.org/remove#"
+        axiom = OWLSubClassOfAxiom(OWLClass(IRI.create(ns + "A")), OWLClass(IRI.create(ns + "B")))
+        onto = SyncOntology("http://example.org/remove", load=False)
+        self.assertFalse(onto.contains_axiom(axiom))
+        onto.add_axiom(axiom)
+        self.assertTrue(onto.contains_axiom(axiom))
+        self.assertIn(axiom, list(onto.get_axioms()))
+        onto.remove_axiom(axiom)
+        self.assertFalse(onto.contains_axiom(axiom))
+        self.assertNotIn(axiom, list(onto.get_axioms()))
+
+    def test_include_imports_closure_flag(self):
+        imported_iri = "http://example.org/imported"
+        importing_iri = "http://example.org/importing"
+        imported_class = OWLClass(IRI.create(imported_iri + "#FromImport"))
+        local_class = OWLClass(IRI.create(importing_iri + "#Local"))
+        imported_axiom = OWLDeclarationAxiom(imported_class)
+        local_axiom = OWLDeclarationAxiom(local_class)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            imported_path = Path(tmp) / "imported.owl"
+            imported = SyncOntology(imported_iri, load=False)
+            imported.add_axiom(imported_axiom)
+            imported.save(str(imported_path))
+
+            importing_path = Path(tmp) / "importing.owl"
+            importing_path.write_text(
+                '<?xml version="1.0"?>\n'
+                '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"'
+                ' xmlns:owl="http://www.w3.org/2002/07/owl#">\n'
+                f'  <owl:Ontology rdf:about="{importing_iri}">\n'
+                f'    <owl:imports rdf:resource="{imported_path.as_uri()}"/>\n'
+                '  </owl:Ontology>\n'
+                f'  <owl:Class rdf:about="{local_class.iri.str}"/>\n'
+                '</rdf:RDF>\n')
+            onto = SyncOntology(str(importing_path))
+
+            self.assertTrue(onto.contains_class_in_signature(imported_class))
+            self.assertFalse(onto.contains_class_in_signature(imported_class, include_imports_closure=False))
+            self.assertTrue(onto.contains_class_in_signature(local_class, include_imports_closure=False))
+
+            self.assertTrue(onto.is_declared(imported_class))
+            self.assertFalse(onto.is_declared(imported_class, include_imports_closure=False))
+
+            self.assertIn(imported_axiom, list(onto.get_axioms()))
+            self.assertNotIn(imported_axiom, list(onto.get_axioms(include_imports_closure=False)))
+            self.assertIn(local_axiom, list(onto.get_axioms(include_imports_closure=False)))
+            # contains_axiom is documented as imports-excluded
+            self.assertFalse(onto.contains_axiom(imported_axiom))
+            self.assertTrue(onto.contains_axiom(local_axiom))
 
     def test_get_rbox(self):
         new_ontology = SyncOntology("KGs/Family/father.owl")
