@@ -20,7 +20,6 @@ class OWLNaryBooleanClassExpression(
         Args:
             operands: Class expressions.
         """
-        # TODO: CD: Replace tuple with set
         self._operands = tuple(operands)
 
         assert (
@@ -41,13 +40,11 @@ class OWLNaryBooleanClassExpression(
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return set(self._operands) == set(other.operands()) and len(
-                list(self._operands)
-            ) == len(list(other.operands()))
+            return set(self._operands) == set(other._operands) and len(self._operands) == len(other._operands)
         return False
 
     def __hash__(self):
-        return hash((type(self).__name__, self._operands))
+        return hash((type(self).__name__, frozenset(self._operands), len(self._operands)))
 
 
 class OWLObjectUnionOf(OWLNaryBooleanClassExpression):
