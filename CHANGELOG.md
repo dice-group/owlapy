@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Additional regression tests for the `owlapy.owl_axiom` type checks above, covering `OWLSubClassOfAxiom`, `OWLClassAssertionAxiom`, `OWLEquivalentClassesAxiom`, `OWLObjectPropertyAssertionAxiom`, `OWLObjectPropertyDomainAxiom`, `OWLFunctionalObjectPropertyAxiom`, and `OWLDeclarationAxiom` (#271)
 
 ### Fixed
+- Preserved floating-point values and consistent hashes for reordered axioms (#291).
+- Corrected data universals, empty-string enumerations, datatype membership, and facet handling in SPARQL (#291).
 - Consistent hashes for reordered class expressions and data ranges (#283).
 - Cardinality queries count distinct values and include individuals with zero matching values (#284, #285).
 - Escaped string literals in SPARQL conversion (#286).

@@ -235,6 +235,8 @@ class RDFLibReasoner(AbstractOWLReasoner):
                     individuals.add(OWLNamedIndividual(IRI.create(ind_uri)))
 
             return iter(individuals)
+        except NotImplementedError:
+            raise
         except Exception as e:
             logger.warning(f"Failed to convert class expression to SPARQL: {e}")
             # Fallback to manual filtering (slower)

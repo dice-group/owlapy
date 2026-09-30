@@ -9,7 +9,7 @@ from owlapy.owl_property import OWLDataProperty
 
 @pytest.mark.parametrize("value", [
     'say "hello"', "line\nbreak", "carriage\rreturn", "tab\there", r"path\name",
-    'three """ quotes', '" } UNION { ?x ?p ?o } #',
+    'three """ quotes', '" } UNION { ?x ?p ?o } #', "",
 ])
 @pytest.mark.parametrize("enumeration", [False, True])
 def test_literal_values_survive_sparql_conversion(value, enumeration):
@@ -22,3 +22,15 @@ def test_literal_values_survive_sparql_conversion(value, enumeration):
     expression = OWLDataSomeValuesFrom(prop, OWLDataOneOf(literal)) if enumeration else OWLDataHasValue(prop, literal)
     query = owl_expression_to_sparql(expression, validate=True)
     assert {row[0] for row in graph.query(query)} == {ex.alice}
+
+
+def test_enumeration_includes_empty_and_nonempty_strings():
+    ex = Namespace("http://example.org/")
+    graph = Graph()
+    for name, value in [("alice", ""), ("bob", "hello"), ("carol", "other")]:
+        graph.add((ex[name], ex.value, Literal(value, datatype=XSD.string)))
+    expression = OWLDataSomeValuesFrom(
+        OWLDataProperty(str(ex.value)), OWLDataOneOf([OWLLiteral(""), OWLLiteral("hello")]),
+    )
+    query = owl_expression_to_sparql(expression, validate=True)
+    assert {row[0] for row in graph.query(query)} == {ex.alice, ex.bob}

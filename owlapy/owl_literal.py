@@ -1,6 +1,7 @@
 """OWL Literals"""
 import re
 from abc import ABCMeta, abstractmethod
+from ctypes import c_float
 from datetime import date, datetime, time
 from decimal import Decimal
 from enum import Enum
@@ -431,22 +432,19 @@ class _OWLNumericLiteralInterface(OWLLiteral):
     _type: OWLDatatype
 
     def __init__(self, value, type_=None):
-        if isinstance(value, int) or type_ in [IntegerOWLDatatype,
+        if isinstance(value, FloatSpecialValue):
+            assert type_ in [DoubleOWLDatatype, FloatOWLDatatype]
+        elif type_ in [DoubleOWLDatatype, FloatOWLDatatype]:
+            value = c_float(float(value)).value if type_ == FloatOWLDatatype else float(value)
+        elif isinstance(value, int) or type_ in [IntegerOWLDatatype,
                                                IntOWLDatatype,
                                                NonNegativeIntegerOWLDatatype,
                                                NonPositiveIntegerOWLDatatype,
                                                NegativeIntegerOWLDatatype,
                                                PositiveIntegerOWLDatatype]:
             value = int(value)
-        elif isinstance(value, FloatSpecialValue):
-            assert type_ in [DoubleOWLDatatype, FloatOWLDatatype]
-        elif isinstance(value, float) or type_ in [DoubleOWLDatatype, FloatOWLDatatype]:
-            if type_ == FloatOWLDatatype:
-                # single-precision
-                value = round(float(value), 7)
-            else:
-                # double-precision
-                value = round(float(value), 15)
+        elif isinstance(value, float):
+            value = float(value)
         elif isinstance(value, Decimal) or type_ == DecimalOWLDatatype:
             value = Decimal(value)
         else:
@@ -503,7 +501,7 @@ class _OWLIntegerLiteralInterface(_OWLNumericLiteralInterface):
 
 @total_ordering
 class _OWLLiteralImplFloat(_OWLNumericLiteralInterface):
-    """Represents floating-point numbers with single-precision (7 digits of precision)."""
+    """Represents IEEE 754 single-precision floating-point numbers."""
 
     def __init__(self, value, type_=FloatOWLDatatype):
         super().__init__(value, type_)
@@ -522,7 +520,7 @@ class _OWLLiteralImplFloat(_OWLNumericLiteralInterface):
 
 @total_ordering
 class _OWLLiteralImplDouble(_OWLNumericLiteralInterface):
-    """Represents floating-point numbers with double-precision (15 digits of precision)."""
+    """Represents IEEE 754 double-precision floating-point numbers."""
     def __init__(self, value, type_=DoubleOWLDatatype):
         super().__init__(value, type_)
 
