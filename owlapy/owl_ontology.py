@@ -2186,6 +2186,15 @@ _WELL_KNOWN_ANNOTATION_PREDICATES = frozenset((
     rdflib.OWL.backwardCompatibleWith, rdflib.OWL.incompatibleWith,
 ))
 
+_RDFLIB_SCHEMA_TYPES = frozenset((
+    rdflib.OWL.Class, rdflib.RDFS.Class, rdflib.RDFS.Datatype, rdflib.RDF.Property,
+    rdflib.OWL.ObjectProperty, rdflib.OWL.DatatypeProperty, rdflib.OWL.AnnotationProperty,
+    rdflib.OWL.Ontology, rdflib.OWL.Restriction, rdflib.OWL.Axiom, rdflib.OWL.Annotation,
+    rdflib.OWL.AllDifferent, rdflib.OWL.AllDisjointClasses, rdflib.OWL.AllDisjointProperties,
+    rdflib.OWL.NegativePropertyAssertion, rdflib.OWL.DataRange, rdflib.RDF.List,
+    *_PROPERTY_CHARACTERISTIC_TERMS.values(),
+))
+
 
 class RDFLibOntology(AbstractOWLOntology):
 
@@ -2200,6 +2209,7 @@ class RDFLibOntology(AbstractOWLOntology):
             self.str_owl_object_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.ObjectProperty) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_data_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.DatatypeProperty) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_annotation_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.AnnotationProperty) if not isinstance(x, rdflib.term.BNode)]
+            self._infer_individuals()
         else:  # create a blank ontology; `path`/`self._path` is treated as the new ontology's IRI
             self.rdflib_graph = rdflib.Graph()
             self.rdflib_graph.add((rdflib.URIRef(self._path), rdflib.RDF.type, rdflib.OWL.Ontology))
@@ -2208,6 +2218,39 @@ class RDFLibOntology(AbstractOWLOntology):
             self.str_owl_object_properties = []
             self.str_owl_data_properties = []
             self.str_owl_annotation_properties = []
+
+    def _annotation_predicates(self):
+        return _WELL_KNOWN_ANNOTATION_PREDICATES | {rdflib.URIRef(s) for s in self.str_owl_annotation_properties}
+
+    def _infer_individuals(self):
+        graph = self.rdflib_graph
+        schema_entities = {s for s, t in graph.subject_objects(rdflib.RDF.type) if t in _RDFLIB_SCHEMA_TYPES}
+        annotations = self._annotation_predicates()
+        object_properties = {rdflib.URIRef(s) for s in self.str_owl_object_properties}
+        data_properties = {rdflib.URIRef(s) for s in self.str_owl_data_properties}
+        individuals = set()
+        for subject, predicate, obj in graph:
+            if not isinstance(subject, rdflib.URIRef):
+                continue
+            if predicate == rdflib.RDF.type:
+                if obj not in _RDFLIB_SCHEMA_TYPES:
+                    individuals.add(subject)
+            elif predicate in annotations:
+                continue
+            elif predicate in object_properties:
+                individuals.add(subject)
+                if isinstance(obj, rdflib.URIRef):
+                    individuals.add(obj)
+            elif predicate in data_properties:
+                individuals.add(subject)
+            elif (not str(predicate).startswith((str(rdflib.RDF), str(rdflib.RDFS), str(rdflib.OWL)))
+                  and subject not in schema_entities):
+                if isinstance(obj, rdflib.Literal):
+                    individuals.add(subject)
+                elif isinstance(obj, rdflib.URIRef) and obj not in schema_entities:
+                    individuals.update((subject, obj))
+        declared = set(self.str_owl_individuals)
+        self.str_owl_individuals.extend(str(ind) for ind in sorted(individuals) if str(ind) not in declared)
 
     def __len__(self) -> int:
         return len(self.rdflib_graph)
@@ -2247,15 +2290,15 @@ class RDFLibOntology(AbstractOWLOntology):
         `rdf:type owl:NamedIndividual` -- neither omission is an error, so neither raises anymore.
         """
         results = []
-        for owl_individual in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
-            if not isinstance(owl_individual, rdflib.term.URIRef):
-                continue
-            subject = OWLNamedIndividual(owl_individual.n3()[1:-1])
+        annotations = self._annotation_predicates()
+        for str_iri in self.str_owl_individuals:
+            owl_individual = rdflib.URIRef(str_iri)
+            subject = OWLNamedIndividual(str_iri)
             for (_, p, o) in self.rdflib_graph.triples(triple=(owl_individual, None, None)):
-                if isinstance(o, rdflib.term.BNode):
+                if isinstance(o, rdflib.term.BNode) or p in annotations:
                     continue
                 if p == rdflib.RDF.type:
-                    if o == rdflib.OWL.NamedIndividual:
+                    if o == rdflib.OWL.NamedIndividual or o in _RDFLIB_SCHEMA_TYPES:
                         continue
                     if isinstance(o, rdflib.term.URIRef):
                         results.append(OWLClassAssertionAxiom(subject, OWLClass(o.n3()[1:-1])))
@@ -2311,7 +2354,7 @@ class RDFLibOntology(AbstractOWLOntology):
         """
         subject_iri = entity if isinstance(entity, IRI) else entity.iri
         subject_ref = rdflib.URIRef(subject_iri.str)
-        annotation_predicates = _WELL_KNOWN_ANNOTATION_PREDICATES | {rdflib.URIRef(s) for s in self.str_owl_annotation_properties}
+        annotation_predicates = self._annotation_predicates()
         results = []
         for (_, p, o) in self.rdflib_graph.triples((subject_ref, None, None)):
             if p not in annotation_predicates:

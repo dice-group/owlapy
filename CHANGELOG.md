@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Additional regression tests for the `owlapy.owl_axiom` type checks above, covering `OWLSubClassOfAxiom`, `OWLClassAssertionAxiom`, `OWLEquivalentClassesAxiom`, `OWLObjectPropertyAssertionAxiom`, `OWLObjectPropertyDomainAxiom`, `OWLFunctionalObjectPropertyAxiom`, and `OWLDeclarationAxiom` (#271)
 
 ### Fixed
+- Consistent hashes for reordered class expressions and data ranges (#283).
+- Cardinality queries count distinct values and include individuals with zero matching values (#284, #285).
+- Escaped string literals in SPARQL conversion (#286).
+- RDFLib retrieves individuals without explicit declarations and excludes annotations from ABox assertions (#287, #289).
+- Long raw text no longer raises filesystem errors in `UniversalTextLoader` (#288).
+- Sentence and paragraph chunk overlap respects `chunk_size` (#290).
+- Corrected the OntoSource installation description in the README (#282).
 - `SyncOntology.get_punned_iris()` raised `RuntimeError: Inconsistent hierarchy` whenever the ontology actually contained a punned IRI: `OWLAPIMapper.map_()` (a `functools.singledispatchmethod`) had no registered handler for `java.util.HashSet` -- the concrete type `getPunnedIRIs()` returns when non-empty -- so it fell through to MRO-based dispatch, which JPype's dynamic Java-class proxies can't always resolve. Registered `HashSet` directly (the same fix already applied to `LinkedHashSet` for the same underlying issue), which lets `singledispatch` hit its exact-type fast path instead (#278)
 
 ## [1.6.6] - 2026-08-05

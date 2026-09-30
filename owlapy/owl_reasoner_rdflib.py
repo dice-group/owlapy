@@ -2,13 +2,17 @@
 import logging
 from typing import Dict, FrozenSet, Iterable, Optional, Set, Union
 
-from rdflib import Graph, URIRef
+from rdflib import OWL, RDF, Graph, URIRef
 
 from owlapy.abstracts.abstract_owl_ontology import AbstractOWLOntology
 from owlapy.abstracts.abstract_owl_reasoner import AbstractOWLReasoner
 from owlapy.class_expression import (
     OWLClass,
     OWLClassExpression,
+    OWLDataCardinalityRestriction,
+    OWLDataExactCardinality,
+    OWLDataMaxCardinality,
+    OWLDataMinCardinality,
     OWLObjectCardinalityRestriction,
     OWLObjectExactCardinality,
     OWLObjectMaxCardinality,
@@ -139,6 +143,16 @@ class RDFLibReasoner(AbstractOWLReasoner):
                 ontology_iri = str(self._ontology.get_iri())
                 self._graph.parse(ontology_iri, format='xml')
 
+        undeclared = [URIRef(ind.str) for ind in self._ontology.individuals_in_signature()
+                      if (URIRef(ind.str), RDF.type, OWL.NamedIndividual) not in self._graph]
+        if undeclared:
+            graph = Graph()
+            for triple in self._graph:
+                graph.add(triple)
+            for individual in undeclared:
+                graph.add((individual, RDF.type, OWL.NamedIndividual))
+            self._graph = graph
+
         # Build caches if enabled
         if self._class_cache_enabled:
             self._build_class_hierarchy_cache()
@@ -196,10 +210,10 @@ class RDFLibReasoner(AbstractOWLReasoner):
         if isinstance(ce, OWLClass):
             return self._instances_of_class(ce)
 
-        # OWLObjectMaxCardinality / cardinality==0 restrictions need special-casing: see
+        # Max-cardinality / cardinality==0 restrictions need special-casing: see
         # _at_most_cardinality_instances for why.
-        if isinstance(ce, OWLObjectCardinalityRestriction) and (
-                isinstance(ce, OWLObjectMaxCardinality) or ce.get_cardinality() == 0):
+        if isinstance(ce, (OWLObjectCardinalityRestriction, OWLDataCardinalityRestriction)) and (
+                isinstance(ce, (OWLObjectMaxCardinality, OWLDataMaxCardinality)) or ce.get_cardinality() == 0):
             return self._at_most_cardinality_instances(ce)
 
         # For complex class expressions, use SPARQL conversion
@@ -226,28 +240,22 @@ class RDFLibReasoner(AbstractOWLReasoner):
             # Fallback to manual filtering (slower)
             return self._instances_manual(ce)
 
-    def _at_most_cardinality_instances(self, ce: OWLObjectCardinalityRestriction) -> Iterable[OWLNamedIndividual]:
-        """Special-cased handling for OWLObjectMaxCardinality (any N) and cardinality==0 (any
-        restriction type).
-
-        The natural SPARQL translation of these needs to identify individuals with ZERO matching
-        relations, via a FILTER NOT EXISTS/OPTIONAL+!BOUND pattern correlated per candidate
-        individual. rdflib's SPARQL engine evaluates that as an expensive per-candidate check
-        (not a proper join), which is catastrophically slow on non-trivial ontologies -- confirmed
-        via profiling on KGs/Mutagenesis/mutagenesis.owl (14k+ candidate individuals). Instead,
-        compute set-theoretically in Python using only the fast, uncorrelated
-        OWLObjectMinCardinality path (which never needs a "zero match" branch, since >=1 and
-        >=N+1 both require at least one match to even appear as a GROUP BY row).
+    def _at_most_cardinality_instances(
+        self, ce: Union[OWLObjectCardinalityRestriction, OWLDataCardinalityRestriction]
+    ) -> Iterable[OWLNamedIndividual]:
+        """Use minimum-cardinality queries and set differences to avoid costly
+        per-individual OPTIONAL checks for zero matching values.
         """
         prop = ce.get_property()
         n = ce.get_cardinality()
         filler = ce.get_filler()
+        min_restriction = OWLDataMinCardinality if isinstance(ce, OWLDataCardinalityRestriction) else OWLObjectMinCardinality
 
-        if isinstance(ce, OWLObjectMinCardinality):
+        if isinstance(ce, (OWLObjectMinCardinality, OWLDataMinCardinality)):
             # Only reached when n == 0: ">= 0" is trivially satisfied by every individual.
             return iter(set(self._ontology.individuals_in_signature()))
 
-        at_least_one = OWLObjectMinCardinality(cardinality=1, property=prop, filler=filler)
+        at_least_one = min_restriction(cardinality=1, property=prop, filler=filler)
         s_any = set(self.instances(at_least_one))
         s_zero = set(self._ontology.individuals_in_signature()) - s_any
 
@@ -255,13 +263,13 @@ class RDFLibReasoner(AbstractOWLReasoner):
             # Max/Exact cardinality 0: satisfied only by individuals with no matching relation.
             return iter(s_zero)
 
-        at_least_n_plus_one = OWLObjectMinCardinality(cardinality=n + 1, property=prop, filler=filler)
+        at_least_n_plus_one = min_restriction(cardinality=n + 1, property=prop, filler=filler)
         s_too_many = set(self.instances(at_least_n_plus_one))
         s_in_range = s_any - s_too_many
 
-        if isinstance(ce, OWLObjectExactCardinality):
+        if isinstance(ce, (OWLObjectExactCardinality, OWLDataExactCardinality)):
             return iter(s_in_range)
-        return iter(s_in_range | s_zero)  # OWLObjectMaxCardinality
+        return iter(s_in_range | s_zero)
 
     def _instances_of_class(self, cls: OWLClass) -> Iterable[OWLNamedIndividual]:
         """Get instances of a named class using SPARQL."""

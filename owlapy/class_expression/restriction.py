@@ -486,7 +486,7 @@ class OWLObjectOneOf(OWLAnonymousClassExpression, HasOperands[OWLIndividual]):
         return OWLObjectUnionOf(map(lambda _: OWLObjectOneOf(_), self.individuals()))
 
     def __hash__(self):
-        return hash(("OWLObjectOneOf", self._values))
+        return hash(("OWLObjectOneOf", frozenset(self._values)))
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -837,7 +837,7 @@ class OWLDataOneOf(OWLDataRange, HasOperands[OWLLiteral]):
         return f'OWLDataOneOf({self._values})'
 
     def __hash__(self):
-        return hash(("OWLDataOneOf",self._values))
+        return hash(("OWLDataOneOf", frozenset(self._values)))
 
     def __eq__(self, other):
         if type(other) is type(self):

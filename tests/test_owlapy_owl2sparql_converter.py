@@ -70,7 +70,7 @@ class TestOwl2SparqlConverter(unittest.TestCase):
 {
 { SELECT ?s_1 WHERE { 
 ?s_1 <http://dl-learner.org/carcinogenesis#hasAtom> ?s_2 . 
- } GROUP BY ?s_1 HAVING ( COUNT ( ?s_2 ) <= 4 ) }
+ } GROUP BY ?s_1 HAVING ( COUNT ( DISTINCT ?s_2 ) <= 4 ) }
 } UNION {
 ?s_1 a ?s_3 . 
  OPTIONAL { 
@@ -78,7 +78,7 @@ class TestOwl2SparqlConverter(unittest.TestCase):
  } FILTER ( !BOUND ( ?s_4 ) ) }
 { SELECT ?s_1 WHERE { 
 ?s_1 <http://dl-learner.org/carcinogenesis#hasAtom> ?s_5 . 
- } GROUP BY ?s_1 HAVING ( COUNT ( ?s_5 ) >= 1 ) }
+ } GROUP BY ?s_1 HAVING ( COUNT ( DISTINCT ?s_5 ) >= 1 ) }
  }"""
 #         query_t = """SELECT
 #  DISTINCT ?x WHERE {

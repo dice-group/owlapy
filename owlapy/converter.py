@@ -2,6 +2,7 @@
 from collections import defaultdict
 from contextlib import contextmanager
 from functools import singledispatchmethod
+from json import dumps
 from types import MappingProxyType
 from typing import Callable, Dict, Iterable, List, Optional, Set
 
@@ -223,7 +224,7 @@ class Owl2SparqlConverter:
 
     @render.register
     def _(self, lit: OWLLiteral):
-        return f'"{lit.get_literal()}"^^<{lit.get_datatype().to_string_id()}>'
+        return f'{dumps(lit.get_literal(), ensure_ascii=False)}^^<{lit.get_datatype().to_string_id()}>'
 
     @render.register
     def _(self, e: OWLEntity):
@@ -556,7 +557,7 @@ class Owl2SparqlConverter:
             self.process(filler)
 
         self.append(f" }} GROUP BY {subject_variable}"
-                    f" HAVING ( COUNT ( {object_variable} ) {comparator} {cardinality} ) }}")
+                    f" HAVING ( COUNT ( DISTINCT {object_variable} ) {comparator} {cardinality} ) }}")
 
         # here, the second group graph pattern starts
         if comparator == "<=" or cardinality == 0:
@@ -600,6 +601,9 @@ class Owl2SparqlConverter:
         else:
             raise ValueError(ce)
 
+        if comparator == "<=" or cardinality == 0:
+            self.append("{")
+
         self.append(f"{{ SELECT {subject_variable} WHERE {{ ")
         self.append_triple(subject_variable, property_expression, object_variable)
 
@@ -608,7 +612,17 @@ class Owl2SparqlConverter:
             self.process(filler)
 
         self.append(f" }} GROUP BY {subject_variable}"
-                    f" HAVING ( COUNT ( {object_variable} ) {comparator} {cardinality} ) }}")
+                    f" HAVING ( COUNT ( DISTINCT {object_variable} ) {comparator} {cardinality} ) }}")
+
+        if comparator == "<=" or cardinality == 0:
+            self.append("} UNION {")
+            self.append_triple(subject_variable, "a", self.mapping.new_individual_variable())
+            self.append(" OPTIONAL { ")
+            object_variable = self.mapping.new_individual_variable()
+            self.append_triple(subject_variable, property_expression, object_variable)
+            with self.stack_variable(object_variable):
+                self.process(filler)
+            self.append(f" }} FILTER ( !BOUND ( {object_variable} ) ) }}")
 
     # an overload of process function
     # this overload is responsible for handling the exists operator combined with SELF
@@ -716,7 +730,7 @@ class Owl2SparqlConverter:
 
             if facet in _Variable_facet_comp:
                 self.append(f' FILTER ( {self.current_variable} {_Variable_facet_comp[facet]}'
-                            f' "{value.get_literal()}"^^<{value.get_datatype().to_string_id()}> ) ')
+                            f' {self.render(value)} ) ')
 
     # Data-range boolean combinators. Unlike their object-side counterparts, data-range operands
     # only ever emit FILTER(...) fragments constraining an already-bound literal variable (never
