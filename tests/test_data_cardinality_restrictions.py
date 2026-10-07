@@ -78,15 +78,12 @@ class TestDataCardinalityRestrictionsWithDatatype(unittest.TestCase):
         result = set(self.reasoner.instances(ce))
         self.assertEqual(len(result), 0)
 
-    def test_min_cardinality_0_charge_double_returns_all_with_charge(self):
-        """Min(0, charge, xsd:double) should match everything that has >=0 matching values.
-        Because the cache only iterates individuals that have the property, this equals
-        the set of individuals possessing a charge value."""
+    def test_min_cardinality_0_charge_double_returns_all_individuals(self):
+        """Minimum cardinality zero includes individuals without the property."""
         ce = OWLDataMinCardinality(cardinality=0, property=self.charge_dp,
                                    filler=self.double_type)
         result = set(self.reasoner.instances(ce))
-        # Every individual in dps satisfies count >= 0
-        self.assertEqual(len(result), INDIVIDUALS_WITH_CHARGE)
+        self.assertEqual(result, self.all_inds)
 
     def test_min_cardinality_1_lumo_double(self):
         """Min(1, lumo, xsd:double) should match all compounds with a lumo value."""

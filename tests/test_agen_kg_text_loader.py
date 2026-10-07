@@ -9,6 +9,7 @@ code without actually installing the dependency) so every branch is still reacha
 """
 import sys
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from owlapy.agen_kg.text_loader import (
@@ -277,6 +278,18 @@ class TestUniversalTextLoader(unittest.TestCase):
     def test_treats_non_file_input_as_raw_text(self):
         text = self.loader.load("This is not a file path, just text.")
         self.assertEqual(text, "This is not a file path, just text.")
+
+    def test_long_raw_text_is_returned_unchanged(self):
+        text = "x" * 5000
+        self.assertEqual(self.loader.load(text), text)
+
+    def test_raw_text_with_null_character_is_returned_unchanged(self):
+        text = "raw\x00text"
+        self.assertEqual(self.loader.load(text), text)
+
+    def test_missing_explicit_path_raises_file_not_found(self):
+        with self.assertRaises(FileNotFoundError):
+            self.loader.load(Path("/nonexistent/document.txt"))
 
     def test_loads_txt_file_via_auto_detected_extension(self):
         import tempfile

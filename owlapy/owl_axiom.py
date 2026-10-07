@@ -226,7 +226,8 @@ class OWLHasKeyAxiom(OWLLogicalAxiom, HasOperands[OWLPropertyExpression]):
         return False
 
     def __hash__(self):
-        return hash(("OWLHasKeyAxiom", self._class_expression, *self._property_expressions, *self._annotations))
+        return hash(("OWLHasKeyAxiom", self._class_expression, frozenset(self._property_expressions),
+                     len(self._property_expressions), frozenset(self._annotations)))
 
     def __repr__(self):
         return f'OWLHasKeyAxiom(class_expression={self._class_expression},' \
@@ -295,7 +296,8 @@ class OWLNaryClassAxiom(OWLClassAxiom, OWLNaryAxiom[OWLClassExpression], metacla
         return False
 
     def __hash__(self):
-        return hash((type(self).__name__, *self._class_expressions, *self._annotations))
+        return hash((type(self).__name__, frozenset(self._class_expressions),
+                     len(self._class_expressions), frozenset(self._annotations)))
 
     def __repr__(self):
         return f'{type(self).__name__}({self._class_expressions},{self._annotations})'
@@ -384,7 +386,8 @@ class OWLNaryIndividualAxiom(OWLIndividualAxiom, OWLNaryAxiom[OWLIndividual], me
         return False
 
     def __hash__(self):
-        return hash((type(self).__name__, *self._individuals, *self._annotations))
+        return hash((type(self).__name__, frozenset(self._individuals),
+                     len(self._individuals), frozenset(self._annotations)))
 
     def __repr__(self):
         return f'{type(self).__name__}({self._individuals},{self._annotations})'
@@ -457,7 +460,8 @@ class OWLNaryPropertyAxiom(Generic[_P], OWLPropertyAxiom, OWLNaryAxiom[_P], meta
         return False
 
     def __hash__(self):
-        return hash((type(self).__name__, *self._properties, *self._annotations))
+        return hash((type(self).__name__, frozenset(self._properties),
+                     len(self._properties), frozenset(self._annotations)))
 
     def __repr__(self):
         return f'{type(self).__name__}({self._properties},{self._annotations})'
@@ -674,7 +678,7 @@ class OWLDisjointUnionAxiom(OWLClassAxiom):
         return False
 
     def __hash__(self):
-        return hash((self._cls, *self._class_expressions, *self._annotations))
+        return hash((self._cls, frozenset(self._class_expressions), len(self._class_expressions), tuple(self._annotations)))
 
     def __repr__(self):
         return f'OWLDisjointUnionAxiom(_cls={self._cls},class_expressions={self._class_expressions},' \

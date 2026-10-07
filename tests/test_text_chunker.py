@@ -35,9 +35,8 @@ class TestChunkBySentences(unittest.TestCase):
                 "Sentence three comes next. Sentence four ends it.")
         chunks = chunker.chunk_text(text)
         self.assertGreater(len(chunks), 1)
-        # No chunk should exceed the configured size by a large margin
         for chunk in chunks:
-            self.assertLessEqual(len(chunk), chunker.chunk_size + 20)
+            self.assertLessEqual(len(chunk), chunker.chunk_size)
 
     def test_no_sentence_boundaries_falls_back_to_paragraphs(self):
         chunker = TextChunker(chunk_size=20, overlap=0, strategy="sentence")
@@ -61,20 +60,26 @@ class TestChunkBySentences(unittest.TestCase):
         chunks = chunker.chunk_text(text)
         self.assertGreater(len(chunks), 1)
         for chunk in chunks:
-            self.assertLessEqual(len(chunk), chunker.chunk_size + 5)
+            self.assertLessEqual(len(chunk), chunker.chunk_size)
 
     def test_overlap_carries_short_sentences_that_fit_the_budget(self):
-        # Unlike test_overlap_included_between_chunks (overlap=15 < any single
-        # sentence there), here overlap (15) is bigger than a single short
-        # sentence's length+1, so walking backwards through current_chunk finds
-        # a sentence that fits (inserted into the overlap) before hitting one
-        # that doesn't (which breaks the loop).
-        chunker = TextChunker(chunk_size=20, overlap=15, strategy="sentence")
+        chunker = TextChunker(chunk_size=30, overlap=15, strategy="sentence")
         text = "One is here. Two is here. Three is here. Four is here."
         chunks = chunker._chunk_by_sentences(text)
         self.assertGreater(len(chunks), 1)
-        # The second chunk should start with the carried-over overlap sentence.
-        self.assertIn("Two is here.", chunks[1])
+        self.assertTrue(chunks[0].endswith("Two is here."))
+        self.assertTrue(chunks[1].startswith("Two is here."))
+        self.assertTrue(all(len(chunk) <= chunker.chunk_size for chunk in chunks))
+
+    def test_overlap_reserves_space_for_next_sentence(self):
+        chunker = TextChunker(chunk_size=3000, overlap=200, strategy="sentence")
+        first = "A" + "x" * 174 + "."
+        second = "B" + "x" * 2898 + "."
+        self.assertEqual(chunker.chunk_text(first + " " + second), [first, second])
+
+    def test_exact_size_sentence_does_not_produce_empty_chunks(self):
+        chunker = TextChunker(chunk_size=10, overlap=0, strategy="sentence")
+        self.assertEqual(chunker.chunk_text("123456789. Next."), ["123456789.", "Next."])
 
     def test_empty_sentence_after_split_is_skipped(self):
         # The sentence-boundary regex (?<=[.!?])\s+(?=[A-Z]) cannot produce an
@@ -93,6 +98,15 @@ class TestChunkBySentences(unittest.TestCase):
 
 
 class TestChunkByParagraphs(unittest.TestCase):
+    def test_overlap_reserves_space_for_next_paragraph(self):
+        chunker = TextChunker(chunk_size=20, overlap=15, strategy="paragraph")
+        paragraphs = ["One paragraph", "Two paragraphs", "Three paragraphs"]
+        self.assertEqual(chunker.chunk_text("\n\n".join(paragraphs)), paragraphs)
+
+    def test_exact_size_paragraph_does_not_produce_empty_chunks(self):
+        chunker = TextChunker(chunk_size=10, overlap=0, strategy="paragraph")
+        self.assertEqual(chunker.chunk_text("1234567890\n\nNext"), ["1234567890", "Next"])
+
     def test_splits_multiple_paragraphs_into_chunks(self):
         chunker = TextChunker(chunk_size=50, overlap=0, strategy="paragraph")
         text = "Para one text here.\n\nPara two text here.\n\nPara three text here."

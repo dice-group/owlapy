@@ -116,7 +116,7 @@ class TextChunker:
                 continue
 
             # Check if adding this sentence would exceed chunk size
-            if current_length + sentence_length + 1 > self.chunk_size:
+            if current_length + sentence_length + bool(current_chunk) > self.chunk_size:
                 # Save current chunk
                 chunks.append(' '.join(current_chunk))
 
@@ -125,10 +125,12 @@ class TextChunker:
                     # Include last sentences up to overlap size
                     overlap_text = []
                     overlap_length = 0
+                    overlap_budget = min(self.overlap, self.chunk_size - sentence_length - 1)
                     for prev_sentence in reversed(current_chunk):
-                        if overlap_length + len(prev_sentence) + 1 <= self.overlap:
+                        added_length = len(prev_sentence) + bool(overlap_text)
+                        if overlap_length + added_length <= overlap_budget:
                             overlap_text.insert(0, prev_sentence)
-                            overlap_length += len(prev_sentence) + 1
+                            overlap_length += added_length
                         else:
                             break
                     current_chunk = overlap_text
@@ -137,8 +139,8 @@ class TextChunker:
                     current_chunk = []
                     current_length = 0
 
+            current_length += sentence_length + bool(current_chunk)
             current_chunk.append(sentence)
-            current_length += sentence_length + 1
 
         # Add final chunk
         if current_chunk:
@@ -176,14 +178,14 @@ class TextChunker:
                 continue
 
             # Check if adding this paragraph would exceed chunk size
-            if current_length + para_length + 2 > self.chunk_size:
+            if current_length + para_length + (2 if current_chunk else 0) > self.chunk_size:
                 # Save current chunk
                 chunks.append('\n\n'.join(current_chunk))
 
                 # Start new chunk with overlap (take last paragraph if fits)
                 if self.overlap > 0 and current_chunk:
                     last_para = current_chunk[-1]
-                    if len(last_para) <= self.overlap:
+                    if len(last_para) <= self.overlap and len(last_para) + 2 + para_length <= self.chunk_size:
                         current_chunk = [last_para]
                         current_length = len(last_para)
                     else:
@@ -193,8 +195,8 @@ class TextChunker:
                     current_chunk = []
                     current_length = 0
 
+            current_length += para_length + (2 if current_chunk else 0)
             current_chunk.append(para)
-            current_length += para_length + 2
 
         # Add final chunk
         if current_chunk:

@@ -2,9 +2,11 @@
 from collections import defaultdict
 from contextlib import contextmanager
 from functools import singledispatchmethod
+from json import dumps
 from types import MappingProxyType
 from typing import Callable, Dict, Iterable, List, Optional, Set
 
+from rdflib.namespace import XSD
 from rdflib.plugins.sparql.parser import parseQuery
 
 from owlapy.class_expression import (
@@ -46,6 +48,18 @@ _Variable_facet_comp = MappingProxyType({
     OWLFacet.MAX_INCLUSIVE: "<=",
     OWLFacet.MAX_EXCLUSIVE: "<"
 })
+
+_INTEGER_BOUNDS = MappingProxyType({
+    "integer": (None, None), "nonNegativeInteger": (0, None), "positiveInteger": (1, None),
+    "nonPositiveInteger": (None, 0), "negativeInteger": (None, -1),
+    "long": (-2**63, 2**63 - 1), "int": (-2**31, 2**31 - 1),
+    "short": (-2**15, 2**15 - 1), "byte": (-2**7, 2**7 - 1),
+    "unsignedLong": (0, 2**64 - 1), "unsignedInt": (0, 2**32 - 1),
+    "unsignedShort": (0, 2**16 - 1), "unsignedByte": (0, 2**8 - 1),
+})
+_STRING_DATATYPES = frozenset(str(XSD[name]) for name in (
+    "string", "normalizedString", "token", "language", "Name", "NCName", "NMTOKEN",
+))
 
 
 def peek(x):
@@ -223,7 +237,7 @@ class Owl2SparqlConverter:
 
     @render.register
     def _(self, lit: OWLLiteral):
-        return f'"{lit.get_literal()}"^^<{lit.get_datatype().to_string_id()}>'
+        return f'{dumps(lit.get_literal(), ensure_ascii=False)}^^<{lit.get_datatype().to_string_id()}>'
 
     @render.register
     def _(self, e: OWLEntity):
@@ -556,7 +570,7 @@ class Owl2SparqlConverter:
             self.process(filler)
 
         self.append(f" }} GROUP BY {subject_variable}"
-                    f" HAVING ( COUNT ( {object_variable} ) {comparator} {cardinality} ) }}")
+                    f" HAVING ( COUNT ( DISTINCT {object_variable} ) {comparator} {cardinality} ) }}")
 
         # here, the second group graph pattern starts
         if comparator == "<=" or cardinality == 0:
@@ -600,6 +614,9 @@ class Owl2SparqlConverter:
         else:
             raise ValueError(ce)
 
+        if comparator == "<=" or cardinality == 0:
+            self.append("{")
+
         self.append(f"{{ SELECT {subject_variable} WHERE {{ ")
         self.append_triple(subject_variable, property_expression, object_variable)
 
@@ -608,7 +625,17 @@ class Owl2SparqlConverter:
             self.process(filler)
 
         self.append(f" }} GROUP BY {subject_variable}"
-                    f" HAVING ( COUNT ( {object_variable} ) {comparator} {cardinality} ) }}")
+                    f" HAVING ( COUNT ( DISTINCT {object_variable} ) {comparator} {cardinality} ) }}")
+
+        if comparator == "<=" or cardinality == 0:
+            self.append("} UNION {")
+            self.append_triple(subject_variable, "a", self.mapping.new_individual_variable())
+            self.append(" OPTIONAL { ")
+            object_variable = self.mapping.new_individual_variable()
+            self.append_triple(subject_variable, property_expression, object_variable)
+            with self.stack_variable(object_variable):
+                self.process(filler)
+            self.append(f" }} FILTER ( !BOUND ( {object_variable} ) ) }}")
 
     # an overload of process function
     # this overload is responsible for handling the exists operator combined with SELF
@@ -655,26 +682,15 @@ class Owl2SparqlConverter:
         object_variable = self.mapping.new_individual_variable()
         property_expression = ce.get_property()
         assert isinstance(property_expression, OWLDataProperty)
-        predicate = property_expression.to_string_id()
         filler = ce.get_filler()
 
-        self.append_triple(self.current_variable, predicate, object_variable)
-
-        var = self.mapping.new_individual_variable()
-        cnt_var1 = self.new_count_var()
-        self.append(f"{{ SELECT {subject} ( COUNT( {var} ) AS {cnt_var1} ) WHERE {{ ")
-        self.append_triple(subject, predicate, var)
-        with self.stack_variable(var):
-            self.process(filler)
-        self.append(f" }} GROUP BY {subject} }}")
-
-        var = self.mapping.new_individual_variable()
-        cnt_var2 = self.new_count_var()
-        self.append(f"{{ SELECT {subject} ( COUNT( {var} ) AS {cnt_var2} ) WHERE {{ ")
-        self.append_triple(subject, predicate, var)
-        self.append(f" }} GROUP BY {subject} }}")
-
-        self.append(f" FILTER( {cnt_var1} = {cnt_var2} )")
+        if self.modal_depth == 1 and not self.named_individuals:
+            self.append_triple(subject, self.mapping.new_individual_variable(), self.mapping.new_individual_variable())
+        self.append("FILTER NOT EXISTS { ")
+        self.append_triple(subject, property_expression, object_variable)
+        with self.stack_variable(object_variable):
+            self.process(OWLDataComplementOf(filler))
+        self.append(" }")
 
     @process.register
     def _(self, ce: OWLDataHasValue):
@@ -683,71 +699,73 @@ class Owl2SparqlConverter:
         assert isinstance(value, OWLLiteral)
         self.append_triple(self.current_variable, property_expression, value)
 
-    @process.register
-    def _(self, node: OWLDatatype):
-        if node != TopOWLDatatype:
-            self.append(f" FILTER ( DATATYPE ( {self.current_variable} ) = <{node.to_string_id()}> ) ")
+    @process.register(OWLDatatype)
+    @process.register(OWLDataOneOf)
+    @process.register(OWLDatatypeRestriction)
+    @process.register(OWLDataIntersectionOf)
+    @process.register(OWLDataUnionOf)
+    @process.register(OWLDataComplementOf)
+    def _process_data_range(self, node):
+        if isinstance(node, OWLDataOneOf) and self.modal_depth == 1:
+            self.append_triple(self.current_variable, "?p", "?o")
+        self.append(f" FILTER ( {self._data_range_condition(node)} ) ")
+
+    def _datatype_condition(self, node: OWLDatatype):
+        datatype = node.to_string_id()
+        name = datatype.removeprefix(str(XSD))
+        if datatype.startswith(str(XSD)) and (name == "decimal" or name in _INTEGER_BOUNDS):
+            variable = self.current_variable
+            datatypes = ", ".join(f"<{XSD[n]}>" for n in ("decimal", *_INTEGER_BOUNDS))
+            condition = f"DATATYPE ( {variable} ) IN ( {datatypes} )"
+            if name in _INTEGER_BOUNDS:
+                condition += f" && {variable} = FLOOR ( {variable} )"
+                lower, upper = _INTEGER_BOUNDS[name]
+                if lower is not None:
+                    condition += f" && {variable} >= {lower}"
+                if upper is not None:
+                    condition += f" && {variable} <= {upper}"
+            return condition
+        elif datatype == str(XSD.string):
+            datatypes = ", ".join(f"<{dt}>" for dt in sorted(_STRING_DATATYPES))
+            return f"DATATYPE ( {self.current_variable} ) IN ( {datatypes} )"
+        elif node != TopOWLDatatype:
+            return f"DATATYPE ( {self.current_variable} ) = <{datatype}>"
         else:
-            self.append(f" FILTER ( isLiteral ( {self.current_variable} ) ) ")
+            return f"isLiteral ( {self.current_variable} )"
 
-    @process.register
-    def _(self, node: OWLDataOneOf):
-        subject = self.current_variable
-        if self.modal_depth == 1:
-            self.append_triple(subject, "?p", "?o")
-        self.append(f" FILTER ( {subject} IN ( ")
-        first = True
-        for value in node.values():
-            if first:
-                first = False
-            else:
-                self.append(",")
-            if value:
-                self.append(self.render(value))
-        self.append(" ) ) ")
-
-    @process.register
-    def _(self, node: OWLDatatypeRestriction):
-        frs = node.get_facet_restrictions()
-
-        for fr in frs:
-            facet = fr.get_facet()
-            value = fr.get_facet_value()
-
-            if facet in _Variable_facet_comp:
-                self.append(f' FILTER ( {self.current_variable} {_Variable_facet_comp[facet]}'
-                            f' "{value.get_literal()}"^^<{value.get_datatype().to_string_id()}> ) ')
-
-    # Data-range boolean combinators. Unlike their object-side counterparts, data-range operands
-    # only ever emit FILTER(...) fragments constraining an already-bound literal variable (never
-    # triples), which makes these simpler than OWLObjectIntersectionOf/UnionOf/ComplementOf.
-    @process.register
-    def _(self, node: OWLDataIntersectionOf):
-        for op in node.operands():
-            self.process(op)
-
-    @process.register
-    def _(self, node: OWLDataUnionOf):
-        first = True
-        for op in node.operands():
-            if first:
-                first = False
-            else:
-                self.append(" UNION ")
-            self.append("{ ")
-            # rdflib's SPARQL engine mishandles a UNION branch that contains exactly one bare
-            # FILTER and nothing else (it fails to correlate with the outer already-bound
-            # variable, silently returning no results for that branch) -- a leading no-op
-            # FILTER(BOUND(...)) works around this reliably, confirmed empirically.
-            self.append(f"FILTER ( BOUND ( {self.current_variable} ) ) ")
-            self.process(op)
-            self.append(" }")
-
-    @process.register
-    def _(self, node: OWLDataComplementOf):
-        self.append("FILTER NOT EXISTS { ")
-        self.process(node.get_data_range())
-        self.append(" }")
+    def _data_range_condition(self, node):
+        variable = self.current_variable
+        if isinstance(node, OWLDatatype):
+            return self._datatype_condition(node)
+        if isinstance(node, OWLDataOneOf):
+            groups = defaultdict(list)
+            for value in node.values():
+                groups[value.get_datatype()].append(self.render(value))
+            return " || ".join(
+                f"( ( {self._datatype_condition(datatype)} ) && ( {' || '.join(f'{variable} = {value}' for value in values)} ) )"
+                for datatype, values in groups.items()
+            ) or "1=0"
+        if isinstance(node, OWLDataComplementOf):
+            return f"!( {self._data_range_condition(node.get_data_range())} )"
+        if isinstance(node, (OWLDataIntersectionOf, OWLDataUnionOf)):
+            operator = " && " if isinstance(node, OWLDataIntersectionOf) else " || "
+            return operator.join(f"( {self._data_range_condition(op)} )" for op in node.operands())
+        if isinstance(node, OWLDatatypeRestriction):
+            conditions = [self._datatype_condition(node.get_datatype())]
+            for fr in node.get_facet_restrictions():
+                facet = fr.get_facet()
+                value = self.render(fr.get_facet_value())
+                if facet in _Variable_facet_comp:
+                    conditions.append(f"{variable} {_Variable_facet_comp[facet]} {value}")
+                elif facet in (OWLFacet.LENGTH, OWLFacet.MIN_LENGTH, OWLFacet.MAX_LENGTH):
+                    if node.get_datatype().to_string_id() not in _STRING_DATATYPES | {str(XSD.anyURI)}:
+                        raise NotImplementedError(f"SPARQL conversion does not support {facet.symbolic_form} for {node.get_datatype()}")
+                    comparator = {OWLFacet.LENGTH: "=", OWLFacet.MIN_LENGTH: ">=", OWLFacet.MAX_LENGTH: "<="}[facet]
+                    conditions.append(f"STRLEN ( STR ( {variable} ) ) {comparator} {value}")
+                else:
+                    raise NotImplementedError(f"SPARQL conversion does not support the {facet.symbolic_form} facet")
+            return " && ".join(f"( {condition} )" for condition in conditions)
+        raise NotImplementedError(f"SPARQL conversion does not support the data range {node}")
 
     def new_count_var(self) -> str:
         self.cnt += 1
