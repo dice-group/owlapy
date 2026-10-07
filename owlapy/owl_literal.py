@@ -40,6 +40,9 @@ DecimalOWLDatatype: Final = OWLDatatype(XSDVocabulary.DECIMAL)
 #: An object representing an int datatype.
 IntOWLDatatype: Final = OWLDatatype(XSDVocabulary.INT)
 
+#: An object representing a long datatype.
+LongOWLDatatype: Final = OWLDatatype(XSDVocabulary.LONG)
+
 #: An object representing an integer datatype.
 IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)
 
@@ -93,7 +96,7 @@ TopOWLDatatype: Final = OWLDatatype(OWLRDFVocabulary.RDFS_LITERAL)
 
 
 NUMERIC_DATATYPES: Final[Set[OWLDatatype]] = {FloatOWLDatatype, DoubleOWLDatatype, DecimalOWLDatatype,
-                                              IntegerOWLDatatype, IntOWLDatatype, PositiveIntegerOWLDatatype,
+                                              IntegerOWLDatatype, IntOWLDatatype, LongOWLDatatype, PositiveIntegerOWLDatatype,
                                               NegativeIntegerOWLDatatype, NonPositiveIntegerOWLDatatype,
                                               NonNegativeIntegerOWLDatatype}
 TIME_DATATYPES: Final[Set[OWLDatatype]] = {DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype}
@@ -136,6 +139,8 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
                 return super().__new__(_OWLLiteralImplInteger)
             elif type_ == IntOWLDatatype:
                 return super().__new__(_OWLLiteralImplInt)
+            elif type_ == LongOWLDatatype:
+                return super().__new__(_OWLLiteralImplLong)
             elif type_ == DoubleOWLDatatype:
                 return super().__new__(_OWLLiteralImplDouble)
             elif type_ == FloatOWLDatatype:
@@ -438,6 +443,7 @@ class _OWLNumericLiteralInterface(OWLLiteral):
             value = c_float(float(value)).value if type_ == FloatOWLDatatype else float(value)
         elif isinstance(value, int) or type_ in [IntegerOWLDatatype,
                                                IntOWLDatatype,
+                                               LongOWLDatatype,
                                                NonNegativeIntegerOWLDatatype,
                                                NonPositiveIntegerOWLDatatype,
                                                NegativeIntegerOWLDatatype,
@@ -561,6 +567,13 @@ class _OWLLiteralImplInteger(_OWLIntegerLiteralInterface):
 class _OWLLiteralImplInt(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=IntOWLDatatype):
+        super().__init__(value, type_)
+
+
+@total_ordering
+class _OWLLiteralImplLong(_OWLIntegerLiteralInterface):
+
+    def __init__(self, value, type_=LongOWLDatatype):
         super().__init__(value, type_)
 
 
@@ -949,3 +962,13 @@ class _OWLLiteralImpl(OWLLiteral):
 
     def __repr__(self):
         return f'OWLLiteral({self._v}, {self._datatype})'
+
+
+def lexical_literal(lexical: str, datatype: OWLDatatype) -> OWLLiteral:
+    """Create a literal that keeps *lexical* verbatim under *datatype*, bypassing the Python-value parsing that
+    :class:`OWLLiteral` applies for datatypes it knows (e.g. ``xsd:duration``, ``xsd:gYear``). Used when reading
+    literals of datatypes that have no faithful Python representation, so that nothing is lost or degraded.
+    """
+    literal = object.__new__(_OWLLiteralImpl)
+    literal.__init__(lexical, datatype)
+    return literal
