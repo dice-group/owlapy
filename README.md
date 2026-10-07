@@ -8,7 +8,7 @@
 ![GitHub License](https://img.shields.io/github/license/dice-group/owlapy)
 
 
-![OWLAPY](docs/_static/images/owlapy_logo.png)
+![OWLAPY](https://raw.githubusercontent.com/dice-group/owlapy/main/docs/_static/images/owlapy_logo.png)
 
 **The Python Framework for Modern Ontology Engineering and Knowledge Graph Development**
 
@@ -25,9 +25,9 @@ LLMs
 
 ### Production-Ready Reasoning
 
-- **Python-native Reasoners**: [RDFLibReasoner](markdown_docs/05_reasoning.md#1-rdflibreasoner-recommended) (recommended, pure Python, no JVM/owlready2), [Structural Reasoner](markdown_docs/05_reasoning.md#2-structuralreasoner-legacy) (legacy), an [Embedding-Based Reasoner](markdown_docs/05_reasoning.md#4-ebr-embedding-based-reasoner) for neural knowledge graph completion, and [NIRReasoner](markdown_docs/05_reasoning.md#5-nirreasoner-neural-instance-retrieval) for neural instance retrieval of complex class expressions
+- **Python-native Reasoners**: [RDFLibReasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#1-rdflibreasoner-recommended) (recommended, pure Python, no JVM/owlready2), [Structural Reasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#2-structuralreasoner-legacy) (legacy), an [Embedding-Based Reasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#4-ebr-embedding-based-reasoner) for neural knowledge graph completion, and [NIRReasoner](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#5-nirreasoner-neural-instance-retrieval) for neural instance retrieval of complex class expressions
 - **Optimized Performance**: Benchmarked across complex ontologies (see our [performance data](#reasoners-runtime-benchmark))
-- **Synchronization with Java Reasoners**: [HermiT, Pellet, JFact, Openllet, ELK, and Structural](markdown_docs/05_reasoning.md#3-syncreasoner-complete-owl-2-dl)
+- **Synchronization with Java Reasoners**: [HermiT, Pellet, JFact, Openllet, ELK, and Structural](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#3-syncreasoner-complete-owl-2-dl)
 
 ### Cutting-Edge Features
 
@@ -88,14 +88,14 @@ PYTHONPATH=. pytest
 
 ### LLM-Friendly Documentation
 
-For comprehensive, LLM-optimized documentation, check out the [`markdown_docs/`](markdown_docs/) directory:
+For comprehensive, LLM-optimized documentation, check out the [`markdown_docs/`](https://github.com/dice-group/owlapy/blob/main/markdown_docs/) directory:
 
-- **[Getting Started](markdown_docs/01_getting_started.md)** - Installation, setup, and quick start guide
-- **[Core Concepts](markdown_docs/02_core_concepts.md)** - OWL fundamentals, ontologies, reasoners, and class expressions
-- **[Ontology Management](markdown_docs/03_ontology_management.md)** - Creating, loading, saving, and modifying ontologies
-- **[Reasoning](markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, StructuralReasoner, SyncReasoner, the Embedding-Based Reasoner (EBR), and NIRReasoner
-- **[Common Patterns](markdown_docs/08_common_patterns.md)** - Best practices, patterns, and anti-patterns
-- **[API Reference](markdown_docs/09_api_reference.md)** - Complete API documentation
+- **[Getting Started](https://github.com/dice-group/owlapy/blob/main/markdown_docs/01_getting_started.md)** - Installation, setup, and quick start guide
+- **[Core Concepts](https://github.com/dice-group/owlapy/blob/main/markdown_docs/02_core_concepts.md)** - OWL fundamentals, ontologies, reasoners, and class expressions
+- **[Ontology Management](https://github.com/dice-group/owlapy/blob/main/markdown_docs/03_ontology_management.md)** - Creating, loading, saving, and modifying ontologies
+- **[Reasoning](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md)** - Complete guide to RDFLibReasoner, StructuralReasoner, SyncReasoner, the Embedding-Based Reasoner (EBR), and NIRReasoner
+- **[Common Patterns](https://github.com/dice-group/owlapy/blob/main/markdown_docs/08_common_patterns.md)** - Best practices, patterns, and anti-patterns
+- **[API Reference](https://github.com/dice-group/owlapy/blob/main/markdown_docs/09_api_reference.md)** - Complete API documentation
 
 These docs are specifically formatted for LLM consumption and provide detailed examples, type information, and troubleshooting guidance.
 
@@ -485,7 +485,7 @@ cd examples && python runtime_benchmark_results.py --pretty_print
 `StructuralReasoner` and `RDFLibReasoner` are **closed-world** (structural, no formal entailment);
 `HermiT`/`Pellet`/`Openllet`/`JFact`/`Structural` (via `SyncReasoner`) are **open-world**, standard
 OWL 2 DL semantics; `ELK` is open-world but incomplete (EL profile only). See
-[Reasoner Comparison](markdown_docs/05_reasoning.md#reasoner-comparison) for what that means for
+[Reasoner Comparison](https://github.com/dice-group/owlapy/blob/main/markdown_docs/05_reasoning.md#reasoner-comparison) for what that means for
 your use case.
 
 Each reasoner is given a hard upper bound of 1000 seconds per class expression
