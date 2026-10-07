@@ -7,7 +7,7 @@ from .owl_reasoner_rdflib import RDFLibReasoner
 from .parser import dl_to_owl_expression, manchester_to_owl_expression
 from .render import owl_expression_to_dl, owl_expression_to_manchester
 
-__version__ = '1.6.6'
+__version__ = '1.6.7'
 
 # Library best practice: attach a no-op handler to the package's top-level logger
 # so owlapy never emits log output unless the host application configures logging.

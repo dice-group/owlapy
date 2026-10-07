@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.7] - 2026-10-07
+
 ### Added
 - `SyncOntology` now exposes several previously Java-only OWL API methods requested in #278: `get_axioms()`/`contains_axiom()` (all axioms in the ontology, and O(1) membership checks, instead of scanning `get_abox_axioms()`/`get_tbox_axioms()`/`get_rbox_axioms()` by hand), `contains_class_in_signature()`/`contains_object_property_in_signature()`/`contains_data_property_in_signature()`/`contains_annotation_property_in_signature()`/`contains_individual_in_signature()` (each accepting either the named entity or its IRI/IRI string), `is_declared()`, and `get_punned_iris()` -- all with an `include_imports_closure` flag matching the existing `get_abox_axioms()`-style methods (#278)
 - `SyncOntology.annotation_assertion_axioms(entity)` and `RDFLibOntology.annotation_assertion_axioms(entity)`, for retrieving an entity's annotations (e.g. `rdfs:label`/`rdfs:comment`) directly through owlapy's Python API instead of dropping down to the OWLAPI Java object or loading the ontology a second time with rdflib -- `get_tbox_axioms()`/`get_abox_axioms()` never surfaced annotation assertions, since OWLAPI itself doesn't categorize them as TBox/ABox/RBox. `RDFLibOntology`'s implementation recognizes the well-known annotation predicates (`rdfs:label`, `rdfs:comment`, `rdfs:seeAlso`, `rdfs:isDefinedBy`, `owl:versionInfo`, `owl:deprecated`, `owl:priorVersion`, `owl:backwardCompatibleWith`, `owl:incompatibleWith`) plus any predicate explicitly declared `rdf:type owl:AnnotationProperty` in the loaded graph (#268)
