@@ -388,3 +388,18 @@ class TestOntologyQueries(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestLegacyOntologySaveTurtle(unittest.TestCase):
+    """#293: Ontology.save documents "turtle"/"ttl" and must accept them."""
+
+    def test_save_turtle_formats(self):
+        import tempfile
+        ns = "http://example.com/test#"
+        for fmt in ("turtle", "ttl"):
+            onto = Ontology(IRI.create(ns), load=False)
+            with tempfile.TemporaryDirectory() as d:
+                path = os.path.join(d, "out.ttl")
+                onto.save(path=path, document_format=fmt)
+                with open(path) as f:
+                    self.assertIn("@prefix", f.read())

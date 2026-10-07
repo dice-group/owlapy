@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Additional regression tests for the `owlapy.owl_axiom` type checks above, covering `OWLSubClassOfAxiom`, `OWLClassAssertionAxiom`, `OWLEquivalentClassesAxiom`, `OWLObjectPropertyAssertionAxiom`, `OWLObjectPropertyDomainAxiom`, `OWLFunctionalObjectPropertyAxiom`, and `OWLDeclarationAxiom` (#271)
 
 ### Fixed
+- Literals read from or written to an ontology through the OWL API now keep their XSD datatype instead of being collapsed to `xsd:double`/`xsd:integer`/`xsd:string`: `xsd:float`, `decimal`, `int`, `long`, `short`/`byte`/`unsigned*`, `date`/`dateTime`/`time` get native Python values, and every other datatype (`duration`, `g*`, binary, `anyURI`, string-derived, custom datatypes) keeps its lexical form with its own datatype. Literals of any such datatype can also be written back (previously `NotImplementedError`), language-tagged literals no longer crash with `RuntimeError: Inconsistent hierarchy` (the language tag itself is not retained), and `LongOWLDatatype` and `owl_literal.lexical_literal` were added (#292).
+- `Ontology.save` now accepts the documented `"turtle"`/`"ttl"` formats (#293).
 - Preserved floating-point values and consistent hashes for reordered axioms (#291).
 - Corrected data universals, empty-string enumerations, datatype membership, and facet handling in SPARQL (#291).
 - Consistent hashes for reordered class expressions and data ranges (#283).

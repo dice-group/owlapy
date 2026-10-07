@@ -1251,10 +1251,12 @@ class Ontology(AbstractOWLOntology):
         """
         import tempfile
 
-        rdflib_format = _RDFLIB_FORMATS.get(fmt_key)
+        # "turtle"/"ttl" are not in _RDFLIB_FORMATS (SyncOntology routes them to the OWL API), but
+        # this legacy class has no OWL API and serialises Turtle through rdflib.
+        rdflib_format = {"turtle": "turtle", "ttl": "turtle"}.get(fmt_key) or _RDFLIB_FORMATS.get(fmt_key)
         if rdflib_format is None:
             all_supported = sorted(
-                {"rdfxml", "ntriples", "nt"} | set(_RDFLIB_FORMATS.keys())
+                {"rdfxml", "ntriples", "nt", "turtle", "ttl"} | set(_RDFLIB_FORMATS.keys())
             )
             raise ValueError(
                 f"Unsupported document format '{fmt_key}'. "
