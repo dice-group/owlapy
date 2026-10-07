@@ -247,3 +247,17 @@ class TestOWLAPIMapper(unittest.TestCase):
         self.assertEqual(sia, self.mapper.map_(self.mapper.map_(sia)))
         self.assertEqual(dua, self.mapper.map_(self.mapper.map_(dua)))
         self.assertEqual(inopa, self.mapper.map_(self.mapper.map_(inopa)))
+
+    def test_java_collection_mapping(self):
+        # Regression for #278: concrete Java collection types must be registered on the mapper, otherwise
+        # functools.singledispatch falls back to MRO resolution over JPype proxies ("Inconsistent hierarchy").
+        # noinspection PyUnresolvedReferences
+        from java.util import ArrayList, HashSet, LinkedHashSet
+        iris = [IRI.create(self.test_ns + name) for name in ("a", "b", "c")]
+        for java_type in (HashSet, LinkedHashSet, ArrayList):
+            with self.subTest(java_type=java_type.__name__):
+                java_collection = java_type()
+                for iri in iris:
+                    java_collection.add(self.mapper.map_(iri))
+                self.assertCountEqual(self.mapper.map_(java_collection), iris)
+                self.assertEqual(self.mapper.map_(java_type()), [])

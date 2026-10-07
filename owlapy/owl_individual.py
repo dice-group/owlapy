@@ -62,8 +62,10 @@ class OWLNamedIndividual(OWLIndividual, OWLEntity):
         """
         if isinstance(iri, IRI):
             self._iri = iri
-        else:
+        elif isinstance(iri, str):
             self._iri = IRI.create(iri)
+        else:
+            raise TypeError(f"Expected iri to be an instance of IRI or str, got {type(iri).__name__} instead ({iri!r}).")
     @property
     def iri(self) -> IRI:
         return self._iri
@@ -97,6 +99,8 @@ class OWLAnonymousIndividual(OWLIndividual, OWLAnnotationSubject, OWLAnnotationV
         Returns:
             An OWLAnonymousIndividual identified by the given (or a freshly generated) node id.
         """
+        if node_id is not None and not isinstance(node_id, str):
+            raise TypeError(f"Expected 'node_id' to be an instance of str or None, got {type(node_id).__name__} instead ({node_id!r}).")
         self._node_id = NodeID.get_node_id(node_id)
 
     @property

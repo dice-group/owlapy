@@ -17,6 +17,10 @@ class Namespaces:
             prefix: Typical prefix associated with this namespace.
             ns: Namespace IRI as string.
         """
+        if not isinstance(prefix, str):
+            raise TypeError(f"Expected prefix to be an instance of str, got {type(prefix).__name__} instead ({prefix!r}).")
+        if not isinstance(ns, str):
+            raise TypeError(f"Expected ns to be an instance of str, got {type(ns).__name__} instead ({ns!r}).")
         assert ns[-1] in ("/", ":", "#")
         self._prefix = prefix
         self._ns = ns

@@ -51,7 +51,7 @@ class TestSWRL(unittest.TestCase):
     def test_rule_parsing(self):
 
         rule = Rule.from_string("male(?x) ^ hasChild(?x, ?y) ^ hasChild(?y, ?z) ^ hasAge(?x, ?a) ^ integer(?a) ^ greaterThanOrEqual(?x, 40) -> Grandfather(?x)", namespace=self.NS, dp_predicates=["hasAge"])
-        self.assertEqual(rule.__repr__(), """Rule(['ClassAtom(OWLClass(http://www.benchmark.org/family#male), IVariable(http://www.w3.org/2003/11/swrl#x))', 'ObjectPropertyAtom(OWLObjectProperty(http://www.benchmark.org/family#hasChild), IVariable(http://www.w3.org/2003/11/swrl#x), IVariable(http://www.w3.org/2003/11/swrl#y))', 'ObjectPropertyAtom(OWLObjectProperty(http://www.benchmark.org/family#hasChild), IVariable(http://www.w3.org/2003/11/swrl#y), IVariable(http://www.w3.org/2003/11/swrl#z))', 'DataPropertyAtom(OWLDataProperty(http://www.benchmark.org/family#hasAge), IVariable(http://www.w3.org/2003/11/swrl#x), DVariable(http://www.w3.org/2003/11/swrl#a))', 'DataRangeAtom(OWLDatatype(http://www.w3.org/2001/XMLSchema#integer) DVariable(http://www.w3.org/2003/11/swrl#a))', "BuiltInAtom(IRI.create(http://www.w3.org/2003/11/swrlb#greaterThanOrEqual), '40'])"], ['ClassAtom(OWLClass(http://www.benchmark.org/family#Grandfather), IVariable(http://www.w3.org/2003/11/swrl#x))'])""")
+        self.assertEqual(rule.__repr__(), """Rule(['ClassAtom(OWLClass(http://www.benchmark.org/family#male), IVariable(http://www.w3.org/2003/11/swrl#x))', 'ObjectPropertyAtom(OWLObjectProperty(http://www.benchmark.org/family#hasChild), IVariable(http://www.w3.org/2003/11/swrl#x), IVariable(http://www.w3.org/2003/11/swrl#y))', 'ObjectPropertyAtom(OWLObjectProperty(http://www.benchmark.org/family#hasChild), IVariable(http://www.w3.org/2003/11/swrl#y), IVariable(http://www.w3.org/2003/11/swrl#z))', 'DataPropertyAtom(OWLDataProperty(http://www.benchmark.org/family#hasAge), IVariable(http://www.w3.org/2003/11/swrl#x), DVariable(http://www.w3.org/2003/11/swrl#a))', 'DataRangeAtom(OWLDatatype(http://www.w3.org/2001/XMLSchema#integer) DVariable(http://www.w3.org/2003/11/swrl#a))', "BuiltInAtom(IRI.create(http://www.w3.org/2003/11/swrlb#greaterThanOrEqual), OWLLiteral(40, OWLDatatype(IRI('http://www.w3.org/2001/XMLSchema#', 'string')))])"], ['ClassAtom(OWLClass(http://www.benchmark.org/family#Grandfather), IVariable(http://www.w3.org/2003/11/swrl#x))'])""")
 
 
 class TestVariable(unittest.TestCase):
@@ -282,3 +282,87 @@ class TestRuleEqualityAndParsing(unittest.TestCase):
         self.assertEqual(len(rule.body), 3)
         self.assertIsInstance(rule.body[1], SameAsAtom)
         self.assertIsInstance(rule.body[2], DifferentFromAtom)
+
+
+class TestSWRLTypeChecks(unittest.TestCase):
+    """Python-side type-check coverage for owlapy.swrl (#271)."""
+
+    NS = "http://www.benchmark.org/family#"
+    x = IVariable(SWRL + "x")
+    y = IVariable(SWRL + "y")
+    a = DVariable(SWRL + "a")
+    ind1 = OWLNamedIndividual(NS + "matthias")
+
+    def test_variable_rejects_non_iri_non_str(self):
+        with pytest.raises(TypeError):
+            IVariable(42)
+
+    def test_class_atom_rejects_wrong_types(self):
+        male = OWLClass(self.NS + "male")
+        with pytest.raises(TypeError):
+            ClassAtom("not a class", self.x)
+        with pytest.raises(TypeError):
+            ClassAtom(male, "not a variable or individual")
+
+    def test_data_range_atom_rejects_wrong_types(self):
+        with pytest.raises(TypeError):
+            DataRangeAtom("not a datatype", self.a)
+        with pytest.raises(TypeError):
+            DataRangeAtom(IntegerOWLDatatype, self.x)
+
+    def test_data_range_atom_accepts_literal_argument(self):
+        atom = DataRangeAtom(IntegerOWLDatatype, OWLLiteral(5))
+        self.assertEqual(atom.argument1, OWLLiteral(5))
+
+    def test_object_property_atom_rejects_wrong_types(self):
+        has_child = OWLObjectProperty(self.NS + "hasChild")
+        has_age = OWLDataProperty(self.NS + "hasAge")
+        with pytest.raises(TypeError):
+            ObjectPropertyAtom(has_age, self.x, self.y)
+        with pytest.raises(TypeError):
+            ObjectPropertyAtom(has_child, self.a, self.y)
+
+    def test_data_property_atom_rejects_wrong_types(self):
+        has_child = OWLObjectProperty(self.NS + "hasChild")
+        has_age = OWLDataProperty(self.NS + "hasAge")
+        with pytest.raises(TypeError):
+            DataPropertyAtom(has_child, self.x, self.a)
+        with pytest.raises(TypeError):
+            DataPropertyAtom(has_age, self.x, self.y)
+
+    def test_same_as_and_different_from_atom_reject_wrong_types(self):
+        with pytest.raises(TypeError):
+            SameAsAtom(self.a, self.x)
+        with pytest.raises(TypeError):
+            DifferentFromAtom(self.x, "not a variable or individual")
+
+    def test_builtin_atom_rejects_wrong_types(self):
+        with pytest.raises(TypeError):
+            BuiltInAtom("not an iri", [self.x])
+        with pytest.raises(TypeError):
+            BuiltInAtom(IRI.create(SWRLB + "add"), [self.x, "not a valid arg"])
+
+    def test_builtin_atom_accepts_individual_variables(self):
+        # BuiltInAtom arguments legitimately include IVariable, not just DVariable/OWLLiteral.
+        atom = BuiltInAtom(IRI.create(SWRLB + "equal"), [self.x, self.a])
+        self.assertEqual(atom.arguments, [self.x, self.a])
+
+    def test_rule_rejects_non_atom_body_or_head(self):
+        male = OWLClass(self.NS + "male")
+        atom = ClassAtom(male, self.x)
+        with pytest.raises(TypeError):
+            Rule("not an atom", [atom])
+        with pytest.raises(TypeError):
+            Rule([atom], [atom, "not an atom"])
+
+    def test_from_string_builtin_converts_all_arguments(self):
+        # Regression test: Atom.from_string used to `return` from inside the arg-conversion
+        # loop, so only the first argument of a multi-arg built-in predicate was converted
+        # (DVariable/OWLLiteral); every later one leaked through as a raw, un-typed string.
+        atom = Atom.from_string("greaterThanOrEqual(?x, 40)", namespace=self.NS)
+        self.assertIsInstance(atom, BuiltInAtom)
+        self.assertEqual(len(atom.arguments), 2)
+        for arg in atom.arguments:
+            self.assertIsInstance(arg, (DVariable, OWLLiteral))
+        self.assertEqual(atom.arguments[0], DVariable(SWRL + "x"))
+        self.assertEqual(atom.arguments[1], OWLLiteral("40"))

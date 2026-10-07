@@ -43,10 +43,15 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
     def __init__(self, namespace: Union[str, Namespaces], remainder: str="", is_file_path=False):
         if isinstance(namespace, Namespaces):
             namespace = namespace.ns
+        elif not isinstance(namespace, str):
+            raise TypeError(f"Expected 'namespace' to be an instance of str or Namespaces, got {type(namespace).__name__} instead ({namespace!r}).")
         elif not is_file_path:
-            assert namespace[-1] in ("/", ":", "#"), ("It should be a valid IRI based on /, :, and #. "
-                                                      "Are you saving a file? - then set is_file_path=True "
-                                                      "to overcome this assertion.")
+            if not namespace or namespace[-1] not in ("/", ":", "#"):
+                raise ValueError("It should be a valid IRI based on /, :, and #. "
+                                  "Are you saving a file? - then set is_file_path=True "
+                                  "to overcome this assertion.")
+        if not isinstance(remainder, str):
+            raise TypeError(f"Expected 'remainder' to be an instance of str, got {type(remainder).__name__} instead ({remainder!r}).")
         import sys
         # https://docs.python.org/3.2/library/sys.html?highlight=sys.intern#sys.intern
         self._namespace = sys.intern(namespace)
@@ -54,20 +59,23 @@ class IRI(OWLAnnotationSubject, OWLAnnotationValue, metaclass=_meta_IRI):
 
     @staticmethod
     def create(iri:str | Namespaces, remainder:str=None, is_file_path=False) -> 'IRI':
-        assert isinstance(iri, str) | isinstance(iri, Namespaces), f"Input must be a string or an instance of Namespaces. Currently, {type(iri)}"
+        if not isinstance(iri, (str, Namespaces)):
+            raise TypeError(f"Expected 'iri' to be an instance of str or Namespaces, got {type(iri).__name__} instead ({iri!r}).")
         if is_file_path and iri != "":
             return IRI(iri, "", is_file_path)
         elif remainder is not None:
-            assert isinstance(remainder,str), f"Remainder must be string. Currently, {type(remainder)}"
+            if not isinstance(remainder, str):
+                raise TypeError(f"Expected 'remainder' to be an instance of str, got {type(remainder).__name__} instead ({remainder!r}).")
             return IRI(iri, remainder)
         else:
-            assert isinstance(iri, str) and remainder is None, \
-                f"iri must be string if remainder is None. Currently, {type(iri)} and {type(remainder)}"
+            if not isinstance(iri, str):
+                raise TypeError(f"Expected 'iri' to be an instance of str when 'remainder' is None, got {type(iri).__name__} instead ({iri!r}).")
             # Extract remainder from input string
-            assert "/" in iri, (f"Input must contain /\tCurrently, {iri}. Are you saving a file? - then "
-                                f"set is_file_path=True to overcome this assertion.")
-            # assert ":" in iri, "Input must contain :"
-            assert " " not in iri, f"Input must not contain whitespace. Currently:{iri}."
+            if "/" not in iri:
+                raise ValueError(f"Input must contain /\tCurrently, {iri}. Are you saving a file? - then "
+                                  f"set is_file_path=True to overcome this assertion.")
+            if " " in iri:
+                raise ValueError(f"Input must not contain whitespace. Currently:{iri}.")
             index = 1 + max(iri.rfind("/"), iri.rfind(":"), iri.rfind("#"))
             return IRI(iri[0:index], iri[index:])
 

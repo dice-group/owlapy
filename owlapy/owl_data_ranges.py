@@ -48,7 +48,17 @@ class OWLNaryDataRange(OWLDataRange, HasOperands[OWLDataRange]):
         Args:
             operands: Data ranges.
         """
-        self._operands = tuple(operands)
+        operands = tuple(operands)
+        for i, op in enumerate(operands):
+            # NB: checked against OWLPropertyRange (the common base of OWLDataRange and
+            # OWLClassExpression), not OWLDataRange itself -- owlapy.utils.nnf.NNF deliberately
+            # reuses this constructor to combine data-property restriction class expressions
+            # (e.g. OWLDataSomeValuesFrom) during negation, not just genuine data ranges.
+            if not isinstance(op, OWLPropertyRange):
+                raise TypeError(
+                    f"Expected all operands to be instances of OWLPropertyRange, got {type(op).__name__} instead ({op!r}) at index {i}."
+                )
+        self._operands = operands
 
     def operands(self) -> Iterable[OWLDataRange]:
         # documented in parent
@@ -59,12 +69,11 @@ class OWLNaryDataRange(OWLDataRange, HasOperands[OWLDataRange]):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return (set(self._operands) == set(other._operands)
-                    and len(list((self._operands))) == len(list((other._operands))))
+            return set(self._operands) == set(other._operands) and len(self._operands) == len(other._operands)
         return False
 
     def __hash__(self):
-        return hash((type(self).__name__, self._operands))
+        return hash((type(self).__name__, frozenset(self._operands), len(self._operands)))
 
 
 class OWLDataIntersectionOf(OWLNaryDataRange):
@@ -107,6 +116,11 @@ class OWLDataComplementOf(OWLDataRange):
         Args:
             data_range: Data range to complement.
         """
+        # NB: checked against OWLPropertyRange, not OWLDataRange -- see OWLNaryDataRange.__init__.
+        if not isinstance(data_range, OWLPropertyRange):
+            raise TypeError(
+                f"Expected 'data_range' to be an instance of OWLPropertyRange, got {type(data_range).__name__} instead ({data_range!r})."
+            )
         self._data_range = data_range
 
     def get_data_range(self) -> OWLDataRange:

@@ -257,18 +257,32 @@ def test_non_negative_integer_rejects_negative_value():
 # Numeric literals: float/double/decimal
 # ---------------------------------------------------------------------------
 
-def test_float_literal_rounds_to_seven_digits():
+def test_float_literal_uses_single_precision():
     lit = OWLLiteral(1.123456789, FloatOWLDatatype)
     assert lit.is_float()
-    assert lit.parse_float() == round(1.123456789, 7)
+    assert lit.parse_float() == 1.1234568357467651
     assert lit.has_float_special_value() is False
 
 
-def test_double_literal_rounds_to_fifteen_digits():
+def test_double_literal_preserves_double_precision():
     lit = OWLLiteral(1.123456789012345678, DoubleOWLDatatype)
     assert lit.is_double()
-    assert lit.parse_double() == round(1.123456789012345678, 15)
+    assert lit.parse_double() == 1.123456789012345678
     assert lit.has_float_special_value() is False
+
+
+@pytest.mark.parametrize("value", [1e-20, -1e-20, 1.234567890123456e-10])
+def test_small_double_values_are_preserved(value):
+    assert OWLLiteral(value).parse_double() == value
+
+
+@pytest.mark.parametrize("value, expected", [
+    (1e-8, 9.99999993922529e-9),
+    (4e-45, 4.203895392974451e-45),
+    (16777217, 16777216.0),
+])
+def test_float_values_follow_binary32_precision(value, expected):
+    assert OWLLiteral(value, FloatOWLDatatype).parse_float() == expected
 
 
 def test_float_and_double_with_special_value():
@@ -485,6 +499,7 @@ def test_generic_literal_impl_for_custom_datatype():
 
 
 def test_generic_literal_impl_requires_owl_datatype():
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         from owlapy.owl_literal import _OWLLiteralImpl
         _OWLLiteralImpl("value", "not a datatype")
+

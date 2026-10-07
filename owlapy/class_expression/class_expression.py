@@ -1,4 +1,5 @@
 """OWL Base Classes Expressions"""
+
 from abc import ABCMeta, abstractmethod
 from typing import Final, Iterable
 
@@ -8,10 +9,11 @@ from ..owl_data_ranges import OWLPropertyRange
 
 class OWLClassExpression(OWLPropertyRange):
     """OWL Class expressions represent sets of individuals by formally specifying conditions on the individuals' properties;
-     individuals satisfying these conditions are said to be instances of the respective class expressions.
-     In the structural specification of OWL 2, class expressions are represented by ClassExpression.
-     (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
-     """
+    individuals satisfying these conditions are said to be instances of the respective class expressions.
+    In the structural specification of OWL 2, class expressions are represented by ClassExpression.
+    (https://www.w3.org/TR/owl2-syntax/#Class_Expressions)
+    """
+
     __slots__ = ()
 
     @abstractmethod
@@ -32,7 +34,7 @@ class OWLClassExpression(OWLPropertyRange):
         pass
 
     @abstractmethod
-    def get_object_complement_of(self) -> 'OWLObjectComplementOf':
+    def get_object_complement_of(self) -> "OWLObjectComplementOf":
         """Gets the object complement of this class expression.
 
         Returns:
@@ -41,7 +43,7 @@ class OWLClassExpression(OWLPropertyRange):
         pass
 
     @abstractmethod
-    def get_nnf(self) -> 'OWLClassExpression':
+    def get_nnf(self) -> "OWLClassExpression":
         """Gets the negation normal form of the complement of this expression.
 
         Returns:
@@ -61,18 +63,20 @@ class OWLAnonymousClassExpression(OWLClassExpression, metaclass=ABCMeta):
         # documented in parent
         return False
 
-    def get_object_complement_of(self) -> 'OWLObjectComplementOf':
+    def get_object_complement_of(self) -> "OWLObjectComplementOf":
         # documented in parent
         return OWLObjectComplementOf(self)
 
-    def get_nnf(self) -> 'OWLClassExpression':
+    def get_nnf(self) -> "OWLClassExpression":
         # documented in parent
         from owlapy.utils import NNF
+
         return NNF().get_class_nnf(self)
 
 
 class OWLBooleanClassExpression(OWLAnonymousClassExpression, metaclass=ABCMeta):
     """Represent an anonymous boolean class expression."""
+
     __slots__ = ()
     pass
 
@@ -81,7 +85,8 @@ class OWLObjectComplementOf(OWLBooleanClassExpression, HasOperands[OWLClassExpre
     """A complement class expression ObjectComplementOf( CE ) contains all individuals that are not instances of the
     class expression CE.
     (https://www.w3.org/TR/owl2-syntax/#Complement_of_Class_Expressions)"""
-    __slots__ = '_operand'
+
+    __slots__ = "_operand"
     type_index: Final = 3003
 
     _operand: OWLClassExpression
@@ -100,6 +105,10 @@ class OWLObjectComplementOf(OWLBooleanClassExpression, HasOperands[OWLClassExpre
         Args:
             op: Class expression to complement.
         """
+        if not isinstance(op, OWLClassExpression):
+            raise TypeError(
+                f"Expected 'op' to be an instance of OWLClassExpression, got {type(op).__name__} instead ({op!r})."
+            )
         self._operand = op
 
     def get_operand(self) -> OWLClassExpression:

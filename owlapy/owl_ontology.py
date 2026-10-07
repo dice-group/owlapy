@@ -49,6 +49,7 @@ from owlapy.class_expression import (
 )
 from owlapy.iri import IRI
 from owlapy.owl_axiom import (
+    OWLAnnotation,
     OWLAnnotationAssertionAxiom,
     OWLAnnotationProperty,
     OWLAsymmetricObjectPropertyAxiom,
@@ -93,7 +94,7 @@ from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, O
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLIndividual, OWLNamedIndividual
 from owlapy.owl_literal import BooleanOWLDatatype, DateOWLDatatype, DateTimeOWLDatatype, DoubleOWLDatatype, DurationOWLDatatype, IntegerOWLDatatype, OWLLiteral, StringOWLDatatype, TopOWLDatatype
-from owlapy.owl_object import OWLObject
+from owlapy.owl_object import OWLEntity, OWLObject
 from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
 from owlapy.static_funcs import startJVM
 from owlapy.vocab import OWLFacet
@@ -202,6 +203,10 @@ class OWLOntologyID:
             ontology_iri: The ontology IRI (optional).
             version_iri: The version IRI (must be None if no ontology_iri is provided).
         """
+        if ontology_iri is not None and not isinstance(ontology_iri, IRI):
+            raise TypeError(f"Expected 'ontology_iri' to be an instance of IRI or None, got {type(ontology_iri).__name__} instead ({ontology_iri!r}).")
+        if version_iri is not None and not isinstance(version_iri, IRI):
+            raise TypeError(f"Expected 'version_iri' to be an instance of IRI or None, got {type(version_iri).__name__} instead ({version_iri!r}).")
         self._ontology_iri = ontology_iri
         self._version_iri = version_iri
 
@@ -1246,10 +1251,12 @@ class Ontology(AbstractOWLOntology):
         """
         import tempfile
 
-        rdflib_format = _RDFLIB_FORMATS.get(fmt_key)
+        # "turtle"/"ttl" are not in _RDFLIB_FORMATS (SyncOntology routes them to the OWL API), but
+        # this legacy class has no OWL API and serialises Turtle through rdflib.
+        rdflib_format = {"turtle": "turtle", "ttl": "turtle"}.get(fmt_key) or _RDFLIB_FORMATS.get(fmt_key)
         if rdflib_format is None:
             all_supported = sorted(
-                {"rdfxml", "ntriples", "nt"} | set(_RDFLIB_FORMATS.keys())
+                {"rdfxml", "ntriples", "nt", "turtle", "ttl"} | set(_RDFLIB_FORMATS.keys())
             )
             raise ValueError(
                 f"Unsupported document format '{fmt_key}'. "
@@ -1365,6 +1372,100 @@ class SyncOntology(AbstractOWLOntology):
     def individuals_in_signature(self) -> Iterable[OWLNamedIndividual]:
         return self.mapper.map_(self.owlapi_ontology.getIndividualsInSignature())
 
+    def _to_owlapi_iri(self, entity: Union[IRI, str, OWLClass, OWLObjectProperty, OWLDataProperty,
+                                            OWLAnnotationProperty, OWLDatatype, OWLNamedIndividual]):
+        """Coerce an IRI, IRI string, or named entity into an OWL API ``IRI`` object."""
+        if isinstance(entity, str):
+            entity = IRI.create(entity)
+        if not isinstance(entity, IRI):
+            entity = entity.iri
+        return self.mapper.map_(entity)
+
+    def contains_class_in_signature(self, entity: Union[IRI, str, OWLClass],
+                                     include_imports_closure: bool = True) -> bool:
+        """Check whether a class with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The class (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if a class with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsClassInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def contains_object_property_in_signature(self, entity: Union[IRI, str, OWLObjectProperty],
+                                                include_imports_closure: bool = True) -> bool:
+        """Check whether an object property with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The object property (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if an object property with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsObjectPropertyInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def contains_data_property_in_signature(self, entity: Union[IRI, str, OWLDataProperty],
+                                             include_imports_closure: bool = True) -> bool:
+        """Check whether a data property with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The data property (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if a data property with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsDataPropertyInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def contains_annotation_property_in_signature(self, entity: Union[IRI, str, OWLAnnotationProperty],
+                                                    include_imports_closure: bool = True) -> bool:
+        """Check whether an annotation property with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The annotation property (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if an annotation property with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsAnnotationPropertyInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def contains_individual_in_signature(self, entity: Union[IRI, str, OWLNamedIndividual],
+                                          include_imports_closure: bool = True) -> bool:
+        """Check whether a named individual with this IRI is in the signature of this ontology.
+
+        Args:
+            entity: The named individual (or its IRI) to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if a named individual with this IRI is in the signature, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsIndividualInSignature(
+            self._to_owlapi_iri(entity), self._get_imports_enum(include_imports_closure)))
+
+    def is_declared(self, entity: Union[OWLClass, OWLObjectProperty, OWLDataProperty,
+                                         OWLAnnotationProperty, OWLDatatype, OWLNamedIndividual],
+                     include_imports_closure: bool = True) -> bool:
+        """Check whether the given entity has a declaration axiom in this ontology.
+
+        Args:
+            entity: The class, object/data/annotation property, datatype, or named individual to check.
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            True if the entity is declared, False otherwise.
+        """
+        return bool(self.owlapi_ontology.isDeclared(
+            self.mapper.map_(entity), self._get_imports_enum(include_imports_closure)))
+
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
         return self.mapper.map_(self.owlapi_ontology.getEquivalentClassesAxioms(self.mapper.map_(c)))
 
@@ -1382,6 +1483,19 @@ class SyncOntology(AbstractOWLOntology):
 
     def object_property_range_axioms(self, property: OWLObjectProperty) -> Iterable[OWLObjectPropertyRangeAxiom]:
         return self.mapper.map_(self.owlapi_ontology.getObjectPropertyRangeAxioms(self.mapper.map_(property)))
+
+    def annotation_assertion_axioms(self, entity: Union[OWLEntity, IRI]) -> Iterable[OWLAnnotationAssertionAxiom]:
+        """Gets the annotation assertion axioms about the given entity in this ontology, e.g. its
+        `rdfs:label`/`rdfs:comment` or any other `owl:AnnotationProperty` assertion.
+
+        Args:
+            entity: The entity (or its IRI directly) to get annotation assertions for.
+
+        Returns:
+            Annotation assertion axioms whose subject is the given entity's IRI.
+        """
+        subject_iri = entity if isinstance(entity, IRI) else entity.iri
+        return self.mapper.map_(self.owlapi_ontology.getAnnotationAssertionAxioms(self.mapper.map_(subject_iri)))
 
     def _get_imports_enum(self, include_imports_closure: bool):
         # noinspection PyUnresolvedReferences
@@ -1402,6 +1516,40 @@ class SyncOntology(AbstractOWLOntology):
             Entities in signature.
         """
         return self.mapper.map_(self.owlapi_ontology.getSignature(self._get_imports_enum(include_imports_closure)))
+
+    def get_punned_iris(self, include_imports_closure: bool = True) -> Iterable[IRI]:
+        """Get the IRIs that are used for more than one entity type in this ontology (punning), e.g. an
+        IRI that is used both as a class and as a named individual.
+
+        Args:
+            include_imports_closure: Whether to include/exclude imports from the search.
+
+        Returns:
+            The punned IRIs.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getPunnedIRIs(self._get_imports_enum(include_imports_closure)))
+
+    def get_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
+        """Get all axioms in this ontology.
+
+        Args:
+            include_imports_closure: Whether to include/exclude imports from searches.
+
+        Returns:
+            All axioms in this ontology.
+        """
+        return self.mapper.map_(self.owlapi_ontology.getAxioms(self._get_imports_enum(include_imports_closure)))
+
+    def contains_axiom(self, axiom: OWLAxiom) -> bool:
+        """Check whether this ontology contains the given axiom (imports excluded).
+
+        Args:
+            axiom: The axiom to check for.
+
+        Returns:
+            True if this ontology contains the axiom, False otherwise.
+        """
+        return bool(self.owlapi_ontology.containsAxiom(self.mapper.map_(axiom)))
 
     def get_abox_axioms(self, include_imports_closure: bool = True) -> Iterable[OWLAxiom]:
         """Get all ABox axioms.
@@ -2031,6 +2179,25 @@ def _(axiom: OWLDataPropertyCharacteristicAxiom, ontology) -> None:
     _remove_property_characteristic(axiom, ontology)
 
 
+# Annotation properties every OWL ontology may use without declaring them locally as
+# `owl:AnnotationProperty` -- RDFLibOntology.annotation_assertion_axioms() also honours any
+# predicate explicitly declared as such in the loaded graph.
+_WELL_KNOWN_ANNOTATION_PREDICATES = frozenset((
+    rdflib.RDFS.label, rdflib.RDFS.comment, rdflib.RDFS.seeAlso, rdflib.RDFS.isDefinedBy,
+    rdflib.OWL.versionInfo, rdflib.OWL.deprecated, rdflib.OWL.priorVersion,
+    rdflib.OWL.backwardCompatibleWith, rdflib.OWL.incompatibleWith,
+))
+
+_RDFLIB_SCHEMA_TYPES = frozenset((
+    rdflib.OWL.Class, rdflib.RDFS.Class, rdflib.RDFS.Datatype, rdflib.RDF.Property,
+    rdflib.OWL.ObjectProperty, rdflib.OWL.DatatypeProperty, rdflib.OWL.AnnotationProperty,
+    rdflib.OWL.Ontology, rdflib.OWL.Restriction, rdflib.OWL.Axiom, rdflib.OWL.Annotation,
+    rdflib.OWL.AllDifferent, rdflib.OWL.AllDisjointClasses, rdflib.OWL.AllDisjointProperties,
+    rdflib.OWL.NegativePropertyAssertion, rdflib.OWL.DataRange, rdflib.RDF.List,
+    *_PROPERTY_CHARACTERISTIC_TERMS.values(),
+))
+
+
 class RDFLibOntology(AbstractOWLOntology):
 
     def __init__(self, path: Union[str, IRI], load: bool = True):
@@ -2043,6 +2210,8 @@ class RDFLibOntology(AbstractOWLOntology):
             self.str_owl_individuals = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_object_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.ObjectProperty) if not isinstance(x, rdflib.term.BNode)]
             self.str_owl_data_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.DatatypeProperty) if not isinstance(x, rdflib.term.BNode)]
+            self.str_owl_annotation_properties = [x.n3()[1:-1] for x in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.AnnotationProperty) if not isinstance(x, rdflib.term.BNode)]
+            self._infer_individuals()
         else:  # create a blank ontology; `path`/`self._path` is treated as the new ontology's IRI
             self.rdflib_graph = rdflib.Graph()
             self.rdflib_graph.add((rdflib.URIRef(self._path), rdflib.RDF.type, rdflib.OWL.Ontology))
@@ -2050,6 +2219,40 @@ class RDFLibOntology(AbstractOWLOntology):
             self.str_owl_individuals = []
             self.str_owl_object_properties = []
             self.str_owl_data_properties = []
+            self.str_owl_annotation_properties = []
+
+    def _annotation_predicates(self):
+        return _WELL_KNOWN_ANNOTATION_PREDICATES | {rdflib.URIRef(s) for s in self.str_owl_annotation_properties}
+
+    def _infer_individuals(self):
+        graph = self.rdflib_graph
+        schema_entities = {s for s, t in graph.subject_objects(rdflib.RDF.type) if t in _RDFLIB_SCHEMA_TYPES}
+        annotations = self._annotation_predicates()
+        object_properties = {rdflib.URIRef(s) for s in self.str_owl_object_properties}
+        data_properties = {rdflib.URIRef(s) for s in self.str_owl_data_properties}
+        individuals = set()
+        for subject, predicate, obj in graph:
+            if not isinstance(subject, rdflib.URIRef):
+                continue
+            if predicate == rdflib.RDF.type:
+                if obj not in _RDFLIB_SCHEMA_TYPES:
+                    individuals.add(subject)
+            elif predicate in annotations:
+                continue
+            elif predicate in object_properties:
+                individuals.add(subject)
+                if isinstance(obj, rdflib.URIRef):
+                    individuals.add(obj)
+            elif predicate in data_properties:
+                individuals.add(subject)
+            elif (not str(predicate).startswith((str(rdflib.RDF), str(rdflib.RDFS), str(rdflib.OWL)))
+                  and subject not in schema_entities):
+                if isinstance(obj, rdflib.Literal):
+                    individuals.add(subject)
+                elif isinstance(obj, rdflib.URIRef) and obj not in schema_entities:
+                    individuals.update((subject, obj))
+        declared = set(self.str_owl_individuals)
+        self.str_owl_individuals.extend(str(ind) for ind in sorted(individuals) if str(ind) not in declared)
 
     def __len__(self) -> int:
         return len(self.rdflib_graph)
@@ -2089,15 +2292,15 @@ class RDFLibOntology(AbstractOWLOntology):
         `rdf:type owl:NamedIndividual` -- neither omission is an error, so neither raises anymore.
         """
         results = []
-        for owl_individual in self.rdflib_graph.subjects(rdflib.RDF.type, rdflib.OWL.NamedIndividual):
-            if not isinstance(owl_individual, rdflib.term.URIRef):
-                continue
-            subject = OWLNamedIndividual(owl_individual.n3()[1:-1])
+        annotations = self._annotation_predicates()
+        for str_iri in self.str_owl_individuals:
+            owl_individual = rdflib.URIRef(str_iri)
+            subject = OWLNamedIndividual(str_iri)
             for (_, p, o) in self.rdflib_graph.triples(triple=(owl_individual, None, None)):
-                if isinstance(o, rdflib.term.BNode):
+                if isinstance(o, rdflib.term.BNode) or p in annotations:
                     continue
                 if p == rdflib.RDF.type:
-                    if o == rdflib.OWL.NamedIndividual:
+                    if o == rdflib.OWL.NamedIndividual or o in _RDFLIB_SCHEMA_TYPES:
                         continue
                     if isinstance(o, rdflib.term.URIRef):
                         results.append(OWLClassAssertionAxiom(subject, OWLClass(o.n3()[1:-1])))
@@ -2134,6 +2337,38 @@ class RDFLibOntology(AbstractOWLOntology):
 
     def get_abox_axioms_between_individuals_and_classes(self) -> Iterable[OWLClassAssertionAxiom]:
         return [axiom for axiom in self.get_abox_axioms() if isinstance(axiom, OWLClassAssertionAxiom)]
+
+    def annotation_assertion_axioms(self, entity: Union[OWLEntity, IRI]) -> Iterable[OWLAnnotationAssertionAxiom]:
+        """Gets the annotation assertion axioms about the given entity in this ontology, e.g. its
+        `rdfs:label`/`rdfs:comment`.
+
+        Recognizes the well-known annotation predicates (`rdfs:label`, `rdfs:comment`, `rdfs:seeAlso`,
+        `rdfs:isDefinedBy`, `owl:versionInfo`, `owl:deprecated`, `owl:priorVersion`,
+        `owl:backwardCompatibleWith`, `owl:incompatibleWith`) plus any predicate explicitly declared
+        `rdf:type owl:AnnotationProperty` in the loaded graph. A blank-node annotation value (an
+        anonymous individual) is skipped, matching how blank nodes are handled elsewhere in this class.
+
+        Args:
+            entity: The entity (or its IRI directly) to get annotation assertions for.
+
+        Returns:
+            Annotation assertion axioms whose subject is the given entity's IRI.
+        """
+        subject_iri = entity if isinstance(entity, IRI) else entity.iri
+        subject_ref = rdflib.URIRef(subject_iri.str)
+        annotation_predicates = self._annotation_predicates()
+        results = []
+        for (_, p, o) in self.rdflib_graph.triples((subject_ref, None, None)):
+            if p not in annotation_predicates:
+                continue
+            if isinstance(o, rdflib.term.Literal):
+                value = _rdflib_literal_to_owl_literal(o)
+            elif isinstance(o, rdflib.term.URIRef):
+                value = IRI.create(o.n3()[1:-1])
+            else:
+                continue
+            results.append(OWLAnnotationAssertionAxiom(subject_iri, OWLAnnotation(OWLAnnotationProperty(p.n3()[1:-1]), value)))
+        return results
 
     def equivalent_classes_axioms(self, c: OWLClass) -> Iterable[OWLEquivalentClassesAxiom]:
         c_uri = rdflib.URIRef(c.str)

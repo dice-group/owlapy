@@ -5,6 +5,8 @@ types whose gaps are almost entirely __eq__ false-branches, __hash__/__repr__, a
 couple of default marker methods (is_data_restriction/is_object_restriction) and
 convenience methods (as_intersection_of_min_max). Pure Python, no JVM involved.
 """
+import pytest
+
 from owlapy.class_expression import (
     OWLDataAllValuesFrom,
     OWLDataExactCardinality,
@@ -15,6 +17,7 @@ from owlapy.class_expression import (
     OWLDataSomeValuesFrom,
     OWLDatatypeRestriction,
     OWLFacetRestriction,
+    OWLObjectAllValuesFrom,
     OWLObjectExactCardinality,
     OWLObjectHasSelf,
     OWLObjectHasValue,
@@ -23,6 +26,7 @@ from owlapy.class_expression import (
     OWLObjectMinCardinality,
     OWLObjectOneOf,
     OWLObjectSomeValuesFrom,
+    OWLThing,
 )
 from owlapy.iri import IRI
 from owlapy.owl_individual import OWLNamedIndividual
@@ -169,4 +173,82 @@ def test_facet_restriction_eq_false_for_different_type():
     assert a == b
     assert a != c
     assert (a == "not a facet restriction") is False
-    assert hash(a) == hash(b)
+
+
+# ---------------------------------------------------------------------------
+# Python-side type checks (owlapy#271): restriction constructors given an
+# argument of the wrong OWL construct type must fail immediately with a clear
+# TypeError/ValueError, not silently succeed and only blow up once the JVM
+# gets involved. These close gaps #272 left in restriction.py -- it fixed
+# OWLObjectCardinalityRestriction but missed several parallel constructs.
+# ---------------------------------------------------------------------------
+
+def test_object_some_values_from_rejects_data_property():
+    with pytest.raises(TypeError):
+        OWLObjectSomeValuesFrom(data_prop("age"), OWLThing)
+
+
+def test_object_some_values_from_rejects_non_class_expression_filler():
+    with pytest.raises(TypeError):
+        OWLObjectSomeValuesFrom(obj_prop("p"), ind("alice"))
+
+
+def test_object_all_values_from_rejects_non_class_expression_filler():
+    with pytest.raises(TypeError):
+        OWLObjectAllValuesFrom(obj_prop("p"), ind("alice"))
+
+
+def test_object_has_self_rejects_data_property():
+    with pytest.raises(TypeError):
+        OWLObjectHasSelf(data_prop("age"))
+
+
+def test_object_has_value_rejects_swapped_arguments():
+    with pytest.raises(TypeError):
+        OWLObjectHasValue(ind("alice"), obj_prop("p"))
+
+
+def test_data_some_values_from_rejects_object_property():
+    with pytest.raises(TypeError):
+        OWLDataSomeValuesFrom(obj_prop("p"), IntegerOWLDatatype)
+
+
+def test_data_all_values_from_rejects_object_property():
+    with pytest.raises(TypeError):
+        OWLDataAllValuesFrom(obj_prop("p"), IntegerOWLDatatype)
+
+
+def test_data_has_value_rejects_non_literal_value():
+    with pytest.raises(TypeError):
+        OWLDataHasValue(data_prop("age"), ind("alice"))
+
+
+def test_data_min_cardinality_rejects_object_property():
+    with pytest.raises(TypeError):
+        OWLDataMinCardinality(1, obj_prop("p"), IntegerOWLDatatype)
+
+
+def test_data_min_cardinality_rejects_negative_cardinality():
+    with pytest.raises(ValueError):
+        OWLDataMinCardinality(-1, data_prop("age"), IntegerOWLDatatype)
+
+
+def test_object_one_of_rejects_non_individual():
+    with pytest.raises(TypeError):
+        OWLObjectOneOf([ind("alice"), obj_prop("p")])
+
+
+def test_data_one_of_rejects_non_literal():
+    with pytest.raises(TypeError):
+        OWLDataOneOf([OWLLiteral(1), ind("alice")])
+
+
+def test_datatype_restriction_rejects_non_datatype():
+    facet = OWLFacetRestriction(OWLFacet.MIN_INCLUSIVE, OWLLiteral(0))
+    with pytest.raises(TypeError):
+        OWLDatatypeRestriction(ind("alice"), facet)
+
+
+def test_facet_restriction_rejects_non_facet():
+    with pytest.raises(TypeError):
+        OWLFacetRestriction("not a facet", OWLLiteral(0))

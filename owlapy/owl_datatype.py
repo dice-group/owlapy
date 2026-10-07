@@ -33,8 +33,10 @@ class OWLDatatype(OWLEntity, OWLDataRange):
         elif isinstance(iri, IRI):
             assert isinstance(iri, IRI)
             self._iri = iri
-        else:
+        elif isinstance(iri, str):
             self._iri = IRI.create(iri)
+        else:
+            raise TypeError(f"Expected iri to be an instance of IRI, HasIRI, or str, got {type(iri).__name__} instead.")
 
     @property
     def iri(self) -> IRI:

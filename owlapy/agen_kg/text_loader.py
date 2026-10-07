@@ -240,13 +240,9 @@ class UniversalTextLoader:
             ValueError: If the file type is not supported or content cannot be extracted.
             FileNotFoundError: If the specified file does not exist.
         """
-        # Try to detect if source is a file path or raw text
-        source_path = Path(source) if not isinstance(source, Path) else source
-
-        is_file = source_path.is_file() if isinstance(source_path, Path) else isinstance(source, str) and os.path.isfile(str(source))
-
-        if not is_file:
-            # Source is raw text, not a file
+        if not os.path.isfile(source):
+            if isinstance(source, Path):
+                raise FileNotFoundError(f"File not found: {source}")
             if self.logging:
                 logger.info("Treating input as raw text string")
             return RawTextLoader().load(source)

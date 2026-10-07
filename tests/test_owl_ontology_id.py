@@ -1,5 +1,7 @@
 """Unit tests for owlapy.owl_ontology.OWLOntologyID -- a small, self-contained
 value class that existing ontology-management tests only touch incidentally."""
+import pytest
+
 from owlapy.iri import IRI
 from owlapy.owl_ontology import OWLOntologyID
 
@@ -46,3 +48,13 @@ def test_ontology_id_equality():
     assert a != c
     # Comparing against an unrelated type falls back to NotImplemented -> False via Python's protocol.
     assert (a == "not an ontology id") is False
+
+
+def test_ontology_id_rejects_non_iri_ontology_iri():
+    with pytest.raises(TypeError):
+        OWLOntologyID(ontology_iri="not an iri")
+
+
+def test_ontology_id_rejects_non_iri_version_iri():
+    with pytest.raises(TypeError):
+        OWLOntologyID(ONTOLOGY_IRI, version_iri="not an iri")

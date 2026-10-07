@@ -86,7 +86,33 @@ In Owlapy, we provide two main reasoner classes:
   sync_reasoner = EBR(ontology=onto)
   ```
     EBR requires only 1 argument to initialize and that is a `NeuralOntology`. 
-  
+
+- [**NIRReasoner**](owlapy.owl_reasoner.NIRReasoner)
+
+  Neural instance retrieval for complex class expressions. A pretrained NIR encoder
+  (Transformer / LSTM / GRU / Composite) scores DL-syntax queries against entity embeddings.
+  Named classes and TBox queries use a symbolic fallback. Requires `torch` and `transformers`.
+
+  **Initialization:**
+
+  ```python
+  from owlapy.owl_ontology import Ontology
+  from owlapy.owl_reasoner import NIRReasoner
+
+  onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+  reasoner = NIRReasoner(
+      onto,
+      model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
+      embeddings_path="trained_models/embeddings/family/DeCaL_entity_embeddings.csv",
+  )
+  ```
+
+  Download pretrained encoders and DeCaL embeddings:
+
+  ```shell
+  wget https://files.dice-research.org/datasets/CNIR/trained_models.zip -O ./trained_models.zip && unzip trained_models.zip
+  ```
+
 ## Usage of the Reasoner
 All the reasoners available in Owlapy inherit from the
 class: [AbstractOWLReasoner](owlapy.abstracts.AbstractOWLReasoner).

@@ -277,9 +277,18 @@ from owlapy.owl_ontology import NeuralOntology
 from owlapy.owl_reasoner import EBR
 neural_onto = NeuralOntology("path/to/pretrained_kge_model")
 reasoner = EBR(ontology=neural_onto)
+
+# NIRReasoner - neural instance retrieval for complex class expressions (requires torch + transformers)
+from owlapy.owl_reasoner import NIRReasoner
+reasoner = NIRReasoner(
+    ontology,
+    model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
+    embeddings_path="trained_models/embeddings/family/DeCaL_entity_embeddings.csv",
+)
 ```
 
 See [Reasoning](05_reasoning.md) for the complete guide, including EBR's usage and limitations.
+Weights for `NIRReasoner` are at https://files.dice-research.org/datasets/CNIR/trained_models.zip
 
 #### Reasoner Capabilities
 

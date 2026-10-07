@@ -1,8 +1,11 @@
+from datetime import date, datetime, time
+from decimal import Decimal
 from functools import singledispatchmethod
 from typing import Iterable, TypeVar
 
 import jpype.imports
 
+from owlapy import namespaces
 from owlapy.class_expression import (
     OWLClass,
     OWLDataAllValuesFrom,
@@ -72,7 +75,25 @@ from owlapy.owl_axiom import (
 from owlapy.owl_data_ranges import OWLDataComplementOf, OWLDataIntersectionOf, OWLDataUnionOf, OWLNaryDataRange
 from owlapy.owl_datatype import OWLDatatype
 from owlapy.owl_individual import OWLAnonymousIndividual, OWLNamedIndividual
-from owlapy.owl_literal import NegativeIntegerOWLDatatype, NonNegativeIntegerOWLDatatype, NonPositiveIntegerOWLDatatype, OWLLiteral, PositiveIntegerOWLDatatype
+from owlapy.owl_literal import (
+    BooleanOWLDatatype,
+    DateOWLDatatype,
+    DateTimeOWLDatatype,
+    DecimalOWLDatatype,
+    DoubleOWLDatatype,
+    FloatOWLDatatype,
+    IntegerOWLDatatype,
+    IntOWLDatatype,
+    LongOWLDatatype,
+    NegativeIntegerOWLDatatype,
+    NonNegativeIntegerOWLDatatype,
+    NonPositiveIntegerOWLDatatype,
+    OWLLiteral,
+    PositiveIntegerOWLDatatype,
+    StringOWLDatatype,
+    TimeOWLDatatype,
+    lexical_literal,
+)
 from owlapy.owl_ontology import OWLOntologyID
 from owlapy.owl_property import OWLDataProperty, OWLObjectInverseOf, OWLObjectProperty
 from owlapy.static_funcs import startJVM
@@ -80,7 +101,7 @@ from owlapy.vocab import OWLFacet
 
 if not jpype.isJVMStarted():
     startJVM()
-from java.util import ArrayList, Collections, LinkedHashSet, List, Optional, Set
+from java.util import ArrayList, Collections, HashSet, LinkedHashSet, List, Optional, Set
 from java.util.stream import Stream
 from org.semanticweb.owlapi.model import IRI as owlapi_IRI
 from org.semanticweb.owlapi.model import NodeID as owlapi_NodeID
@@ -135,6 +156,7 @@ from uk.ac.manchester.cs.owl.owlapi import (
     OWLLiteralImplFloat,
     OWLLiteralImplInteger,
     OWLLiteralImplNoCompression,
+    OWLLiteralImplPlain,
     OWLLiteralImplString,
     OWLNamedIndividualImpl,
     OWLNaryDataRangeImpl,
@@ -177,6 +199,28 @@ def init(the_class):
         return globals().get(cls_name.split(".")[-1].replace("Impl", ""))
     else:
         return globals().get(cls_name + "Impl")
+
+
+# Integer-valued XSD types without a dedicated owlapy constant are represented by a plain OWLDatatype.
+_XSD_OTHER_INTEGER_TYPES = tuple(
+    OWLDatatype(IRI(namespaces.XSD, name))
+    for name in ("short", "byte", "unsignedLong", "unsignedInt", "unsignedShort", "unsignedByte"))
+_XSD_INTEGER_TYPES = (IntegerOWLDatatype, IntOWLDatatype, LongOWLDatatype, PositiveIntegerOWLDatatype, NegativeIntegerOWLDatatype,
+                      NonPositiveIntegerOWLDatatype, NonNegativeIntegerOWLDatatype) + _XSD_OTHER_INTEGER_TYPES
+# Full datatype IRI -> OWLDatatype, used to map OWLAPI literals back to typed owlapy literals.
+_XSD_NUMERIC_TYPES = {t.str: t for t in (*_XSD_INTEGER_TYPES, FloatOWLDatatype, DoubleOWLDatatype, DecimalOWLDatatype)}
+
+def _lexical_form(literal: OWLLiteral) -> str:
+    """Lexical form of a literal as XSD defines it (ISO 8601 for date/time values)."""
+    if literal.is_datetime():
+        return literal.parse_datetime().isoformat()
+    if literal.is_date():
+        return literal.parse_date().isoformat()
+    if literal.is_time():
+        return literal.parse_time().isoformat()
+    if literal.is_boolean():
+        return "true" if literal.parse_boolean() else "false"
+    return literal.get_literal()
 
 
 _SO = TypeVar('_SO', bound='SyncOntology')  # noqa: F821
@@ -289,16 +333,20 @@ class OWLAPIMapper:
 
     @map_.register
     def _(self, e: OWLLiteral):
-        if e.is_string():
+        datatype = e.get_datatype()
+        # Types OWLAPI has a compact implementation for; everything else (xsd:int, xsd:long, xsd:decimal,
+        # dates, ...) is built with its own datatype so it survives the round trip.
+        if datatype == StringOWLDatatype:
             return OWLLiteralImplString(e.get_literal())
-        elif e.is_boolean():
+        elif datatype == BooleanOWLDatatype:
             return OWLLiteralImplBoolean(e.parse_boolean())
-        elif e.is_integer():
+        elif datatype == IntegerOWLDatatype:
             return OWLLiteralImplInteger(e.parse_integer())
-        elif e.is_double():
+        elif datatype == DoubleOWLDatatype:
             return OWLLiteralImplDouble(e.parse_double())
-        else:
-            raise NotImplementedError(f"Type of this literal: {e} cannot be mapped!")
+        elif datatype == FloatOWLDatatype:
+            return OWLLiteralImplFloat(e.parse_float())
+        return OWLLiteralImplNoCompression(_lexical_form(e), "", self.map_(datatype))
 
     @map_.register(OWLLiteralImplBoolean)
     def _(self, e):
@@ -308,9 +356,12 @@ class OWLAPIMapper:
         return OWLLiteral(False)
 
     @map_.register(OWLLiteralImplDouble)
-    @map_.register(OWLLiteralImplFloat)
     def _(self, e):
         return OWLLiteral(float(str(e.getLiteral())))
+
+    @map_.register(OWLLiteralImplFloat)
+    def _(self, e):
+        return OWLLiteral(float(str(e.getLiteral())), type_=FloatOWLDatatype)
 
     @map_.register(OWLLiteralImplString)
     def _(self, e):
@@ -322,25 +373,36 @@ class OWLAPIMapper:
 
     @map_.register
     def _(self, e: OWLLiteralImplNoCompression):
-        datatype_str = str(e.getDatatype())
+        datatype_iri = str(e.getDatatype().getIRI())
         literal_val = str(e.getLiteral())
-        if "positiveInteger" in datatype_str:
-            return OWLLiteral(int(literal_val), type_=PositiveIntegerOWLDatatype)
-        elif "negativeInteger" in datatype_str:
-            return OWLLiteral(int(literal_val), type_=NegativeIntegerOWLDatatype)
-        elif "nonPositiveInteger" in datatype_str:
-            return OWLLiteral(int(literal_val), type_=NonPositiveIntegerOWLDatatype)
-        elif "nonNegativeInteger" in datatype_str:
-            return OWLLiteral(int(literal_val), type_=NonNegativeIntegerOWLDatatype)
-        elif "integer" in datatype_str or "int" in datatype_str:
-            return OWLLiteral(int(literal_val))
-        elif "double" in datatype_str or "float" in datatype_str or "decimal" in datatype_str:
-            return OWLLiteral(float(literal_val))
-        elif "boolean" in datatype_str:
-            return OWLLiteral(literal_val.lower() == "true")
-        else:
-            # Default to string for unknown datatypes
+        type_ = _XSD_NUMERIC_TYPES.get(datatype_iri)
+        try:
+            if type_ in _XSD_INTEGER_TYPES:
+                return OWLLiteral(int(literal_val), type_=type_)
+            elif type_ in (FloatOWLDatatype, DoubleOWLDatatype):
+                return OWLLiteral(float(literal_val), type_=type_)
+            elif type_ == DecimalOWLDatatype:
+                return OWLLiteral(Decimal(literal_val), type_=type_)
+            elif datatype_iri == BooleanOWLDatatype.str:
+                return OWLLiteral(literal_val.strip().lower() in ("true", "1"))
+            elif datatype_iri == DateOWLDatatype.str:
+                return OWLLiteral(date.fromisoformat(literal_val), type_=DateOWLDatatype)
+            elif datatype_iri == DateTimeOWLDatatype.str:
+                return OWLLiteral(datetime.fromisoformat(literal_val), type_=DateTimeOWLDatatype)
+            elif datatype_iri == TimeOWLDatatype.str:
+                return OWLLiteral(time.fromisoformat(literal_val), type_=TimeOWLDatatype)
+        except (ValueError, ArithmeticError):
+            pass  # lexical form not representable by the Python type: keep it verbatim below
+        if datatype_iri == StringOWLDatatype.str:
             return OWLLiteral(literal_val)
+        # Any other datatype (duration, gYear..., hexBinary, anyURI, string-derived, custom): keep the lexical
+        # form together with the original datatype rather than degrading to xsd:string.
+        return lexical_literal(literal_val, OWLDatatype(IRI.create(datatype_iri)))
+
+    @map_.register
+    def _(self, e: OWLLiteralImplPlain):
+        # Language-tagged / plain literals: owlapy literals carry no language tag, so only the lexical form is kept.
+        return OWLLiteral(str(e.getLiteral()))
 
     @map_.register
     def _(self, e: OWLObjectInverseOf):
@@ -645,6 +707,7 @@ class OWLAPIMapper:
     @map_.register(List)
     @map_.register(Set)
     @map_.register(LinkedHashSet)
+    @map_.register(HashSet)
     @map_.register(ArrayList)
     def _(self, e):
         python_list = list()

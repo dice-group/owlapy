@@ -32,7 +32,30 @@ onto.get_abox_axioms()   # assertions/individual-level
 onto.equivalent_classes_axioms(cls); onto.general_class_axioms()
 onto.data_property_domain_axioms(prop); onto.data_property_range_axioms(prop)
 onto.object_property_domain_axioms(prop); onto.object_property_range_axioms(prop)
+onto.annotation_assertion_axioms(entity)  # rdfs:label/rdfs:comment/etc. on entity (or its IRI directly); SyncOntology and RDFLibOntology only
 ```
+
+## Membership Checks (SyncOntology only)
+
+Java-side OWL API checks exposed on Python side (#278) -- prefer these over scanning
+`*_in_signature()`/`get_*_axioms()` by hand:
+
+```python
+onto.get_axioms()            # all axioms (vs. get_abox/tbox/rbox_axioms() for a subset)
+onto.contains_axiom(axiom)   # bool, imports excluded
+
+# each accepts either the named entity (OWLClass/OWLObjectProperty/...) or its IRI/IRI string
+onto.contains_class_in_signature(cls_or_iri)
+onto.contains_object_property_in_signature(prop_or_iri)
+onto.contains_data_property_in_signature(prop_or_iri)
+onto.contains_annotation_property_in_signature(prop_or_iri)
+onto.contains_individual_in_signature(ind_or_iri)
+
+onto.is_declared(entity)     # has a declaration axiom for this entity
+onto.get_punned_iris()       # IRIs used as more than one entity type
+```
+
+All of the above take `include_imports_closure: bool = True`, matching `get_abox_axioms()` et al.
 
 Add/remove axioms with `onto.add_axiom([...])` / `onto.remove_axiom(axiom)`. Common axiom types
 (`owlapy.owl_axiom`): `OWLDeclarationAxiom`, `OWLClassAssertionAxiom(ind, cls)`,
@@ -73,7 +96,7 @@ save_owl_class_expressions(expressions=[expr1, expr2], path="predictions.owl",
 
 - Use full IRIs or `IRI.create(namespace, remainder)` when constructing entities — never bare strings
 - `SyncOntology` is preferred when you need Java-backed reasoning; `RDFLibOntology` is preferred for pure-Python read/write use (no JVM/owlready2), but only between *named* entities -- `Ontology` (owlready2-backed) is legacy, being phased out (#205)
-- `RDFLibOntology.add_axiom()`/`remove_axiom()`/`general_class_axioms()` raise `NotImplementedError` on axioms involving complex (blank-node) class/property expressions or general class axioms, and on a handful of axiom types not yet covered (e.g. `OWLSameIndividualAxiom`, `OWLAnnotationAssertionAxiom`) -- the error message states what's supported. `RDFLibOntology(iri, load=False)` creates a blank ontology at the given IRI
+- `RDFLibOntology.add_axiom()`/`remove_axiom()`/`general_class_axioms()` raise `NotImplementedError` on axioms involving complex (blank-node) class/property expressions or general class axioms, and on a handful of axiom types not yet covered (e.g. `OWLSameIndividualAxiom`, `OWLAnnotationAssertionAxiom`) -- the error message states what's supported. Annotations are still read-only there: `annotation_assertion_axioms()` works, but `add_axiom(OWLAnnotationAssertionAxiom(...))` is not yet implemented. `RDFLibOntology(iri, load=False)` creates a blank ontology at the given IRI
 - `create_ontology` paths need a valid file URI scheme (e.g. `"file:/path.owl"`)
 - Don't pass `with_owlapi=True` unless Java/OWLAPI interop is explicitly needed — it starts a JVM (see `.claude/rules/owlapi-swrl.md`)
 - `owlready2` is an optional install extra (`pip install owlapy[owlready2]`), not a hard dependency (#205) — constructing an `Ontology` (or a `StructuralReasoner`) without it installed raises a clear `ImportError`; `SyncOntology`/`RDFLibOntology` are unaffected either way

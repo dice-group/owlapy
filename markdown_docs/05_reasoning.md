@@ -2,7 +2,7 @@
 
 ## Overview
 
-Reasoning is the process of inferring implicit knowledge from explicit axioms. owlapy provides four reasoner implementations, each with different trade-offs.
+Reasoning is the process of inferring implicit knowledge from explicit axioms. owlapy provides five reasoner implementations, each with different trade-offs.
 
 ## Reasoner Comparison
 
@@ -12,6 +12,7 @@ Reasoning is the process of inferring implicit knowledge from explicit axioms. o
 | **[StructuralReasoner](#2-structuralreasoner-legacy) (Legacy)** | Python (owlready2) | Structural | Closed-world | Very fast | owlready2 (optional extra) | Existing owlready2-based code only; being phased out (#205) |
 | **[SyncReasoner](#3-syncreasoner-complete-owl-2-dl)** | Java (various) | Complete OWL 2 DL | Open-world (standard OWL DL semantics) | Slower | JPype1 + Java | Full reasoning, complex queries |
 | **[EBR](#4-ebr-embedding-based-reasoner)** | Pure Python (neural embeddings via `dicee`) | Probabilistic, not DL-complete | N/A (statistical plausibility, not classical entailment) | Fast (batched inference) | dicee + PyTorch | Large/noisy/incomplete KGs where symbolic reasoning misses implicit facts |
+| **[NIRReasoner](#5-nirreasoner-neural-instance-retrieval)** | Pure Python (pretrained NIR encoder) | Probabilistic instance retrieval | N/A (score-thresholded membership) | Fast (batched inference) | torch + transformers | Complex class expressions scored against entity embeddings; TBox stays symbolic |
 
 ⚠️ **Choosing between closed- and open-world semantics matters, not just speed.** If your
 data is meant to be a complete description of the domain (e.g. a fixed test KG) and you want
@@ -272,6 +273,56 @@ predictions = reasoner.predict(h=["http://example.com/family#john"], r=None, t=N
   probabilistic (score-thresholded by `gamma`), not logically entailed
 - No `stopJVM()`/JVM lifecycle to manage (pure Python + `dicee`/PyTorch), but GPU/CPU device
   selection matters for performance -- see `NeuralOntology`'s `device` parameter
+
+## 5. NIRReasoner (Neural Instance Retrieval)
+
+Neural instance retriever for complex OWL class expressions. A pretrained NIR encoder
+(Transformer, LSTM, GRU, or Composite, implemented in `owlapy.nir`) scores DL-syntax queries
+against DeCaL (or any CSV) entity embeddings. Named / length-1 concepts and all TBox / role
+queries go to a symbolic fallback (`StructuralReasoner` or `RDFLibReasoner`). Unlike `EBR`, it
+does **not** use `NeuralOntology` / `dicee`.
+
+Requires `torch` and `transformers` (`pip install torch transformers`; imported lazily).
+
+Pretrained encoders and embeddings:
+
+```shell
+wget https://files.dice-research.org/datasets/CNIR/trained_models.zip -O ./trained_models.zip && unzip trained_models.zip
+```
+
+### Basic Usage
+
+```python
+from owlapy.owl_ontology import Ontology
+from owlapy.owl_reasoner import NIRReasoner
+from owlapy.class_expression import OWLClass, OWLObjectSomeValuesFrom
+from owlapy.owl_property import OWLObjectProperty
+from owlapy.iri import IRI
+
+onto = Ontology("KGs/Family/family-benchmark_rich_background.owl")
+reasoner = NIRReasoner(
+    onto,
+    model_path="trained_models/nir_pretrained_models/NIR_Transformer_family",
+    embeddings_path="trained_models/embeddings/family/DeCaL_entity_embeddings.csv",
+    th=0.5,
+)
+
+brother = OWLClass(IRI("http://www.benchmark.org/family#", "Brother"))
+print(set(reasoner.instances(brother)))  # named class: symbolic fallback
+
+has_sibling = OWLObjectProperty(IRI("http://www.benchmark.org/family#", "hasSibling"))
+complex_ce = OWLObjectSomeValuesFrom(property=has_sibling, filler=brother)
+print(set(reasoner.instances(complex_ce)))  # longer expression: NIR encoder
+```
+
+Architecture is read from the checkpoint `config.json` (`NIRTransformer`, `NIRLSTM`, `NIRGRU`,
+`NIRComposite`). Composite also loads a sibling `*relation_embeddings.csv` when present.
+
+### Limitations
+
+- Results are score-thresholded (`th`, default 0.5), not DL-entailed
+- Hierarchies and roles are always answered by the symbolic fallback
+- Needs a matching pretrained encoder directory plus entity embeddings for the same KG
 
 ## Common Reasoning Tasks
 

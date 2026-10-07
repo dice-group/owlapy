@@ -1,6 +1,7 @@
 """OWL Literals"""
 import re
 from abc import ABCMeta, abstractmethod
+from ctypes import c_float
 from datetime import date, datetime, time
 from decimal import Decimal
 from enum import Enum
@@ -38,6 +39,9 @@ DecimalOWLDatatype: Final = OWLDatatype(XSDVocabulary.DECIMAL)
 
 #: An object representing an int datatype.
 IntOWLDatatype: Final = OWLDatatype(XSDVocabulary.INT)
+
+#: An object representing a long datatype.
+LongOWLDatatype: Final = OWLDatatype(XSDVocabulary.LONG)
 
 #: An object representing an integer datatype.
 IntegerOWLDatatype: Final = OWLDatatype(XSDVocabulary.INTEGER)
@@ -92,7 +96,7 @@ TopOWLDatatype: Final = OWLDatatype(OWLRDFVocabulary.RDFS_LITERAL)
 
 
 NUMERIC_DATATYPES: Final[Set[OWLDatatype]] = {FloatOWLDatatype, DoubleOWLDatatype, DecimalOWLDatatype,
-                                              IntegerOWLDatatype, IntOWLDatatype, PositiveIntegerOWLDatatype,
+                                              IntegerOWLDatatype, IntOWLDatatype, LongOWLDatatype, PositiveIntegerOWLDatatype,
                                               NegativeIntegerOWLDatatype, NonPositiveIntegerOWLDatatype,
                                               NonNegativeIntegerOWLDatatype}
 TIME_DATATYPES: Final[Set[OWLDatatype]] = {DateOWLDatatype, DateTimeOWLDatatype, DurationOWLDatatype}
@@ -135,6 +139,8 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
                 return super().__new__(_OWLLiteralImplInteger)
             elif type_ == IntOWLDatatype:
                 return super().__new__(_OWLLiteralImplInt)
+            elif type_ == LongOWLDatatype:
+                return super().__new__(_OWLLiteralImplLong)
             elif type_ == DoubleOWLDatatype:
                 return super().__new__(_OWLLiteralImplDouble)
             elif type_ == FloatOWLDatatype:
@@ -170,6 +176,7 @@ class OWLLiteral(OWLAnnotationValue, metaclass=ABCMeta):
             elif type_ == GDayOWLDatatype:
                 return super().__new__(_OWLLiteralImplGDay)
             else:
+                # Non-listed datatypes or non-datatypes fall back to the generic literal implementation
                 return super().__new__(_OWLLiteralImpl)
         # If datatype not specified, find which literal type fits the value best
         if isinstance(value, bool):
@@ -430,22 +437,20 @@ class _OWLNumericLiteralInterface(OWLLiteral):
     _type: OWLDatatype
 
     def __init__(self, value, type_=None):
-        if isinstance(value, int) or type_ in [IntegerOWLDatatype,
+        if isinstance(value, FloatSpecialValue):
+            assert type_ in [DoubleOWLDatatype, FloatOWLDatatype]
+        elif type_ in [DoubleOWLDatatype, FloatOWLDatatype]:
+            value = c_float(float(value)).value if type_ == FloatOWLDatatype else float(value)
+        elif isinstance(value, int) or type_ in [IntegerOWLDatatype,
                                                IntOWLDatatype,
+                                               LongOWLDatatype,
                                                NonNegativeIntegerOWLDatatype,
                                                NonPositiveIntegerOWLDatatype,
                                                NegativeIntegerOWLDatatype,
                                                PositiveIntegerOWLDatatype]:
             value = int(value)
-        elif isinstance(value, FloatSpecialValue):
-            assert type_ in [DoubleOWLDatatype, FloatOWLDatatype]
-        elif isinstance(value, float) or type_ in [DoubleOWLDatatype, FloatOWLDatatype]:
-            if type_ == FloatOWLDatatype:
-                # single-precision
-                value = round(float(value), 7)
-            else:
-                # double-precision
-                value = round(float(value), 15)
+        elif isinstance(value, float):
+            value = float(value)
         elif isinstance(value, Decimal) or type_ == DecimalOWLDatatype:
             value = Decimal(value)
         else:
@@ -502,7 +507,7 @@ class _OWLIntegerLiteralInterface(_OWLNumericLiteralInterface):
 
 @total_ordering
 class _OWLLiteralImplFloat(_OWLNumericLiteralInterface):
-    """Represents floating-point numbers with single-precision (7 digits of precision)."""
+    """Represents IEEE 754 single-precision floating-point numbers."""
 
     def __init__(self, value, type_=FloatOWLDatatype):
         super().__init__(value, type_)
@@ -521,7 +526,7 @@ class _OWLLiteralImplFloat(_OWLNumericLiteralInterface):
 
 @total_ordering
 class _OWLLiteralImplDouble(_OWLNumericLiteralInterface):
-    """Represents floating-point numbers with double-precision (15 digits of precision)."""
+    """Represents IEEE 754 double-precision floating-point numbers."""
     def __init__(self, value, type_=DoubleOWLDatatype):
         super().__init__(value, type_)
 
@@ -562,6 +567,13 @@ class _OWLLiteralImplInteger(_OWLIntegerLiteralInterface):
 class _OWLLiteralImplInt(_OWLIntegerLiteralInterface):
 
     def __init__(self, value, type_=IntOWLDatatype):
+        super().__init__(value, type_)
+
+
+@total_ordering
+class _OWLLiteralImplLong(_OWLIntegerLiteralInterface):
+
+    def __init__(self, value, type_=LongOWLDatatype):
         super().__init__(value, type_)
 
 
@@ -932,7 +944,8 @@ class _OWLLiteralImpl(OWLLiteral):
     __slots__ = '_v', '_datatype'
 
     def __init__(self, v, type_: OWLDatatype):
-        assert isinstance(type_, OWLDatatype)
+        if not isinstance(type_, OWLDatatype):
+            raise TypeError(f"Expected OWLDatatype, got {type(type_).__name__} ({type_!r})")
         self._v = v
         self._datatype = type_
 
@@ -949,3 +962,13 @@ class _OWLLiteralImpl(OWLLiteral):
 
     def __repr__(self):
         return f'OWLLiteral({self._v}, {self._datatype})'
+
+
+def lexical_literal(lexical: str, datatype: OWLDatatype) -> OWLLiteral:
+    """Create a literal that keeps *lexical* verbatim under *datatype*, bypassing the Python-value parsing that
+    :class:`OWLLiteral` applies for datatypes it knows (e.g. ``xsd:duration``, ``xsd:gYear``). Used when reading
+    literals of datatypes that have no faithful Python representation, so that nothing is lost or degraded.
+    """
+    literal = object.__new__(_OWLLiteralImpl)
+    literal.__init__(lexical, datatype)
+    return literal

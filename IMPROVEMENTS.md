@@ -112,6 +112,52 @@ effort estimates, and sequencing.
   (`with SyncReasoner(...) as r:`) that guarantees teardown, reducing the
   boilerplate that CLAUDE.md currently warns about manually.
 
+### 2.4 Multi-process parallel reasoning — investigated, not a general win
+- **Status:** Investigated and benchmarked (2026-08) as
+  `owlapy.parallel_reasoner.ParallelReasoner`/`BatchParallelReasoner`, on branch
+  `feature/parallel-reasoner` (dice-group/owlapy#269, **closed without merging**).
+  Recorded here so the same approach isn't re-attempted without reading this first.
+- **What was tried:** Two independent multi-process strategies for parallelizing
+  `SyncReasoner.instances()` (open-world class-expression instance retrieval) across a
+  pool of OS processes, each running its own JVM + Java-backed reasoner, without
+  partitioning the ontology itself: (1) *individual-level* — shard the individuals
+  checked for membership across workers (`KB |= ce(a)` independently per individual via
+  `is_entailed`); (2) *query-level* — shard a *batch of different class expressions*
+  across workers, each running its own full bulk `instances()` call.
+- **Methodology:** 100 generated complex-DL class expressions (intersection, union,
+  complement, existential/universal, min/max/exact cardinality, nested to depth 3) per
+  dataset, HermiT and Pellet, on a small (Family, 202 individuals) and large
+  (Mutagenesis, 14,145 individuals) ABox. Correctness verified against sequential
+  `SyncReasoner` on every expression.
+- **Findings:** Correctness held throughout; only speed varied, and not favorably.
+  Individual-level sharding was *slower* than sequential in 3 of 4 configurations — up
+  to **670x slower** on the large ABox with Pellet — because bulk `getInstances()`
+  already reuses shared reasoning work across individuals (classified TBox,
+  completion-graph state) that per-individual decomposition throws away.
+  Query-level batching won 2.03x-5.04x with HermiT (both ABox sizes), but *lost*
+  (0.16x-0.69x) with Pellet on the same two datasets, since Pellet's bulk calls are
+  already fast enough that worker-pool startup (many concurrent JVMs) and resource
+  contention among them isn't amortized. Critically, even the *best* parallelized
+  HermiT time never approached plain sequential Pellet: on Family (100 expressions),
+  Pellet sequential took 1.78s vs. HermiT's best (query-level parallel) 17.53s — ~10x
+  slower despite HermiT's own 2x internal speedup from parallelizing. HermiT is only
+  "helped" by parallelism because it's much slower to begin with, not because
+  parallelism makes it competitive with Pellet.
+- **Conclusion:** For general-purpose speedup of OWL class-expression retrieval, plain
+  sequential `SyncReasoner.instances()` with Pellet beat both parallel strategies in
+  every configuration measured. The one narrow, real use case — many independent
+  queries against a reasoner whose bulk calls are individually expensive (e.g. a
+  HermiT-locked workload) — didn't justify the added library surface (two new classes,
+  a `multiprocessing`/JVM-per-worker lifecycle) for a project whose default
+  recommendation is already "use Pellet." Not pursued further. Full benchmark
+  methodology, scripts, and raw results are preserved in the closed PR
+  (dice-group/owlapy#269, branch `feature/parallel-reasoner`) if this needs revisiting.
+- **Approach if revisited:** Don't re-attempt individual-level sharding — the root
+  cause (reasoners already batch-optimize instance retrieval internally) is
+  structural, not an implementation bug. Query-level batching is the only strand worth
+  resuming, and only for a reasoner/workload combination where a handful of sequential
+  bulk calls already average comfortably over ~100ms each.
+
 ---
 
 ## 3. Documentation
@@ -151,6 +197,37 @@ effort estimates, and sequencing.
 - **Approach:** Fill docstrings for public methods flagged by TODOs; consider a
   `pydocstyle`/ruff `D` rule (currently only `E/W/F/I` are enabled in
   `pyproject.toml`) to prevent regressions.
+
+### 3.5 JPype/JVM dependency-boundary reference table — *from TGDK review*
+- **Where:** `markdown_docs/05_reasoning.md` (already has a reasoner
+  comparison table with closed/open-world semantics), README "Why OWLAPY?"
+  section.
+- **Why:** TGDK Reviewer 1 flagged that the JVM/JPype dependency's *scope*
+  (which components need Java, which don't) isn't characterized anywhere in
+  one place — reviewers had to infer it from scattered prose. A precise,
+  greppable table is the single cheapest change that answers "what do I lose
+  if I can't run a JVM?" for both reviewers and adopters evaluating the
+  library for JVM-averse deployments.
+- **Approach:** Add one table — component × JVM required? × semantics —
+  covering `RDFLibReasoner`/`RDFLibOntology` (no), legacy `StructuralReasoner`
+  (no), `NeuralOntology`/EBR (no), `SyncReasoner` + the OWLAPI mapper (yes).
+  Keep it next to the existing reasoner comparison table since the set of
+  components changes rarely; link it from the README's dependency section.
+
+### 3.6 OWLAPI ↔ OWLAPY feature-coverage matrix — *from TGDK review*
+- **Where:** `owlapy_mapper.py`, `markdown_docs/09_api_reference.md`.
+- **Why:** TGDK Reviewer 1 asked which OWLAPI features OWLAPY covers;
+  Reviewer 2 characterized the resource as an incremental mirror of OWLAPI
+  with no evidence either way. A coverage matrix turns a vague claim into a
+  checkable list, and documents known mapper gaps (literal-type mapping
+  raises `NotImplementedError` for unmapped datatypes at
+  `owlapi_mapper.py:198,301`) in one place instead of scattered exceptions
+  discovered only at runtime.
+- **Approach:** Enumerate OWLAPI axiom/class-expression/entity types and
+  cross-reference against owlapy's mapper; produce a checked-in Markdown
+  table. Consider a test asserting every `OWLAxiom` subtype has a mapper
+  round-trip test, so the table can't silently drift out of date as new
+  axiom types are added.
 
 ---
 
@@ -207,6 +284,66 @@ effort estimates, and sequencing.
   already-bound outer variables — add a leading no-op `FILTER(BOUND(?var))` to any
   such branch (two or more filters in the group works fine).
 
+### 4.5 Ontology-generation quality evaluation harness (`agen_kg`) — *from TGDK review*
+- **Where:** `owlapy/agen_kg/`, new `examples/agen_kg_eval.py` (or similar).
+- **Why:** TGDK Reviewer 3 pointed out that the GraphRAG-style
+  text-to-ontology pipeline is described but never evaluated — "not clear
+  ... if the generated ontologies can have good quality." This is currently
+  the single biggest evidence gap for that feature and the most likely
+  paper-rejection risk; it's also a real product gap since users have no way
+  to sanity-check pipeline output against a baseline today.
+- **Approach:** Run the pipeline over 1–2 small public gold-standard
+  KGs/texts, then report precision/recall/F1 of extracted entities/triples/
+  types against the gold ABox/TBox. Wire it into `examples/` as a runnable
+  script producing a table, so both the paper and README can cite real
+  numbers instead of a narrative claim.
+
+### 4.6 Multi-provider LLM example + test for `agen_kg` — *from TGDK review*
+- **Where:** `owlapy/agen_kg/agent.py` (`model="gpt-4o"` default,
+  `dspy.LM(model=f"openai/{model}", ...)`), `owlapy/agen_kg/helper.py`
+  (`configure_dspy` hardcodes `"openai/gpt-4o"`), `examples/`.
+- **Why:** TGDK Reviewer 2 read the pipeline as tied to one LLM vendor. In
+  reality `dspy.LM` is provider-agnostic, but every example and default
+  hardcodes an OpenAI model string, so the provider-agnostic claim is
+  currently unverified by anything runnable.
+- **Approach:** Add one example configuration plus an integration test
+  (skipped by default / requires an API key) that runs `agen_kg` against a
+  non-OpenAI `dspy.LM` backend (e.g. a local Ollama-hosted model or another
+  vendor supported by `litellm`), and document the swap in `markdown_docs/`.
+
+### 4.7 `NeuralOntology` (EBR) runtime/hardware benchmark — *from TGDK review*
+- **Where:** `examples/runtime_benchmark_results.py` (already benchmarks
+  `SyncReasoner`/`StructuralReasoner`/`RDFLibReasoner`), `owl_ontology.py`
+  `NeuralOntology`.
+- **Why:** TGDK Reviewer 2 asked for the hardware specification needed to
+  run the embedding-based reasoning path. There is currently no runtime or
+  hardware data for `NeuralOntology` anywhere, unlike the symbolic reasoners
+  which already have a published benchmark table.
+- **Approach:** Extend the existing benchmark script to include
+  `NeuralOntology` inference latency at a couple of embedding
+  dimensions/dataset sizes, on CPU and GPU (`device="cpu"`/`"gpu"`), and
+  report the numbers in the README/paper next to the existing reasoner
+  table.
+
+### 4.8 Close or document remaining ELK query-method gaps — *from TGDK review*
+- **Where:** `owl_reasoner.py` — `getDisjointClasses`,
+  `getDataPropertyDomains`, `getObjectPropertyDomains`/`Ranges`,
+  `getSubDataProperties`/`getSuperDataProperties`,
+  `getDifferentIndividuals`, `equivalentDataProperties` all raise
+  `NotImplementedError` when `reasoner_name == "ELK"`.
+- **Why:** These currently read as blanket owlapy gaps (raised during the
+  TGDK response's R1.2 answer), but some are genuine OWL EL profile
+  limitations that ELK itself cannot support by design (e.g. EL has no
+  disjointness), while others may be closable with a structural fallback.
+  Distinguishing the two turns a vague "not implemented" list into either a
+  documented, principled reasoner-profile limitation, or a real backlog item
+  — both are defensible in the paper, an unexplained gap list isn't.
+- **Approach:** Audit each `NotImplementedError` against the OWL EL profile
+  spec. For anything EL doesn't support, reword the message from "not yet
+  implemented" to an explicit "unsupported by the EL profile" and add it to
+  the reasoner comparison table in `markdown_docs/05_reasoning.md`. For
+  anything closable, implement it via a structural fallback.
+
 ---
 
 ## 5. Project Housekeeping
@@ -238,6 +375,20 @@ effort estimates, and sequencing.
 - **Approach:** Incrementally enable ruff `B` (bugbear), `UP` (pyupgrade), and
   `D` (docstrings) on a per-directory basis; ratchet mypy strictness as coverage
   allows. `py.typed` is already shipped (good — PEP 561 compliant).
+
+### 5.4 Independent-adoption tracking — *from TGDK review*
+- **Where:** README.md "Why OWLAPY?" section / new `markdown_docs/` page.
+- **Why:** TGDK Reviewers 1 and 2 both flagged that documented real-world
+  usage is currently limited to DICE-group-originated projects (Ontolearn,
+  DRILL, EvoLearner, CLIP). Citing genuinely independent adopters is the
+  single most effective lever for the paper's Impact score, and it's cheap
+  to start collecting now rather than scrambling right before a resubmission
+  deadline.
+- **Approach:** Check PyPI/GitHub's "Used by"/dependents graph and Google
+  Scholar citations of the owlapy paper/repo for usage outside
+  `dice-group`-owned repos. If none are found, consider lightweight outreach
+  (e.g. a GitHub Discussions "who's using owlapy?" thread, or a request in
+  the release notes) to surface adopters before the revision deadline.
 
 ---
 
@@ -276,6 +427,18 @@ Phased so each phase is independently shippable and low-risk first.
 ### Phase 5 — Features (scoped separately)
 14. Decimal/typed-literal support (4.1).
 15. Equivalence-set handling in `OWLHierarchy` (4.2).
+
+### Phase 6 — TGDK resubmission support (paper-driven, prioritize by revision deadline)
+16. JPype/JVM dependency-boundary table + OWLAPI feature-coverage matrix
+    (3.5, 3.6) — cheapest, highest-leverage for reviewer concerns; do first.
+17. Independent-adoption search/outreach (5.4) — start immediately, it's the
+    slowest-turnaround item (depends on external response).
+18. `agen_kg` evaluation harness (4.5) — addresses the most substantive
+    quality gap raised (R3).
+19. `NeuralOntology` CPU/GPU benchmark (4.7) and multi-provider LLM example
+    (4.6) — answers R2's "missing technical detail" points with runnable
+    evidence rather than prose.
+20. ELK gap audit (4.8) — smaller, do if time allows before the deadline.
 
 ### Cross-cutting rules
 - Every change runs `ruff check owlapy --line-length=200` and the pytest suite

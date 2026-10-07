@@ -53,6 +53,7 @@ from owlapy.owl_literal import OWLBottomDataProperty, OWLBottomObjectProperty, O
 from owlapy.owl_object import OWLEntity
 from owlapy.owl_ontology import NeuralOntology, Ontology, SyncOntology, _parse_concept_to_owlapy
 from owlapy.owl_property import OWLDataProperty, OWLDataPropertyExpression, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLProperty, OWLPropertyExpression
+from owlapy.owl_reasoner_nir import NIRReasoner as NIRReasoner
 from owlapy.utils import run_with_timeout
 
 logger = logging.getLogger(__name__)
@@ -1068,6 +1069,12 @@ class StructuralReasoner(AbstractOWLReasoner):
         pe = ce.get_property()
         filler = ce.get_filler()
         assert isinstance(pe, OWLDataProperty)
+
+        if ce.get_cardinality() == 0:
+            all_ = frozenset(self._ontology.individuals_in_signature())
+            if isinstance(ce, OWLDataMinCardinality):
+                return all_
+            return all_ - self._get_instances_data_card_restriction(OWLDataMinCardinality(1, pe, filler))
 
         if isinstance(ce, OWLDataMinCardinality):
             min_count = ce.get_cardinality()
